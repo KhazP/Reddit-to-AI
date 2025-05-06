@@ -1,0 +1,21 @@
+body {
+  font-family: sans-serif;
+  width: 250px;
+  padding: 10px;
+}
+
+h1 {
+  font-size: 16px;
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+button {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+}
+
+div {
+  margin-bottom: 10px;
+}

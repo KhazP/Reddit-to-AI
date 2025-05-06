@@ -1,0 +1,51 @@
+Part 1: Product Requirements Document (PRD) - MVP
+
+1. Introduction & Goals
+
+Product Name: Reddit AI Tool
+Purpose: Reddit AI Tool solves the problem of manual, tedious copy-pasting of Reddit thread content (posts, comments, links, etc.) into AI chatbots. This manual process is inefficient for users who wish to use AI to summarize, analyze, or discuss Reddit content.
+MVP Goals:
+Enable users to automatically scrape the full content (post title, subreddit, main content, images, links, and all comments including replies and hidden ones) of the currently open Reddit thread.
+Enable users to paste this consolidated content into the Gemini AI chat interface (https://gemini.google.com/app) with a single action.
+Achieve >50 downloads from the Chrome Web Store.
+Maintain an average user rating of >4 stars on the Chrome Web Store.
+2. Target Audience
+
+Primary users include:
+Individuals seeking deeper understanding or analysis of Reddit threads.
+Researchers using Reddit as a data source.
+Avid Reddit users and power users who frequently engage with content and AI tools.
+3. User Stories
+
+Primary User Story: "As an avid Reddit user, I want to automatically send the entire content of a Reddit thread to an AI chat, so that I can quickly get summaries, insights, or ask detailed questions about it without manual copy-pasting."
+4. Features & Requirements
+
+Core Features (Must-Have for MVP):
+Reddit Post Scraping: Extract the main post details from the active Reddit tab, including title, subreddit name, main text content, and the post URL. Also capture image URLs and link URLs within the post body.
+Comprehensive Comment Scraping: Extract all comments from the thread, including nested replies. Implement functionality to handle dynamically loaded comments ("load more comments" buttons) and collapsed/hidden comments.
+Scraping Option for Hidden Comments: Provide a user interface option (e.g., a toggle/checkbox) to allow users to choose whether to include comments that might be hidden or considered spam.
+Open AI Platform: Automatically open a new browser tab navigating to Gemini (https://gemini.google.com/app).
+Content Pasting: Programmatically paste the collected and formatted Reddit content (post details and comments) into the Gemini chat input field.
+User Interface (Popup):
+A browser action button (icon in Chrome toolbar).
+Clicking the button opens a simple popup.
+The popup contains a primary action button (e.g., "Scrape and Send to Gemini").
+The popup includes the toggle for "Include hidden/spam comments."
+The popup includes a placeholder "Options" button for future customizability (non-functional in MVP).
+UI/UX Concept:
+Minimalist and straightforward interface.
+Interaction starts with a click on the Chrome toolbar icon.
+The popup provides clear options for the primary action and comment inclusion.
+5. Out of Scope for MVP
+
+Full, simultaneous support for other AI platforms beyond Gemini (e.g., Claude, ChatGPT, Grok) in this initial version. These will be considered for phased rollout post-MVP.
+Integration with Google AI Studio (https://aistudio.google.com/).
+Advanced formatting of scraped content (e.g., preserving Reddit markdown). The MVP will focus on clean, readable plain text.
+User accounts, saving of scraping history, or user-specific settings beyond the immediate session.
+Scraping or processing of video content or other complex media types beyond text, images, and links.
+Advanced error recovery mechanisms beyond user notifications.
+Functionality for the placeholder "Options" button in the popup.
+6. Success Metrics
+
+Downloads: Achieve more than 50 downloads from the Chrome Web Store.
+User Rating: Attain an average user rating of 4 stars or higher in the Chrome Web Store.
