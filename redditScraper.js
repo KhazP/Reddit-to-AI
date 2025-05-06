@@ -6,6 +6,16 @@ if (typeof window.redditScraperInitialized === 'undefined') {
 
     console.log("Reddit Scraper script initializing for the first time.");
 
+    // Helper function to send progress updates to the service worker
+    function sendProgressUpdate(message, percentage = undefined) {
+        try {
+            console.log("RedditScraper: Sending progress update:", message, percentage); // For debugging in content script
+            chrome.runtime.sendMessage({ action: "progressUpdate", message: message, percentage: percentage });
+        } catch (e) {
+            console.warn("RedditScraper: Could not send progress update (popup/service worker might be closed):", e.message);
+        }
+    }
+
     // Global-like variables for a single scraping session.
     // These are reset by scrapeRedditData for each new operation.
     let allCommentsMap;
@@ -20,11 +30,34 @@ if (typeof window.redditScraperInitialized === 'undefined') {
     let includeHiddenCommentsState;
     let resolvePromiseScraping; // Stores the resolve function for the main comment scraping promise
     let rejectPromiseScraping; // Stores the reject function for the main comment scraping promise
+    let currentSendResponse; // <<<< ADD THIS LINE
     let checkIntervalId; // ID for the checkIfDoneScraping interval
+    let OBSERVER_QUIET_PERIOD; // e.g., 2000-3000ms
+
+    async function loadConfiguration() {
+        return new Promise((resolve) => {
+            chrome.storage.sync.get(['maxLoadMoreAttempts'], (result) => {
+                MAX_LOAD_MORE_ATTEMPTS = result.maxLoadMoreAttempts || 75; // Default to 75 if not set
+                console.log("Configuration loaded: MAX_LOAD_MORE_ATTEMPTS set to", MAX_LOAD_MORE_ATTEMPTS);
+                resolve();
+            });
+        });
+    }
+
+    // Helper function for scrolling and delaying
+    async function scrollPageAndDelay(pixels = window.innerHeight, delay = 500) {
+        return new Promise(resolve => {
+            window.scrollBy({ top: pixels, behavior: 'smooth' });
+            setTimeout(() => {
+                resolve();
+            }, delay);
+        });
+    }
 
     console.log("Reddit Scraper script loaded.");
 
     function extractPostDetails() {
+        sendProgressUpdate("Inspecting post details...");
         console.log("extractPostDetails called");
         const post = {};
         let postElement = document.querySelector('shreddit-post');
@@ -246,227 +279,232 @@ if (typeof window.redditScraperInitialized === 'undefined') {
         post.scrapedAt = new Date().toISOString();
 
         console.log("Final extracted post details:", {title: post.title, author: post.author, subreddit: post.subreddit, contentSnippet: post.content.substring(0, 200) + "..."});
+        sendProgressUpdate("Post details extracted.");
         return post;
     }
 
     function extractCommentData(element, includeHiddenComments, depth = 0) {
-        // console.log('Attempting to extract data from comment element (first 300 chars):', element.outerHTML.substring(0, 300));
-        console.log("Inspecting shreddit-comment structure:", element.id, element.innerHTML.substring(0, 500));
-
-        if (!element) {
-            console.warn('extractCommentData called with null element.'); return null;
-        }
         const thingId = element.getAttribute('thingid'); 
-        if (!thingId) { 
-            console.warn('extractCommentData called for element without a thingid:', element.tagName, element.id, element.outerHTML ? element.outerHTML.substring(0,200) : 'N/A'); return null;
+        if (!thingId) {
+            console.warn('extractCommentData: Element without thingid', element.tagName, element.id);
+            return null;
         }
         if (!element.matches || !element.matches('shreddit-comment')) { 
-            console.warn('extractCommentData called for element not matching "shreddit-comment":', element.tagName, `thingid: ${thingId}`, element.outerHTML ? element.outerHTML.substring(0,200) : 'N/A'); return null;
+            console.warn(`extractCommentData: Element not shreddit-comment: ${element.tagName}, thingid: ${thingId}`); 
+            return null;
         }
 
+        // Future: Expand collapsed comments if includeHiddenCommentsState is true
+        // if (includeHiddenCommentsState && element.hasAttribute('collapsed') && element.getAttribute('collapsed') === 'true') {
+        //     console.log(`Comment ${thingId} is collapsed. Future: attempt to expand.`);
+        //     const expandButton = element.querySelector('button[aria-expanded="false"], [id^="comment-fold-button-"]');
+        //     if (expandButton) {
+        //         console.log(`Found expand button for collapsed comment ${thingId}`);
+        //         // expandButton.click(); // Future: enable this and handle async nature, then re-process or wait
+        //     }
+        // }
+
         const commentId = thingId;
-        let parentId = element.getAttribute('parentid');
-        if (!parentId) {
-            let parentCommentElement = element.parentElement?.closest('shreddit-comment'); 
-            if (parentCommentElement) {
-                parentId = parentCommentElement.getAttribute('thingid');
-            }
-        }
-        parentId = parentId || null;
+        let parentId = element.getAttribute('parentid') || element.parentElement?.closest('shreddit-comment')?.getAttribute('thingid') || null;
 
         let author = element.getAttribute('author') || '[unknown]';
         if (author === '[unknown]') {
-            const authorEl = element.querySelector('a[data-testid="comment_author_link"], .Comment__author, [slot="authorName"]');
+            const authorEl = element.querySelector('a[data-testid="comment_author_link"], .Comment__author, [slot="authorName"], [data-testid="comment_author"]');
             if (authorEl) author = authorEl.textContent.trim();
         }
         
         const createdTimestamp = element.getAttribute('created-timestamp');
         const scoreString = element.getAttribute('score');
-        let parsedScore = null;
-        if (scoreString && !isNaN(parseInt(scoreString, 10))) {
-            parsedScore = parseInt(scoreString, 10);
-        }
+        let parsedScore = scoreString && !isNaN(parseInt(scoreString, 10)) ? parseInt(scoreString, 10) : null;
 
-        let actualDepth;
         const depthAttr = element.getAttribute('depth');
-        if (depthAttr !== null && !isNaN(parseInt(depthAttr, 10))) {
-            actualDepth = parseInt(depthAttr, 10);
-        } else {
-            actualDepth = depth; 
-        }
+        let actualDepth = depthAttr !== null && !isNaN(parseInt(depthAttr, 10)) ? parseInt(depthAttr, 10) : depth;
 
         let commentTextContent = "";
         let textFoundPath = "not found";
 
-        // Priority 1: Target specific comment body container(s)
+        // --- Stage 1: Attempt extraction from a specific comment body container ---
+        console.log(`Comment ${commentId}: Starting text extraction. Author: ${author}`);
         const commentBodySelectors = [
-            'div[slot="comment"]', // Often used in shreddit-comment
-            'div[data-testid="comment-body"]', // A common test ID
-            '.md', // Markdown content container
-            '.richtext', // Rich text content container
-            // Add other potential selectors based on inspection of element.innerHTML
+            'div[slot="comment"]',
+            'div[data-testid="comment-body"]',
+            '#comment-rtjson-content', // Seen in some newer UIs
+            '.md', // Classic markdown container
+            '.richtext', // Classic richtext container
         ];
-
         let commentBodyContainer = null;
         for (const selector of commentBodySelectors) {
             commentBodyContainer = element.querySelector(selector);
             if (commentBodyContainer) {
-                console.log(`Comment ${commentId}: Found potential comment body container with selector: ${selector}`);
-                // Attempt to get text from <p> tags first
-                const paragraphs = commentBodyContainer.querySelectorAll('p');
-                if (paragraphs.length > 0) {
-                    let combinedText = [];
-                    paragraphs.forEach(p => combinedText.push(p.textContent.trim()));
-                    commentTextContent = combinedText.join('\n').trim();
-                    textFoundPath = `Priority 1: <p> tags within specific body container (${selector})`;
-                    console.log(`Comment ${commentId}: Text extracted using "${textFoundPath}". Snippet:`, commentTextContent.substring(0, 100));
-                } else {
-                    // Fallback to textContent of the container itself
-                    commentTextContent = commentBodyContainer.textContent.trim();
-                    textFoundPath = `Priority 1: textContent of specific body container (${selector})`;
-                     console.log(`Comment ${commentId}: Text extracted using "${textFoundPath}" (from container.textContent). Snippet:`, commentTextContent.substring(0, 100));
-                }
-                
-                if (commentTextContent) {
-                     console.log(`Comment ${element.id}: Text extracted using specific body container selector: ${selector}`);
-                    break; // Found content, exit loop
-                }
+                console.log(`Comment ${commentId}: Found primary comment body container with selector: ${selector}`);
+                console.log(`Comment ${commentId}: InnerHTML of commentBodyContainer (first 500 chars):`, commentBodyContainer.innerHTML.substring(0, 500));
+                break;
             }
         }
 
+        if (commentBodyContainer) {
+            const clonedBody = commentBodyContainer.cloneNode(true);
+            const selectorsToRemove = [
+                '.action-buttons-container', 'div[data-testid="comment-actionBar"]', 'div[data-testid="comment-meta-line"]', 
+                'faceplate-dropdown-menu', 'button[aria-label="More options"]', 'button[data-testid="comment-report-button"]',
+                'button[data-testid="comment-share-button"]','button[data-testid="comment-save-button"]','button[id^="comment-overflow-menu"]',
+                'button[data-testid^="comment-reply-"]', 'a[data-testid="comment-permalink"]', 'span[data-testid="meta-text"]',
+                'div[class*="CommentBottomBar__container"]', // Another common action bar class
+                'div[class*="CommentHeader__meta"]' // Common metadata header class
+            ];
+            selectorsToRemove.forEach(selector => {
+                clonedBody.querySelectorAll(selector).forEach(el => el.remove());
+            });
+            console.log(`Comment ${commentId}: Cleaned clonedBody innerHTML (first 500 chars after UI removal):`, clonedBody.innerHTML.substring(0, 500));
+            
+            const paragraphSelectors = [
+                ':scope > p', 
+                ':scope > div.richtext-paragraph', 
+                ':scope > div[data-testid="comment"] > div > p', 
+                ':scope > blockquote p', // Paragraphs inside blockquotes, any level
+                ':scope > ul > li', 
+                ':scope > ol > li'
+            ];
+            let extractedParagraphTexts = [];
+            paragraphSelectors.forEach(selector => {
+                clonedBody.querySelectorAll(selector).forEach(el => {
+                    const pText = el.textContent.trim();
+                    const actionWordsForParaCheck = ["Reply", "Share", "Edit", "More replies", "Collapse"]; // Shorter list for para check
+                    let isLikelyActionText = false;
+                    if (pText.length < 30) {
+                        isLikelyActionText = actionWordsForParaCheck.some(action => {
+                            const regex = new RegExp(`^${action.replace(/[.*+?^${}()|[\]\\]/g, '\\\\$&')}$`, 'i'); // Exact match, case insensitive
+                            return regex.test(pText);
+                        });
+                    }
+                    if (!isLikelyActionText && pText) { // Ensure pText is not empty
+                        extractedParagraphTexts.push(pText);
+                        console.log(`Comment ${commentId}: Extracted paragraph using selector "${selector}": "${pText.substring(0,100)}"`);
+                    } else if (isLikelyActionText) {
+                        console.log(`Comment ${commentId}: Skipped potential action text in paragraph using selector "${selector}": "${pText.substring(0,100)}"`);
+                    }
+                });
+            });
 
-        // Priority 1 (Continued): Try specific modern renderer if the above failed
-        if (!commentTextContent) {
+            if (extractedParagraphTexts.length > 0) {
+                commentTextContent = extractedParagraphTexts.join('\\n').trim();
+                textFoundPath = `Stage 1: Extracted from ${extractedParagraphTexts.length} specific paragraph(s) after cleaning container`;
+                console.log(`Comment ${commentId}: Text after joining paragraphs ("${textFoundPath}"): "${commentTextContent.substring(0, 200)}"`);
+            } else {
+                commentTextContent = clonedBody.textContent.trim();
+                textFoundPath = `Stage 1: Fallback to cleaned container's textContent`;
+                console.log(`Comment ${commentId}: Text from cleaned container's textContent ("${textFoundPath}"): "${commentTextContent.substring(0, 200)}"`);
+            }
+        }
+
+        // --- Stage 2: Try specific modern renderer if Stage 1 failed or yielded little ---
+        if (!commentTextContent || commentTextContent.length < 10) { 
             const markdownRendererEl = element.querySelector('shreddit-comment-markdown-renderer');
             if (markdownRendererEl) {
-                commentTextContent = markdownRendererEl.textContent.trim();
-                if (commentTextContent) {
-                    textFoundPath = "Priority 1: shreddit-comment-markdown-renderer";
-                    console.log(`Comment ${commentId}: Text extracted using "${textFoundPath}". Snippet:`, commentTextContent.substring(0, 100));
-                } else {
-                    console.log(`Comment ${commentId}: Found shreddit-comment-markdown-renderer, but textContent was empty.`);
+                const rendererText = markdownRendererEl.textContent.trim();
+                if (rendererText && rendererText.length > (commentTextContent?.length || 0) ) { // Use if it's better
+                    commentTextContent = rendererText;
+                    textFoundPath = "Stage 2: shreddit-comment-markdown-renderer";
+                    console.log(`Comment ${commentId}: Text from markdownRendererEl ("${textFoundPath}"): "${commentTextContent.substring(0, 200)}"`);
                 }
-            } else {
-                console.log(`Comment ${commentId}: shreddit-comment-markdown-renderer NOT found.`);
             }
         }
-        
-        // Priority 1 (Continued): Try to find specific paragraph or rich text elements if markdown-renderer failed or was empty
-        // This is a broader search within the shreddit-comment if a specific body container wasn't fruitful
-        if (!commentTextContent) {
-            const specificTextSelectors = [
-                'div.richtext-paragraph', // Common for rich text
-                'div[data-testid="comment"] > div > div > p', // Structure seen in some layouts
-                // 'div.md > p', // Already covered if .md was a body container
+
+        // --- Stage 3: Broader Fallback with Enhanced Cleaning ---
+        const textBeforeFallbackCleaning = commentTextContent;
+        console.log(`Comment ${commentId}: Text BEFORE Stage 3 Fallback Cleaning (current path: "${textFoundPath}"): "${textBeforeFallbackCleaning.substring(0, 200)}"`);
+
+        let cleanedText = commentTextContent || ""; // Ensure cleanedText is a string
+
+        const actionLinkTexts = [
+            "Reply", "Share", "Save", "Edit", "Vote", "More replies", "Collapse", "Permalink", 
+            "Embed", "Parent", "Context", "Full Comments", "Give Award", "Report",
+            "level\\s*\\d+\\s*comment", "OP", "\\d+\\s*points?", "\\d+\\s*children", // Added ? for point/points
+            "Continue this thread", "View entire discussion", "Collapse replies", "Show parent comments"
+        ];
+
+        actionLinkTexts.forEach(action => {
+            const regex = new RegExp(`(^|\\s|\\n|•\\s*)${action.replace(/[.*+?^${}()|[\]\\]/g, '\\\\$&')}(\\s|\\n|•|$|\\.)`, 'gi');
+            cleanedText = cleanedText.replace(regex, (match, p1, p2) => { // p1 is char before, p2 is char after
+                // Preserve surrounding newlines or bullet points, otherwise replace with a single space if surrounded by spaces
+                if ((p1 === '\\n' && p2 === '\\n') || (p1 === '\\n' && p2 === '$') || (p1 === '^' && p2 === '\\n')) return '\\n';
+                if (p1.trim() === '•' && p2.trim() === '') return p1; // Keep bullet if action was after it
+                if (p1.trim() === '' && p2.trim() === '•') return p2; // Keep bullet if action was before it
+                return (p1 === ' ' && p2 === ' ') ? ' ' : p1.endsWith('\\n') || p2.startsWith('\\n') ? '\\n' : ' ';
+            }).trim();
+        });
+        if (cleanedText !== textBeforeFallbackCleaning) { // Check if any change happened
+             console.log(`Comment ${commentId}: Text after removing action link texts: "${cleanedText.substring(0, 200)}"`);
+        }
+
+
+        const authorAttrForCleaning = element.getAttribute('author'); // Use the one from element, not the potentially modified 'author' variable
+        if (authorAttrForCleaning && authorAttrForCleaning !== '[unknown]') {
+            const escapedAuthor = authorAttrForCleaning.replace(/[.*+?^${}()|[\]\\]/g, '\\\\$&');
+            const authorPatterns = [
+                new RegExp(`^\\s*${escapedAuthor}\\s*(?:•|\\n|\\s*-|\\s*\\d+\\s*points?)?`, 'i'), // Author at start, possibly followed by •, newline, dash, or points
+                new RegExp(`\\n\\s*${escapedAuthor}\\s*(?:•|\\n|\\s*-|\\s*\\d+\\s*points?)?`, 'i')  // Author on a new line
             ];
-            let foundSpecificElements = false;
-            for (const selector of specificTextSelectors) {
-                const textElements = element.querySelectorAll(selector);
-                if (textElements.length > 0) {
-                    let combinedText = [];
-                    textElements.forEach(el => combinedText.push(el.textContent.trim()));
-                    commentTextContent = combinedText.join('\n').trim();
-                    if (commentTextContent) {
-                        textFoundPath = `Priority 1: specific elements (${selector}, found ${textElements.length})`;
-                        console.log(`Comment ${commentId}: Text extracted using "${textFoundPath}". Snippet:`, commentTextContent.substring(0, 100));
-                        foundSpecificElements = true;
-                        break; 
+            authorPatterns.forEach(pattern => {
+                if (pattern.test(cleanedText.substring(0, authorAttrForCleaning.length + 25))) {
+                    const oldCleanedText = cleanedText;
+                    cleanedText = cleanedText.replace(pattern, '\\n').trim(); // Replace with newline to separate from next content
+                     if (cleanedText !== oldCleanedText) {
+                        console.log(`Comment ${commentId}: Text after attempting author removal ("${authorAttrForCleaning}"): "${cleanedText.substring(0, 200)}"`);
                     }
                 }
-            }
-            if (!foundSpecificElements) {
-                 console.log(`Comment ${commentId}: No specific text elements (p, richtext-paragraph) found or they were empty after body container search.`);
-            }
+            });
+        }
+
+        const timestampPatterns = [
+            /(^|\n)\s*(?:Edited\s+)?\d+[smhdwy](?:[a-z])*\s*(?:ago)?\s*[•·]?\s*($|\n)/gi, 
+            /(^|\n)\s*•\s*\d+[smhdwy](?:[a-z])*\s*(?:ago)?\s*[•·]?\s*($|\n)/gi,
+            /(^|\n)\s*\d+\s*points?\s*(?:•\s*\d+[smhdwy](?:[a-z])*\s*(?:ago)?)?\s*($|\n)/gi, // "X points • Y time ago" or just "X points"
+        ];
+        let textChangedByTimestampRemoval = false;
+        const originalTextForTimestampCheck = cleanedText;
+        timestampPatterns.forEach(pattern => {
+            cleanedText = cleanedText.replace(pattern, (match, p1, p2) => (p1 === '\\n' && p2 === '\\n') ? '\\n' : (p1 === '\\n' || p2 === '\\n') ? '\\n' : ' ').trim();
+        });
+         if (cleanedText !== originalTextForTimestampCheck) {
+            textChangedByTimestampRemoval = true;
+            console.log(`Comment ${commentId}: Text after timestamp/points removal: "${cleanedText.substring(0, 200)}"`);
         }
         
+        cleanedText = cleanedText.replace(/(\n\s*){2,}/g, '\\n\\n'); // Reduce 2+ newlines (with optional space in between) to 2
+        cleanedText = cleanedText.replace(/^[\s•·]+/gm, '').replace(/[\s•·]+$/gm, ''); // Remove leading/trailing spaces/bullets from lines
+        cleanedText = cleanedText.trim();
 
-        // Refined Fallback Cleaning (If No Specific Body Container Found or it yielded little)
-        if (!commentTextContent || commentTextContent.length < 15) {
-            const textBeforeFallback = commentTextContent;
-            console.log(`Comment ${commentId}: Text from prior methods is empty or very short ("${textBeforeFallback}"). Falling back to element.textContent with refined cleaning.`);
-            
-            let fullText = element.textContent || "";
-            const textBeforeSpecificRemovals = fullText;
-            console.log(`Comment ${commentId}: Fallback - Text BEFORE specific removals (first 200 chars):`, fullText.substring(0, 200));
-
-            // Attempt to remove the author line if it matches element.getAttribute('author') and appears at the start.
-            const authorAttr = element.getAttribute('author');
-            if (authorAttr) {
-                const authorPattern = new RegExp(`^\\s*${authorAttr.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&')}\\s*`, 'i');
-                fullText = fullText.replace(authorPattern, '').trim();
-            }
-
-            // Remove timestamp patterns like • \d+d ago
-            const timestampPattern = /•\s*\d+[a-z]+\s*ago/gi; // More general for "4d ago", "2h ago" etc.
-            fullText = fullText.replace(timestampPattern, '').trim();
-            
-            // Explicitly remove "Reply", "Share", "Save", "Edit", "More replies" (case-insensitive, possibly with surrounding whitespace)
-            const actionWords = ["Reply", "Share", "Save", "Edit", "More replies", "Report", "Give Award", "Follow"];
-            actionWords.forEach(word => {
-                // Regex to match whole word, case insensitive, with optional surrounding whitespace
-                const regex = new RegExp(`\\s*\\b${word}\\b\\s*`, 'gi'); 
-                fullText = fullText.replace(regex, ' ').trim(); // Replace with a space to avoid joining words, then trim
-            });
-            
-            // Remove "more_horiz" which is often the text for the "..." menu
-            fullText = fullText.replace(/\s*more_horiz\s*/gi, ' ').trim();
-
-            // Attempt to remove the action bar text more directly if a common selector is found
-            const actionBar = element.querySelector('shreddit-comment-action-row, .Comment__footer');
-            if (actionBar && actionBar.textContent) {
-                let actionBarText = actionBar.textContent.trim();
-                // Clean the action bar text itself from known action words to avoid removing parts of actual comments
-                actionWords.forEach(word => {
-                    const regex = new RegExp(`\\s*\\b${word}\\b\\s*`, 'gi');
-                    actionBarText = actionBarText.replace(regex, ' ').trim();
-                });
-                if (actionBarText.length > 0 && actionBarText.length < 100) { // Heuristic: action bar text is usually short
-                    // Escape the action bar text for use in a new RegExp
-                    const escapedActionBarText = actionBarText.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&');
-                    if (escapedActionBarText.trim()) { // Ensure it's not empty after cleaning
-                        try {
-                            const actionBarPattern = new RegExp(escapedActionBarText, 'gi');
-                            const textBeforeActionBarRemoval = fullText;
-                            fullText = fullText.replace(actionBarPattern, '').trim();
-                            if (fullText !== textBeforeActionBarRemoval) {
-                                console.log(`Comment ${commentId}: Fallback - Removed potential action bar text ("${actionBarText}").`);
-                            }
-                        } catch (e) {
-                            console.warn(`Comment ${commentId}: Could not create RegExp from action bar text: "${actionBarText}"`, e);
-                        }
-                    }
-                }
-            }
-            
-            commentTextContent = fullText.trim();
-            textFoundPath = `Fallback: element.textContent (refined cleaning)`;
-            console.log(`Comment ${commentId}: Fallback - Text AFTER specific removals (first 200 chars):`, commentTextContent.substring(0, 200));
-            if (commentTextContent !== textBeforeSpecificRemovals) {
-                 console.log(`Comment ${commentId}: Fallback cleaning changed the text. Original snippet: "${textBeforeSpecificRemovals.substring(0,100)}...", Cleaned snippet: "${commentTextContent.substring(0,100)}..."`);
-            }
-        }
-
-        // Remove text from known action button areas (final pass, regardless of method)
-        const actionRowSelectors = ['shreddit-comment-action-row', '.Comment__footer', '[data-testid="comment-actionBar"]'];
-        actionRowSelectors.forEach(selector => {
-            const actionRow = element.querySelector(selector);
-            if (actionRow && actionRow.textContent) {
-                let textToRemove = actionRow.textContent.trim();
-                // Be careful not to remove too much. Only remove if it's a significant part of the commentTextContent
-                // This is tricky; for now, we rely on the specific removals above.
-                // A more aggressive approach here might be to subtract this text if found.
-                // For now, the targeted word removal is safer.
-            }
+        const finalCleanupPhrases = ["more_horiz", "level \\d+"];
+        finalCleanupPhrases.forEach(phrase => {
+            const regex = new RegExp(`(^|\\s|\\n)${phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\\\$&')}(\\s|\\n|$)`, 'gi');
+            cleanedText = cleanedText.replace(regex, (match, p1, p2) => (p1 === '\\n' || p2 === '\\n') ? '\\n' : ' ').trim();
         });
 
-
-        // Final check and assignment
-        if (!commentTextContent) {
+        if (cleanedText !== textBeforeFallbackCleaning) {
+            commentTextContent = cleanedText;
+            textFoundPath += " -> Stage 3 Enhanced Fallback Cleaning applied";
+            console.log(`Comment ${commentId}: Text AFTER Stage 3 Fallback Cleaning: "${commentTextContent.substring(0, 200)}"`);
+        } else if (!textChangedByTimestampRemoval && cleanedText === textBeforeFallbackCleaning) { // Avoid logging if only timestamp changed it and was already logged
+            console.log(`Comment ${commentId}: Stage 3 Fallback Cleaning did not significantly alter text from: "${textBeforeFallbackCleaning.substring(0,100)}"`);
+        }
+        
+        // --- Final Check and Assignment ---
+        if (!commentTextContent && textFoundPath !== "not found") { // If cleaning resulted in empty string but we had a path
+             console.warn(`Comment ${commentId}: Text content became empty after cleaning. Original path: ${textFoundPath}. Text before cleaning: "${textBeforeFallbackCleaning.substring(0,100)}"`);
+             commentTextContent = "[Comment text removed by cleaning]";
+        } else if (!commentTextContent) {
             console.warn(`Comment ${commentId}: Text content is empty after all extraction attempts. Path: ${textFoundPath}`);
             commentTextContent = "[Comment text not found or empty]";
+        } else {
+            const veryShortNonCommentPhrases = ["Reply", "Edit", "Share", "Save", "Vote"];
+            if (commentTextContent.length < 10 && veryShortNonCommentPhrases.some(phrase => commentTextContent.toLowerCase() === phrase.toLowerCase())) {
+                console.warn(`Comment ${commentId}: Final text ("${commentTextContent}") was a short UI term. Marking as effectively empty.`);
+                commentTextContent = `[Comment text likely UI element: ${commentTextContent}]`;
+            }
         }
-
-        const isTextuallyRemoved = commentTextContent === "[removed]";
+        
+        const isTextuallyRemoved = commentTextContent === "[removed]" || commentTextContent === "[Comment text removed by cleaning]";
         const isTextuallyDeleted = commentTextContent === "[deleted]";
         const isAuthorDeleted = author === "[deleted]";
         const isModRemovedMsg = commentTextContent.toLowerCase() === "comment removed by moderator";
@@ -519,6 +557,12 @@ if (typeof window.redditScraperInitialized === 'undefined') {
         if (loadMoreAttempts >= MAX_LOAD_MORE_ATTEMPTS) {
             return false; 
         }
+        
+        // Calculate progress percentage
+        // Map from 0-MAX_LOAD_MORE_ATTEMPTS to a 25-60% range, with logarithmic scaling for better feedback
+        const progressRatio = Math.pow(loadMoreAttempts / MAX_LOAD_MORE_ATTEMPTS, 0.7); // Using exponent 0.7 for logarithmic-like effect
+        const progressForAttemptCheck = 25 + Math.round(progressRatio * 35);
+        sendProgressUpdate(`Checking for more comments (Attempt: ${loadMoreAttempts + 1}/${MAX_LOAD_MORE_ATTEMPTS})...`, Math.max(25, Math.min(progressForAttemptCheck, 75)));
 
         let clickedSomething = false;
         const loadMoreSelectors = [
@@ -565,64 +609,38 @@ if (typeof window.redditScraperInitialized === 'undefined') {
 
         if (clickedSomething) {
             console.log(`Load more attempts: ${loadMoreAttempts}/${MAX_LOAD_MORE_ATTEMPTS}`);
+            // Calculate progress based on the new number of completed attempts
+            // Use logarithmic scaling for better visual feedback, especially with higher MAX_LOAD_MORE_ATTEMPTS values
+            const newProgressRatio = Math.pow(loadMoreAttempts / MAX_LOAD_MORE_ATTEMPTS, 0.7);
+            const progressAfterClick = 25 + Math.round(newProgressRatio * 35);
+            
+            sendProgressUpdate(`${allCommentsMap.size} comments collected. Clicked 'load more'. Attempt ${loadMoreAttempts}/${MAX_LOAD_MORE_ATTEMPTS}.`, 
+                              Math.max(25, Math.min(progressAfterClick, 60)));
             stableChecks = 0; 
         }
         return clickedSomething;
     }
 
-    function processAddedNode(node, currentDepth = 0) {
-        /* console.log(
-            'processAddedNode received:',
-            node.tagName,
-            `thingid: ${node.getAttribute ? node.getAttribute('thingid') : 'N/A'}`,
-            `ID: ${node.id || 'N/A'}`,
-            'Matches "shreddit-comment":', (node.matches ? node.matches('shreddit-comment') : 'N/A (not an element or no matches method)'),
-            'currentDepth:', currentDepth,
-            'OuterHTML snippet:', node.outerHTML ? node.outerHTML.substring(0, 150) : 'N/A'
-        ); */
-
+    function processAddedNode(node, currentDepth = 0) { // Added currentDepth default
         if (node.nodeType === Node.ELEMENT_NODE) {
-            if (node.matches && node.matches('shreddit-comment')) {
-                const currentThingId = node.getAttribute('thingid');
-                // console.log(`processAddedNode: Encountered shreddit-comment. ThingID: ${currentThingId}, Original ID: ${node.id}, currentDepth: ${currentDepth}`);
-
-                if (currentThingId) {
-                    if (!allCommentsMap.has(currentThingId)) {
-                        const commentData = extractCommentData(node, includeHiddenCommentsState, currentDepth);
-                        if (commentData) {
-                            allCommentsMap.set(commentData.id, commentData); // commentData.id is thingid
-                            console.log(`Comment ${commentData.id} (depth ${commentData.depth}) ADDED to map. Map size: ${allCommentsMap.size}.`);
-                            stableChecks = 0;
-                        }
-                    } else {
-                        // console.log(`Comment ${currentThingId} (depth from attr: ${node.getAttribute('depth')}) already in map. Skipping direct processing.`);
+            const processSingleComment = (commentNode) => {
+                const commentId = commentNode.getAttribute('thingid');
+                if (commentId && !allCommentsMap.has(commentId)) {
+                    // Pass includeHiddenCommentsState, which is the global option for the scrape
+                    const commentData = extractCommentData(commentNode, includeHiddenCommentsState, 0); // Depth 0 for top-level comments processed by observer
+                    if (commentData) {
+                        allCommentsMap.set(commentData.id, commentData);
+                        lastActivityTime = Date.now(); 
+                        console.log(`Comment ${commentData.id} (depth ${commentData.depth}) ADDED to map. Map size: ${allCommentsMap.size}.`);
+                        stableChecks = 0;
                     }
                 } else {
-                    console.log("Found shreddit-comment but it has NO thingid. Skipping direct extraction. OuterHTML:", node.outerHTML ? node.outerHTML.substring(0, 250) : 'N/A');
+                    // console.log(`Comment ${commentId} (depth from attr: ${node.getAttribute('depth')}) already in map. Skipping direct processing.`);
                 }
+            };
 
-                // Whether the node itself was processed or not (e.g. had thingid or already in map),
-                // always try to find and process its direct shreddit-comment children to handle nesting.
-                // The allCommentsMap.has() check in subsequent calls will prevent duplicates.
-                const childComments = node.querySelectorAll(':scope > shreddit-comment-tree > shreddit-comment, :scope > shreddit-comment');
-                if (childComments.length > 0) {
-                    // console.log(`Node ${node.tagName} (thingid: ${currentThingId || 'N/A'}) has ${childComments.length} direct/tree shreddit-comment children. Processing them if new.`);
-                    childComments.forEach(childNode => {
-                        if (childNode === node) return; // Should not happen with :scope
-
-                        let childDepth = currentDepth + 1; // Default increment from parent
-                        const childDepthAttr = childNode.getAttribute('depth');
-                        if (childDepthAttr !== null && !isNaN(parseInt(childDepthAttr, 10))) {
-                            childDepth = parseInt(childDepthAttr, 10);
-                        } else {
-                            // If no depth attribute on child, and parent is not a comment,
-                            // this child might be a top-level comment in this container.
-                            // However, extractCommentData will try to use its own depth attribute first.
-                            // console.log(`Child ${childNode.getAttribute('thingid')} in non-comment parent, calculated depth: ${childDepth}`);
-                        }
-                        processAddedNode(childNode, childDepth);
-                    });
-                }
+            if (node.matches && node.matches('shreddit-comment')) {
+                processSingleComment(node);
             } else { // Node itself is not a shreddit-comment, but might contain them (e.g., a container div)
                 const childComments = node.querySelectorAll('shreddit-comment'); // Broader search for any descendant
                 if (childComments.length > 0) {
@@ -649,6 +667,7 @@ if (typeof window.redditScraperInitialized === 'undefined') {
     }
 
     function initializeCommentScraping(resolveFn, rejectFn, includeHidden) {
+        sendProgressUpdate("Starting comment collection...");
         console.log("Initializing comment scraping. Include hidden:", includeHidden);
         console.log("Document readyState:", document.readyState);
 
@@ -683,6 +702,7 @@ if (typeof window.redditScraperInitialized === 'undefined') {
         });
         
         console.log(`Initial scan completed. Total unique comments added to map during initial scan: ${commentsProcessedInInitialScan}. Current map size: ${allCommentsMap.size}`);
+        sendProgressUpdate(`${allCommentsMap.size} initial comments found. Observing for more...`);
         if (allCommentsMap.size === 0) { // Check map size after all selectors tried
             console.warn("No comments found in initial scan with ANY of the selectors. The page might have no comments or uses a new/unhandled structure.");
             console.log("Snapshot of document.body.innerHTML (first 3000 chars):", document.body.innerHTML.substring(0, 3000));
@@ -739,17 +759,48 @@ if (typeof window.redditScraperInitialized === 'undefined') {
         }
         console.log("Observer final target node:", targetNode);
         observer.observe(targetNode, { childList: true, subtree: true });
+        sendProgressUpdate("Actively listening for dynamic comments...");
 
+        // Start the scraping timeout
         scrapingTimeoutId = setTimeout(() => {
-            console.warn("Scraping timeout reached!");
-            finishScraping();
+            console.warn(`Scraping timed out after ${SCRAPING_TIMEOUT / 1000} seconds.`);
+            sendProgressUpdate(`Scraping timed out. Only ${allCommentsMap.size} comments collected so far.`);
+            if (observer) observer.disconnect();
+            if (checkIntervalId) clearInterval(checkIntervalId);
+            
+            if (allCommentsMap.size > 0) {
+                if (resolvePromiseScraping) {
+                    const commentTreeOnTimeout = buildCommentTree(allCommentsMap);
+                    console.log(`Timeout: Resolving with ${commentTreeOnTimeout.length} top-level comments from ${allCommentsMap.size} total collected.`);
+                    resolvePromiseScraping(commentTreeOnTimeout);
+                }
+            } else {
+                if (rejectPromiseScraping) {
+                    rejectPromiseScraping(new Error(`Scraping timed out with no comments collected. MAX_LOAD_MORE_ATTEMPTS was ${MAX_LOAD_MORE_ATTEMPTS}.`));
+                }
+            }
+            resolvePromiseScraping = null; // Nullify after use
+            rejectPromiseScraping = null;  // Nullify after use
         }, SCRAPING_TIMEOUT);
 
+
+        // Initial setup for comment scraping
         checkIfDoneScraping();
     }
 
     function checkIfDoneScraping() {
         if (checkIntervalId) clearTimeout(checkIntervalId); 
+
+        // Send periodic count update
+        if (stableChecks > 0) { // Avoid sending on the very first check after a click
+            // Calculate stability check progress: 60-65% range
+            const stabilityProgress = 60 + Math.round((stableChecks / MAX_STABLE_CHECKS) * 5);
+            
+            // Add comment count to the message
+            sendProgressUpdate(
+                `${allCommentsMap.size} comments collected. Stability check ${stableChecks}/${MAX_STABLE_CHECKS}. Load attempts: ${loadMoreAttempts}/${MAX_LOAD_MORE_ATTEMPTS}`,
+                stabilityProgress);
+        }
 
         clickLoadMoreButtons().then(wasClicked => {
             if (!resolvePromiseScraping && !rejectPromiseScraping) return; 
@@ -762,7 +813,7 @@ if (typeof window.redditScraperInitialized === 'undefined') {
 
             stableChecks++;
             console.log(`Stability check: ${stableChecks}/${MAX_STABLE_CHECKS}. Comments: ${allCommentsMap.size}. Load attempts: ${loadMoreAttempts}/${MAX_LOAD_MORE_ATTEMPTS}`);
-
+            
             const noMoreButtonsToClick = loadMoreAttempts >= MAX_LOAD_MORE_ATTEMPTS;
 
             if (stableChecks >= MAX_STABLE_CHECKS || (noMoreButtonsToClick && !wasClicked) ) {
@@ -785,7 +836,8 @@ if (typeof window.redditScraperInitialized === 'undefined') {
     }
 
     function finishScraping() {
-        console.log("Finishing scraping...");
+        sendProgressUpdate("Finalizing comment data...", 65);
+        console.log("Finishing scraping... Total comments:", allCommentsMap.size);
         if (observer) {
             observer.disconnect();
             console.log("MutationObserver disconnected.");
@@ -799,6 +851,7 @@ if (typeof window.redditScraperInitialized === 'undefined') {
         const commentTree = buildCommentTree(allCommentsMap);
         const totalInTree = countCommentsInTree(commentTree);
         console.log(`Scraping finished. Total comments in map: ${allCommentsMap.size}, structured in tree: ${totalInTree}`);
+        sendProgressUpdate(`Structuring ${allCommentsMap.size} comments...`, 70);
 
         if (resolvePromiseScraping) {
             resolvePromiseScraping(commentTree);
@@ -820,9 +873,14 @@ if (typeof window.redditScraperInitialized === 'undefined') {
         return count;
     }
 
-    async function scrapeRedditData(includeHidden) {
-        console.log("scrapeRedditData called. Current URL:", window.location.href, "Include hidden:", includeHidden);
-        
+    // Main function to orchestrate scraping
+    async function scrapeRedditData(includeHiddenComments) {
+        console.log("scrapeRedditData called. includeHiddenComments:", includeHiddenComments);
+        sendProgressUpdate("Scraping process initiated...");
+
+        await loadConfiguration(); // Load configuration first
+
+        // Reset global-like variables for this scraping session
         allCommentsMap = new Map();
         if (observer) observer.disconnect(); 
         observer = null;
@@ -835,19 +893,19 @@ if (typeof window.redditScraperInitialized === 'undefined') {
         resolvePromiseScraping = null;
         rejectPromiseScraping = null; 
 
-        MAX_LOAD_MORE_ATTEMPTS = 30; 
-        MAX_STABLE_CHECKS = 6;      
-        SCRAPING_TIMEOUT = 120000;   
+        MAX_STABLE_CHECKS = 10;      // Increased from 6
+        SCRAPING_TIMEOUT = 600000;   // 10 minutes 
         CHECK_INTERVAL = 3000;      
 
         try {
             let postDetails = extractPostDetails();
 
             const commentsPromise = new Promise((resolve, reject) => { 
-                initializeCommentScraping(resolve, reject, includeHidden); 
+                initializeCommentScraping(resolve, reject, includeHiddenComments); 
             });
 
             const commentTree = await commentsPromise; 
+            sendProgressUpdate("Comment collection complete. Preparing final data...");
             console.log("Comments promise resolved, tree received in scrapeRedditData.");
             return {
                 post: postDetails,
@@ -861,51 +919,101 @@ if (typeof window.redditScraperInitialized === 'undefined') {
         }
     }
 
-    // Listen for messages from the service worker
+    // Main message listener for commands from the service worker
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+        console.log("RedditScraper: Message received:", request.action);
+        currentSendResponse = sendResponse; // <<<< STORE sendResponse
+
         if (request.action === "scrapeReddit") {
-            console.log("Message 'scrapeReddit' received in content script. Include hidden:", request.includeHidden);
+            sendProgressUpdate("Scrape command received by content script.");
+            console.log("RedditScraper: scrapeReddit action invoked. Include hidden:", request.includeHidden);
+            
+            // Reset state for a new scraping operation
+            allCommentsMap = new Map();
+            loadMoreAttempts = 0;
+            stableChecks = 0;
+            MAX_STABLE_CHECKS = 10; // e.g., 5 checks * 2s interval = 10s of stability
+            SCRAPING_TIMEOUT = 120000; // 2 minutes global timeout for the whole scraping process
+            CHECK_INTERVAL = 1000; // Check every 1 second for stability or new comments
+            OBSERVER_QUIET_PERIOD = 2500; // Wait 2.5s after last mutation before considering stable
+            includeHiddenCommentsState = request.includeHidden || false;
+
+            // Clear any previous scraping timeout
+            if (scrapingTimeoutId) clearTimeout(scrapingTimeoutId);
+            if (checkIntervalId) clearInterval(checkIntervalId);
+
+
+            // Global timeout for the entire scraping process
+            scrapingTimeoutId = setTimeout(() => {
+                console.error("RedditScraper: Global scraping timeout reached!");
+                sendProgressUpdate("Scraping timed out globally.");
+                if (observer) observer.disconnect();
+                if (checkIntervalId) clearInterval(checkIntervalId);
+                // Ensure to respond if a promise was pending
+                if (rejectPromiseScraping) {
+                    rejectPromiseScraping({ error: "Global scraping timeout." });
+                } else if (currentSendResponse) { // <<<< USE STORED sendResponse
+                    currentSendResponse({ error: "Global scraping timeout occurred before promise setup." });
+                    currentSendResponse = null; // <<<< PREVENT REUSE
+                }
+            }, SCRAPING_TIMEOUT);
+
             scrapeRedditData(request.includeHidden)
                 .then(data => {
-                    console.log("Scraping complete. Post content snippet:", (data.post && data.post.content) ? data.post.content.substring(0, 200) + "..." : "[No post content]", "Comments found:", data.comments ? data.comments.length : 0);
-                    if (data.comments && data.comments.length > 0) {
-                        console.log("First comment snippet:", JSON.stringify(data.comments[0], (key, value) => key === 'replies' && Array.isArray(value) && value.length > 10 ? value.length + ' replies' : value, 2).substring(0, 300));
-                    }
-                    try {
-                        if (chrome.runtime.lastError) { 
-                            console.error("redditScraper: Port closed before attempting to send success response. Error:", chrome.runtime.lastError.message);
-                            return; 
-                        }
-                        sendResponse({status: "success", data: data});
-                    } catch (e) {
-                        console.warn("redditScraper: Error sending success response (port likely closed or other issue):", e.message);
+                    clearTimeout(scrapingTimeoutId);
+                    if (observer) observer.disconnect();
+                    if (checkIntervalId) clearInterval(checkIntervalId);
+                    console.log("RedditScraper: Scraping successful. Sending data back.");
+                    sendProgressUpdate("Scraping complete. Sending data.");
+                    if (currentSendResponse) { // <<<< USE STORED sendResponse
+                        currentSendResponse({ data: data });
+                        currentSendResponse = null; // <<<< PREVENT REUSE
                     }
                 })
                 .catch(error => {
-                    console.error("Error during scrapeRedditData:", error.message, error.stack);
-                    try {
-                        if (chrome.runtime.lastError) {
-                             console.error("redditScraper: Port closed before attempting to send error response. Error:", chrome.runtime.lastError.message);
-                            return;
-                        }
-                        sendResponse({status: "error", message: error.message || String(error), details: error.stack});
-                    } catch (e) {
-                        console.warn("redditScraper: Error sending error response (port likely closed or other issue):", e.message);
+                    clearTimeout(scrapingTimeoutId);
+                    if (observer) observer.disconnect();
+                    if (checkIntervalId) clearInterval(checkIntervalId);
+                    console.error("RedditScraper: Error during scraping:", error);
+                    sendProgressUpdate(`Scraping failed: ${error.message || error}`);
+                    if (currentSendResponse) { // <<<< USE STORED sendResponse
+                        currentSendResponse({ error: error.message || "Unknown error during scraping." });
+                        currentSendResponse = null; // <<<< PREVENT REUSE
                     }
                 });
-            return true; // Crucial: Indicates you will send a response asynchronously
+            
+            return true; // Indicate asynchronous response
+
+        } else if (request.action === "stopScrapingRequested") {
+            console.log("RedditScraper: Received stopScrapingRequested.");
+            sendProgressUpdate("Stop request received by scraper. Halting operations.");
+            if (observer) observer.disconnect();
+            if (scrapingTimeoutId) clearTimeout(scrapingTimeoutId);
+            if (checkIntervalId) clearInterval(checkIntervalId);
+            
+            // If the main scraping promise is active, reject it.
+            if (rejectPromiseScraping) {
+                rejectPromiseScraping({ status: "stopped", message: "Scraping stopped by user." });
+            } else {
+                // If scraping wasn't fully initialized but stop was requested.
+                console.warn("RedditScraper: Stop requested, but main scraping promise not active. Sending stop status anyway.");
+                 if (currentSendResponse) { // <<<< USE STORED sendResponse
+                    currentSendResponse({ status: "stopped", message: "Scraping stopped by user before full initialization." });
+                    currentSendResponse = null; // <<<< PREVENT REUSE
+                }
+            }
+            // No need to return true here if we've already responded or will respond via promise rejection.
+            // However, if the original 'scrapeReddit' call is still pending a response, this path might not correctly use its sendResponse.
+            // The logic above tries to handle this by rejecting the promise, which should trigger the .catch in scrapeReddit handler.
         }
-        // If the action is not "scrapeReddit", no response is sent, which is fine if not expected.
-        // However, it's good practice to return true if any path might be async,
-        // or explicitly return false if all paths are synchronous and don't sendResponse.
-        // For this specific listener, only "scrapeReddit" is async.
+        // Default: if no async operation, return false or nothing.
+        // For "stopScrapingRequested", if it's not tied to an initial scrapeReddit's sendResponse, it might not need to return true.
+        // But since scrapeReddit returns true, any other message handling should be careful.
+        // For now, only scrapeReddit is async.
     });
+    window.scrapeRedditData = scrapeRedditData;
+    console.log("Reddit Scraper script v2.3 initialized. scrapeRedditData is on window.");
 
 } else {
-    console.log("Reddit Scraper script already initialized. Skipping re-initialization.");
-    // If the listener is already attached, and a new message comes,
-    // it should still be processed by the existing listener.
-    // However, if scrapeRedditData relies on global state that isn't reset
-    // outside of the initialization block, that could be an issue.
-    // The current scrapeRedditData resets its own necessary state, so it should be fine.
+    console.log("Reddit Scraper script already initialized. New execution skipped.");
 }

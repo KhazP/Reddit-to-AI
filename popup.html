@@ -5,13 +5,24 @@
   <link rel="stylesheet" type="text/css" href="popup.css">
 </head>
 <body>
-  <h1>Reddit AI Tool</h1>
-  <button id="scrapeBtn">Scrape and Send to Gemini</button>
-  <div>
-    <input type="checkbox" id="includeHiddenToggle" name="includeHiddenToggle">
-    <label for="includeHiddenToggle">Include hidden/spam comments</label>
+  <div id="mainView">
+    <h1>Reddit AI Tool</h1>
+    <button id="scrapeBtn">Scrape and Send to Gemini</button>
+    <div id="statusDisplay" style="margin-top: 10px; min-height: 20px;"></div>
+    <div id="progressBarContainer" style="width: 100%; background-color: #ddd; margin-top: 5px; border-radius: 5px; display: none;">
+      <div id="progressBar" style="width: 0%; height: 10px; background-color: #4CAF50; border-radius: 5px; text-align: center; line-height: 10px; color: white; font-size: 8px;">
+      </div>
+    </div>
+    <div>
+      <input type="checkbox" id="includeHiddenToggle" name="includeHiddenToggle">
+      <label for="includeHiddenToggle">Include hidden/spam comments</label>
+    </div>
   </div>
-  <button id="optionsBtn" disabled>Options</button>
+  <button id="optionsBtn">Options</button>
+  </div>
+  <div id="optionsView" style="display: none;">
+    <!-- Options content will be loaded here -->
+  </div>
   <script src="popup.js"></script>
 </body>
 </html>

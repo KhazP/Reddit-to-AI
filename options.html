@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Reddit AITools Options</title>
+    <link rel="stylesheet" type="text/css" href="popup.css">
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 15px;
+            width: 400px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #e94e1b; /* Reddit orange */
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        input[type="range"] {
+            width: 100%;
+            margin-bottom: 5px;
+        }
+        .description {
+            font-size: 0.9em;
+            color: #555;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+        #attemptsValue {
+            font-weight: bold;
+            color: #e94e1b;
+        }
+        .save-status {
+            margin-top: 15px;
+            text-align: center;
+            color: green;
+            font-weight: bold;
+            height: 20px; /* Reserve space to prevent layout shift */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Extension Options</h2>
+        
+        <div>
+            <label for="loadMoreAttempts">"Load More Comments" Attempts: <span id="attemptsValue">75</span></label>
+            <input type="range" id="loadMoreAttempts" name="loadMoreAttempts" min="1" max="500" value="75">
+            <p class="description" id="sliderDescription">
+                Adjust the number of 'load more' attempts (1-500). Default: 75. Each step can load a variable number of comments. 75 steps is roughly 7500 words or 17k tokens.
+            </p>
+        </div>
+        <div class="save-status" id="saveStatus"></div>
+    </div>
+    <!-- Script is loaded here for standalone options, and by popup.js when options.html is injected -->
+    <!-- Adding the script tag back to ensure it loads in both contexts -->
+    <script src="options.js"></script>
+</body>
+</html>
