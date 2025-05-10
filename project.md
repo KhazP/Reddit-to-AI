@@ -9,11 +9,11 @@ The Reddit AITools Chrome extension is designed to scrape content from Reddit th
 
 ## 2. Core Functionality
 
-*   **Data Scraping**: Extracts post details (title, author, subreddit, content, images, links) and a hierarchical tree of comments from the active Reddit page.
+*   **Data Scraping**: Extracts post details (title, author, subreddit, content, all gallery images or a single prominent image, links) and a hierarchical tree of comments from the active Reddit page.
 *   **User Configuration**: Allows users to set the depth of comment scraping (via "load more attempts") and choose whether to include hidden or spam comments.
 *   **Process Management**: Initiates, manages, and allows stopping of the scraping process.
 *   **User Feedback**: Displays real-time status messages and a progress bar in the extension popup.
-*   **Integration with Gemini**: Opens Gemini in a new tab and (attempts to) paste the scraped data into the Gemini interface.
+*   **Integration with Gemini**: Opens Gemini in a new tab and (attempts to) paste the scraped data, including all scraped images, into the Gemini interface.
 
 ## 3. Components
 
@@ -91,10 +91,11 @@ The Reddit AITools Chrome extension is designed to scrape content from Reddit th
 *   **Purpose**: Injected into the selected AI platform's page to paste the scraped Reddit data.
 *   **Key Responsibilities**:
     *   Receiving the AI-specific configuration (name, URL, CSS selector) from `service_worker.js`.
-    *   Retrieving the stored Reddit data from `chrome.storage.local`.
-    *   Formatting the data into a string suitable for pasting.
+    *   Retrieving the stored Reddit data (including an array of image dataURLs) from `chrome.storage.local`.
+    *   Formatting the textual data into a string suitable for pasting.
     *   Locating the appropriate input area on the AI platform's page using the provided CSS selector. Implements a retry mechanism (e.g., for AI Studio) to handle cases where the target element might not be immediately available.
-    *   Pasting the formatted data into the input area.
+    *   Pasting the formatted textual data into the input area.
+    *   Iterating through the array of image dataURLs, converting each to a File object, and attempting to paste each image using simulated drag-and-drop events, with small delays between each image.
     *   Sending a status message back to `service_worker.js` indicating success or failure of the paste operation.
 
 ## 4. Workflow / Data Flow
@@ -194,6 +195,13 @@ The Reddit AITools Chrome extension is designed to scrape content from Reddit th
 *   **Syntax Error Resolution**: Addressed "Identifier 'scrapeRedditData' has already been declared" by removing duplicate function definitions in `redditScraper.js`.
 *   **UI Text Update**: "Scrape and Send to Gemini" button changed to "Scrape and Send".
 *   **AI Studio Integration**: Added support for AI Studio. Updated `aiPaster.js` with retry logic to improve reliability when pasting to AI Studio, addressing issues where the target input element might not be immediately available.
+*   **Image Handling (Enhanced for Galleries & Gemini Workaround)**:
+    *   Enhanced image scraping to identify and fetch all images from a Reddit post gallery (e.g., targeting `shreddit-gallery` elements or common `figure > img` patterns within the post content). If no gallery is detected, it falls back to finding a single prominent post image.
+    *   The `service_worker.js` now processes an array of image URLs collected by the scraper. It fetches each image, converts it to a dataURL, and stores these as an array of dataURLs.
+    *   `aiPaster.js` receives the array of image dataURLs and attempts to paste each image by iterating through the array, converting each to a File object, and simulating drag-and-drop events. A note is added to the pasted text if multiple images were scraped and are being pasted.
+    *   Added `https://*.redd.it/*` to `host_permissions` in `manifest.json` to resolve CORS issues when fetching images.
+    *   Due to difficulties with robust image pasting into Gemini, a disclaimer was added to `options.html` informing users of this limitation and recommending AI Studio for posts with images.
+    *   The default AI model was changed from Gemini to AI Studio in `service_worker.js`.
 
 ## 8. Technical Details
 

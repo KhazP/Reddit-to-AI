@@ -77,7 +77,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           chrome.tabs.sendMessage(activeTab.id, {
             action: 'scrapeReddit', // Ensured action is 'scrapeReddit'
             includeHidden: request.includeHidden
-          }, (scrapeResponse) => {
+          }, async (scrapeResponse) => { // Make the callback async
             if (chrome.runtime.lastError) {
               console.error('Service Worker: Error receiving data from redditScraper:', chrome.runtime.lastError.message);
               sendResponse({ status: 'Error: Scraping failed' });
@@ -87,9 +87,60 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             }
             if (scrapeResponse && scrapeResponse.data) {
               console.log('Service Worker: Received scraped data from redditScraper.js');
+              
+              let processedData = scrapeResponse.data;
+              // --- BEGIN IMAGE FETCHING AND CONVERSION (FOR MULTIPLE IMAGES) ---
+              if (processedData.post && processedData.post.imageUrls && Array.isArray(processedData.post.imageUrls) && processedData.post.imageUrls.length > 0) {
+                sendPopupStatus('Processing post image(s)...', 72, false);
+                const imageDataUrlsArray = [];
+                let imageCount = processedData.post.imageUrls.length;
+                let imagesProcessed = 0;
+
+                for (const imageUrl of processedData.post.imageUrls) {
+                  try {
+                    // Ensure the URL is absolute
+                    const absoluteImageUrl = new URL(imageUrl, activeTab.url).href;
+                    console.log('Service Worker: Fetching image data for:', absoluteImageUrl);
+                    const response = await fetch(absoluteImageUrl);
+                    if (!response.ok) {
+                      throw new Error(`Failed to fetch image: ${response.status} ${response.statusText} for ${absoluteImageUrl}`);
+                    }
+                    const blob = await response.blob();
+                    if (blob.type.startsWith('image/')) {
+                      const reader = new FileReader();
+                      const dataUrlPromise = new Promise((resolve, reject) => {
+                        reader.onloadend = () => resolve(reader.result);
+                        reader.onerror = (error) => reject(new Error(`FileReader error for ${absoluteImageUrl}: ${error}`));
+                        reader.readAsDataURL(blob);
+                      });
+                      imageDataUrlsArray.push(await dataUrlPromise);
+                      console.log('Service Worker: Image converted to dataURL:', absoluteImageUrl);
+                    } else {
+                      console.warn('Service Worker: Fetched resource is not a processable image type:', blob.type, absoluteImageUrl);
+                    }
+                  } catch (error) {
+                    console.error('Service Worker: Error fetching or processing an image:', error.message);
+                    // Optionally add a placeholder or skip this image
+                  }
+                  imagesProcessed++;
+                  sendPopupStatus(`Processing image ${imagesProcessed}/${imageCount}...`, 72 + Math.floor((imagesProcessed / imageCount) * 3), false); // Small progress update per image
+                }
+
+                if (imageDataUrlsArray.length > 0) {
+                  processedData.post.imageDataUrls = imageDataUrlsArray; // Pluralized
+                  console.log(`Service Worker: ${imageDataUrlsArray.length} image(s) converted to dataURLs.`);
+                } else {
+                  processedData.post.imageDataUrls = []; // Ensure it's an empty array if no images were processed
+                  console.log('Service Worker: No images were successfully converted to dataURLs.');
+                }
+              } else {
+                processedData.post.imageDataUrls = []; // Ensure it's an empty array if no imageUrls initially
+              }
+              // --- END IMAGE FETCHING AND CONVERSION ---
+              
               sendPopupStatus('Data collection finished. Storing data...', 75, false);
               // 4. Store data in chrome.storage.local
-              chrome.storage.local.set({ redditThreadData: scrapeResponse.data }, () => {
+              chrome.storage.local.set({ redditThreadData: processedData }, () => { // Use processedData
                 if (chrome.runtime.lastError) {
                   console.error('Service Worker: Error saving data to storage:', chrome.runtime.lastError.message);
                   sendResponse({ status: 'Error: Failed to save data' });
@@ -113,7 +164,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                   let aiKey = settingsResult.selectedAiModelKey;
                   let defaulted = false;
 
-                  const DEFAULT_MODEL_KEY = 'gemini';
+                  const DEFAULT_MODEL_KEY = 'aistudio'; // Changed default to AI Studio
                   const localAiModels = {
                       gemini: { name: "Gemini", url: "https://gemini.google.com/app", inputSelector: "rich-textarea div[contenteditable='true']" },
                       chatgpt: { name: "ChatGPT", url: "https://chatgpt.com/", inputSelector: "#prompt-textarea" },
@@ -142,13 +193,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                             console.log(`Service Worker: Corrected AI config for key '${aiKey}' saved to storage.`);
                         });
                     } else {
-                        console.log('Service Worker: Cannot recover from stored key. Defaulting to Gemini.');
+                        console.log('Service Worker: Cannot recover from stored key. Defaulting to AI Studio.'); // Updated log
                         aiKey = DEFAULT_MODEL_KEY;
                         aiConfig = localAiModels[DEFAULT_MODEL_KEY];
                         defaulted = true;
                         sendPopupStatus(`AI Config error. Defaulted to ${aiConfig.name}. Check options.`, 80, true);
                         chrome.storage.sync.set({ selectedAiModelKey: aiKey, selectedAiModelConfig: aiConfig }, () => {
-                            console.log('Service Worker: Saved default AI (Gemini) config to storage.');
+                            console.log('Service Worker: Saved default AI (AI Studio) config to storage.'); // Updated log
                         });
                     }
                   }
@@ -226,7 +277,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                       }
                     };
                     chrome.tabs.onUpdated.addListener(listener);
-                    sendResponse({ status: 'Scraping initiated, Gemini tab opened.' }); // Initial response to popup click
+                    sendResponse({ status: 'Scraping initiated, AI tab opened.' }); // Generic message
                     // sendPopupStatus('Gemini tab opening...', 85); // Already covered
                     // Note: isScraping is reset inside the paste logic or its error handlers
                   });

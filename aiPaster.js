@@ -37,7 +37,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       if (data) {
         console.log('AI Paster: Data retrieved from storage.');
         const formattedText = formatDataForPasting(data);
-        pasteIntoChatbox(formattedText, aiConfig.inputSelector, aiConfig.name, sendResponse);
+        // Get imageDataUrls (plural) - it should be an array
+        const imageDataUrls = (data.post && Array.isArray(data.post.imageDataUrls)) ? data.post.imageDataUrls : [];
+
+        // Call the modified paste function, passing the array
+        pasteTextAndImage(formattedText, imageDataUrls, aiConfig.inputSelector, aiConfig.name, sendResponse);
       } else {
         console.error('AI Paster: No data found in storage.');
         sendResponse({ status: 'Error: No data in storage' });
@@ -108,8 +112,11 @@ function formatDataForPasting(data) {
   formattedString += `${data.post.content || data.post.textContent || 'No text content for the post.'}\\n\\n`; // Added data.post.content as primary
 
   if (data.post.imageUrls && data.post.imageUrls.length > 0) {
-    formattedString += `POST IMAGE URLS:\\n`;
+    formattedString += `POST IMAGE URLS (${data.post.imageUrls.length} found):\\n`;
     data.post.imageUrls.forEach(url => formattedString += `- ${url}\\n`);
+    if (data.post.imageDataUrls && data.post.imageDataUrls.length > 1) {
+        formattedString += `(Note: Multiple images were scraped. The first image will be attempted for pasting.)\\n`;
+    }
     formattedString += `\\n`;
   }
 
@@ -129,6 +136,30 @@ function formatDataForPasting(data) {
   console.log('AI Paster: Data formatted.');
   // console.log(formattedString); // For debugging the formatted string
   return formattedString;
+}
+
+// Helper function to convert dataURL to File object
+function dataURLtoFile(dataurl, filename) {
+    if (!dataurl) return null;
+    try {
+        let arr = dataurl.split(','),
+            mimeMatch = arr[0].match(/:(.*?);/);
+        if (!mimeMatch || mimeMatch.length < 2) {
+            console.error('AI Paster: Could not parse MIME type from dataURL.');
+            return null;
+        }
+        let mime = mimeMatch[1],
+            bstr = atob(arr[1]),
+            n = bstr.length,
+            u8arr = new Uint8Array(n);
+        while (n--) {
+            u8arr[n] = bstr.charCodeAt(n);
+        }
+        return new File([u8arr], filename, { type: mime });
+    } catch (e) {
+        console.error('AI Paster: Error converting dataURL to File:', e);
+        return null;
+    }
 }
 
 async function typeText(element, text) {
@@ -167,30 +198,85 @@ async function typeText(element, text) {
 }
 
 
-async function pasteIntoChatbox(text, selector, aiName, sendResponse) {
-  console.log(`AI Paster: Attempting to paste into ${aiName} using selector: ${selector}`);
+async function pasteTextAndImage(text, imageDataUrls, selector, aiName, sendResponse) {
+  console.log(`AI Paster: Attempting to paste text and potentially image(s) into ${aiName} using selector: ${selector}`);
+  if (imageDataUrls && imageDataUrls.length > 0) {
+    console.log(`AI Paster: Received ${imageDataUrls.length} image data URLs.`);
+  }
   
   let attempts = 0;
   const maxAttempts = 10; // Try for 5 seconds (10 attempts * 500ms interval)
   const intervalTime = 500; // 0.5 seconds
 
-  const tryPasting = async () => {
+  const tryPastingContent = async () => {
     const targetElement = document.querySelector(selector);
     if (targetElement) {
       console.log('AI Paster: Target element found:', targetElement);
+      let pasteStatusMessage = "";
+
       try {
+        // 1. Paste Text
         await typeText(targetElement, text);
-        console.log(`AI Paster: Successfully pasted content into ${aiName}.`);
-        sendResponse({ status: `Pasted content into ${aiName}!` });
+        console.log(`AI Paster: Successfully pasted text content into ${aiName}.`);
+        pasteStatusMessage = `Pasted text into ${aiName}.`;
+
+        // 2. Paste Image if imageDataUrls is present and has items
+        if (imageDataUrls && imageDataUrls.length > 0) {
+          console.log(`AI Paster: ${imageDataUrls.length} imageDataUrl(s) found, attempting to paste all.`);
+          let imagesPastedSuccessfully = 0;
+          let imagesAttempted = 0;
+
+          for (const imageDataUrl of imageDataUrls) {
+            imagesAttempted++;
+            const imageFile = dataURLtoFile(imageDataUrl, `reddit_post_image_${imagesAttempted}.png`);
+            if (imageFile) {
+              try {
+                targetElement.focus(); // Ensure the input element is focused
+
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(imageFile);
+
+                targetElement.dispatchEvent(new DragEvent('dragenter', { bubbles: true, cancelable: true, dataTransfer: dataTransfer }));
+                targetElement.dispatchEvent(new DragEvent('dragover', { bubbles: true, cancelable: true, dataTransfer: dataTransfer }));
+                
+                await new Promise(resolve => setTimeout(resolve, 200)); // Increased delay slightly for multiple images
+
+                targetElement.dispatchEvent(new DragEvent('drop', { bubbles: true, cancelable: true, dataTransfer: dataTransfer }));
+                
+                console.log(`AI Paster: Image ${imagesAttempted}/${imageDataUrls.length} drop event dispatched for ${aiName}.`);
+                imagesPastedSuccessfully++;
+                // Optional: Add a longer delay if sites have trouble with rapid image additions
+                if (imageDataUrls.length > 1 && imagesAttempted < imageDataUrls.length) {
+                    await new Promise(resolve => setTimeout(resolve, 500)); // Wait half a second before next image
+                }
+
+              } catch (imgError) {
+                console.error(`AI Paster: Error during image pasting for image ${imagesAttempted}/${imageDataUrls.length} for ${aiName}:`, imgError);
+              }
+            } else {
+              console.warn(`AI Paster: Could not convert imageDataUrl to File object for image ${imagesAttempted}/${imageDataUrls.length}.`);
+            }
+          }
+
+          if (imagesPastedSuccessfully > 0) {
+            pasteStatusMessage += ` ${imagesPastedSuccessfully}/${imageDataUrls.length} image(s) pasting attempted.`;
+          } else {
+            pasteStatusMessage += ` Image pasting attempted for ${imageDataUrls.length} image(s), but none were successfully processed or dispatched.`;
+          }
+
+        } else {
+            console.log('AI Paster: No image data URLs provided or array is empty.');
+        }
+        sendResponse({ status: pasteStatusMessage });
       } catch (error) {
         console.error(`AI Paster: Error during paste operation for ${aiName}:`, error);
-        sendResponse({ status: `Error pasting into ${aiName}: ${error.message}` });
+        sendResponse({ status: `Error pasting content into ${aiName}: ${error.message}` });
       }
     } else {
       attempts++;
       if (attempts < maxAttempts) {
         console.log(`AI Paster: Target element not found for ${aiName}. Attempt ${attempts}/${maxAttempts}. Retrying in ${intervalTime}ms...`);
-        setTimeout(tryPasting, intervalTime);
+        setTimeout(tryPastingContent, intervalTime);
       } else {
         console.error(`AI Paster: Target element not found for ${aiName} with selector: ${selector} after ${maxAttempts} attempts.`);
         sendResponse({ status: `Error: ${aiName} chat input not found after ${maxAttempts} attempts.` });
@@ -198,7 +284,7 @@ async function pasteIntoChatbox(text, selector, aiName, sendResponse) {
     }
   };
 
-  tryPasting();
+  tryPastingContent();
 }
 
 // Initial log to confirm script injection

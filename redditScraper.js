@@ -197,15 +197,67 @@ if (typeof window.redditScraperInitialized === 'undefined') {
         post.imageUrls = [];
         post.linkUrls = []; // Initialize linkUrls
 
-        console.log("Attempting to extract images and videos from postElement...");
-        // Image extraction (ensure these are specific to post content, not UI)
+        console.log("Attempting to extract images (gallery-first approach)...");
+
+        let galleryFound = false;
+
+        // Attempt 1: shreddit-gallery
+        const shredditGallery = postElement.querySelector('shreddit-gallery');
+        if (shredditGallery) {
+            console.log("Found shreddit-gallery element.");
+            // Prefer images with class 'media-lightbox-img', then other common patterns
+            shredditGallery.querySelectorAll('ul li figure img.media-lightbox-img, ul li img.media-lightbox-img, figure img.media-lightbox-img, img.media-lightbox-img, ul li figure img, figure img, img').forEach(img => {
+                let imgSrc = img.src;
+                // Ensure src is valid, not a data URI, and the element is likely visible/part of content
+                if (imgSrc && !imgSrc.startsWith('data:') && img.offsetParent !== null) {
+                    if (!post.imageUrls.includes(imgSrc)) {
+                        post.imageUrls.push(imgSrc);
+                        console.log("Extracted image from shreddit-gallery:", imgSrc);
+                        galleryFound = true;
+                    }
+                }
+            });
+        }
+
+        // Attempt 2: Generic gallery structure (multiple figures with images with 'media-lightbox-img' or similar)
+        // This runs if shreddit-gallery not found or yielded no images.
+        if (!galleryFound) {
+            console.log("shreddit-gallery not found or no images extracted. Trying generic figure-based gallery detection.");
+            const potentialGalleryImages = [];
+            // Look for figures directly under the post element or common content wrappers, prioritizing 'media-lightbox-img'
+            postElement.querySelectorAll('figure > img.media-lightbox-img, div[class*="gallery"] img, ul[class*="gallery"] li img, figure > img').forEach(img => {
+                 let imgSrc = img.src;
+                 if (imgSrc && !imgSrc.startsWith('data:') && img.offsetParent !== null) {
+                    // Check if the image source seems like a unique image and not a tiny icon/avatar by checking dimensions if easily available, or rely on context
+                    // For now, we'll accept it if it's visible and has a source.
+                    if (!potentialGalleryImages.includes(imgSrc)) {
+                        potentialGalleryImages.push(imgSrc);
+                    }
+                }
+            });
+
+            if (potentialGalleryImages.length > 0) { // If any images found this way, consider it a success for this step
+                potentialGalleryImages.forEach(imgSrc => {
+                    if (!post.imageUrls.includes(imgSrc)) { // Final check before adding to main list
+                        post.imageUrls.push(imgSrc);
+                        console.log("Extracted image from generic figure/gallery structure:", imgSrc);
+                        // galleryFound = true; // Set if we are sure this is a gallery, or just collecting all images
+                    }
+                });
+                if (potentialGalleryImages.length > 1) galleryFound = true; // Mark as gallery if multiple distinct images
+            }
+        }
+
+        // Fallback / Augmentation: General image selectors (catches single images, linked images, etc.)
+        // This will also catch images if gallery detection failed or if there are other images outside detected galleries.
+        console.log("Running fallback/additional image extraction logic.");
         const imageSelectors = [
-            'shreddit-image', // Modern image element
-            'img[alt="Post image"]', 
-            'figure img', 
-            'div[data-test-id="post-content"] img',
-            'a[href*=".jpg"], a[href*=".png"], a[href*=".gif"]' // Links to images
+            'shreddit-image', // Modern image element (might have src attribute)
+            'img[alt*="Post image" i], img[alt*="gallery image" i], img[data-testid="post-image"]', // Common alt texts and test ids
+            'div[data-testid="post-content"] img', // Images within general post content
+            'a[href$=".jpg" i], a[href$=".png" i], a[href$=".gif" i], a[href$=".jpeg" i], a[href$=".webp" i]' // Links to images (case-insensitive)
         ];
+
         postElement.querySelectorAll(imageSelectors.join(', ')).forEach(imgOrLink => {
             let imgSrc = '';
             if (imgOrLink.tagName === 'SHREDDIT-IMAGE' && imgOrLink.getAttribute('src')) {
@@ -213,15 +265,41 @@ if (typeof window.redditScraperInitialized === 'undefined') {
             } else if (imgOrLink.tagName === 'IMG' && imgOrLink.src && !imgOrLink.src.startsWith('data:')) {
                 imgSrc = imgOrLink.src;
             } else if (imgOrLink.tagName === 'A' && imgOrLink.href) {
-                imgSrc = imgOrLink.href;
+                if (/\.(jpeg|jpg|gif|png|webp)$/i.test(imgOrLink.href)) {
+                    imgSrc = imgOrLink.href;
+                }
             }
 
-            if (imgSrc && imgOrLink.offsetParent !== null) { // Check if visible
-                 // contentHTML += `<p><img src="${imgSrc}" alt="${imgOrLink.alt || 'post image'}"></p>`;
-                 if (!post.imageUrls.includes(imgSrc)) post.imageUrls.push(imgSrc);
-                 console.log("Extracted image URL:", imgSrc);
+            // For img elements, check visibility; for SHREDDIT-IMAGE and A, primarily check if src was resolved.
+            let isLikelyContentImage = (imgOrLink.tagName === 'IMG' && imgOrLink.offsetParent !== null) || 
+                                     (imgOrLink.tagName === 'SHREDDIT-IMAGE' && imgSrc) ||
+                                     (imgOrLink.tagName === 'A' && imgSrc);
+
+            if (imgSrc && isLikelyContentImage) {
+                if (!post.imageUrls.includes(imgSrc)) {
+                    post.imageUrls.push(imgSrc);
+                    console.log("Extracted image via fallback/additional selector:", imgSrc, "using element:", imgOrLink.tagName);
+                }
             }
         });
+        
+        if (post.imageUrls.length > 0) {
+            // Deduplicate URLs just in case (e.g. http vs https, or with query params)
+            // A more robust deduplication might normalize URLs first.
+            const uniqueImageUrls = [];
+            const seenUrls = new Set();
+            for (const url of post.imageUrls) {
+                const normalizedUrl = new URL(url, window.location.origin).href; // Basic normalization
+                if (!seenUrls.has(normalizedUrl)) {
+                    uniqueImageUrls.push(url); // Push original URL
+                    seenUrls.add(normalizedUrl);
+                }
+            }
+            post.imageUrls = uniqueImageUrls;
+            console.log(`Total unique images extracted: ${post.imageUrls.length}`, post.imageUrls);
+        } else {
+            console.log("No images found for this post.");
+        }
 
         // Video extraction
         const videoSelectors = [
