@@ -26,10 +26,10 @@ window.initializeOptions = function() {
 
     // AI Model Configurations
     const aiModels = {
-        gemini: { name: "Gemini", url: "https://gemini.google.com/app", inputSelector: "rich-textarea div[contenteditable=\\'true\\']" }, // Assuming a generic selector for Gemini for now
-        chatgpt: { name: "ChatGPT", url: "https://chatgpt.com/", inputSelector: "div.ProseMirror[contenteditable=\\'true\\']#prompt-textarea" },
-        claude: { name: "Claude", url: "https://claude.ai/new", inputSelector: "div.ProseMirror[contenteditable=\\'true\\']" },
-        grok: { name: "Grok", url: "https://grok.com/", inputSelector: "textarea[aria-label=\\'Ask Grok anything\\']" }
+        gemini: { name: "Gemini", url: "https://gemini.google.com/app", inputSelector: "rich-textarea div[contenteditable='true']" },
+        chatgpt: { name: "ChatGPT", url: "https://chatgpt.com/", inputSelector: "#prompt-textarea" }, // Corrected selector
+        claude: { name: "Claude", url: "https://claude.ai/new", inputSelector: "div.ProseMirror[contenteditable='true']" },
+        aistudio: { name: "AI Studio", url: "https://aistudio.google.com/prompts/new_chat", inputSelector: "textarea[aria-label='Type something or pick one from prompt gallery']" }
     };
     const DEFAULT_AI_MODEL = 'gemini';
 
@@ -138,6 +138,11 @@ window.initializeOptions = function() {
             const selectedKey = event.target.value;
             const selectedConfig = aiModels[selectedKey];
             if (selectedConfig) {
+                // Ensure the selector being saved matches the one in service_worker.js for consistency
+                // This step is crucial if options.js and service_worker.js could have divergent selectors.
+                // However, with the current fix, they should be aligned.
+                // For absolute safety, one could fetch the definitive list from service_worker via a message,
+                // but for now, we ensure aiModels here is the source of truth for what options.js saves.
                 chrome.storage.sync.set({ selectedAiModelKey: selectedKey, selectedAiModelConfig: selectedConfig }, () => {
                     console.log('Selected AI Model saved:', selectedKey, selectedConfig);
                     if (saveStatusDisplay) {

@@ -15,7 +15,7 @@
     "https://gemini.google.com/*",
     "https://chatgpt.com/*",
     "https://claude.ai/*",
-    "https://grok.com/*"
+    "https://aistudio.google.com/*"
   ],
   "action": {
     "default_popup": "popup.html",

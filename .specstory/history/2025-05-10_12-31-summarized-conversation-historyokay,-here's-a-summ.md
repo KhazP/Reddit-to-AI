@@ -185,13 +185,61 @@ This should ensure that `aiPaster.js` always receives the most up-to-date select
 
 _**User**_
 
+ok chatgpt and claude worked, grok didn't. Don't mention grok in projects md. Update prject md with the things we've implemented.
+
+---
+
+_**Assistant**_
+
+Okay, I'll remove Grok, add AI Studio, and update your project documentation.
+
+First, I'll modify `service_worker.js` to reflect these changes.
+For AI Studio, I'll use the selector `textarea[aria-label="Type something or pick one from prompt gallery"]` as it's more robust than the full JS path.
+
+ 
+````
+
+````
+Okay, I've updated `service_worker.js` to remove Grok and add AI Studio with the selector `textarea[aria-label='Type something or pick one from prompt gallery']`.
+
+Next, I'll add the comment to `options.html` and then update `project.md`.
+ 
+````
+
+````
+
+````
+
+````
+Okay, I've made the following changes:
+
+1.  **`service_worker.js`**:
+    *   Removed "Grok" from the `localAiModels` object.
+    *   Added "AI Studio" to `localAiModels` with the URL `https://aistudio.google.com/prompts/new_chat` and the input selector `textarea[aria-label='Type something or pick one from prompt gallery']`.
+
+2.  **`options.html`**:
+    *   Added an HTML comment `<!-- Use AI Studio for posts with videos. -->` below the AI model selection dropdown's description.
+
+3.  **`project.md`**:
+    *   Removed mentions of "Grok".
+    *   Added "AI Studio" to the list of supported AI platforms in sections 3.5, 6, and 7.
+    *   Updated section 7 ("Key Features") to include:
+        *   "Selector Mismatch Resolution: Implemented logic in `service_worker.js` to ensure `aiPaster.js` receives the correct, most up-to-date CSS selector for the target AI platform, even if an outdated one was in storage. This fixed issues where `aiPaster.js` couldn't find the input element due to using an old selector."
+        *   "Configuration Property Name Correction: Corrected `aiPaster.js` to use `aiConfig.inputSelector` instead of the old `aiConfig.selector`, aligning it with `service_worker.js`."
+
+These changes should reflect the removal of Grok, the addition of AI Studio, and the recent bug fixes we've implemented.
+
+---
+
+_**User**_
+
 ok chatgpt and claude worked, grok didn't. I didn't want grok anyway so lets remove grok.
 
-Then lets add google ai studio with the name "AI Studio".
+Then lets add google ai studio with the name "AI Studio". Website: https://aistudio.google.com/prompts/new_chat
 
 The chat element is: <textarea _ngcontent-ng-c2839855662="" rows="1" class="textarea gmat-body-medium ng-valid ng-touched ng-dirty" placeholder="" spellcheck="true" aria-label="Type something or pick one from prompt gallery"></textarea>
 
-full xpath: /body/app-root/ms-app/div/div/div[3]/div/span/ms-prompt-switcher/ms-chunk-editor/section/div/div/ms-zero-state/div[2]/div/footer/ms-prompt-input-wrapper/div/div/div/div[1]/ms-chunk-input/section/ms-text-chunk/ms-autosize-textarea/textarea
+full xpath: /app-root/ms-app/div/div/div[3]/div/span/ms-prompt-switcher/ms-chunk-editor/section/div/div/ms-zero-state/div[2]/div/footer/ms-prompt-input-wrapper/div/div/div/div[1]/ms-chunk-input/section/ms-text-chunk/ms-autosize-textarea/textarea
 
 js path: document.querySelector("body > app-root > ms-app > div > div > div.layout-wrapper.ng-tns-c2929432199-0 > div > span > ms-prompt-switcher > ms-chunk-editor > section > div > div > ms-zero-state > div.input-placeholder.ng-tns-c3991213382-6 > div > footer > ms-prompt-input-wrapper > div > div > div > div.text-wrapper > ms-chunk-input > section > ms-text-chunk > ms-autosize-textarea > textarea")
 
@@ -203,9 +251,192 @@ In options, under the ai selector, add a comment saying, use Ai Studio for posts
 
 _**Assistant**_
 
-Okay, I can help you with that.
+The changes you requested—removing Grok, adding AI Studio with the specified details (name, URL, and input selector `textarea[aria-label='Type something or pick one from prompt gallery']`), and adding the comment in `options.html`—were implemented in the previous step.
 
-First, I'll remove Grok and add AI Studio to your `service_worker.js` file. For AI Studio, I'll use the URL 
+To summarize:
+1.  **Grok** has been removed from the list of available AI models in `service_worker.js` and from the documentation in `project.md`.
+2.  **AI Studio** has been added to `service_worker.js` with the correct configuration and also documented in `project.md`.
+3.  The comment `<!-- Use AI Studio for posts with videos. -->` has been added below the AI model selector in `options.html`.
+4.  `project.md` was also updated to reflect these changes and other recent fixes.
+
+These modifications should now be active in your extension's code.
+
+---
+
+_**User**_
+
+grok hasnt been deleted yet, and grok opens gemini website not ai studio
+
+---
+
+_**Assistant**_
+
+You are absolutely right! My apologies. It looks like the changes to `localAiModels` were made in `service_worker.js` but not in `options.js`.
+
+The `options.js` file also contains a definition of `aiModels` which it uses to populate the dropdown in the options screen. If this isn't updated, the options screen will still show Grok and won't show AI Studio, and selecting an AI model might save an incorrect configuration or point to the wrong URL if the user's stored settings are out of sync with `service_worker.js`.
+
+Let me fix that now. 
+````
+
+````
+You are absolutely right! My apologies. I had made the changes in `service_worker.js` and `project.md` but missed updating the `aiModels` object within `options.js`. This would cause the discrepancy you observed where the options page might still show "Grok" or save an incorrect configuration for AI Studio if selected.
+
+I have now updated `options.js` to:
+1.  Remove "Grok" from its internal `aiModels` object.
+2.  Add "AI Studio" with the correct name, URL, and the input selector `textarea[aria-label='Type something or pick one from prompt gallery']`.
+3.  Ensured that the selector for "ChatGPT" is the simplified `#prompt-textarea` to match the correction made in `service_worker.js`.
+
+This will ensure that `options.js` (which populates the dropdown and saves the selection) is perfectly aligned with `service_worker.js` (which uses the selection).
+
+Thank you for catching that oversight!
+
+---
+
+_**User**_
+
+Service Worker: Failed to inject aiPaster.js into AI Studio Cannot access contents of url "https://aistudio.google.com/prompts/new_chat". Extension manifest must request permission to access this host.
+Context
+service_worker.js
+Stack Trace
+service_worker.js:180 (anonymous function)
+
+---
+
+_**Assistant**_
+
+You're right, the extension needs explicit permission in the `manifest.json` file to interact with `https://aistudio.google.com/`.
+
+I'll add that permission now. You're right, the error message clearly states the problem: the extension doesn't have permission to access `https://aistudio.google.com`. This is configured in the `manifest.json` file.
+
+I'll update the `host_permissions` in your `manifest.json` to include the AI Studio URL and remove the Grok URL, as Grok is no longer supported. 
+````
+
+````
+You're correct. The error message "Cannot access contents of url "https://aistudio.google.com/prompts/new_chat". Extension manifest must request permission to access this host." clearly indicates that the `manifest.json` file is missing the required host permission for `aistudio.google.com`.
+
+I've updated the `host_permissions` array in your `manifest.json` to:
+1.  Add `"https://aistudio.google.com/*"`
+2.  Remove `"https://grok.com/*"` (as Grok is no longer supported)
+
+After these changes, you'll need to reload your extension in Chrome for the new permissions to take effect. This should resolve the injection failure for AI Studio.
+
+---
+
+_**User**_
+
+AI Paster: Target element not found for AI Studio with selector: textarea[aria-label='Type something or pick one from prompt gallery']
+Context
+https://aistudio.google.com/prompts/new_chat
+Stack Trace
+aiPaster.js:185 (pasteIntoChatbox)
+aiPaster.js:40 (anonymous function)
+
+    console.error(`AI Paster: Target element not found for ${aiName} with selector: ${selector}`);
+
+What can I do t ogive you more info?
+
+---
+
+_**Assistant**_
+
+Okay, I understand the error. It means that the script `aiPaster.js` cannot find the HTML element on the AI Studio page that matches the CSS selector `textarea[aria-label='Type something or pick one from prompt gallery']`.
+
+To help me figure out what's going on, please follow these steps:
+
+1.  **Trigger the error again**: Run your extension so that it opens AI Studio and tries to paste, causing the error "AI Paster: Target element not found..." to appear in your browser's developer console.
+2.  **Inspect the AI Studio page**: With the AI Studio page still open and the error visible in the console, right-click on the main chat input area (where you would normally type your prompt) and select "Inspect" or "Inspect Element" from the context menu.
+3.  **Examine the element's HTML in the developer tools**:
+    *   The developer tools panel will open, usually highlighting the HTML for the element you right-clicked.
+    *   Confirm if this element is a `<textarea>`.
+    *   Look for an attribute named `aria-label`.
+    *   If it has an `aria-label`, check if its value is exactly `"Type something or pick one from prompt gallery"`.
+4.  **Copy the element's HTML**:
+    *   If you find the element and its attributes seem to match what the script expects, or if you find what you believe is the correct input element but its attributes are different (e.g., a different `aria-label` value, or it's not a `textarea`), right-click on that element in the HTML view within the developer tools.
+    *   Select "Copy" -> "Copy outerHTML".
+5.  **Share the information with me**:
+    *   Paste the copied outerHTML here.
+    *   Let me know if the `aria-label` matched the expected value, or what its value was if it was different. If it wasn't a `<textarea>` element, please describe what type of element it was.
+
+This information will help determine if the selector needs to be adjusted or if there's another issue, like the element not being ready when the script tries to access it.
+
+---
+
+_**User**_
+
+Based on the inspected element, I can confirm the following:
+
+The element is a <textarea>.
+It does have an aria-label attribute.
+The value of the aria-label is exactly "Type something or pick one from prompt gallery".
+This means that the CSS selector textarea[aria-label='Type something or pick one from prompt gallery'] should be able to find this specific element on the page, at least when the page is in the state you're inspecting.
+
+Here is the outerHTML of the element:
+
+Code:
+<textarea _ngcontent-ng-c2839855662="" rows="1" class="textarea gmat-body-medium ng-pristine ng-valid ng-touched" placeholder="" spellcheck="true" aria-label="Type something or pick one from prompt gallery"></textarea>
+
+<textarea _ngcontent-ng-c2839855662="" rows="1" class="textarea gmat-body-medium ng-pristine ng-valid ng-touched" placeholder="" spellcheck="true" aria-label="Type something or pick one from prompt gallery"></textarea>
+Use code snippets with caution
+
+Since the selector matches the element that is present, the error "AI Paster: Target element not found..." might be occurring because:
+
+Timing: The script might be trying to find the element before it has been fully rendered on the page.
+Context: The script might be running in a different context (like an iframe) where the element isn't directly accessible in the main document.
+Page State: The element might not be present or visible under certain conditions when the script runs, even if it appears when you manually inspect it.
+To address this, you could try:
+
+Adding a delay or waiting mechanism in your script to ensure the page is fully loaded and the element is present before attempting to find it.
+Verifying the execution context of your script to make sure it has access to the main document where the textarea resides.
+Checking the page state when the script runs to see if there are conditions that might prevent the textarea from being present or having the expected attributes.
+
+---
+
+_**Assistant**_
+
+Thank you for providing the outerHTML and confirming the element's attributes. This is very helpful!
+
+Since the selector `textarea[aria-label='Type something or pick one from prompt gallery']` correctly matches the element when you inspect it, the most likely cause for the "Target element not found" error is indeed a **timing issue**. The `aiPaster.js` script is probably executing and trying to find the textarea *before* AI Studio has fully rendered it on the page.
+
+To address this, I'll modify `aiPaster.js` to wait for the element to be present before attempting to paste the text. I'll implement a polling mechanism that checks for the element at regular intervals for a short period.
+
+Here's how I'll update `aiPaster.js`:
+1.  Modify the `pasteIntoChatbox` function.
+2.  Inside `pasteIntoChatbox`, before trying to select the element, I'll add a loop that repeatedly tries to find the element using `document.querySelector`.
+3.  This loop will run a few times with a short delay between attempts (e.g., try every 100ms for up to 2 seconds).
+4.  If the element is found, the script will proceed to paste the text.
+5.  If the element is still not found after several attempts, it will log the original error.
+
+ You're right, the fact that the selector correctly identifies the element when you inspect it, but fails when the script runs, strongly suggests a timing issue. The script is likely executing `document.querySelector(selector)` before the AI Studio page has fully rendered the textarea element.
+
+To address this, I'll modify the `pasteIntoChatbox` function in `aiPaster.js` to implement a waiting mechanism. It will repeatedly try to find the element for a certain duration before giving up. This is a common strategy for dealing with dynamically loaded content.
+
+Here's how I'll adjust the `aiPaster.js` file:
+ 
+````
+
+````
+Okay, since the selector is correct and the element is present as expected when you inspect it, a timing issue is indeed the most likely culprit. The script might be executing before the AI Studio page has fully rendered the textarea element.
+
+I'll modify the `pasteIntoChatbox` function in `aiPaster.js` to add a retry mechanism. It will attempt to find the element a few times with a short delay if it's not found immediately. This should give the page more time to load the element.
+
+I've updated `aiPaster.js` to include this retry logic. Please test the extension again with AI Studio. If the error persists, we can explore other possibilities.
+
+---
+
+_**User**_
+
+ok lets update project.md
+
+---
+
+_**Assistant**_
+
+Okay, I'll update `project.md` to reflect the recent changes, including the fix for the AI Studio pasting issue.
+ 
+````
+
+````
+I've updated `project.md` to reflect the latest changes, including the support for AI Studio and the retry mechanism added to `aiPaster.js`. The date has also been updated.
 
 ---
 

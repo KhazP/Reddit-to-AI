@@ -118,10 +118,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                       gemini: { name: "Gemini", url: "https://gemini.google.com/app", inputSelector: "rich-textarea div[contenteditable='true']" },
                       chatgpt: { name: "ChatGPT", url: "https://chatgpt.com/", inputSelector: "#prompt-textarea" },
                       claude: { name: "Claude", url: "https://claude.ai/new", inputSelector: "div.ProseMirror[contenteditable='true']" },
-                      grok: { name: "Grok", url: "https://grok.com/", inputSelector: "textarea[aria-label='Ask Grok anything']" }
+                      aistudio: { name: "AI Studio", url: "https://aistudio.google.com/prompts/new_chat", inputSelector: "textarea[aria-label='Type something or pick one from prompt gallery']" }
                   };
 
-                  // START OF NEWLY ADDED CODE BLOCK
                   // Ensure the most current inputSelector from localAiModels is used if different from storage
                   if (aiKey && localAiModels[aiKey] && aiConfig && aiConfig.inputSelector !== localAiModels[aiKey].inputSelector) {
                     console.warn(`Service Worker: Stored inputSelector for '${aiKey}' ("${aiConfig.inputSelector}") differs from local definition ("${localAiModels[aiKey].inputSelector}"). Updating.`);
@@ -131,7 +130,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                         console.log(`Service Worker: Corrected inputSelector for key '${aiKey}' has been saved to storage.`);
                     });
                   }
-                  // END OF NEWLY ADDED CODE BLOCK
 
                   if (!aiConfig || !aiConfig.url || !aiConfig.inputSelector || !aiKey || !localAiModels[aiKey]) {
                     console.warn('Service Worker: Invalid or missing AI configuration from storage. Attempting to recover or default.', 'Retrieved Key:', aiKey, 'Retrieved Config:', aiConfig);

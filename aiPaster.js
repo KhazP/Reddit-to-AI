@@ -169,22 +169,36 @@ async function typeText(element, text) {
 
 async function pasteIntoChatbox(text, selector, aiName, sendResponse) {
   console.log(`AI Paster: Attempting to paste into ${aiName} using selector: ${selector}`);
-  const targetElement = document.querySelector(selector);
+  
+  let attempts = 0;
+  const maxAttempts = 10; // Try for 5 seconds (10 attempts * 500ms interval)
+  const intervalTime = 500; // 0.5 seconds
 
-  if (targetElement) {
-    console.log('AI Paster: Target element found:', targetElement);
-    try {
+  const tryPasting = async () => {
+    const targetElement = document.querySelector(selector);
+    if (targetElement) {
+      console.log('AI Paster: Target element found:', targetElement);
+      try {
         await typeText(targetElement, text);
         console.log(`AI Paster: Successfully pasted content into ${aiName}.`);
         sendResponse({ status: `Pasted content into ${aiName}!` });
-    } catch (error) {
-        console.error(`AI Paster: Error during paste operation for ${aiName}:\\`, error);
+      } catch (error) {
+        console.error(`AI Paster: Error during paste operation for ${aiName}:`, error);
         sendResponse({ status: `Error pasting into ${aiName}: ${error.message}` });
+      }
+    } else {
+      attempts++;
+      if (attempts < maxAttempts) {
+        console.log(`AI Paster: Target element not found for ${aiName}. Attempt ${attempts}/${maxAttempts}. Retrying in ${intervalTime}ms...`);
+        setTimeout(tryPasting, intervalTime);
+      } else {
+        console.error(`AI Paster: Target element not found for ${aiName} with selector: ${selector} after ${maxAttempts} attempts.`);
+        sendResponse({ status: `Error: ${aiName} chat input not found after ${maxAttempts} attempts.` });
+      }
     }
-  } else {
-    console.error(`AI Paster: Target element not found for ${aiName} with selector: ${selector}`);
-    sendResponse({ status: `Error: ${aiName} chat input not found.` });
-  }
+  };
+
+  tryPasting();
 }
 
 // Initial log to confirm script injection

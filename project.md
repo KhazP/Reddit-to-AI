@@ -1,7 +1,7 @@
 # Reddit AITools Chrome Extension
 
 **Version:** (Specify current version if known, e.g., 2.4 based on `redditScraper.js` log)
-**Date:** May 7, 2025
+**Date:** May 10, 2025
 
 ## 1. Overview
 
@@ -68,7 +68,7 @@ The Reddit AITools Chrome extension is designed to scrape content from Reddit th
     *   Receiving progress updates from `redditScraper.js` and relaying them to `popup.js`.
     *   Storing the scraped data temporarily in `chrome.storage.local`.
     *   Retrieving the selected AI model configuration from `chrome.storage.sync`.
-    *   Opening a new tab for the selected AI platform (Gemini, ChatGPT, Claude, Grok).
+    *   Opening a new tab for the selected AI platform (Gemini, ChatGPT, Claude, AI Studio).
     *   Injecting `aiPaster.js` into the AI platform's tab once it's loaded.
     *   Passing the AI-specific configuration (e.g., CSS selector) to `aiPaster.js`.
     *   Cleaning up stored data after the process or if an error occurs/stop is requested.
@@ -93,7 +93,7 @@ The Reddit AITools Chrome extension is designed to scrape content from Reddit th
     *   Receiving the AI-specific configuration (name, URL, CSS selector) from `service_worker.js`.
     *   Retrieving the stored Reddit data from `chrome.storage.local`.
     *   Formatting the data into a string suitable for pasting.
-    *   Locating the appropriate input area on the AI platform's page using the provided CSS selector.
+    *   Locating the appropriate input area on the AI platform's page using the provided CSS selector. Implements a retry mechanism (e.g., for AI Studio) to handle cases where the target element might not be immediately available.
     *   Pasting the formatted data into the input area.
     *   Sending a status message back to `service_worker.js` indicating success or failure of the paste operation.
 
@@ -162,7 +162,7 @@ The Reddit AITools Chrome extension is designed to scrape content from Reddit th
 *   Accessible via the "Options" button in the popup (embedded) or directly if the extension settings are opened via Chrome's extension management page.
 *   **Controls**:
     *   **Slider for "Load More Comments" Attempts**: Allows users to set a value (e.g., 1-500, default 75). The current value is displayed.
-    *   **Dropdown for AI Model Selection**: Allows users to choose between Gemini (default), ChatGPT, Claude, and Grok.
+    *   **Dropdown for AI Model Selection**: Allows users to choose between Gemini (default), ChatGPT, Claude, and AI Studio.
     *   **Description**: Explains what the setting does and the implications of high/low values.
 
 ## 6. Configuration
@@ -172,7 +172,7 @@ The Reddit AITools Chrome extension is designed to scrape content from Reddit th
     *   Range: 1-500 (as per `options.html`)
 *   **Selected AI Model**: Configured via a dropdown in the options view. Determines which AI platform the data is sent to. Stored in `chrome.storage.sync` under keys `selectedAiModel` (string key) and `selectedAiModelConfig` (object with URL, selector, name).
     *   Default: Gemini
-    *   Options: Gemini, ChatGPT, Claude, Grok
+    *   Options: Gemini, ChatGPT, Claude, AI Studio
 *   **Include Hidden/Spam Comments**: Configured via a checkbox in the popup. This setting is passed from `popup.js` to `service_worker.js` and then to `redditScraper.js` for each scraping session. It's not persistently stored between sessions by default (state is read from checkbox at time of scrape).
 
 ## 7. Key Features
@@ -185,12 +185,15 @@ The Reddit AITools Chrome extension is designed to scrape content from Reddit th
 *   **Asynchronous Operations**: Uses Promises and `async/await` for non-blocking operations.
 *   **Modular Design**: Separates concerns into different scripts (popup UI, background logic, content scraping, pasting).
 *   **Dynamic Content Handling**: Uses `MutationObserver` in `redditScraper.js` to handle comments loaded dynamically.
-*   **Multi-AI Platform Support**: Allows users to select and send data to different AI models (Gemini, ChatGPT, Claude, Grok).
+*   **Multi-AI Platform Support**: Allows users to select and send data to different AI models (Gemini, ChatGPT, Claude, AI Studio).
 *   **Dynamic Paster Script**: `aiPaster.js` now handles pasting for multiple AI platforms based on configuration passed from the service worker.
 *   **Improved Progress Bar Accuracy**: Calculations in `service_worker.js` and `redditScraper.js` updated for more realistic progress representation, especially with high step values.
 *   **In-Popup Options**: Allows configuration changes directly within the popup without opening a new tab or a separate extension page.
+*   **Selector Mismatch Resolution**: Implemented logic in `service_worker.js` to ensure `aiPaster.js` receives the correct, most up-to-date CSS selector for the target AI platform, even if an outdated one was in storage. This fixed issues where `aiPaster.js` couldn't find the input element due to using an old selector.
+*   **Configuration Property Name Correction**: Corrected `aiPaster.js` to use `aiConfig.inputSelector` instead of the old `aiConfig.selector`, aligning it with `service_worker.js`.
 *   **Syntax Error Resolution**: Addressed "Identifier 'scrapeRedditData' has already been declared" by removing duplicate function definitions in `redditScraper.js`.
 *   **UI Text Update**: "Scrape and Send to Gemini" button changed to "Scrape and Send".
+*   **AI Studio Integration**: Added support for AI Studio. Updated `aiPaster.js` with retry logic to improve reliability when pasting to AI Studio, addressing issues where the target input element might not be immediately available.
 
 ## 8. Technical Details
 
