@@ -27,12 +27,12 @@ The Reddit AITools Chrome extension is designed to scrape content from Reddit th
     *   `action`: Defines the `popup.html` as the extension's popup UI.
     *   `options_page`: Specifies `options.html` for user configurations.
     *   `icons`: Paths to extension icons.
-    *   `host_permissions`: Likely includes `"*://*.reddit.com/*"` for script injection on Reddit pages and `"*://gemini.google.com/*"` for the Gemini paster script.
+    *   `host_permissions`: Includes `"*://*.reddit.com/*"` for script injection on Reddit pages and permissions for various AI platforms: `"https://gemini.google.com/*"`, `"https://chat.openai.com/*"`, `"https://claude.ai/*"`, `"https://grok.x.ai/*"`.
 
 ### 3.2. `popup.html` & `popup.css`
 *   **Purpose**: Defines the structure and style of the extension's popup window, which is the primary user interface.
 *   **Key Elements**:
-    *   "Scrape and Send to Gemini" button: Initiates the scraping process.
+    *   "Scrape and Send" button: Initiates the scraping process.
     *   "Stop Scraping" button: Appears during scraping to allow the user to halt the process.
     *   "Include hidden/spam comments" checkbox: A toggle for the user to control the type of comments scraped.
     *   Status display area: Shows textual feedback about the current operation.
@@ -49,12 +49,13 @@ The Reddit AITools Chrome extension is designed to scrape content from Reddit th
     *   Opening the extension's options page (`options.html`) when the 'Options' button is clicked.
 
 ### 3.4. `options.html` & `options.js`
-*   **Purpose**: Provide a user interface for configuring extension settings, primarily the number of "load more comments" attempts.
-*   **`options.html`**: Defines the structure of the options page, including a slider for `maxLoadMoreAttempts`.
+*   **Purpose**: Provide a user interface for configuring extension settings, including the number of "load more comments" attempts and selecting the target AI model.
+*   **`options.html`**: Defines the structure of the options page, including a slider for `maxLoadMoreAttempts` and a dropdown for AI model selection.
 *   **`options.js`**:
-    *   Loads the saved `maxLoadMoreAttempts` value from `chrome.storage.sync` when the page loads.
-    *   Saves the selected value to `chrome.storage.sync` when the user changes it.
+    *   Loads saved settings (`maxLoadMoreAttempts`, `selectedAiModel`) from `chrome.storage.sync`.
+    *   Saves selected values to `chrome.storage.sync` when the user changes them.
     *   Updates the displayed value next to the slider.
+    *   Manages AI model configurations (name, URL, CSS selector for input).
 
 ### 3.5. `service_worker.js` (Background Script)
 *   **Purpose**: Manages the extension's background tasks, acting as a central coordinator for the scraping process.
@@ -66,8 +67,10 @@ The Reddit AITools Chrome extension is designed to scrape content from Reddit th
     *   Receiving scraped data or error messages from `redditScraper.js`.
     *   Receiving progress updates from `redditScraper.js` and relaying them to `popup.js`.
     *   Storing the scraped data temporarily in `chrome.storage.local`.
-    *   Opening a new tab for Gemini.
-    *   Injecting `geminiPaster.js` into the Gemini tab once it's loaded.
+    *   Retrieving the selected AI model configuration from `chrome.storage.sync`.
+    *   Opening a new tab for the selected AI platform (Gemini, ChatGPT, Claude, Grok).
+    *   Injecting `aiPaster.js` into the AI platform's tab once it's loaded.
+    *   Passing the AI-specific configuration (e.g., CSS selector) to `aiPaster.js`.
     *   Cleaning up stored data after the process or if an error occurs/stop is requested.
     *   Handling the `stopScraping` request by setting a flag and attempting to notify the content script.
 
@@ -84,12 +87,13 @@ The Reddit AITools Chrome extension is designed to scrape content from Reddit th
     *   Handling requests from `service_worker.js` to stop scraping (`stopScrapingRequested` message), halting its operations and cleaning up (e.g., disconnecting observer, clearing timeouts).
     *   Sending the scraped data (or an error/stopped status) back to `service_worker.js`.
 
-### 3.7. `geminiPaster.js` (Content Script for Gemini)
-*   **Purpose**: Injected into the Gemini page to paste the scraped Reddit data.
+### 3.7. `aiPaster.js` (Content Script for AI Platforms, formerly `geminiPaster.js`)
+*   **Purpose**: Injected into the selected AI platform's page to paste the scraped Reddit data.
 *   **Key Responsibilities**:
+    *   Receiving the AI-specific configuration (name, URL, CSS selector) from `service_worker.js`.
     *   Retrieving the stored Reddit data from `chrome.storage.local`.
     *   Formatting the data into a string suitable for pasting.
-    *   Locating the appropriate input area on the Gemini page.
+    *   Locating the appropriate input area on the AI platform's page using the provided CSS selector.
     *   Pasting the formatted data into the input area.
     *   Sending a status message back to `service_worker.js` indicating success or failure of the paste operation.
 
@@ -98,7 +102,7 @@ The Reddit AITools Chrome extension is designed to scrape content from Reddit th
 1.  **Initiation**:
     *   User navigates to a Reddit thread and clicks the extension icon to open `popup.html`.
     *   User configures options if desired (via the embedded options view).
-    *   User clicks "Scrape and Send to Gemini" in `popup.html`.
+    *   User clicks "Scrape and Send" in `popup.html`.
 2.  **Popup to Service Worker**:
     *   `popup.js` sends a `scrapeReddit` message (with `includeHidden` state) to `service_worker.js`.
     *   `popup.js` updates its UI to show "Initiating scraping..." and disables the scrape button, shows the stop button.
@@ -114,15 +118,17 @@ The Reddit AITools Chrome extension is designed to scrape content from Reddit th
     *   Throughout this process, `redditScraper.js` sends `progressUpdate` messages (with status text and percentage) to `service_worker.js`.
 5.  **Content Script (Reddit) to Service Worker**:
     *   Once scraping is complete (or timed out/stopped), `redditScraper.js` sends the collected data (post and comment tree) or an error/stopped status message back to `service_worker.js`.
-6.  **Service Worker Processing & Gemini Interaction**:
+6.  **Service Worker Processing & AI Platform Interaction**:
     *   `service_worker.js` receives the data/status.
     *   If data is received, it's stored in `chrome.storage.local` under `redditThreadData`.
-    *   `service_worker.js` opens `https://gemini.google.com/app` in a new tab.
-    *   It waits for the Gemini tab to finish loading.
-    *   It then injects `geminiPaster.js` into the Gemini tab.
-7.  **Pasting on Gemini Page**:
-    *   `geminiPaster.js` retrieves `redditThreadData` from `chrome.storage.local`.
-    *   It formats the data and attempts to paste it into Gemini's input field.
+    *   `service_worker.js` retrieves the selected AI model configuration (URL, selector) from `chrome.storage.sync`.
+    *   `service_worker.js` opens the selected AI platform's URL (e.g., `https://gemini.google.com/app`, `https://chat.openai.com/`, etc.) in a new tab.
+    *   It waits for the AI platform's tab to finish loading.
+    *   It then injects `aiPaster.js` into the tab, passing the AI-specific configuration.
+7.  **Pasting on AI Platform Page**:
+    *   `aiPaster.js` receives the AI configuration (including the CSS selector for the input field).
+    *   It retrieves `redditThreadData` from `chrome.storage.local`.
+    *   It formats the data and attempts to paste it into the AI platform's input field using the provided selector.
     *   It sends a status message (e.g., "Pasting complete" or "Error pasting") back to `service_worker.js`.
 8.  **Finalization & Feedback**:
     *   `service_worker.js` receives the paste status.
@@ -155,14 +161,18 @@ The Reddit AITools Chrome extension is designed to scrape content from Reddit th
 ### 5.2. Options Page (`options.html`)
 *   Accessible via the "Options" button in the popup (embedded) or directly if the extension settings are opened via Chrome's extension management page.
 *   **Controls**:
-    *   **Slider for "Load More Comments" Attempts**: Allows users to set a value (e.g., 1-150, default 75). The current value is displayed.
+    *   **Slider for "Load More Comments" Attempts**: Allows users to set a value (e.g., 1-500, default 75). The current value is displayed.
+    *   **Dropdown for AI Model Selection**: Allows users to choose between Gemini (default), ChatGPT, Claude, and Grok.
     *   **Description**: Explains what the setting does and the implications of high/low values.
 
 ## 6. Configuration
 
 *   **Max Load More Attempts**: Configured via the options page/slider. Determines how many times the scraper tries to load more comments. Stored in `chrome.storage.sync` under the key `maxLoadMoreAttempts`.
     *   Default: 75
-    *   Range: 1-150 (as per `options.html`)
+    *   Range: 1-500 (as per `options.html`)
+*   **Selected AI Model**: Configured via a dropdown in the options view. Determines which AI platform the data is sent to. Stored in `chrome.storage.sync` under keys `selectedAiModel` (string key) and `selectedAiModelConfig` (object with URL, selector, name).
+    *   Default: Gemini
+    *   Options: Gemini, ChatGPT, Claude, Grok
 *   **Include Hidden/Spam Comments**: Configured via a checkbox in the popup. This setting is passed from `popup.js` to `service_worker.js` and then to `redditScraper.js` for each scraping session. It's not persistently stored between sessions by default (state is read from checkbox at time of scrape).
 
 ## 7. Key Features
@@ -175,25 +185,25 @@ The Reddit AITools Chrome extension is designed to scrape content from Reddit th
 *   **Asynchronous Operations**: Uses Promises and `async/await` for non-blocking operations.
 *   **Modular Design**: Separates concerns into different scripts (popup UI, background logic, content scraping, pasting).
 *   **Dynamic Content Handling**: Uses `MutationObserver` in `redditScraper.js` to handle comments loaded dynamically.
+*   **Multi-AI Platform Support**: Allows users to select and send data to different AI models (Gemini, ChatGPT, Claude, Grok).
+*   **Dynamic Paster Script**: `aiPaster.js` now handles pasting for multiple AI platforms based on configuration passed from the service worker.
+*   **Improved Progress Bar Accuracy**: Calculations in `service_worker.js` and `redditScraper.js` updated for more realistic progress representation, especially with high step values.
 *   **In-Popup Options**: Allows configuration changes directly within the popup without opening a new tab or a separate extension page.
 *   **Syntax Error Resolution**: Addressed "Identifier 'scrapeRedditData' has already been declared" by removing duplicate function definitions in `redditScraper.js`.
+*   **UI Text Update**: "Scrape and Send to Gemini" button changed to "Scrape and Send".
 
 ## 8. Technical Details
 
 *   **Platform**: Chrome Extension (Manifest V3)
 *   **Core Technologies**: JavaScript, HTML, CSS
 *   **Chrome APIs**: `chrome.runtime`, `chrome.tabs`, `chrome.scripting`, `chrome.storage`, `chrome.notifications`.
-*   **DOM Manipulation**: Extensive use for data extraction in `redditScraper.js` and `geminiPaster.js`.
-*   **Data Storage**: `chrome.storage.sync` for persistent options, `chrome.storage.local` for temporary data transfer between service worker and Gemini paster script.
+*   **DOM Manipulation**: Extensive use for data extraction in `redditScraper.js` and `aiPaster.js`.
+*   **Data Storage**: `chrome.storage.sync` for persistent options, `chrome.storage.local` for temporary data transfer between service worker and AI paster script.
 
 ## 9. Potential Future Enhancements
 
-*   More sophisticated Gemini interaction (e.g., pre-filling prompts, selecting specific Gemini models if API allows).
+*   More sophisticated AI interaction (e.g., pre-filling prompts, selecting specific models if API allows for the chosen platform).
 *   Allowing users to select which parts of the post/comments to scrape.
 *   Saving scraped data to a file directly.
 *   Support for other AI platforms beyond Gemini.
-*   Improved UI/UX for the popup and options.
-*   More robust error handling and recovery.
-*   Internationalization (i18n) for UI text.
-*   Automated expansion of collapsed comments in `redditScraper.js`.
 

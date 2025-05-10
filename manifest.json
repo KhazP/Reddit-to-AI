@@ -12,7 +12,10 @@
   ],
   "host_permissions": [
     "*://*.reddit.com/*",
-    "https://gemini.google.com/*"
+    "https://gemini.google.com/*",
+    "https://chatgpt.com/*",
+    "https://claude.ai/*",
+    "https://grok.com/*"
   ],
   "action": {
     "default_popup": "popup.html",

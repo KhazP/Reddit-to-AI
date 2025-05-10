@@ -61,6 +61,17 @@
                 Adjust the number of 'load more' attempts (1-500). Default: 75. Each step can load a variable number of comments. 75 steps is roughly 7500 words or 17k tokens.
             </p>
         </div>
+
+        <div>
+            <label for="aiModelSelect">Select AI Model:</label>
+            <select id="aiModelSelect" name="aiModelSelect">
+                <!-- Options will be populated by options.js -->
+            </select>
+            <p class="description">
+                Choose the AI platform to send the scraped data to.
+            </p>
+        </div>
+
         <div class="save-status" id="saveStatus"></div>
     </div>
     <!-- Script is loaded here for standalone options, and by popup.js when options.html is injected -->

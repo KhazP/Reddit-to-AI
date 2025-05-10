@@ -4,11 +4,26 @@ console.log('AI Paster: Loaded.');
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'executePaste') {
     console.log('AI Paster: Received executePaste command.');
+    // Log the entire request object to see what's coming through
+    try {
+      console.log('AI Paster: Full request object:', JSON.stringify(request, null, 2));
+    } catch (e) {
+      console.error('AI Paster: Could not stringify the full request object:', e);
+      console.log('AI Paster: Request object (raw):', request);
+    }
+
     const aiConfig = request.aiConfig;
-    if (!aiConfig || !aiConfig.selector) {
-        console.error('AI Paster: AI configuration or selector not provided.');
-        sendResponse({ status: 'Error: AI config missing' });
-        return false;
+    if (!aiConfig || !aiConfig.inputSelector) {
+        console.error('AI Paster: AI configuration or inputSelector not provided.');
+        // Log what was actually received as aiConfig
+        try {
+            console.log('AI Paster: Received aiConfig was:', JSON.stringify(aiConfig, null, 2));
+        } catch (e) {
+            console.error('AI Paster: Could not stringify the received aiConfig:', e);
+            console.log('AI Paster: Received aiConfig (raw):', aiConfig);
+        }
+        sendResponse({ status: 'Error: AI config missing or incomplete in aiPaster.js' });
+        return false; // Synchronous response for this error path
     }
     console.log('AI Paster: Using AI config:', aiConfig.name);
 
@@ -22,7 +37,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       if (data) {
         console.log('AI Paster: Data retrieved from storage.');
         const formattedText = formatDataForPasting(data);
-        pasteIntoChatbox(formattedText, aiConfig.selector, aiConfig.name, sendResponse);
+        pasteIntoChatbox(formattedText, aiConfig.inputSelector, aiConfig.name, sendResponse);
       } else {
         console.error('AI Paster: No data found in storage.');
         sendResponse({ status: 'Error: No data in storage' });

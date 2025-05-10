@@ -98,77 +98,140 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                   return;
                 }
                 console.log('Service Worker: Scraped data stored in chrome.storage.local.');
-                sendPopupStatus('Data stored. Opening Gemini...', 80, false);
-                // 5. Open Gemini in a new tab
-                chrome.tabs.create({ url: 'https://gemini.google.com/app', active: true }, (geminiTab) => {
-                  if (chrome.runtime.lastError || !geminiTab) {
-                    console.error('Service Worker: Failed to open Gemini tab.', chrome.runtime.lastError?.message);
-                    sendResponse({ status: 'Error: Failed to open Gemini tab' });
-                    sendPopupStatus('Error: Failed to open Gemini.', 80, true);
+                sendPopupStatus('Data stored. Opening AI Platform...', 80, false);
+
+                // 5. Retrieve selected AI model and open in a new tab
+                chrome.storage.sync.get(['selectedAiModelKey', 'selectedAiModelConfig'], (settingsResult) => {
+                  if (chrome.runtime.lastError) {
+                    console.error('Service Worker: Error retrieving AI model settings:', chrome.runtime.lastError.message);
+                    sendPopupStatus('Error: Could not get AI settings.', 80, true);
                     isScraping = false;
                     return;
                   }
-                  console.log('Service Worker: Gemini tab opened with ID:', geminiTab.id);
-                  sendPopupStatus('Gemini opened. Waiting for page to load...', 85, false);
-                  // 6. Listen for Gemini tab to complete loading then inject geminiPaster.js
-                  const listener = (tabId, changeInfo, tab) => {
-                    if (tabId === geminiTab.id && changeInfo.status === 'complete') {
-                      console.log('Service Worker: Gemini tab loaded. Injecting geminiPaster.js.');
-                      sendPopupStatus('Gemini loaded. Pasting content...', 90, false);
-                      chrome.scripting.executeScript({
-                        target: { tabId: geminiTab.id },
-                        files: ['geminiPaster.js']
-                      }, (pasteInjectionResults) => {
-                        try { // Inner try for paste logic
-                          if (chrome.runtime.lastError || !pasteInjectionResults || pasteInjectionResults.length === 0) {
-                            console.error('Service Worker: Failed to inject geminiPaster.js', chrome.runtime.lastError?.message);
-                            sendPopupStatus('Error: Could not paste into Gemini.', 90, true);
-                            chrome.notifications.create({
-                              type: 'basic',
-                              iconUrl: 'images/icon48.png',
-                              title: 'Reddit AI Tool',
-                              message: 'Could not paste into Gemini. The site might have updated. Data is in storage.'
-                            });
-                          } else {
-                            console.log('Service Worker: geminiPaster.js injected. It should now attempt to paste.');
-                            // sendPopupStatus('Pasting content into Gemini...'); // Already covered by 90%
-                            chrome.tabs.sendMessage(geminiTab.id, { action: 'executePaste' }, (pasteResponse) => {
-                              try { // Inner try for paste response
-                                if (chrome.runtime.lastError) {
-                                  console.error('Service Worker: Error during paste execution or no response:', chrome.runtime.lastError.message);
-                                  sendPopupStatus('Pasting may have failed. Check Gemini.', 95, true);
-                                } else if (pasteResponse && pasteResponse.status) {
-                                  console.log('Service Worker: Paste script responded:', pasteResponse.status);
-                                  sendPopupStatus(pasteResponse.status, 100, true); // Final status from paster
-                                } else {
-                                  sendPopupStatus('Pasting complete.', 100, true);
+
+                  let aiConfig = settingsResult.selectedAiModelConfig;
+                  let aiKey = settingsResult.selectedAiModelKey;
+                  let defaulted = false;
+
+                  const DEFAULT_MODEL_KEY = 'gemini';
+                  const localAiModels = {
+                      gemini: { name: "Gemini", url: "https://gemini.google.com/app", inputSelector: "rich-textarea div[contenteditable='true']" },
+                      chatgpt: { name: "ChatGPT", url: "https://chatgpt.com/", inputSelector: "#prompt-textarea" },
+                      claude: { name: "Claude", url: "https://claude.ai/new", inputSelector: "div.ProseMirror[contenteditable='true']" },
+                      grok: { name: "Grok", url: "https://grok.com/", inputSelector: "textarea[aria-label='Ask Grok anything']" }
+                  };
+
+                  // START OF NEWLY ADDED CODE BLOCK
+                  // Ensure the most current inputSelector from localAiModels is used if different from storage
+                  if (aiKey && localAiModels[aiKey] && aiConfig && aiConfig.inputSelector !== localAiModels[aiKey].inputSelector) {
+                    console.warn(`Service Worker: Stored inputSelector for '${aiKey}' ("${aiConfig.inputSelector}") differs from local definition ("${localAiModels[aiKey].inputSelector}"). Updating.`);
+                    aiConfig.inputSelector = localAiModels[aiKey].inputSelector; // Update in-memory config
+                    // Also update the configuration in storage to persist the correction
+                    chrome.storage.sync.set({ selectedAiModelConfig: aiConfig }, () => {
+                        console.log(`Service Worker: Corrected inputSelector for key '${aiKey}' has been saved to storage.`);
+                    });
+                  }
+                  // END OF NEWLY ADDED CODE BLOCK
+
+                  if (!aiConfig || !aiConfig.url || !aiConfig.inputSelector || !aiKey || !localAiModels[aiKey]) {
+                    console.warn('Service Worker: Invalid or missing AI configuration from storage. Attempting to recover or default.', 'Retrieved Key:', aiKey, 'Retrieved Config:', aiConfig);
+                    
+                    if (aiKey && localAiModels[aiKey] && (!aiConfig || !aiConfig.url || !aiConfig.inputSelector)) {
+                        console.log(`Service Worker: Key '${aiKey}' is valid but config object is missing/invalid. Using fresh config for '${aiKey}'.`);
+                        aiConfig = localAiModels[aiKey];
+                        // Update storage with the corrected config for this valid key
+                        chrome.storage.sync.set({ selectedAiModelConfig: aiConfig }, () => {
+                            console.log(`Service Worker: Corrected AI config for key '${aiKey}' saved to storage.`);
+                        });
+                    } else {
+                        console.log('Service Worker: Cannot recover from stored key. Defaulting to Gemini.');
+                        aiKey = DEFAULT_MODEL_KEY;
+                        aiConfig = localAiModels[DEFAULT_MODEL_KEY];
+                        defaulted = true;
+                        sendPopupStatus(`AI Config error. Defaulted to ${aiConfig.name}. Check options.`, 80, true);
+                        chrome.storage.sync.set({ selectedAiModelKey: aiKey, selectedAiModelConfig: aiConfig }, () => {
+                            console.log('Service Worker: Saved default AI (Gemini) config to storage.');
+                        });
+                    }
+                  }
+                  
+                  console.log(`Service Worker: Using AI Model: ${aiConfig.name} (Key: ${aiKey}) ${defaulted ? '(Defaulted)' : ''}`);
+                  sendPopupStatus(`Opening ${aiConfig.name}...`, 82, false);
+
+                  chrome.tabs.create({ url: aiConfig.url, active: true }, (aiTab) => {
+                    if (chrome.runtime.lastError || !aiTab) {
+                      console.error(`Service Worker: Failed to open ${aiConfig.name} tab.`, chrome.runtime.lastError?.message);
+                      sendResponse({ status: `Error: Failed to open ${aiConfig.name} tab` });
+                      sendPopupStatus(`Error: Failed to open ${aiConfig.name}.`, 80, true);
+                      isScraping = false;
+                      return;
+                    }
+                    console.log(`Service Worker: ${aiConfig.name} tab opened with ID:`, aiTab.id);
+                    sendPopupStatus(`${aiConfig.name} opened. Waiting for page to load...`, 85, false);
+                    
+                    const listener = (tabId, changeInfo, tab) => {
+                      if (tabId === aiTab.id && changeInfo.status === 'complete') {
+                        console.log(`Service Worker: ${aiConfig.name} tab loaded. Injecting aiPaster.js.`);
+                        sendPopupStatus(`${aiConfig.name} loaded. Pasting content...`, 90, false);
+                        chrome.scripting.executeScript({
+                          target: { tabId: aiTab.id },
+                          files: ['aiPaster.js'] // Corrected to aiPaster.js
+                        }, (injectionResults) => {
+                          try { 
+                            if (chrome.runtime.lastError || !injectionResults || injectionResults.length === 0) {
+                              console.error(`Service Worker: Failed to inject aiPaster.js into ${aiConfig.name}`, chrome.runtime.lastError?.message);
+                              sendPopupStatus(`Error: Could not paste into ${aiConfig.name}.`, 90, true);
+                              chrome.notifications.create({
+                                type: 'basic',
+                                iconUrl: 'images/icon48.png',
+                                title: 'Reddit AI Tool',
+                                message: `Could not paste into ${aiConfig.name}. The site might have updated. Data is in storage.`
+                              });
+                            } else {
+                              console.log('Service Worker: aiPaster.js injected. Sending executePaste command.');
+                              // Log the aiConfig object just before sending it
+                              console.log('Service Worker: Sending aiConfig to aiPaster.js:', JSON.stringify(aiConfig, null, 2));
+                              // Pass the specific AI config to the paster script
+                              chrome.tabs.sendMessage(aiTab.id, { action: 'executePaste', aiConfig: aiConfig }, (pasteResponse) => {
+                                try { 
+                                  if (chrome.runtime.lastError) {
+                                    console.error(`Service Worker: Error during paste execution in ${aiConfig.name} or no response:`, chrome.runtime.lastError.message);
+                                    sendPopupStatus(`Pasting may have failed. Check ${aiConfig.name}.`, 95, true);
+                                  } else if (pasteResponse && pasteResponse.status) {
+                                    console.log('Service Worker: Paste script responded:', pasteResponse.status);
+                                    sendPopupStatus(pasteResponse.status, 100, true); // Final status from paster
+                                  } else {
+                                    sendPopupStatus('Pasting complete.', 100, true);
+                                  }
+                                } finally { // Ensure storage cleanup and scraping flag reset after paste attempt
+                                  chrome.storage.local.remove('redditThreadData', () => {
+                                    console.log('Service Worker: redditThreadData removed from storage.');
+                                  });
+                                  isScraping = false; 
+                                  console.log('Service Worker: Scraping process complete. isScraping set to false.');
+                                  // sendPopupStatus('Process complete!', true); // Covered by pasteResponse status or generic above
                                 }
-                              } finally { // Ensure storage cleanup and scraping flag reset after paste attempt
-                                chrome.storage.local.remove('redditThreadData', () => {
-                                  console.log('Service Worker: redditThreadData removed from storage.');
-                                });
-                                isScraping = false; 
-                                console.log('Service Worker: Scraping process complete. isScraping set to false.');
-                                // sendPopupStatus('Process complete!', true); // Covered by pasteResponse status or generic above
-                              }
-                            });
-                          }
-                        } finally { // Ensure listener cleanup and potentially reset scraping flag if paste sendMessage not reached
-                          chrome.tabs.onUpdated.removeListener(listener);
-                          // If the sendMessage to geminiPaster was not called (e.g. injection failed), reset isScraping here
-                          if (!(pasteInjectionResults && pasteInjectionResults.length > 0)) {
+                              });
+                            }
+                          } finally { // Ensure listener cleanup and potentially reset scraping flag if paste sendMessage not reached
+                            chrome.tabs.onUpdated.removeListener(listener);
+                            // If the sendMessage to aiPaster was not called (e.g. injection failed), reset isScraping here
+                            // Corrected variable name from pasteInjectionResults to injectionResults
+                            if (!(injectionResults && injectionResults.length > 0)) {
                              isScraping = false;
                              sendPopupStatus('Process ended due to paste script injection failure.', 90, true);
-                             console.log('Service Worker: Scraping process ended (geminiPaster injection failed). isScraping set to false.');
+                             // Corrected log message to refer to aiPaster.js
+                             console.log('Service Worker: Scraping process ended (aiPaster.js injection failed). isScraping set to false.');
+                            }
                           }
-                        }
-                      });
-                    }
-                  };
-                  chrome.tabs.onUpdated.addListener(listener);
-                  sendResponse({ status: 'Scraping initiated, Gemini tab opened.' }); // Initial response to popup click
-                  // sendPopupStatus('Gemini tab opening...', 85); // Already covered
-                  // Note: isScraping is reset inside the paste logic or its error handlers
+                        });
+                      }
+                    };
+                    chrome.tabs.onUpdated.addListener(listener);
+                    sendResponse({ status: 'Scraping initiated, Gemini tab opened.' }); // Initial response to popup click
+                    // sendPopupStatus('Gemini tab opening...', 85); // Already covered
+                    // Note: isScraping is reset inside the paste logic or its error handlers
+                  });
                 });
               });
             } else {
