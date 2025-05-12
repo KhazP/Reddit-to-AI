@@ -198,10 +198,19 @@ The Reddit AITools Chrome extension is designed to scrape content from Reddit th
 *   **Image Handling (Enhanced for Galleries & Gemini Workaround)**:
     *   Enhanced image scraping to identify and fetch all images from a Reddit post gallery (e.g., targeting `shreddit-gallery` elements or common `figure > img` patterns within the post content). If no gallery is detected, it falls back to finding a single prominent post image.
     *   The `service_worker.js` now processes an array of image URLs collected by the scraper. It fetches each image, converts it to a dataURL, and stores these as an array of dataURLs.
-    *   `aiPaster.js` receives the array of image dataURLs and attempts to paste each image by iterating through the array, converting each to a File object, and simulating drag-and-drop events. A note is added to the pasted text if multiple images were scraped and are being pasted.
+    *   `aiPaster.js` receives the array of image dataURLs. It iterates through this array, attempting to paste each image into the target AI platform using a simulated drag-and-drop mechanism. Delays are incorporated between pasting multiple images to improve reliability.
+    *   A note is added to the pasted text if multiple images were scraped and attempted for pasting.
     *   Added `https://*.redd.it/*` to `host_permissions` in `manifest.json` to resolve CORS issues when fetching images.
     *   Due to difficulties with robust image pasting into Gemini, a disclaimer was added to `options.html` informing users of this limitation and recommending AI Studio for posts with images.
     *   The default AI model was changed from Gemini to AI Studio in `service_worker.js`.
+*   **YouTube Video URL Handling (for AI Studio Embedding)**:
+    *   `redditScraper.js` in the `extractPostDetails` function has been updated to more robustly identify YouTube video URLs:
+        1.  It prioritizes extracting the YouTube URL from the `shreddit-post` element's `content-href` attribute if the `post-type` attribute indicates a "link" and the `domain` attribute is a known video host (e.g., `youtube.com`, `youtu.be`). URLs are resolved to be absolute.
+        2.  As a fallback, or if the post is not a direct link type but might contain a video URL in its metadata, it attempts to parse JSON data from the `shreddit-screenview-data` element's `data` attribute to find a `post.url`. This URL is also resolved to absolute and checked against known video hosts.
+        3.  If a YouTube URL is found through these primary methods (especially for link posts), and the existing `postTextContent` is empty, a generic placeholder, or a basic "This post links to a video..." message lacking the post title, `post.content` is updated to be more descriptive, like: "This post features a video: [YouTube URL] - [Post Title]".
+        4.  The existing regex-based search (using `new RegExp()` for correct pattern escaping) for YouTube URLs within the `contentHTML` (derived from the post's text body) remains as a final fallback, primarily for text posts that might embed links.
+    *   Collected YouTube URLs are stored in `post.youtubeVideoUrls`.
+    *   `service_worker.js` passes these collected YouTube URLs to `aiPaster.js`.
 
 ## 8. Technical Details
 

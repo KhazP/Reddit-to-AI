@@ -39,9 +39,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         const formattedText = formatDataForPasting(data);
         // Get imageDataUrls (plural) - it should be an array
         const imageDataUrls = (data.post && Array.isArray(data.post.imageDataUrls)) ? data.post.imageDataUrls : [];
+        const youtubeVideoUrls = (data.post && Array.isArray(data.post.youtubeVideoUrls)) ? data.post.youtubeVideoUrls : [];
 
         // Call the modified paste function, passing the array
-        pasteTextAndImage(formattedText, imageDataUrls, aiConfig.inputSelector, aiConfig.name, sendResponse);
+        pasteTextAndMedia(formattedText, imageDataUrls, youtubeVideoUrls, aiConfig, sendResponse);
       } else {
         console.error('AI Paster: No data found in storage.');
         sendResponse({ status: 'Error: No data in storage' });
@@ -162,8 +163,21 @@ function dataURLtoFile(dataurl, filename) {
     }
 }
 
-async function typeText(element, text) {
+async function typeText(element, text, clearFirst = false) {
     element.focus();
+    if (clearFirst) {
+        // Clear existing content
+        if (element.isContentEditable) {
+            element.innerHTML = ''; // For contentEditable
+        } else {
+            element.value = ''; // For textarea/input
+        }
+        // Dispatch events to ensure the site recognizes the clear
+        element.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }));
+        element.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
+        await new Promise(resolve => setTimeout(resolve, 100)); // Short delay after clearing
+    }
+
     // Fallback for non-textarea elements or if execCommand fails
     if (element.isContentEditable || element.tagName !== 'TEXTAREA') {
         // For contentEditable divs, try to set innerText or use clipboard API
@@ -198,10 +212,15 @@ async function typeText(element, text) {
 }
 
 
-async function pasteTextAndImage(text, imageDataUrls, selector, aiName, sendResponse) {
-  console.log(`AI Paster: Attempting to paste text and potentially image(s) into ${aiName} using selector: ${selector}`);
+async function pasteTextAndMedia(text, imageDataUrls, youtubeVideoUrls, aiConfig, sendResponse) {
+  const selector = aiConfig.inputSelector;
+  const aiName = aiConfig.name;
+  console.log(`AI Paster: Attempting to paste text and potentially media into ${aiName} using selector: ${selector}`);
   if (imageDataUrls && imageDataUrls.length > 0) {
     console.log(`AI Paster: Received ${imageDataUrls.length} image data URLs.`);
+  }
+  if (youtubeVideoUrls && youtubeVideoUrls.length > 0) {
+    console.log(`AI Paster: Received ${youtubeVideoUrls.length} YouTube video URLs.`);
   }
   
   let attempts = 0;
@@ -215,12 +234,12 @@ async function pasteTextAndImage(text, imageDataUrls, selector, aiName, sendResp
       let pasteStatusMessage = "";
 
       try {
-        // 1. Paste Text
-        await typeText(targetElement, text);
-        console.log(`AI Paster: Successfully pasted text content into ${aiName}.`);
+        // 1. Paste Main Text Content
+        await typeText(targetElement, text, false); // Don't clear first for the main text
+        console.log(`AI Paster: Successfully pasted main text content into ${aiName}.`);
         pasteStatusMessage = `Pasted text into ${aiName}.`;
 
-        // 2. Paste Image if imageDataUrls is present and has items
+        // 2. Paste Images (if any)
         if (imageDataUrls && imageDataUrls.length > 0) {
           console.log(`AI Paster: ${imageDataUrls.length} imageDataUrl(s) found, attempting to paste all.`);
           let imagesPastedSuccessfully = 0;
@@ -231,7 +250,7 @@ async function pasteTextAndImage(text, imageDataUrls, selector, aiName, sendResp
             const imageFile = dataURLtoFile(imageDataUrl, `reddit_post_image_${imagesAttempted}.png`);
             if (imageFile) {
               try {
-                targetElement.focus(); // Ensure the input element is focused
+                targetElement.focus(); 
 
                 const dataTransfer = new DataTransfer();
                 dataTransfer.items.add(imageFile);
@@ -239,15 +258,14 @@ async function pasteTextAndImage(text, imageDataUrls, selector, aiName, sendResp
                 targetElement.dispatchEvent(new DragEvent('dragenter', { bubbles: true, cancelable: true, dataTransfer: dataTransfer }));
                 targetElement.dispatchEvent(new DragEvent('dragover', { bubbles: true, cancelable: true, dataTransfer: dataTransfer }));
                 
-                await new Promise(resolve => setTimeout(resolve, 200)); // Increased delay slightly for multiple images
+                await new Promise(resolve => setTimeout(resolve, 200)); 
 
                 targetElement.dispatchEvent(new DragEvent('drop', { bubbles: true, cancelable: true, dataTransfer: dataTransfer }));
                 
                 console.log(`AI Paster: Image ${imagesAttempted}/${imageDataUrls.length} drop event dispatched for ${aiName}.`);
                 imagesPastedSuccessfully++;
-                // Optional: Add a longer delay if sites have trouble with rapid image additions
                 if (imageDataUrls.length > 1 && imagesAttempted < imageDataUrls.length) {
-                    await new Promise(resolve => setTimeout(resolve, 500)); // Wait half a second before next image
+                    await new Promise(resolve => setTimeout(resolve, 500)); 
                 }
 
               } catch (imgError) {
@@ -263,10 +281,36 @@ async function pasteTextAndImage(text, imageDataUrls, selector, aiName, sendResp
           } else {
             pasteStatusMessage += ` Image pasting attempted for ${imageDataUrls.length} image(s), but none were successfully processed or dispatched.`;
           }
-
         } else {
             console.log('AI Paster: No image data URLs provided or array is empty.');
         }
+
+        // 3. Paste YouTube Video URLs (specifically for AI Studio)
+        if (aiName === "AI Studio" && youtubeVideoUrls && youtubeVideoUrls.length > 0) {
+            console.log(`AI Paster: AI Studio detected. Pasting ${youtubeVideoUrls.length} YouTube URLs individually.`);
+            pasteStatusMessage += ` Pasting ${youtubeVideoUrls.length} YouTube URL(s) for AI Studio.`;
+            for (let i = 0; i < youtubeVideoUrls.length; i++) {
+                const videoUrl = youtubeVideoUrls[i];
+                console.log(`AI Paster: Clearing input and pasting YouTube URL ${i + 1}/${youtubeVideoUrls.length}: ${videoUrl}`);
+                await typeText(targetElement, videoUrl, true); // Clear before pasting each URL
+                
+                // Optional: Simulate an 'Enter' key press if AI Studio requires it to process the URL
+                // targetElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', bubbles: true, cancelable: true }));
+                // targetElement.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', code: 'Enter', bubbles: true, cancelable: true }));
+                // console.log('AI Paster: Simulated Enter press after pasting YouTube URL.');
+
+                if (i < youtubeVideoUrls.length - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 1500)); // Wait 1.5 seconds before pasting the next URL
+                }
+            }
+            console.log('AI Paster: Finished pasting YouTube URLs for AI Studio.');
+        } else if (youtubeVideoUrls && youtubeVideoUrls.length > 0) {
+            // For other AI platforms, append YouTube URLs to the main text or handle as configured
+            // For now, they are already included in the main formatted text via formatDataForPasting
+            console.log(`AI Paster: ${aiName} is not AI Studio. YouTube URLs are part of the main text.`);
+        }
+
+
         sendResponse({ status: pasteStatusMessage });
       } catch (error) {
         console.error(`AI Paster: Error during paste operation for ${aiName}:`, error);
@@ -287,5 +331,6 @@ async function pasteTextAndImage(text, imageDataUrls, selector, aiName, sendResp
   tryPastingContent();
 }
 
-// Initial log to confirm script injection
-console.log('AI Paster: Script injected and ready to receive messages.');
+// Renamed pasteTextAndImage to pasteTextAndMedia in its call earlier
+// function pasteTextAndImage(text, imageDataUrls, selector, aiName, sendResponse) { ... }
+

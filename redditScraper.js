@@ -196,6 +196,7 @@ if (typeof window.redditScraperInitialized === 'undefined') {
         // Image and video extraction can still use contentHTML or query postElement directly
         post.imageUrls = [];
         post.linkUrls = []; // Initialize linkUrls
+        post.youtubeVideoUrls = []; // Initialize youtubeVideoUrls
 
         console.log("Attempting to extract images (gallery-first approach)...");
 
@@ -332,9 +333,15 @@ if (typeof window.redditScraperInitialized === 'undefined') {
             tempDiv.innerHTML = contentHTML; // Use the HTML from which postTextContent was derived
             tempDiv.querySelectorAll('a[href]').forEach(link => {
                 const href = link.href;
-                // Avoid adding image/video links again if they are already captured
-                // Also avoid internal page links (e.g. "#") or javascript links
-                if (href && !href.startsWith('javascript:') && !href.startsWith('#') && !post.imageUrls.includes(href) && !post.linkUrls.includes(href)) {
+                const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+                const isYouTubeLink = youtubeRegex.test(href);
+
+                if (isYouTubeLink) {
+                    if (!post.youtubeVideoUrls.includes(href)) {
+                        post.youtubeVideoUrls.push(href);
+                        console.log("Extracted YouTube video URL from post body:", href);
+                    }
+                } else if (href && !href.startsWith('javascript:') && !href.startsWith('#') && !post.imageUrls.includes(href) && !post.linkUrls.includes(href)) {
                     // Basic check to avoid adding links that are just duplicates of image URLs already found
                     let isAlreadyImage = false;
                     for(const imgUrl of post.imageUrls) {
@@ -356,7 +363,7 @@ if (typeof window.redditScraperInitialized === 'undefined') {
         post.url = window.location.href;
         post.scrapedAt = new Date().toISOString();
 
-        console.log("Final extracted post details:", {title: post.title, author: post.author, subreddit: post.subreddit, contentSnippet: post.content.substring(0, 200) + "..."});
+        console.log("Final extracted post details:", {title: post.title, author: post.author, subreddit: post.subreddit, contentSnippet: post.content.substring(0, 200) + "...", youtubeLinks: post.youtubeVideoUrls});
         sendProgressUpdate("Post details extracted.");
         return post;
     }
