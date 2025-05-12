@@ -1,21 +1,184 @@
+/* Reset and base styles */
 body {
-  font-family: sans-serif;
-  width: 250px;
-  padding: 10px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  width: 300px; /* Increased width for new layout */
+  padding: 0;
+  margin: 0;
+  background-color: #f0f2f5; /* Light gray background */
+  color: #1c1e21; /* Default text color */
 }
 
-h1 {
-  font-size: 16px;
-  margin-top: 0;
-  margin-bottom: 10px;
+.container {
+  padding: 16px;
 }
 
-button {
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.logo {
+  font-size: 20px; /* Increased font size */
+  font-weight: bold;
+}
+
+.logo-reddit {
+  color: #FF4500; /* Reddit Orange */
+}
+
+.logo-aitools {
+  color: #1A1A1B; /* Darker text */
+  margin-left: 2px;
+}
+
+.status-container {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+}
+
+.status-label {
+  color: #606770; /* Grayish text */
+  margin-right: 4px;
+}
+
+.status-indicator {
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.status-indicator.active {
+  background-color: #e7f3ff; /* Light blue */
+  color: #1877f2; /* Blue */
+}
+
+.status-indicator.scraping {
+  background-color: #fff0e0; /* Light orange */
+  color: #ff7a00; /* Orange */
+}
+
+.status-indicator.idle {
+  background-color: #e0e0e0; /* Light gray */
+  color: #333333; /* Dark gray */
+}
+
+.status-indicator.error {
+  background-color: #ffe0e0; /* Light red */
+  color: #dc3545; /* Red */
+}
+
+/* Controls Section */
+.controls-section {
+  margin-bottom: 16px;
+  background-color: #ffffff;
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.control-group {
+  margin-bottom: 12px;
+}
+.control-group:last-child {
+  margin-bottom: 0;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  color: #333;
+}
+
+.checkbox-input {
+  margin-right: 8px;
+  height: 16px;
+  width: 16px;
+}
+
+/* Status Display Section */
+.status-display-section {
+  margin-bottom: 16px;
+  min-height: 20px;
+}
+
+.status-text {
+  font-size: 13px;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.progress-bar-container {
   width: 100%;
-  padding: 8px;
-  margin-bottom: 10px;
+  background-color: #e0e0e0; /* Lighter gray for progress bar background */
+  border-radius: 5px;
+  display: none; /* Initially hidden, shown by JS */
+  overflow: hidden; /* Ensures inner bar respects border radius */
 }
 
-div {
-  margin-bottom: 10px;
+.progress-bar {
+  width: 0%;
+  height: 12px; /* Slightly thicker */
+  background-color: #4CAF50; /* Green for progress */
+  border-radius: 5px;
+  text-align: center;
+  line-height: 12px;
+  color: white;
+  font-size: 9px;
+  transition: width 0.3s ease-in-out;
+}
+
+/* Action Buttons Section */
+.action-buttons-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* Space between buttons */
+}
+
+.button {
+  width: 100%;
+  padding: 10px 12px; /* Adjusted padding */
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  box-sizing: border-box; /* Ensures padding doesn't add to width */
+}
+
+.button.primary {
+  background-color: #FF4500; /* Reddit Orange */
+  color: white;
+}
+.button.primary:hover {
+  background-color: #e03d00; /* Darker Reddit Orange */
+}
+
+.button.secondary {
+  background-color: #e4e6eb; /* Light gray for secondary button */
+  color: #1c1e21; /* Dark text */
+}
+.button.secondary:hover {
+  background-color: #d8dadf; /* Darker gray */
+}
+
+.button.danger {
+  background-color: #dc3545; /* Red */
+  color: white;
+}
+.button.danger:hover {
+  background-color: #c82333; /* Darker Red */
+}
+
+/* General h1 (if any were left or added) */
+h1 {
+  font-size: 18px; /* Adjusted default h1 if used */
+  margin-top: 0;
+  margin-bottom: 12px;
+  color: #1A1A1B;
 }

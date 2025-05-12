@@ -1,26 +1,37 @@
 document.addEventListener('DOMContentLoaded', () => {
     console.log("options.js DOM loaded");
+    if (typeof window.initializeOptions === 'function') {
+        window.initializeOptions(); // Ensure options are initialized when page loads directly
+    }
 });
 
 // Defined in global scope to ensure it's accessible from popup.js
 window.initializeOptions = function() {
     console.log("initializeOptions called");
-    const attemptsSlider = document.getElementById('loadMoreAttempts');
+    const originalAttemptsSlider = document.getElementById('loadMoreAttempts');
     const attemptsValueDisplay = document.getElementById('attemptsValue');
     const saveStatusDisplay = document.getElementById('saveStatus');
-    const aiModelSelect = document.getElementById('aiModelSelect'); // New AI model select element
+    const aiModelSelect = document.getElementById('aiModelSelect');
+    const showNotificationsCheckbox = document.getElementById('showNotifications'); // Added
 
-    if (!attemptsSlider || !attemptsValueDisplay || !aiModelSelect) { // Added aiModelSelect check
+    if (!originalAttemptsSlider || !attemptsValueDisplay || !aiModelSelect || !showNotificationsCheckbox) { // Added showNotificationsCheckbox check
         console.warn("Options UI elements not found:", {
-            attemptsSlider: !!attemptsSlider,
+            attemptsSlider: !!originalAttemptsSlider,
             attemptsValueDisplay: !!attemptsValueDisplay,
             saveStatusDisplay: !!saveStatusDisplay,
-            aiModelSelect: !!aiModelSelect // Added aiModelSelect to log
+            aiModelSelect: !!aiModelSelect,
+            showNotificationsCheckbox: !!showNotificationsCheckbox // Added
         });
         return;
     }
 
-    console.log("UI elements found, continuing initialization");
+    // Clone the slider and replace it in the DOM *before* loading settings or attaching main listeners.
+    // This ensures that the element we set the value on is the same one with the listeners.
+    const attemptsSlider = originalAttemptsSlider.cloneNode(true);
+    originalAttemptsSlider.parentNode.replaceChild(attemptsSlider, originalAttemptsSlider);
+    console.log("Replaced slider element FIRST to ensure value loading and listeners are on the correct element.");
+
+    console.log("UI elements found/prepared, continuing initialization");
     const DEFAULT_ATTEMPTS = 75;
     const MAX_STEPS_LIMIT = 500;
 
@@ -31,7 +42,7 @@ window.initializeOptions = function() {
         claude: { name: "Claude", url: "https://claude.ai/new", inputSelector: "div.ProseMirror[contenteditable='true']" },
         aistudio: { name: "AI Studio", url: "https://aistudio.google.com/prompts/new_chat", inputSelector: "textarea[aria-label='Type something or pick one from prompt gallery']" }
     };
-    const DEFAULT_AI_MODEL = 'gemini';
+    const DEFAULT_AI_MODEL = 'aistudio'; // Changed default to AI Studio
 
     // Populate AI Model Select Dropdown
     // Clear existing options before populating
@@ -46,7 +57,7 @@ window.initializeOptions = function() {
     });
     console.log("Populated AI model select dropdown.");
 
-    // Ensure the max attribute is set correctly
+    // Ensure the max attribute is set correctly on the new slider
     attemptsSlider.setAttribute('max', String(MAX_STEPS_LIMIT));
     console.log("Set slider max to:", attemptsSlider.getAttribute('max'));
 
@@ -57,7 +68,7 @@ window.initializeOptions = function() {
     }
 
     // Load saved settings
-    chrome.storage.sync.get(['maxLoadMoreAttempts', 'selectedAiModelKey', 'selectedAiModelConfig'], (result) => { // Added selectedAiModelKey and selectedAiModelConfig
+    chrome.storage.sync.get(['maxLoadMoreAttempts', 'selectedAiModelKey', 'selectedAiModelConfig', 'showNotifications'], (result) => { // Added showNotifications
         console.log("Loaded settings from storage:", result);
         let savedAttempts = result.maxLoadMoreAttempts;
         if (savedAttempts !== undefined) {
@@ -66,11 +77,11 @@ window.initializeOptions = function() {
                 savedAttempts = MAX_STEPS_LIMIT;
                 chrome.storage.sync.set({ maxLoadMoreAttempts: savedAttempts }); // Correct the stored value
             }
-            attemptsSlider.value = savedAttempts;
+            attemptsSlider.value = savedAttempts; // Use the new slider instance
             attemptsValueDisplay.textContent = savedAttempts;
             console.log("Set slider to saved value:", savedAttempts);
         } else {
-            attemptsSlider.value = DEFAULT_ATTEMPTS;
+            attemptsSlider.value = DEFAULT_ATTEMPTS; // Use the new slider instance
             attemptsValueDisplay.textContent = DEFAULT_ATTEMPTS;
             chrome.storage.sync.set({ maxLoadMoreAttempts: DEFAULT_ATTEMPTS });
             console.log("Set slider to default value:", DEFAULT_ATTEMPTS);
@@ -83,26 +94,39 @@ window.initializeOptions = function() {
             console.log("Set AI model select to saved value:", savedAiModelKey);
         } else {
             aiModelSelect.value = DEFAULT_AI_MODEL;
-            chrome.storage.sync.set({ selectedAiModelKey: DEFAULT_AI_MODEL, selectedAiModelConfig: aiModels[DEFAULT_AI_MODEL] });
-            console.log("Set AI model select to default value:", DEFAULT_AI_MODEL);
+            chrome.storage.sync.set({ selectedAiModelKey: DEFAULT_AI_MODEL, selectedAiModelConfig: aiModels[DEFAULT_AI_MODEL] }, () => {
+                console.log("Default AI model (AI Studio) set and saved as no valid saved model was found.");
+            });
+            console.log("Set AI model select to default value (AI Studio):", DEFAULT_AI_MODEL);
+        }
+
+        // Load and set Show Notifications checkbox
+        if (typeof result.showNotifications === 'boolean') {
+            showNotificationsCheckbox.checked = result.showNotifications;
+            console.log("Set Show Notifications checkbox to saved value:", result.showNotifications);
+        } else {
+            // Default to true if not set
+            showNotificationsCheckbox.checked = true;
+            chrome.storage.sync.set({ showNotifications: true });
+            console.log("Set Show Notifications checkbox to default (true) and saved.");
         }
     });
 
-    // Make sure the slider has no previous listeners
-    const newSlider = attemptsSlider.cloneNode(true);
-    attemptsSlider.parentNode.replaceChild(newSlider, attemptsSlider);
-    console.log("Replaced slider element to remove stale listeners");
+    // No longer need to clone the slider here as it's done above.
+    // const newSlider = attemptsSlider.cloneNode(true);
+    // attemptsSlider.parentNode.replaceChild(newSlider, attemptsSlider);
+    // console.log("Replaced slider element to remove stale listeners");
 
     // Add input event listener to show live updates as user drags
-    newSlider.addEventListener('input', (event) => {
-        console.log("Slider input event, value:", newSlider.value);
-        attemptsValueDisplay.textContent = newSlider.value;
+    attemptsSlider.addEventListener('input', (event) => { // Use the new slider instance
+        console.log("Slider input event, value:", attemptsSlider.value);
+        attemptsValueDisplay.textContent = attemptsSlider.value;
     });
 
     // Add change event listener for when user releases slider
-    newSlider.addEventListener('change', (event) => {
-        console.log("Slider change event, value:", newSlider.value);
-        const value = parseInt(newSlider.value, 10);
+    attemptsSlider.addEventListener('change', (event) => { // Use the new slider instance
+        console.log("Slider change event, value:", attemptsSlider.value);
+        const value = parseInt(attemptsSlider.value, 10);
         chrome.storage.sync.set({ maxLoadMoreAttempts: value }, () => {
             console.log('Max load more attempts saved:', value);
             if (saveStatusDisplay) {
@@ -155,5 +179,24 @@ window.initializeOptions = function() {
             }
         });
         aiModelSelect.dataset.listenerAttached = 'true';
+        console.log("Attached change listener to AI model select.");
+    }
+
+    // Add change event listener for Show Notifications checkbox
+    if (!showNotificationsCheckbox.dataset.listenerAttached) {
+        showNotificationsCheckbox.addEventListener('change', (event) => {
+            const isChecked = event.target.checked;
+            chrome.storage.sync.set({ showNotifications: isChecked }, () => {
+                console.log('Show Notifications setting saved:', isChecked);
+                if (saveStatusDisplay) {
+                    saveStatusDisplay.textContent = 'Settings saved!';
+                    setTimeout(() => {
+                        saveStatusDisplay.textContent = '';
+                    }, 2000);
+                }
+            });
+        });
+        showNotificationsCheckbox.dataset.listenerAttached = 'true';
+        console.log("Attached change listener to Show Notifications checkbox.");
     }
 };

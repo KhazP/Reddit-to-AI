@@ -28,11 +28,12 @@ if (typeof window.redditScraperInitialized === 'undefined') {
     let SCRAPING_TIMEOUT;
     let CHECK_INTERVAL;
     let includeHiddenCommentsState;
-    let resolvePromiseScraping; // Stores the resolve function for the main comment scraping promise
-    let rejectPromiseScraping; // Stores the reject function for the main comment scraping promise
-    let currentSendResponse; // <<<< ADD THIS LINE
-    let checkIntervalId; // ID for the checkIfDoneScraping interval
-    let OBSERVER_QUIET_PERIOD; // e.g., 2000-3000ms
+    let resolvePromiseScraping; 
+    let rejectPromiseScraping; 
+    let currentSendResponse; 
+    let checkIntervalId; 
+    let OBSERVER_QUIET_PERIOD; 
+    let stopScrapingSignal = false; // Added stop signal flag
 
     async function loadConfiguration() {
         return new Promise((resolve) => {
@@ -47,6 +48,11 @@ if (typeof window.redditScraperInitialized === 'undefined') {
     // Helper function for scrolling and delaying
     async function scrollPageAndDelay(pixels = window.innerHeight, delay = 500) {
         return new Promise(resolve => {
+            if (stopScrapingSignal) {
+                console.log("scrollPageAndDelay: Stop signal received, not scrolling.");
+                resolve(); // Resolve immediately to allow cleanup
+                return;
+            }
             window.scrollBy({ top: pixels, behavior: 'smooth' });
             setTimeout(() => {
                 resolve();
@@ -369,6 +375,7 @@ if (typeof window.redditScraperInitialized === 'undefined') {
     }
 
     function extractCommentData(element, includeHiddenComments, depth = 0) {
+        if (stopScrapingSignal) return null; // Check stop signal
         const thingId = element.getAttribute('thingid'); 
         if (!thingId) {
             console.warn('extractCommentData: Element without thingid', element.tagName, element.id);
@@ -379,17 +386,31 @@ if (typeof window.redditScraperInitialized === 'undefined') {
             return null;
         }
 
-        // Future: Expand collapsed comments if includeHiddenCommentsState is true
-        // if (includeHiddenCommentsState && element.hasAttribute('collapsed') && element.getAttribute('collapsed') === 'true') {
-        //     console.log(`Comment ${thingId} is collapsed. Future: attempt to expand.`);
-        //     const expandButton = element.querySelector('button[aria-expanded="false"], [id^="comment-fold-button-"]');
-        //     if (expandButton) {
-        //         console.log(`Found expand button for collapsed comment ${thingId}`);
-        //         // expandButton.click(); // Future: enable this and handle async nature, then re-process or wait
-        //     }
-        // }
-
         const commentId = thingId;
+
+        // Handle collapsed comments if includeHiddenComments is true
+        if (includeHiddenComments && element.hasAttribute('collapsed')) {
+            const isActuallyCollapsed = element.getAttribute('collapsed') === 'true' || element.getAttribute('collapsed') === '';
+            if (isActuallyCollapsed) {
+                console.log(`Comment ${commentId} is collapsed. Attempting to expand as includeHiddenComments is true.`);
+                // More robust selector for expand buttons
+                const expandButton = element.querySelector('button[aria-expanded="false"], [id^="comment-fold-button-"], button[aria-label*="expand" i], button[aria-label*="uncollapse" i], button[data-testid="expand-button"]');
+                if (expandButton) {
+                    console.log(`Found expand button for collapsed comment ${commentId}:`, expandButton);
+                    sendProgressUpdate(`Attempting to expand collapsed comment: ${commentId}`);
+                    if (!stopScrapingSignal) expandButton.click(); // Check before click
+                } else {
+                    console.log(`Comment ${commentId} is collapsed, but no expand button found with common selectors.`);
+                }
+            }
+        }
+        // If the comment is still considered "collapsed" after an attempt to expand (or if no button was found),
+        // and we are *not* including hidden comments, we might choose to skip it.
+        // However, some "collapsed" comments are just threads where children are hidden, the parent comment itself is visible.
+        // For now, we'll proceed to extract what's visible from `element` itself.
+        // A more advanced check for "effectively hidden" (e.g. display: none on the content part) could be added here
+        // if !includeHiddenComments && isEffectivelyHidden(element) return null;
+
         let parentId = element.getAttribute('parentid') || element.parentElement?.closest('shreddit-comment')?.getAttribute('thingid') || null;
 
         let author = element.getAttribute('author') || '[unknown]';

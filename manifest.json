@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Reddit AI Tool",
+  "name": "Reddit to AI",
   "version": "0.1.0",
-  "description": "Scrapes Reddit threads and sends content to Gemini AI for analysis.",
+  "description": "Scrapes Reddit threads and sends content to chosen AI chatbot for analysis.",
   "permissions": [
     "activeTab",
     "scripting",

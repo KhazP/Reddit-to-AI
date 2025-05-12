@@ -1,28 +1,59 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Reddit AI Tool</title>
+  <title>Reddit to AI</title>
   <link rel="stylesheet" type="text/css" href="popup.css">
 </head>
 <body>
-  <div id="mainView">
-    <h1>Reddit AI Tool</h1>
-    <button id="scrapeBtn">Scrape and Send</button>
-    <div id="statusDisplay" style="margin-top: 10px; min-height: 20px;"></div>
-    <div id="progressBarContainer" style="width: 100%; background-color: #ddd; margin-top: 5px; border-radius: 5px; display: none;">
-      <div id="progressBar" style="width: 0%; height: 10px; background-color: #4CAF50; border-radius: 5px; text-align: center; line-height: 10px; color: white; font-size: 8px;">
+  <div class="container">
+    <header class="header">
+      <div class="logo">
+        <span class="logo-reddit">Reddit</span><span class="logo-aitools"> to AI</span>
+      </div>
+      <div class="status-container">
+        <span class="status-label">Status:</span>
+        <span id="statusIndicator" class="status-indicator active">Active</span>
+      </div>
+    </header>
+
+    <div class="controls-section">
+      <!-- Simplified Scraping Controls -->
+      <div class="control-group">
+        <label for="includeHiddenToggle" class="checkbox-label">
+          <input type="checkbox" id="includeHiddenToggle" name="includeHiddenToggle" class="checkbox-input">
+          Include hidden/spam comments
+        </label>
+      </div>
+      <div class="form-group">
+        <input type="checkbox" id="includeHidden" name="includeHidden">
+        <label for="includeHidden" title="Scrape comments that are hidden by default">Include Collapsed Comments</label>
+      </div>
+      
+      <!-- Placeholder for AI Platform Controls if needed in future -->
+      <!-- <div class="control-group">
+        <h4>AI Platform</h4>
+        <select id="aiPlatformSelect">
+          <option value="gemini">Gemini</option>
+          <option value="chatgpt">ChatGPT</option>
+        </select>
+      </div> -->
+    </div>
+
+    <div class="status-display-section">
+      <div id="statusDisplay" class="status-text"></div>
+      <div id="progressBarContainer" class="progress-bar-container">
+        <div id="progressBar" class="progress-bar"></div>
       </div>
     </div>
-    <div>
-      <input type="checkbox" id="includeHiddenToggle" name="includeHiddenToggle">
-      <label for="includeHiddenToggle">Include hidden/spam comments</label>
+
+    <div class="action-buttons-section">
+      <button id="scrapeBtn" class="button primary">Scrape and Send</button>
+      <button id="stopScrapeBtn" class="button danger" style="display: none;">Stop Scraping</button>
+      <button id="optionsBtn" class="button secondary">Options</button>
     </div>
   </div>
-  <button id="optionsBtn">Options</button>
-  </div>
-  <div id="optionsView" style="display: none;">
-    <!-- Options content will be loaded here -->
-  </div>
+  <!-- Options view remains hidden and managed by JS if needed, or could be a separate page -->
+  <!-- <div id="optionsView" style="display: none;"></div> -->
   <script src="popup.js"></script>
 </body>
 </html>
