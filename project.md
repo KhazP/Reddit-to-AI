@@ -1,7 +1,7 @@
 # Reddit AITools Chrome Extension
 
 **Version:** (Specify current version if known, e.g., 2.4 based on `redditScraper.js` log)
-**Date:** May 10, 2025
+**Date:** May 13, 2025
 
 ## 1. Overview
 
@@ -211,6 +211,60 @@ The Reddit AITools Chrome extension is designed to scrape content from Reddit th
         4.  The existing regex-based search (using `new RegExp()` for correct pattern escaping) for YouTube URLs within the `contentHTML` (derived from the post's text body) remains as a final fallback, primarily for text posts that might embed links.
     *   Collected YouTube URLs are stored in `post.youtubeVideoUrls`.
     *   `service_worker.js` passes these collected YouTube URLs to `aiPaster.js`.
+
+## 7.1. Recent Updates (as of May 13, 2025)
+
+*   **Project Renaming**:
+    *   The extension has been renamed from "Reddit AITools" to "Reddit to AI".
+    *   This change is reflected in `manifest.json` (extension name), `options.html` (page title and header logo), and `popup.html` (page title and header logo).
+*   **UI Enhancements**:
+    *   **Popup**: The checkbox label "Include hidden/spam comments" in `popup.html` has been rephrased to "Include Collapsed Comments" with a tooltip "Scrape comments that are hidden by default" for clarity.
+*   **New Feature: Show Notifications**:
+    *   **Options**: A new checkbox "Show Notifications" has been added to `options.html`, allowing users to enable or disable desktop notifications for key events. Its description is "Display status updates as notifications." This setting is saved and loaded via `options.js` and defaults to `true` (enabled).
+    *   **Service Worker**: `service_worker.js` now includes a helper function `showNotificationIfEnabled` that checks the user's preference stored in `chrome.storage.sync`.
+    *   Notifications (`chrome.notifications.create()`) are now conditionally displayed for various events:
+        *   Scraping process initiation, completion, stoppage, or cancellation.
+        *   Errors encountered during scraping, storage, or AI platform interaction (e.g., no active tab, not a Reddit page, injection failures, storage errors, AI platform interaction issues).
+        *   Successful operations like opening the AI platform tab.
+
+## 7.2. Summary of Changes During Current Chat Session (May 13, 2025)
+
+This section details the specific modifications made during the interactive session on May 13, 2025, to ensure the AI has the most current context of recent, fine-grained changes.
+
+*   **Popup UI Refinement (`popup.html`)**:
+    *   The checkbox related to comment visibility was updated.
+        *   Previous label: "Include hidden/spam comments"
+        *   New label: "Include Collapsed Comments"
+        *   A `title` attribute was added to this label: "Scrape comments that are hidden by default".
+
+*   **"Show Notifications" Feature Implementation**:
+    *   This feature allows users to control whether they receive desktop notifications for various extension activities.
+    *   **`options.html`**:
+        *   A new checkbox with the `id="showNotifications"` was added.
+        *   The label for this checkbox is "Show Notifications:".
+        *   A descriptive text `<small>Display status updates as notifications.</small>` was added.
+    *   **`options.js`**:
+        *   Enhanced to manage the "Show Notifications" checkbox.
+        *   Loads the `showNotifications` setting from `chrome.storage.sync`. If not found, it defaults to `true` (enabled) and saves this default.
+        *   Saves changes to the `showNotifications` setting in `chrome.storage.sync` when the checkbox state is changed by the user.
+    *   **`service_worker.js`**:
+        *   A new helper function `showNotificationIfEnabled(title, message, notificationIdBase)` was introduced. This function first retrieves the `showNotifications` setting from `chrome.storage.sync`.
+        *   If notifications are enabled (or the setting is not present, defaulting to enabled), it calls `chrome.notifications.create()` to display a desktop notification.
+        *   This `showNotificationIfEnabled` function was integrated at numerous points in the service worker's lifecycle to provide conditional notifications for:
+            *   Scraping process initiation, successful completion, user-initiated stops, and cancellations.
+            *   Various error conditions (e.g., scraping already in progress, no active tab, not a Reddit page, script injection failures, data storage errors, AI platform interaction issues like tab creation failure or pasting script injection failure).
+            *   Successful intermediate steps (e.g., AI platform tab opened).
+        *   The existing handler for `notifyUser` messages (typically from content scripts) was also updated to use `showNotificationIfEnabled`, ensuring these custom notifications also respect the user's preference.
+
+*   **Project Renaming to "Reddit to AI"**:
+    *   The overall project name was changed.
+    *   **`manifest.json`**: The `name` field was updated from "Reddit AI Tool" to "Reddit to AI".
+    *   **`options.html`**:
+        *   The `<title>` tag was changed to "Reddit to AI Options".
+        *   The header logo text was updated from "RedditAITools" to "Reddit to AI".
+    *   *(Note: `popup.html`'s title and logo were already "Reddit to AI" prior to this specific chat segment, as reflected in user-provided files and previous `project.md` updates).*
+
+These updates ensure that `project.md` accurately reflects the latest state of the extension, particularly the changes made interactively during this session.
 
 ## 8. Technical Details
 
