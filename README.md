@@ -1,123 +1,151 @@
-# Reddit AI Tool - Chrome Extension
+# 🚀 Reddit to AI - Chrome Extension 🚀
 
-## 1. Overview
+[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg?style=for-the-badge)](manifest.json)
+[![License](https://img.shields.io/badge/license-MIT-green.svg?style=for-the-badge)](LICENSE) 
+[![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-orange.svg?style=for-the-badge)](#contributing)
 
-Reddit AI Tool is a Chrome browser extension designed to streamline the process of analyzing Reddit threads using AI. It allows users to quickly scrape the content of an active Reddit thread (including the original post and all comments) and send this data to an AI chat interface (initially targeting Google's Gemini) for summarization, analysis, or discussion.
+> **Transform your Reddit browsing into an AI-powered analysis experience!**
+> Scrape Reddit threads and seamlessly send content to your favorite AI for insights, summaries, and more.
 
-This tool aims to solve the problem of manual, tedious copy-pasting of extensive Reddit content, enabling researchers, avid Reddit users, and anyone curious to gain insights from online discussions more efficiently.
+---
 
-## 2. Core MVP Features
+## 📖 Table of Contents
 
-* **Comprehensive Reddit Scraping:**
-    * Extracts the main post details: title, subreddit, author, text content, image URLs, and link URLs from the post body.
-    * Scrapes all comments from the thread, including nested replies and their hierarchy.
-    * Handles dynamically loaded comments ("load more" buttons).
-    * Provides an option to include/exclude potentially hidden or spam comments.
-* **AI Platform Integration (MVP Target: Gemini):**
-    * Automatically opens the Gemini web UI (`https://gemini.google.com/app`) in a new tab.
-    * Attempts to programmatically paste the collected Reddit content (formatted for readability and hierarchy) into Gemini's chat input field.
-* **User-Friendly Interface:**
-    * A simple browser action button (icon in the Chrome toolbar).
-    * A popup UI with a primary button to initiate scraping/pasting and a toggle for comment inclusion.
-* **Fallback Mechanism:**
-    * If direct pasting into Gemini fails (e.g., due to UI changes), the extension copies the formatted content to the clipboard and notifies the user to paste it manually.
-* **Basic Error Handling:**
-    * Provides user notifications for critical errors during the process.
+* [Overview](#overview)
+* [✨ Core Functionality](#-core-functionality)
+* [🚀 Installation](#-installation)
+* [🛠️ Usage](#️-usage)
+* [🔧 Configuration](#-configuration)
+* [⚠️ Known Issues & Limitations](#️-known-issues--limitations)
+* [🤝 Contributing](#-contributing)
+* [📄 License](#-license)
 
-## 3. How It Works (Technical Overview)
+---
+## Overview
 
-The extension operates using Chrome's Manifest V3 architecture:
+**Reddit to AI** is a Chrome browser extension designed to streamline the process of analyzing Reddit threads using Artificial Intelligence. It empowers users to quickly scrape the rich content of an active Reddit thread—including the original post, comments, images, and links—and then seamlessly send this data to a selected AI chat interface (such as Google's Gemini, ChatGPT, Claude, or AI Studio).
 
-1.  **Popup (`popup.html`, `popup.js`, `popup.css`):** The user clicks the extension icon, which opens a small popup. The user can select options (like including hidden comments) and click the "Scrape and Send to Gemini" button. This action sends a message to the service worker.
-2.  **Service Worker (`service_worker.js`):** This background script orchestrates the entire process.
-    * It receives the request from the popup.
-    * It implements a lock (`isScraping`) to prevent multiple concurrent scraping operations.
-    * It injects the `redditScraper.js` content script into the active Reddit tab.
-    * It sends a message to `redditScraper.js` to begin scraping.
-    * Upon receiving the scraped data from `redditScraper.js`, it stores this data temporarily in `chrome.storage.local`.
-    * It opens a new tab for Gemini.
-    * Once the Gemini tab is loaded, it injects `geminiPaster.js`.
-    * It messages `geminiPaster.js` to retrieve the data from storage and paste it.
-    * It handles responses and cleans up storage.
-3.  **Reddit Content Script (`redditScraper.js`):**
-    * Injected into the active Reddit page.
-    * Scrapes post details (title, author, content, images, links).
-    * Scrapes comments, handling "load more" buttons (using programmatic clicks and `MutationObserver` to detect new content).
-    * Builds a hierarchical tree of comments and their replies.
-    * Extracts comment metadata (author, score, timestamp where available).
-    * Cleans the extracted text to remove UI noise.
-    * Sends the structured data (JSON object) back to the service worker.
-4.  **Gemini Paster Script (`geminiPaster.js`):**
-    * Injected into the Gemini web page.
-    * Retrieves the scraped Reddit data from `chrome.storage.local`.
-    * Formats the data into a readable string, preserving comment hierarchy with indentation and markers.
-    * Attempts to find Gemini's chat input field using CSS selectors.
-    * Programmatically pastes the formatted content, dispatching necessary DOM events.
-    * If direct pasting fails, it copies the content to the clipboard and messages the service worker to notify the user.
-5.  **Data Handling:** Scraped data is stored only temporarily on the user's local machine (`chrome.storage.local`) for the duration of the operation and is not transmitted to any external servers by the extension itself.
+This tool tackles the inefficiency of manual copy-pasting, aiding researchers, avid Reddit users, and anyone looking to leverage AI for deeper insights from online discussions.
 
-## 4. Installation
+---
+## ✨ Core Functionality
 
-As this extension is currently under development, it needs to be loaded as an unpacked extension:
+* **Comprehensive Data Scraping**: Extracts post details (title, author, subreddit, content, images, links, YouTube URLs) and a hierarchical tree of comments.
+* **User Configuration**:
+    * Set comment scraping depth ("load more attempts").
+    * Option to include hidden/collapsed comments.
+    * Select target AI model (Gemini, ChatGPT, Claude, AI Studio).
+    * Toggle desktop notifications.
+* **Process Management**: Initiate, manage, and stop the scraping process.
+* **User Feedback**: Real-time status messages and progress bar in the extension popup.
+* **AI Platform Integration**: Opens the selected AI platform and attempts to paste scraped text and images. Supports YouTube URL pasting for AI Studio.
 
-1.  Download or clone the project repository to your local machine.
-2.  Open Google Chrome and navigate to `chrome://extensions`.
-3.  Enable "Developer mode" using the toggle switch (usually in the top-right corner).
-4.  Click the "Load unpacked" button.
-5.  Select the directory where you downloaded/cloned the project files (the directory containing `manifest.json`).
-6.  The "Reddit AI Tool" should now appear in your list of extensions and its icon in the Chrome toolbar.
+---
+## ⚙️ How It Works Briefly
 
-## 5. Usage
+1.  **User Initiates**: Click the extension icon on a Reddit page and configure options in the popup.
+2.  **Service Worker Orchestrates**: The background script (`service_worker.js`) manages the flow.
+3.  **Reddit Scraper (`redditScraper.js`)**: Injected into Reddit to extract data.
+4.  **AI Paster (`aiPaster.js`)**: Injected into the chosen AI platform to paste the content.
+5.  **Data Handling**: Uses `chrome.storage.local` for temporary data transfer and `chrome.storage.sync` for persistent settings. No data is sent to external servers by the extension itself.
 
-1.  Navigate to a Reddit thread page you want to analyze.
-2.  Click the "Reddit AI Tool" icon in the Chrome toolbar.
-3.  The popup will appear. You can choose to "Include hidden/spam comments" using the toggle.
-4.  Click the "Scrape and Send to Gemini" button.
-5.  The extension will scrape the content, open a new tab for Gemini, and attempt to paste the content.
-6.  If direct pasting fails, you'll receive a notification that the content has been copied to your clipboard, and you can then manually paste it into Gemini.
+---
+## 🚀 Installation
 
-## 6. Tech Stack
+<details>
+<summary>Click to expand installation instructions</summary>
 
-* **Platform:** Google Chrome Extension (Manifest V3)
-* **Core Logic:** Vanilla JavaScript (ES6+)
-* **User Interface (Popup):** HTML, CSS, Vanilla JavaScript
-* **APIs:**
-    * Chrome Extension APIs: `chrome.tabs`, `chrome.storage`, `chrome.scripting`, `chrome.notifications`, `chrome.action`, `chrome.runtime`.
-    * DOM Manipulation for web page interaction.
-* **Key Browser Features Used:** `MutationObserver` for dynamic content.
+To load this extension for development or testing:
 
-## 7. File Structure (Key Files)
+1.  **Download or Clone**: Get the project files onto your local machine.
+    ```bash
+    git clone [https://github.com/YOUR_USERNAME/YOUR_REPOSITORY_NAME.git](https://github.com/YOUR_USERNAME/YOUR_REPOSITORY_NAME.git) # Replace with your repo URL
+    ```
+2.  **Open Chrome Extensions**: Navigate to `chrome://extensions`.
+3.  **Enable Developer Mode**: Ensure the "Developer mode" toggle is on.
+4.  **Load Unpacked**: Click "Load unpacked" and select the extension's root folder (the one containing `manifest.json`).
+5.  **Verify**: "Reddit to AI" should appear in your extensions list and its icon in the Chrome toolbar.
 
-├── manifest.json             # Defines the extension, permissions, and components├── service_worker.js         # Background script for orchestration├── popup.html                # HTML for the browser action popup├── popup.js                  # JavaScript for popup interactions├── popup.css                 # CSS for popup styling├── redditScraper.js          # Content script for scraping Reddit├── geminiPaster.js           # Content script for pasting into Gemini├── images/                   # Directory for extension icons│   ├── icon16.png│   ├── icon48.png│   └── icon128.png└── README.md                 # This file└── docs/                     # (Contains PRD, Tech Design Doc, Research)├── PRD-MVP.txt├── Tech-Design-MVP.txt└── DeepResearch.txt
-## 8. Current Status & Known Issues
+</details>
 
-* **Core Scraping & Pasting:** The basic flow of scraping Reddit post details, comments (including hierarchy), and pasting into Gemini is functional.
-* **Gemini Interaction:** Pasting into Gemini relies on specific DOM selectors which can change if Google updates the Gemini UI. A fallback to clipboard is implemented.
-* **Content Cleaning:**
-    * **Post Content:** Currently includes raw HTML from the post body. Needs refinement to extract clean, readable text.
-    * **Comment Text:** Efforts are ongoing to reliably remove metadata (author, timestamps, action links) and ensure only the user-written comment text is extracted. The current cleaning is imperfect.
-* **"Load More Comments":** The logic for handling "load more comments" and ensuring all comments are fetched is complex and may require further refinement for very long or unusually structured threads.
-* **Error Handling:** Basic error notifications are in place. More granular error reporting could be added.
+---
+## 🛠️ Usage
 
-## 9. Future Enhancements (Post-MVP)
+1.  **Navigate**: Go to a Reddit thread page.
+2.  **Activate**: Click the "Reddit to AI" toolbar icon.
+3.  **Configure (Optional)**:
+    * Toggle "Include Collapsed Comments."
+    * Click "Options" for scraping depth, AI model selection (AI Studio recommended for image support), and notification preferences.
+4.  **Scrape**: Click "Scrape and Send."
+5.  **Observe**: The popup shows progress. A new tab opens for the AI, and content is pasted.
 
-* **Support for Other AI Platforms:** Integrate with Claude, ChatGPT, Grok, etc.
-* **Advanced Content Formatting:** Option to preserve or convert Reddit markdown.
-* **Multiple Prompt Buttons:** Allow users to select predefined prompts/tasks for the AI to perform on the scraped content (e.g., "Summarize comments," "Analyze OP's question").
-* **Custom User Prompts:** Allow users to input their own custom prompt to be sent with the scraped data.
-* **User Configuration:** Options page for setting default AI, comment inclusion preferences, etc.
-* **Video/Complex Media Scraping:** Extend scraping capabilities (e.g., for integration with tools like Google AI Studio for video analysis).
-* **Improved UI/UX:** More polished popup, progress indicators.
+---
+## 🔧 Configuration
 
-## 10. Development Notes
+Customize via the **"Options"** button in the popup:
 
-* **Testing:** Thoroughly test on diverse Reddit threads (text, image, link posts; short and long threads; various comment structures).
-* **DOM Selectors:** Reddit's and Gemini's DOM can change frequently. Selectors in `redditScraper.js` and `geminiPaster.js` are the most likely parts to require updates. Prioritize stable selectors (e.g., `data-testid`, ARIA roles) where possible.
-* **Debugging:** Use the Chrome Developer Tools extensively:
-    * Service Worker console: Accessible via `chrome://extensions` -> Reddit AI Tool -> "Service worker".
-    * Content Script console: Accessible via Developer Tools on the Reddit tab (for `redditScraper.js`) or Gemini tab (for `geminiPaster.js`).
-    * Popup console: Right-click the extension icon -> "Inspect popup".
+* **Scraping Depth**: Slider (Default: 75, Range: 1-500 "load more" attempts).
+* **Select AI Model**: Dropdown (Gemini, ChatGPT, Claude, AI Studio - Default: AI Studio).
+* **Show Notifications**: Checkbox (Default: Enabled).
 
-## 11. Disclaimer
+Settings are saved using `chrome.storage.sync`.
 
-This tool interacts with the Document Object Model (DOM) of Reddit and Gemini. Changes to the structure of these websites may break the extension's functionality, requiring updates to the scraping and pasting logic. The extension is provided as-is, and its reliability depends on the stability of the websites it interacts with.
+---
+## 💻 Tech Stack Highlights
+
+* **Platform**: Chrome Extension (Manifest V3)
+* **Core**: Vanilla JavaScript (ES6+), HTML5, CSS3
+* **Key APIs**: `chrome.tabs`, `chrome.storage`, `chrome.scripting`, `chrome.notifications`, `MutationObserver`.
+
+---
+## 📁 Key Files Overview
+
+<details>
+<summary>Click to expand key files list</summary>
+
+* `manifest.json`: Extension definition.
+* `service_worker.js`: Background logic.
+* `popup.html` / `popup.js` / `popup.css`: Main user interface.
+* `options.html` / `options.js` / `options.css`: Configuration interface.
+* `redditScraper.js`: Reddit page content script.
+* `aiPaster.js`: AI platform content script.
+</details>
+
+---
+## ⚠️ Known Issues & Limitations
+
+* **AI Platform UI Changes**: Pasting relies on DOM selectors of AI sites, which can change and break functionality, requiring updates.
+* **Image Pasting**: Reliability varies by AI platform (AI Studio is generally best).
+* **Content Cleaning**: Minor Reddit UI elements might occasionally be included.
+* **Performance**: Very large threads can be resource-intensive.
+
+---
+## 🔮 Future Enhancements
+
+* Smarter AI interaction (e.g., prompt templates).
+* Selective content scraping.
+* Direct data export (JSON, TXT).
+
+---
+## 🤝 Contributing
+
+Contributions are welcome!
+
+1.  **Fork** the repository.
+2.  Create a **feature branch** (`git checkout -b feature/your-idea`).
+3.  **Develop** and **test** your changes.
+4.  **Commit** your work (`git commit -m "feat: Add some feature"`).
+5.  **Push** to your branch (`git push origin feature/your-idea`).
+6.  Open a **Pull Request**.
+
+---
+## 📜 Disclaimer
+
+> This tool interacts with the DOM of Reddit and third-party AI platforms. UI changes on these sites may break functionality. Use responsibly and in accordance with the terms of service of all involved platforms. Provided "as-is" without warranty.
+
+---
+## 📄 License
+
+This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
+*(Ensure a LICENSE file exists in your project, or update this section accordingly.)*
+
