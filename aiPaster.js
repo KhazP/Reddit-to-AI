@@ -27,7 +27,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
     console.log('AI Paster: Using AI config:', aiConfig.name);
 
-    chrome.storage.local.get('redditThreadData', async (result) => { // Make callback async
+    chrome.storage.local.get('redditThreadData', (result) => {
       if (chrome.runtime.lastError) {
         console.error('AI Paster: Error retrieving data from storage:', chrome.runtime.lastError.message);
         sendResponse({ status: 'Error: Could not get data from storage' });
@@ -36,46 +36,21 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       const data = result.redditThreadData;
       if (data) {
         console.log('AI Paster: Data retrieved from storage.');
-        // Format data using the potentially user-defined template
-        const formattedText = await formatDataForPasting(data); // Now awaits
-        
+        const formattedText = formatDataForPasting(data);
+        // Get imageDataUrls (plural) - it should be an array
         const imageDataUrls = (data.post && Array.isArray(data.post.imageDataUrls)) ? data.post.imageDataUrls : [];
         const youtubeVideoUrls = (data.post && Array.isArray(data.post.youtubeVideoUrls)) ? data.post.youtubeVideoUrls : [];
 
+        // Call the modified paste function, passing the array
         pasteTextAndMedia(formattedText, imageDataUrls, youtubeVideoUrls, aiConfig, sendResponse);
       } else {
         console.error('AI Paster: No data found in storage.');
         sendResponse({ status: 'Error: No data in storage' });
       }
     });
-    return true; 
+    return true; // Indicates that the response will be sent asynchronously
   }
 });
-
-const DEFAULT_PASTE_TEMPLATE = `REDDIT THREAD ANALYSIS REQUEST
-=================================
-Thread URL: {url}
-Subreddit: r/{subreddit}
-Title: {title}
-Post Author: u/{postAuthor}
-
-POST CONTENT:
----------------------------------
-{postContent}
-
-POST IMAGE URLS:
-{imageUrls}
-
-POST LINK URLS:
-{linkUrls}
-
-YOUTUBE VIDEO URLS:
-{youtubeVideoUrls}
-
-COMMENTS:
----------------------------------
-{comments}
-`;
 
 function formatCommentLevel(comments, currentDepth) {
   let formattedComments = "";
@@ -125,71 +100,42 @@ function formatCommentLevel(comments, currentDepth) {
   return formattedComments;
 }
 
-async function formatDataForPasting(data) {
-  console.log('AI Paster: Formatting data using template...');
+function formatDataForPasting(data) {
+  console.log('AI Paster: Formatting data...');
+  let formattedString = `REDDIT THREAD ANALYSIS REQUEST\\n`;
+  formattedString += `=================================\\n`;
+  formattedString += `Thread URL: ${data.url}\\n`; // Changed data.scrapedUrl to data.url
+  formattedString += `Subreddit: ${data.post.subreddit}\\n`;
+  formattedString += `Title: ${data.post.title}\\n\\n`;
 
-  const templateData = await new Promise((resolve) => {
-    chrome.storage.sync.get('pasteTemplate', (result) => {
-      resolve(result.pasteTemplate);
-    });
-  });
+  formattedString += `POST CONTENT:\\n`;
+  formattedString += `---------------------------------\\n`;
+  formattedString += `${data.post.content || data.post.textContent || 'No text content for the post.'}\\n\\n`; // Added data.post.content as primary
 
-  const template = templateData || DEFAULT_PASTE_TEMPLATE;
-  console.log(`AI Paster: Using template: ${templateData ? 'User Defined' : 'Default'}`);
-
-  let formattedString = template;
-
-  // Helper for safe replacement
-  const safeReplace = (str, placeholder, value) => {
-    if (value === undefined || value === null) {
-      console.warn(`AI Paster: Placeholder ${placeholder} has no data. Replacing with 'N/A'.`);
-      value = 'N/A';
+  if (data.post.imageUrls && data.post.imageUrls.length > 0) {
+    formattedString += `POST IMAGE URLS (${data.post.imageUrls.length} found):\\n`;
+    data.post.imageUrls.forEach(url => formattedString += `- ${url}\\n`);
+    if (data.post.imageDataUrls && data.post.imageDataUrls.length > 1) {
+        formattedString += `(Note: Multiple images were scraped. The first image will be attempted for pasting.)\\n`;
     }
-    // Ensure value is a string to avoid issues with .replace on non-strings
-    const stringValue = String(value); 
-    return str.replace(new RegExp(placeholder.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\\\$&'), 'g'), stringValue);
-  };
-  
-  const post = data.post || {};
-  formattedString = safeReplace(formattedString, '{title}', post.title);
-  formattedString = safeReplace(formattedString, '{url}', data.url); // data.url is top level
-  formattedString = safeReplace(formattedString, '{subreddit}', post.subreddit);
-  formattedString = safeReplace(formattedString, '{postAuthor}', post.author);
-  formattedString = safeReplace(formattedString, '{postContent}', post.content || post.textContent || 'No text content for the post.');
-
-  // Handle array data for URLs
-  const imageUrlsText = (post.imageUrls && post.imageUrls.length > 0)
-    ? post.imageUrls.map(url => `- ${url}`).join('\\n')
-    : 'No image URLs found.';
-  formattedString = safeReplace(formattedString, '{imageUrls}', imageUrlsText);
-  if (post.imageUrls && post.imageUrls.length > 0 && post.imageDataUrls && post.imageDataUrls.length > 1 && template.includes('{imageUrls}')) {
-    formattedString += `\\n(Note: Multiple images were scraped. Pasting behavior depends on the AI platform.)`;
+    formattedString += `\\n`;
   }
 
+  if (data.post.linkUrls && data.post.linkUrls.length > 0) {
+    formattedString += `POST LINK URLS:\\n`;
+    data.post.linkUrls.forEach(url => formattedString += `- ${url}\\n`);
+    formattedString += `\\n`;
+  }
 
-  const linkUrlsText = (post.linkUrls && post.linkUrls.length > 0)
-    ? post.linkUrls.map(url => `- ${url}`).join('\\n')
-    : 'No link URLs found.';
-  formattedString = safeReplace(formattedString, '{linkUrls}', linkUrlsText);
-
-  const youtubeVideoUrlsText = (post.youtubeVideoUrls && post.youtubeVideoUrls.length > 0)
-    ? post.youtubeVideoUrls.map(url => `- ${url}`).join('\\n')
-    : 'No YouTube video URLs found.';
-  formattedString = safeReplace(formattedString, '{youtubeVideoUrls}', youtubeVideoUrlsText);
-  
-  // Format comments
-  let commentsText = 'No comments were scraped or found.';
+  formattedString += `COMMENTS:\\n`;
+  formattedString += `---------------------------------\\n`;
   if (data.comments && data.comments.length > 0) {
-    commentsText = formatCommentLevel(data.comments, 0);
+    formattedString += formatCommentLevel(data.comments, 0); // Initial call to the recursive helper
+  } else {
+    formattedString += `No comments were scraped or found.\\n`;
   }
-  formattedString = safeReplace(formattedString, '{comments}', commentsText);
-  
-  // Remove any unreplaced placeholders (optional, or replace with 'N/A')
-  formattedString = formattedString.replace(/{\w+}/g, 'N/A (Placeholder not filled)');
-
-
-  console.log('AI Paster: Data formatted with template.');
-  // console.log(formattedString); 
+  console.log('AI Paster: Data formatted.');
+  // console.log(formattedString); // For debugging the formatted string
   return formattedString;
 }
 
@@ -233,80 +179,36 @@ async function typeText(element, text, clearFirst = false) {
     }
 
     // Fallback for non-textarea elements or if execCommand fails
-    let pasteMethodUsed = "None";
-
-    // Method 1: Clipboard API + execCommand('paste')
-    try {
-        await navigator.clipboard.writeText(text);
-        console.log('AI Paster: Text successfully written to clipboard.');
-        element.focus(); // Re-focus after clipboard write, essential for execCommand
-        if (document.execCommand('paste')) {
-            console.log('AI Paster: execCommand("paste") executed successfully.');
-            pasteMethodUsed = "Clipboard API + execCommand('paste')";
-        } else {
-            // execCommand('paste') can return false or throw if not supported/allowed
-            console.warn('AI Paster: execCommand("paste") returned false or failed. Trying other methods.');
-            // Attempt to clear and re-paste if it failed but didn't throw. Sometimes elements need a 'clean' paste.
-            if (element.value !== undefined) element.value = ''; else if (element.isContentEditable) element.innerHTML = '';
-            element.focus();
-            if (document.execCommand('paste')) {
-                 console.log('AI Paster: execCommand("paste") succeeded after clear.');
-                 pasteMethodUsed = "Clipboard API + execCommand('paste') (after clear)";
-            } else {
-                throw new Error("execCommand('paste') failed even after clear.");
+    if (element.isContentEditable || element.tagName !== 'TEXTAREA') {
+        // For contentEditable divs, try to set innerText or use clipboard API
+        // A common approach for rich text editors is to simulate input or use clipboard
+        try {
+            // Try to use the clipboard API first for reliability with complex inputs
+            await navigator.clipboard.writeText(text);
+            element.focus(); // Re-focus after clipboard write
+            // Simulate paste for contentEditable. This is more robust.
+            const success = document.execCommand('insertText', false, text);
+            if (!success) {
+                 // Fallback if execCommand('insertText') is not supported or fails
+                console.warn('AI Paster: execCommand("insertText") failed, trying to set value/textContent directly.');
+                if (element.value !== undefined) element.value = text; // For input/textarea
+                else if (element.textContent !== undefined) element.textContent = text; // For other elements
+                else element.innerText = text; // Fallback
             }
+        } catch (err) {
+            console.error('AI Paster: Clipboard or execCommand paste failed:', err);
+            // Fallback to direct value/textContent assignment if clipboard/execCommand fails
+            if (element.value !== undefined) element.value = text;
+            else if (element.textContent !== undefined) element.textContent = text;
+            else element.innerText = text;
         }
-    } catch (err) {
-        console.warn('AI Paster: Method 1 (Clipboard API + execCommand("paste")) failed:', err.message);
-        
-        // Method 2: execCommand('insertText') - good for contentEditable, less so for textarea
-        if (element.isContentEditable) {
-            try {
-                element.focus(); // Ensure focus before insertText
-                if (document.execCommand('insertText', false, text)) {
-                    console.log('AI Paster: execCommand("insertText") executed successfully.');
-                    pasteMethodUsed = "execCommand('insertText')";
-                } else {
-                    throw new Error("execCommand('insertText') failed.");
-                }
-            } catch (insertErr) {
-                console.warn('AI Paster: Method 2 (execCommand("insertText")) failed:', insertErr.message);
-                // Method 3: Direct assignment (Fallback)
-                if (element.value !== undefined) {
-                    element.value = text;
-                    pasteMethodUsed = "Direct assignment (element.value)";
-                } else if (element.isContentEditable) { // Check again for contentEditable for innerHTML/innerText
-                    element.innerHTML = text; // Or innerText, depending on needs (innerHTML allows HTML)
-                    pasteMethodUsed = "Direct assignment (element.innerHTML)";
-                } else if (element.textContent !== undefined) {
-                    element.textContent = text;
-                    pasteMethodUsed = "Direct assignment (element.textContent)";
-                } else {
-                    element.innerText = text; // Last resort for direct assignment
-                    pasteMethodUsed = "Direct assignment (element.innerText)";
-                }
-                console.log('AI Paster: Used fallback direct assignment.');
-            }
-        } else if (element.value !== undefined) { // For <textarea> or <input>
-            element.value = text;
-            pasteMethodUsed = "Direct assignment (element.value)";
-            console.log('AI Paster: Used direct assignment for textarea/input.');
-        } else {
-            console.error('AI Paster: Target element is not contentEditable and has no value property. Could not paste text.');
-            pasteMethodUsed = "Failed - No suitable direct assignment method";
-        }
+    } else { // For standard textareas
+        element.value = text;
     }
-
-    if (pasteMethodUsed.startsWith("Failed")) {
-        console.error('AI Paster: All text pasting methods failed.');
-    } else {
-        console.log(`AI Paster: Text input successful using method: ${pasteMethodUsed}.`);
-    }
-
     // Dispatch input and change events to ensure the site recognizes the new value
     element.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }));
     element.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
-    // console.log('AI Paster: Text input events dispatched.'); // Combined log above
+    console.log('AI Paster: Text input simulated.');
 }
 
 
@@ -330,7 +232,6 @@ async function pasteTextAndMedia(text, imageDataUrls, youtubeVideoUrls, aiConfig
     if (targetElement) {
       console.log('AI Paster: Target element found:', targetElement);
       let pasteStatusMessage = "";
-        let imagePasteMethodUsed = "None";
 
       try {
         // 1. Paste Main Text Content
@@ -348,90 +249,27 @@ async function pasteTextAndMedia(text, imageDataUrls, youtubeVideoUrls, aiConfig
             imagesAttempted++;
             const imageFile = dataURLtoFile(imageDataUrl, `reddit_post_image_${imagesAttempted}.png`);
             if (imageFile) {
-              let specificImagePasted = false;
-              // Method 1: Clipboard API for images
               try {
-                console.log(`AI Paster: Attempting Clipboard API paste for image ${imagesAttempted}/${imageDataUrls.length} for ${aiName}.`);
-                const clipboardItem = new ClipboardItem({ [imageFile.type]: imageFile });
-                await navigator.clipboard.write([clipboardItem]);
-                targetElement.focus(); // Re-focus
-                if (document.execCommand('paste')) {
-                  console.log(`AI Paster: Image ${imagesAttempted}/${imageDataUrls.length} pasted successfully using Clipboard API + execCommand('paste') for ${aiName}.`);
-                  imagePasteMethodUsed = "Clipboard API + execCommand('paste')";
-                  imagesPastedSuccessfully++;
-                  specificImagePasted = true;
-                } else {
-                  console.warn(`AI Paster: execCommand('paste') failed for image ${imagesAttempted}/${imageDataUrls.length} with Clipboard API for ${aiName}.`);
-                  throw new Error("execCommand('paste') failed for image with Clipboard API.");
-                }
-              } catch (clipboardImgError) {
-                console.warn(`AI Paster: Clipboard API for image ${imagesAttempted}/${imageDataUrls.length} failed for ${aiName}:`, clipboardImgError.message);
-                imagePasteMethodUsed = "Clipboard API failed";
+                targetElement.focus(); 
 
-                // Method 2: Hidden File Input
-                console.log(`AI Paster: Attempting hidden file input paste for image ${imagesAttempted}/${imageDataUrls.length} for ${aiName}.`);
-                // Generic selector - this would need to be platform-specific based on research
-                const fileInputSelectors = [
-                    'input[type="file"][accept*="image"]', // General
-                    'button[aria-label*="attach file" i] + input[type="file"]', // Common pattern
-                    'div[class*="upload"] input[type="file"]',
-                    // Platform-specific selectors would be added here after research:
-                    // e.g., for ChatGPT: 'form input[type="file"]' (this is a guess)
-                ];
-                let hiddenInput = null;
-                for (const sel of fileInputSelectors) {
-                    hiddenInput = document.querySelector(sel);
-                    if (hiddenInput) {
-                        console.log(`AI Paster: Found potential hidden file input with selector: ${sel}`);
-                        break;
-                    }
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(imageFile);
+
+                targetElement.dispatchEvent(new DragEvent('dragenter', { bubbles: true, cancelable: true, dataTransfer: dataTransfer }));
+                targetElement.dispatchEvent(new DragEvent('dragover', { bubbles: true, cancelable: true, dataTransfer: dataTransfer }));
+                
+                await new Promise(resolve => setTimeout(resolve, 200)); 
+
+                targetElement.dispatchEvent(new DragEvent('drop', { bubbles: true, cancelable: true, dataTransfer: dataTransfer }));
+                
+                console.log(`AI Paster: Image ${imagesAttempted}/${imageDataUrls.length} drop event dispatched for ${aiName}.`);
+                imagesPastedSuccessfully++;
+                if (imageDataUrls.length > 1 && imagesAttempted < imageDataUrls.length) {
+                    await new Promise(resolve => setTimeout(resolve, 500)); 
                 }
 
-                if (hiddenInput) {
-                    try {
-                        const dataTransfer = new DataTransfer();
-                        dataTransfer.items.add(imageFile);
-                        hiddenInput.files = dataTransfer.files;
-                        hiddenInput.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
-                        console.log(`AI Paster: Image ${imagesAttempted}/${imageDataUrls.length} dispatched to hidden file input for ${aiName}.`);
-                        imagePasteMethodUsed = "Hidden File Input";
-                        imagesPastedSuccessfully++;
-                        specificImagePasted = true;
-                    } catch (fileInputError) {
-                        console.warn(`AI Paster: Hidden file input method for image ${imagesAttempted}/${imageDataUrls.length} failed for ${aiName}:`, fileInputError.message);
-                        imagePasteMethodUsed += " | Hidden File Input failed";
-                    }
-                } else {
-                    console.warn(`AI Paster: No suitable hidden file input found for image ${imagesAttempted}/${imageDataUrls.length} for ${aiName}.`);
-                    imagePasteMethodUsed += " | No Hidden File Input found";
-                }
-
-                // Method 3: Fallback to simulated Drag and Drop (if other methods failed)
-                if (!specificImagePasted) {
-                    console.log(`AI Paster: Falling back to Drag and Drop for image ${imagesAttempted}/${imageDataUrls.length} for ${aiName}.`);
-                    try {
-                        targetElement.focus(); 
-                        const dataTransfer = new DataTransfer();
-                        dataTransfer.items.add(imageFile);
-
-                        targetElement.dispatchEvent(new DragEvent('dragenter', { bubbles: true, cancelable: true, dataTransfer: dataTransfer }));
-                        targetElement.dispatchEvent(new DragEvent('dragover', { bubbles: true, cancelable: true, dataTransfer: dataTransfer }));
-                        await new Promise(resolve => setTimeout(resolve, 200)); 
-                        targetElement.dispatchEvent(new DragEvent('drop', { bubbles: true, cancelable: true, dataTransfer: dataTransfer }));
-                        
-                        console.log(`AI Paster: Image ${imagesAttempted}/${imageDataUrls.length} drop event dispatched for ${aiName}.`);
-                        imagePasteMethodUsed = "Simulated Drag and Drop"; // Update method if successful
-                        imagesPastedSuccessfully++;
-                        specificImagePasted = true;
-                    } catch (dropError) {
-                        console.error(`AI Paster: Error during drag/drop for image ${imagesAttempted}/${imageDataUrls.length} for ${aiName}:`, dropError);
-                        imagePasteMethodUsed += " | Drag and Drop failed"; // Append failure status
-                    }
-                }
-              }
-
-              if (specificImagePasted && imageDataUrls.length > 1 && imagesAttempted < imageDataUrls.length) {
-                await new Promise(resolve => setTimeout(resolve, 700)); // Increased delay between multiple image pastes
+              } catch (imgError) {
+                console.error(`AI Paster: Error during image pasting for image ${imagesAttempted}/${imageDataUrls.length} for ${aiName}:`, imgError);
               }
             } else {
               console.warn(`AI Paster: Could not convert imageDataUrl to File object for image ${imagesAttempted}/${imageDataUrls.length}.`);
@@ -439,9 +277,9 @@ async function pasteTextAndMedia(text, imageDataUrls, youtubeVideoUrls, aiConfig
           }
 
           if (imagesPastedSuccessfully > 0) {
-            pasteStatusMessage += ` ${imagesPastedSuccessfully}/${imageDataUrls.length} image(s) pasting attempted (Method: ${imagePasteMethodUsed}).`;
+            pasteStatusMessage += ` ${imagesPastedSuccessfully}/${imageDataUrls.length} image(s) pasting attempted.`;
           } else {
-            pasteStatusMessage += ` Image pasting attempted for ${imageDataUrls.length} image(s), but none were successfully processed or dispatched (Method: ${imagePasteMethodUsed}).`;
+            pasteStatusMessage += ` Image pasting attempted for ${imageDataUrls.length} image(s), but none were successfully processed or dispatched.`;
           }
         } else {
             console.log('AI Paster: No image data URLs provided or array is empty.');
