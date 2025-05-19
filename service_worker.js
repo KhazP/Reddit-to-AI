@@ -281,7 +281,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                       gemini: { name: "Gemini", url: "https://gemini.google.com/app", inputSelector: "div[contenteditable=\"true\"][aria-label=\"Enter a prompt here\"]" }, // Updated Gemini selector
                       chatgpt: { name: "ChatGPT", url: "https://chatgpt.com/", inputSelector: "#prompt-textarea" },
                       claude: { name: "Claude", url: "https://claude.ai/new", inputSelector: "div.ProseMirror[contenteditable='true']" },
-                      aistudio: { name: "AI Studio", url: "https://aistudio.google.com/prompts/new_chat", inputSelector: "textarea[aria-label='Type something or pick one from prompt gallery']" }
+                      aistudio: { name: "AI Studio", url: "https://aistudio.google.com/prompts/new_chat", inputSelector: "textarea[aria-label*='Type something']" }
                   };
 
                   // Ensure the most current inputSelector from localAiModels is used if different from storage
