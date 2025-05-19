@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
     scrapeBtn.style.display = 'block'; 
     stopScrapeBtn.style.display = 'none'; 
     if (progressBarContainer) progressBarContainer.style.display = 'none';
-    if (statusText) statusText.textContent = 'Ready to scrape.';
+    if (statusDisplay) statusDisplay.textContent = 'Ready to scrape.';
     updateStatusIndicator('Active', 'active');
     isStopping = false; // Reset the stopping flag
   }
