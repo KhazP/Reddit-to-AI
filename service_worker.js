@@ -278,7 +278,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
                   const DEFAULT_MODEL_KEY = 'aistudio'; // Changed default to AI Studio
                   const localAiModels = {
-                      gemini: { name: "Gemini", url: "https://gemini.google.com/app", inputSelector: "rich-textarea div[contenteditable='true']" },
+                      gemini: { name: "Gemini", url: "https://gemini.google.com/app", inputSelector: "div[contenteditable=\"true\"][aria-label=\"Enter a prompt here\"]" }, // Updated Gemini selector
                       chatgpt: { name: "ChatGPT", url: "https://chatgpt.com/", inputSelector: "#prompt-textarea" },
                       claude: { name: "Claude", url: "https://claude.ai/new", inputSelector: "div.ProseMirror[contenteditable='true']" },
                       aistudio: { name: "AI Studio", url: "https://aistudio.google.com/prompts/new_chat", inputSelector: "textarea[aria-label='Type something or pick one from prompt gallery']" }

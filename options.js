@@ -12,15 +12,26 @@ window.initializeOptions = function() {
     const attemptsValueDisplay = document.getElementById('attemptsValue');
     const saveStatusDisplay = document.getElementById('saveStatus');
     const aiModelSelect = document.getElementById('aiModelSelect');
-    const showNotificationsCheckbox = document.getElementById('showNotifications'); // Added
+    const showNotificationsCheckbox = document.getElementById('showNotifications');
+    const scrapingTimeoutInput = document.getElementById('scrapingTimeout'); 
+    const pasteTemplateTextarea = document.getElementById('pasteTemplate'); // New textarea
+    const saveTemplateBtn = document.getElementById('saveTemplateBtn'); // New button
+    const resetTemplateBtn = document.getElementById('resetTemplateBtn'); // New button
+    const templateSaveStatus = document.getElementById('templateSaveStatus'); // New status display
 
-    if (!originalAttemptsSlider || !attemptsValueDisplay || !aiModelSelect || !showNotificationsCheckbox) { // Added showNotificationsCheckbox check
+    if (!originalAttemptsSlider || !attemptsValueDisplay || !aiModelSelect || !showNotificationsCheckbox || !scrapingTimeoutInput ||
+        !pasteTemplateTextarea || !saveTemplateBtn || !resetTemplateBtn || !templateSaveStatus) {
         console.warn("Options UI elements not found:", {
             attemptsSlider: !!originalAttemptsSlider,
             attemptsValueDisplay: !!attemptsValueDisplay,
             saveStatusDisplay: !!saveStatusDisplay,
             aiModelSelect: !!aiModelSelect,
-            showNotificationsCheckbox: !!showNotificationsCheckbox // Added
+            showNotificationsCheckbox: !!showNotificationsCheckbox,
+            scrapingTimeoutInput: !!scrapingTimeoutInput,
+            pasteTemplateTextarea: !!pasteTemplateTextarea,
+            saveTemplateBtn: !!saveTemplateBtn,
+            resetTemplateBtn: !!resetTemplateBtn,
+            templateSaveStatus: !!templateSaveStatus
         });
         return;
     }
@@ -34,11 +45,39 @@ window.initializeOptions = function() {
     console.log("UI elements found/prepared, continuing initialization");
     const DEFAULT_ATTEMPTS = 75;
     const MAX_STEPS_LIMIT = 500;
+    const DEFAULT_SCRAPING_TIMEOUT = 120; // seconds
+    const MIN_SCRAPING_TIMEOUT = 30;
+    const MAX_SCRAPING_TIMEOUT = 1800;
+
+    const DEFAULT_PASTE_TEMPLATE = `REDDIT THREAD ANALYSIS REQUEST
+=================================
+Thread URL: {url}
+Subreddit: r/{subreddit}
+Title: {title}
+Post Author: u/{postAuthor}
+
+POST CONTENT:
+---------------------------------
+{postContent}
+
+POST IMAGE URLS:
+{imageUrls}
+
+POST LINK URLS:
+{linkUrls}
+
+YOUTUBE VIDEO URLS:
+{youtubeVideoUrls}
+
+COMMENTS:
+---------------------------------
+{comments}
+`;
 
     // AI Model Configurations
     const aiModels = {
-        gemini: { name: "Gemini", url: "https://gemini.google.com/app", inputSelector: "rich-textarea div[contenteditable='true']" },
-        chatgpt: { name: "ChatGPT", url: "https://chatgpt.com/", inputSelector: "#prompt-textarea" }, // Corrected selector
+        gemini: { name: "Gemini", url: "https://gemini.google.com/app", inputSelector: "div[contenteditable=\"true\"][aria-label=\"Enter a prompt here\"]" }, // Updated Gemini selector
+        chatgpt: { name: "ChatGPT", url: "https://chatgpt.com/", inputSelector: "#prompt-textarea" },
         claude: { name: "Claude", url: "https://claude.ai/new", inputSelector: "div.ProseMirror[contenteditable='true']" },
         aistudio: { name: "AI Studio", url: "https://aistudio.google.com/prompts/new_chat", inputSelector: "textarea[aria-label='Type something or pick one from prompt gallery']" }
     };
@@ -68,7 +107,7 @@ window.initializeOptions = function() {
     }
 
     // Load saved settings
-    chrome.storage.sync.get(['maxLoadMoreAttempts', 'selectedAiModelKey', 'selectedAiModelConfig', 'showNotifications'], (result) => { // Added showNotifications
+    chrome.storage.sync.get(['maxLoadMoreAttempts', 'selectedAiModelKey', 'selectedAiModelConfig', 'showNotifications', 'scrapingTimeout', 'pasteTemplate'], (result) => {
         console.log("Loaded settings from storage:", result);
         let savedAttempts = result.maxLoadMoreAttempts;
         if (savedAttempts !== undefined) {
@@ -109,6 +148,30 @@ window.initializeOptions = function() {
             showNotificationsCheckbox.checked = true;
             chrome.storage.sync.set({ showNotifications: true });
             console.log("Set Show Notifications checkbox to default (true) and saved.");
+        }
+
+        // Load and set Scraping Timeout
+        let savedTimeout = result.scrapingTimeout;
+        if (savedTimeout !== undefined && !isNaN(parseInt(savedTimeout))) {
+            savedTimeout = parseInt(savedTimeout);
+            if (savedTimeout < MIN_SCRAPING_TIMEOUT) savedTimeout = MIN_SCRAPING_TIMEOUT;
+            if (savedTimeout > MAX_SCRAPING_TIMEOUT) savedTimeout = MAX_SCRAPING_TIMEOUT;
+            scrapingTimeoutInput.value = savedTimeout;
+            console.log("Set Scraping Timeout input to saved value:", savedTimeout);
+        } else {
+            scrapingTimeoutInput.value = DEFAULT_SCRAPING_TIMEOUT;
+            chrome.storage.sync.set({ scrapingTimeout: DEFAULT_SCRAPING_TIMEOUT });
+            console.log("Set Scraping Timeout input to default value:", DEFAULT_SCRAPING_TIMEOUT);
+        }
+
+        // Load and set Paste Template
+        if (result.pasteTemplate !== undefined) {
+            pasteTemplateTextarea.value = result.pasteTemplate;
+            console.log("Set Paste Template to saved value.");
+        } else {
+            pasteTemplateTextarea.value = DEFAULT_PASTE_TEMPLATE;
+            // No need to save default on load, only on explicit save/reset
+            console.log("Set Paste Template to default value.");
         }
     });
 
@@ -198,5 +261,59 @@ window.initializeOptions = function() {
         });
         showNotificationsCheckbox.dataset.listenerAttached = 'true';
         console.log("Attached change listener to Show Notifications checkbox.");
+    }
+
+    // Add change event listener for Scraping Timeout input
+    if (!scrapingTimeoutInput.dataset.listenerAttached) {
+        scrapingTimeoutInput.addEventListener('change', (event) => {
+            let value = parseInt(event.target.value, 10);
+            if (isNaN(value) || value < MIN_SCRAPING_TIMEOUT) {
+                value = MIN_SCRAPING_TIMEOUT;
+            } else if (value > MAX_SCRAPING_TIMEOUT) {
+                value = MAX_SCRAPING_TIMEOUT;
+            }
+            event.target.value = value; // Correct the input field if value was out of bounds
+            chrome.storage.sync.set({ scrapingTimeout: value }, () => {
+                console.log('Scraping Timeout saved:', value);
+                if (saveStatusDisplay) {
+                    saveStatusDisplay.textContent = 'Settings saved!';
+                    setTimeout(() => {
+                        saveStatusDisplay.textContent = '';
+                    }, 2000);
+                }
+            });
+        });
+        scrapingTimeoutInput.dataset.listenerAttached = 'true';
+        console.log("Attached change listener to Scraping Timeout input.");
+    }
+
+    // Save Paste Template
+    if (!saveTemplateBtn.dataset.listenerAttached) {
+        saveTemplateBtn.addEventListener('click', () => {
+            const templateValue = pasteTemplateTextarea.value;
+            chrome.storage.sync.set({ pasteTemplate: templateValue }, () => {
+                console.log('Paste Template saved.');
+                templateSaveStatus.textContent = 'Template saved!';
+                setTimeout(() => {
+                    templateSaveStatus.textContent = '';
+                }, 2000);
+            });
+        });
+        saveTemplateBtn.dataset.listenerAttached = 'true';
+    }
+
+    // Reset Paste Template
+    if (!resetTemplateBtn.dataset.listenerAttached) {
+        resetTemplateBtn.addEventListener('click', () => {
+            pasteTemplateTextarea.value = DEFAULT_PASTE_TEMPLATE;
+            chrome.storage.sync.set({ pasteTemplate: DEFAULT_PASTE_TEMPLATE }, () => {
+                console.log('Paste Template reset to default and saved.');
+                templateSaveStatus.textContent = 'Template reset to default and saved!';
+                setTimeout(() => {
+                    templateSaveStatus.textContent = '';
+                }, 2000);
+            });
+        });
+        resetTemplateBtn.dataset.listenerAttached = 'true';
     }
 };
