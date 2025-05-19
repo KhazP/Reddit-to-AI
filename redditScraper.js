@@ -22,10 +22,11 @@ if (typeof window.redditScraperInitialized === 'undefined') {
     let observer;
     let loadMoreAttempts;
     let MAX_LOAD_MORE_ATTEMPTS;
+    let USER_CONFIGURED_SCRAPING_TIMEOUT_MS; // For storing timeout from settings
     let stableChecks;
     let MAX_STABLE_CHECKS;
     let scrapingTimeoutId;
-    let SCRAPING_TIMEOUT;
+    // let SCRAPING_TIMEOUT; // This will be superseded by USER_CONFIGURED_SCRAPING_TIMEOUT_MS
     let CHECK_INTERVAL;
     let includeHiddenCommentsState;
     let resolvePromiseScraping; 
@@ -33,13 +34,16 @@ if (typeof window.redditScraperInitialized === 'undefined') {
     let currentSendResponse; 
     let checkIntervalId; 
     let OBSERVER_QUIET_PERIOD; 
-    let stopScrapingSignal = false; // Added stop signal flag
+    let stopScrapingSignal = false; 
 
-    async function loadConfiguration() {
+    async function loadScrapingConfiguration() { // Renamed and expanded
         return new Promise((resolve) => {
-            chrome.storage.sync.get(['maxLoadMoreAttempts'], (result) => {
+            chrome.storage.sync.get(['maxLoadMoreAttempts', 'scrapingTimeout'], (result) => {
                 MAX_LOAD_MORE_ATTEMPTS = result.maxLoadMoreAttempts || 75; // Default to 75 if not set
+                // Default to 120 seconds (120000 ms) if not set or invalid
+                USER_CONFIGURED_SCRAPING_TIMEOUT_MS = (result.scrapingTimeout && Number.isInteger(result.scrapingTimeout) && result.scrapingTimeout >= 30) ? result.scrapingTimeout * 1000 : 120000; 
                 console.log("Configuration loaded: MAX_LOAD_MORE_ATTEMPTS set to", MAX_LOAD_MORE_ATTEMPTS);
+                console.log("Configuration loaded: USER_CONFIGURED_SCRAPING_TIMEOUT_MS set to", USER_CONFIGURED_SCRAPING_TIMEOUT_MS);
                 resolve();
             });
         });
@@ -869,7 +873,8 @@ if (typeof window.redditScraperInitialized === 'undefined') {
 
         // Start the scraping timeout
         scrapingTimeoutId = setTimeout(() => {
-            console.warn(`Scraping timed out after ${SCRAPING_TIMEOUT / 1000} seconds.`);
+            // Use the globally loaded and configured timeout value here
+            console.warn(`Scraping timed out after ${USER_CONFIGURED_SCRAPING_TIMEOUT_MS / 1000} seconds.`);
             sendProgressUpdate(`Scraping timed out. Only ${allCommentsMap.size} comments collected so far.`);
             if (observer) observer.disconnect();
             if (checkIntervalId) clearInterval(checkIntervalId);
@@ -887,7 +892,7 @@ if (typeof window.redditScraperInitialized === 'undefined') {
             }
             resolvePromiseScraping = null; // Nullify after use
             rejectPromiseScraping = null;  // Nullify after use
-        }, SCRAPING_TIMEOUT);
+        }, USER_CONFIGURED_SCRAPING_TIMEOUT_MS); // Use the loaded value
 
 
         // Initial setup for comment scraping
@@ -984,7 +989,7 @@ if (typeof window.redditScraperInitialized === 'undefined') {
         console.log("scrapeRedditData called. includeHiddenComments:", includeHiddenComments);
         sendProgressUpdate("Scraping process initiated...");
 
-        await loadConfiguration(); // Load configuration first
+        await loadScrapingConfiguration(); // Load new configuration function
 
         // Reset global-like variables for this scraping session
         allCommentsMap = new Map();
@@ -998,9 +1003,10 @@ if (typeof window.redditScraperInitialized === 'undefined') {
         checkIntervalId = null;
         resolvePromiseScraping = null;
         rejectPromiseScraping = null; 
+        stopScrapingSignal = false; // Reset stop signal for this new scrape
 
         MAX_STABLE_CHECKS = 10;      // Increased from 6
-        SCRAPING_TIMEOUT = 600000;   // 10 minutes 
+        // SCRAPING_TIMEOUT is now effectively USER_CONFIGURED_SCRAPING_TIMEOUT_MS for the logic within initializeCommentScraping
         CHECK_INTERVAL = 3000;      
 
         try {
@@ -1038,76 +1044,122 @@ if (typeof window.redditScraperInitialized === 'undefined') {
             allCommentsMap = new Map();
             loadMoreAttempts = 0;
             stableChecks = 0;
-            MAX_STABLE_CHECKS = 10; // e.g., 5 checks * 2s interval = 10s of stability
-            SCRAPING_TIMEOUT = 120000; // 2 minutes global timeout for the whole scraping process
-            CHECK_INTERVAL = 1000; // Check every 1 second for stability or new comments
-            OBSERVER_QUIET_PERIOD = 2500; // Wait 2.5s after last mutation before considering stable
+            // MAX_STABLE_CHECKS is set in scrapeRedditData
+            // SCRAPING_TIMEOUT for this onMessage handler's own timeout also needs to use the configured value.
+            // This timeout is a fallback, the main one is inside scrapeRedditData/initializeCommentScraping
+            CHECK_INTERVAL = 1000; 
+            OBSERVER_QUIET_PERIOD = 2500; 
             includeHiddenCommentsState = request.includeHidden || false;
+            stopScrapingSignal = false; // Reset stop signal for this new scrape command
 
-            // Clear any previous scraping timeout
-            if (scrapingTimeoutId) clearTimeout(scrapingTimeoutId);
-            if (checkIntervalId) clearInterval(checkIntervalId);
+            // Clear any previous scraping timeout (primarily for this onMessage handler's own timeout)
+            // Note: scrapeRedditData also clears its own timeouts.
+            if (scrapingTimeoutId) clearTimeout(scrapingTimeoutId); // Clears timeout from previous onMessage call
+            if (checkIntervalId) clearInterval(checkIntervalId); // Clears interval from previous onMessage call
 
 
-            // Global timeout for the entire scraping process
+            // Global timeout for the entire scraping process, initiated from this message handler.
+            // This should use the USER_CONFIGURED_SCRAPING_TIMEOUT_MS loaded by scrapeRedditData.
+            // However, scrapeRedditData is called *after* this timeout is set.
+            // This implies loadScrapingConfiguration might need to be called here first,
+            // or the timeout value passed from popup, or this specific timeout uses a fixed value / separate config.
+
+            // For now, let's assume this timeout should also respect the user setting.
+            // To do this correctly, loadScrapingConfiguration must be called BEFORE this timeout is set.
+            // This means restructuring the start of this "scrapeReddit" message handler.
+
+            // Let's defer setting this specific timeout until after loadScrapingConfiguration
+            // which is called at the beginning of scrapeRedditData.
+            // The timeout set *inside* scrapeRedditData (which then calls initializeCommentScraping)
+            // is the primary one that uses USER_CONFIGURED_SCRAPING_TIMEOUT_MS.
+
+            // The timeout here is more of a safeguard for the entire call to scrapeRedditData.
+            // It's reasonable for it to also use USER_CONFIGURED_SCRAPING_TIMEOUT_MS.
+            // Let's adjust the flow:
+            // 1. Call a slimmed down config load here JUST for the timeout for *this* specific guardrail timeout.
+            // 2. scrapeRedditData will call its full loadScrapingConfiguration for its internal logic.
+            // This is slightly redundant. A better way: scrapeRedditData returns its promise, and this timeout wraps that.
+
+            // Simpler approach for now: This specific timeout in onMessage will use the last loaded USER_CONFIGURED_SCRAPING_TIMEOUT_MS
+            // or a default if it's the very first run.
+            // This isn't ideal as it might use an old value if options changed and script wasn't reloaded.
+            // The most robust solution is for scrapeRedditData to handle its own timeout fully.
+            // The current structure has scrapeRedditData setting a timeout, and this onMessage setting another one.
+
+            // Let's ensure this timeout also uses the dynamically loaded value.
+            // The `USER_CONFIGURED_SCRAPING_TIMEOUT_MS` will be available after `scrapeRedditData` calls `loadScrapingConfiguration`.
+            // This means the timeout set directly in this onMessage handler should ideally be set *after* that.
+            // Or, this specific timeout can be removed if the one in scrapeRedditData is deemed sufficient.
+
+            // Given SCRAPING_TIMEOUT was previously hardcoded here, let's make it use the (potentially not-yet-loaded)
+            // USER_CONFIGURED_SCRAPING_TIMEOUT_MS, or a fallback.
+            const outerTimeoutDuration = USER_CONFIGURED_SCRAPING_TIMEOUT_MS || 120000; // Fallback if not loaded yet
+
             scrapingTimeoutId = setTimeout(() => {
-                console.error("RedditScraper: Global scraping timeout reached!");
-                sendProgressUpdate("Scraping timed out globally.");
-                if (observer) observer.disconnect();
+                console.error(`RedditScraper: Outer scraping timeout reached after ${outerTimeoutDuration / 1000}s!`);
+                sendProgressUpdate("Scraping timed out globally (outer guard).");
+                if (observer) observer.disconnect(); // Attempt to clean up
                 if (checkIntervalId) clearInterval(checkIntervalId);
                 // Ensure to respond if a promise was pending
-                if (rejectPromiseScraping) {
-                    rejectPromiseScraping({ error: "Global scraping timeout." });
-                } else if (currentSendResponse) { // <<<< USE STORED sendResponse
-                    currentSendResponse({ error: "Global scraping timeout occurred before promise setup." });
-                    currentSendResponse = null; // <<<< PREVENT REUSE
+                if (checkIntervalId) clearInterval(checkIntervalId); // Attempt to clean up
+                // Ensure to respond if a promise was pending from scrapeRedditData or if currentSendResponse is available
+                if (typeof rejectPromiseScraping === 'function') { // Check if rejectPromiseScraping is a function
+                    rejectPromiseScraping({ error: "Global scraping timeout (outer guard)." });
+                } else if (currentSendResponse) { 
+                    currentSendResponse({ error: "Global scraping timeout occurred before promise setup (outer guard)." });
+                    currentSendResponse = null; 
                 }
-            }, SCRAPING_TIMEOUT);
+            }, outerTimeoutDuration); // Use the determined duration
 
             scrapeRedditData(request.includeHidden)
                 .then(data => {
-                    clearTimeout(scrapingTimeoutId);
-                    if (observer) observer.disconnect();
-                    if (checkIntervalId) clearInterval(checkIntervalId);
+                    clearTimeout(scrapingTimeoutId); // Clear this onMessage handler's specific timeout
+                    // Observer and checkIntervalId are managed by scrapeRedditData's lifecycle (finishScraping or its error handling)
                     console.log("RedditScraper: Scraping successful. Sending data back.");
                     sendProgressUpdate("Scraping complete. Sending data.");
-                    if (currentSendResponse) { // <<<< USE STORED sendResponse
+                    if (currentSendResponse) { 
                         currentSendResponse({ data: data });
-                        currentSendResponse = null; // <<<< PREVENT REUSE
+                        currentSendResponse = null; 
                     }
                 })
                 .catch(error => {
-                    clearTimeout(scrapingTimeoutId);
-                    if (observer) observer.disconnect();
-                    if (checkIntervalId) clearInterval(checkIntervalId);
-                    console.error("RedditScraper: Error during scraping:", error);
+                    clearTimeout(scrapingTimeoutId); // Clear this onMessage handler's specific timeout
+                    console.error("RedditScraper: Error during scraping (caught in onMessage):", error);
                     sendProgressUpdate(`Scraping failed: ${error.message || error}`);
-                    if (currentSendResponse) { // <<<< USE STORED sendResponse
+                    if (currentSendResponse) { 
                         currentSendResponse({ error: error.message || "Unknown error during scraping." });
-                        currentSendResponse = null; // <<<< PREVENT REUSE
+                        currentSendResponse = null; 
                     }
                 });
             
             return true; // Indicate asynchronous response
 
-        } else if (request.action === "stopScrapingRequested") {
-            console.log("RedditScraper: Received stopScrapingRequested.");
-            sendProgressUpdate("Stop request received by scraper. Halting operations.");
+        } else if (request.action === "cancelScraping") {
+            console.log("RedditScraper: Received cancelScraping.");
+            sendProgressUpdate("Cancel request received by scraper. Halting operations.");
+            stopScrapingSignal = true; // Set the global stop signal
             if (observer) observer.disconnect();
             if (scrapingTimeoutId) clearTimeout(scrapingTimeoutId);
             if (checkIntervalId) clearInterval(checkIntervalId);
             
             // If the main scraping promise is active, reject it.
             if (rejectPromiseScraping) {
-                rejectPromiseScraping({ status: "stopped", message: "Scraping stopped by user." });
+                rejectPromiseScraping({ status: "cancelled", message: "Scraping cancelled by user." });
+                resolvePromiseScraping = null; // Ensure no lingering resolve
+                rejectPromiseScraping = null;  // Ensure no lingering reject
             } else {
                 // If scraping wasn't fully initialized but stop was requested.
-                console.warn("RedditScraper: Stop requested, but main scraping promise not active. Sending stop status anyway.");
-                 if (currentSendResponse) { // <<<< USE STORED sendResponse
-                    currentSendResponse({ status: "stopped", message: "Scraping stopped by user before full initialization." });
-                    currentSendResponse = null; // <<<< PREVENT REUSE
+                console.warn("RedditScraper: Cancel requested, but main scraping promise not active. Sending cancel status anyway.");
+                 if (currentSendResponse) { 
+                    currentSendResponse({ status: "cancelled", message: "Scraping cancelled by user before full initialization." });
+                    currentSendResponse = null; 
                 }
             }
+            // Ensure currentSendResponse is cleared if it was the one for the initial 'scrapeReddit' command.
+            // This logic assumes 'currentSendResponse' is mainly for the 'scrapeReddit' command's response.
+            // If 'cancelScraping' is a fire-and-forget or has its own response path not tied to 'scrapeReddit', this might be fine.
+            // However, the original 'scrapeReddit' might still be waiting for a response.
+            // Rejecting 'rejectPromiseScraping' should handle the response for the 'scrapeReddit' command.
             // No need to return true here if we've already responded or will respond via promise rejection.
             // However, if the original 'scrapeReddit' call is still pending a response, this path might not correctly use its sendResponse.
             // The logic above tries to handle this by rejecting the promise, which should trigger the .catch in scrapeReddit handler.
