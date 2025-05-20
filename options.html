@@ -36,6 +36,13 @@
                     <br><strong>Note:</strong> Gemini does not currently support pasting images. For the best experience, please select AI Studio.
                 </p>
             </div>
+            <div class="form-group">
+                <label for="defaultPromptTemplate">Default Prompt Template (Use {content} as placeholder for Reddit content):</label>
+                <textarea id="defaultPromptTemplate" name="defaultPromptTemplate" rows="4"></textarea>
+                <p class="description">
+                    The {content} placeholder will be replaced with the scraped Reddit content when sending to the AI.
+                </p>
+            </div>
         </div>
 
         <div class="settings-section" id="notificationSettings">
@@ -47,11 +54,27 @@
             </div>
         </div>
 
-        <!-- Placeholder for Advanced Settings -->
-        <!-- <div class="settings-section" id="advancedSettings">
+        <div class="settings-section" id="advancedSettings">
             <h2>Advanced Settings</h2>
-            <p class="description">Future advanced settings will appear here.</p>
-        </div> -->
+            <div class="form-group">
+                <label>Data Storage:</label>
+                <div>
+                    <input type="radio" id="dataStorageDontSave" name="dataStorage" value="dontSave">
+                    <label for="dataStorageDontSave">Don't save scraped content</label>
+                </div>
+                <div>
+                    <input type="radio" id="dataStorageSessionOnly" name="dataStorage" value="sessionOnly">
+                    <label for="dataStorageSessionOnly">Save for current session only</label>
+                </div>
+                <div>
+                    <input type="radio" id="dataStoragePersistent" name="dataStorage" value="persistent" checked>
+                    <label for="dataStoragePersistent">Save persistently (local storage)</label>
+                </div>
+                <p class="description">
+                    Choose how scraped content is stored. "Don't save" discards content after sending. "Session only" keeps it until the browser closes. "Persistent" saves it in local storage for future sessions.
+                </p>
+            </div>
+        </div>
 
         <div class="save-actions">
             <!-- The save button from RedditAIUI is explicit. Here, saving is implicit on change. -->
