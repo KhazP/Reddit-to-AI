@@ -27,27 +27,28 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
     console.log('AI Paster: Using AI config:', aiConfig.name);
 
-    chrome.storage.local.get('redditThreadData', (result) => {
-      if (chrome.runtime.lastError) {
-        console.error('AI Paster: Error retrieving data from storage:', chrome.runtime.lastError.message);
-        sendResponse({ status: 'Error: Could not get data from storage' });
-        return;
-      }
-      const data = result.redditThreadData;
-      if (data) {
-        console.log('AI Paster: Data retrieved from storage.');
-        const formattedText = formatDataForPasting(data);
-        // Get imageDataUrls (plural) - it should be an array
-        const imageDataUrls = (data.post && Array.isArray(data.post.imageDataUrls)) ? data.post.imageDataUrls : [];
-        const youtubeVideoUrls = (data.post && Array.isArray(data.post.youtubeVideoUrls)) ? data.post.youtubeVideoUrls : [];
+    // Directly use data passed in the request object
+    const formattedText = request.scrapedData; // This is the final, template-applied text from service_worker
+    const imageDataUrls = request.imageDataUrls || []; // Default to empty array if not provided
+    const youtubeVideoUrls = request.youtubeVideoUrls || []; // Default to empty array if not provided
 
-        // Call the modified paste function, passing the array
-        pasteTextAndMedia(formattedText, imageDataUrls, youtubeVideoUrls, aiConfig, sendResponse);
-      } else {
-        console.error('AI Paster: No data found in storage.');
-        sendResponse({ status: 'Error: No data in storage' });
-      }
-    });
+    if (formattedText === undefined) { // Check if essential data is missing
+        console.error('AI Paster: scrapedData (formatted text) not provided in the request.');
+        sendResponse({ status: 'Error: Essential scrapedData not provided to aiPaster.js' });
+        return false; // Synchronous response for this error path
+    }
+
+    console.log('AI Paster: Received data directly from service_worker. Bypassing local storage and formatDataForPasting.');
+    if (imageDataUrls.length > 0) {
+        console.log(`AI Paster: Received ${imageDataUrls.length} imageDataUrls directly.`);
+    }
+    if (youtubeVideoUrls.length > 0) {
+        console.log(`AI Paster: Received ${youtubeVideoUrls.length} youtubeVideoUrls directly.`);
+    }
+    
+    // Call the paste function with the directly received data
+    pasteTextAndMedia(formattedText, imageDataUrls, youtubeVideoUrls, aiConfig, sendResponse);
+    
     return true; // Indicates that the response will be sent asynchronously
   }
 });

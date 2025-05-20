@@ -12,15 +12,24 @@ window.initializeOptions = function() {
     const attemptsValueDisplay = document.getElementById('attemptsValue');
     const saveStatusDisplay = document.getElementById('saveStatus');
     const aiModelSelect = document.getElementById('aiModelSelect');
-    const showNotificationsCheckbox = document.getElementById('showNotifications'); // Added
+    const showNotificationsCheckbox = document.getElementById('showNotifications');
+    const defaultPromptTemplateTextarea = document.getElementById('defaultPromptTemplate');
+    const dataStorageDontSaveRadio = document.getElementById('dataStorageDontSave');
+    const dataStorageSessionOnlyRadio = document.getElementById('dataStorageSessionOnly');
+    const dataStoragePersistentRadio = document.getElementById('dataStoragePersistent');
 
-    if (!originalAttemptsSlider || !attemptsValueDisplay || !aiModelSelect || !showNotificationsCheckbox) { // Added showNotificationsCheckbox check
+    if (!originalAttemptsSlider || !attemptsValueDisplay || !aiModelSelect || !showNotificationsCheckbox ||
+        !defaultPromptTemplateTextarea || !dataStorageDontSaveRadio || !dataStorageSessionOnlyRadio || !dataStoragePersistentRadio) {
         console.warn("Options UI elements not found:", {
             attemptsSlider: !!originalAttemptsSlider,
             attemptsValueDisplay: !!attemptsValueDisplay,
             saveStatusDisplay: !!saveStatusDisplay,
             aiModelSelect: !!aiModelSelect,
-            showNotificationsCheckbox: !!showNotificationsCheckbox // Added
+            showNotificationsCheckbox: !!showNotificationsCheckbox,
+            defaultPromptTemplateTextarea: !!defaultPromptTemplateTextarea,
+            dataStorageDontSaveRadio: !!dataStorageDontSaveRadio,
+            dataStorageSessionOnlyRadio: !!dataStorageSessionOnlyRadio,
+            dataStoragePersistentRadio: !!dataStoragePersistentRadio
         });
         return;
     }
@@ -43,6 +52,8 @@ window.initializeOptions = function() {
         aistudio: { name: "AI Studio", url: "https://aistudio.google.com/prompts/new_chat", inputSelector: "textarea[aria-label='Type something or pick one from prompt gallery']" }
     };
     const DEFAULT_AI_MODEL = 'aistudio'; // Changed default to AI Studio
+    const DEFAULT_PROMPT_TEMPLATE = "Scraped Content:\n\n{content}";
+    const DEFAULT_DATA_STORAGE_OPTION = 'persistent';
 
     // Populate AI Model Select Dropdown
     // Clear existing options before populating
@@ -68,7 +79,14 @@ window.initializeOptions = function() {
     }
 
     // Load saved settings
-    chrome.storage.sync.get(['maxLoadMoreAttempts', 'selectedAiModelKey', 'selectedAiModelConfig', 'showNotifications'], (result) => { // Added showNotifications
+    chrome.storage.sync.get([
+        'maxLoadMoreAttempts', 
+        'selectedAiModelKey', 
+        'selectedAiModelConfig', 
+        'showNotifications',
+        'defaultPromptTemplate',
+        'dataStorageOption'
+    ], (result) => {
         console.log("Loaded settings from storage:", result);
         let savedAttempts = result.maxLoadMoreAttempts;
         if (savedAttempts !== undefined) {
@@ -109,6 +127,31 @@ window.initializeOptions = function() {
             showNotificationsCheckbox.checked = true;
             chrome.storage.sync.set({ showNotifications: true });
             console.log("Set Show Notifications checkbox to default (true) and saved.");
+        }
+
+        // Load and set Default Prompt Template
+        if (typeof result.defaultPromptTemplate === 'string') {
+            defaultPromptTemplateTextarea.value = result.defaultPromptTemplate;
+            console.log("Set Default Prompt Template to saved value:", result.defaultPromptTemplate);
+        } else {
+            defaultPromptTemplateTextarea.value = DEFAULT_PROMPT_TEMPLATE;
+            chrome.storage.sync.set({ defaultPromptTemplate: DEFAULT_PROMPT_TEMPLATE });
+            console.log("Set Default Prompt Template to default and saved.");
+        }
+
+        // Load and set Data Storage Option
+        const dataStorageRadios = {
+            dontSave: dataStorageDontSaveRadio,
+            sessionOnly: dataStorageSessionOnlyRadio,
+            persistent: dataStoragePersistentRadio
+        };
+        if (result.dataStorageOption && dataStorageRadios[result.dataStorageOption]) {
+            dataStorageRadios[result.dataStorageOption].checked = true;
+            console.log("Set Data Storage Option to saved value:", result.dataStorageOption);
+        } else {
+            dataStorageRadios[DEFAULT_DATA_STORAGE_OPTION].checked = true;
+            chrome.storage.sync.set({ dataStorageOption: DEFAULT_DATA_STORAGE_OPTION });
+            console.log("Set Data Storage Option to default (" + DEFAULT_DATA_STORAGE_OPTION + ") and saved.");
         }
     });
 
@@ -199,4 +242,45 @@ window.initializeOptions = function() {
         showNotificationsCheckbox.dataset.listenerAttached = 'true';
         console.log("Attached change listener to Show Notifications checkbox.");
     }
+
+    // Add event listener for Default Prompt Template textarea
+    if (!defaultPromptTemplateTextarea.dataset.listenerAttached) {
+        defaultPromptTemplateTextarea.addEventListener('input', (event) => {
+            const value = event.target.value;
+            chrome.storage.sync.set({ defaultPromptTemplate: value }, () => {
+                console.log('Default Prompt Template saved:', value);
+                if (saveStatusDisplay) {
+                    saveStatusDisplay.textContent = 'Settings saved!';
+                    setTimeout(() => {
+                        saveStatusDisplay.textContent = '';
+                    }, 2000);
+                }
+            });
+        });
+        defaultPromptTemplateTextarea.dataset.listenerAttached = 'true';
+        console.log("Attached input listener to Default Prompt Template textarea.");
+    }
+
+    // Add event listeners for Data Storage radio buttons
+    const dataStorageRadios = [dataStorageDontSaveRadio, dataStorageSessionOnlyRadio, dataStoragePersistentRadio];
+    dataStorageRadios.forEach(radio => {
+        if (!radio.dataset.listenerAttached) {
+            radio.addEventListener('change', (event) => {
+                if (event.target.checked) {
+                    const selectedValue = event.target.value;
+                    chrome.storage.sync.set({ dataStorageOption: selectedValue }, () => {
+                        console.log('Data Storage Option saved:', selectedValue);
+                        if (saveStatusDisplay) {
+                            saveStatusDisplay.textContent = 'Settings saved!';
+                            setTimeout(() => {
+                                saveStatusDisplay.textContent = '';
+                            }, 2000);
+                        }
+                    });
+                }
+            });
+            radio.dataset.listenerAttached = 'true';
+            console.log(`Attached change listener to Data Storage radio: ${radio.id}`);
+        }
+    });
 };
