@@ -1,3 +1,5 @@
+console.log('RedditSummarizerPanel: Script execution start.');
+
 // Flag to ensure marked.min.js is loaded only once
 let markedScriptLoaded = false;
 let markedLoadingInProgress = false; // To prevent multiple load attempts
@@ -66,7 +68,7 @@ function loadMarkedScript(callback) {
   (document.head || document.documentElement).appendChild(script);
 }
 
-
+console.log('RedditSummarizerPanel: Checking window.isRedditSummarizerPanelInjected. Current value:', window.isRedditSummarizerPanelInjected);
 if (!window.isRedditSummarizerPanelInjected) {
     window.isRedditSummarizerPanelInjected = true;
     console.log("RedditSummarizerPanel: Injecting script.");
@@ -95,8 +97,16 @@ if (!window.isRedditSummarizerPanelInjected) {
         </div>
     `;
     document.body.insertAdjacentHTML('beforeend', panelHTML);
+    const panelElementForCheck = document.getElementById('redditSummarizerPanel');
+    console.log('RedditSummarizerPanel: panelHTML inserted. Element found by getElementById immediately after insertion:', panelElementForCheck ? 'Found' : 'NOT Found');
 
     const panel = document.getElementById('redditSummarizerPanel');
+    console.log('RedditSummarizerPanel: "panel" variable assigned. Value:', panel ? 'Assigned' : 'NULL');
+    if (!panel) {
+        console.error('RedditSummarizerPanel: CRITICAL - panel element is null after getElementById. Panel will not work.');
+        return; // Early exit if panel is null, as nothing else will work
+    }
+
     const closeBtn = document.getElementById('rsCloseBtn');
     const statusMessageEl = document.getElementById('rsStatusMessage');
     const progressBarContainerEl = document.getElementById('rsProgressBarContainer');
@@ -306,7 +316,7 @@ if (!window.isRedditSummarizerPanelInjected) {
                 return;
             }
             if (state) {
-                console.log("RedditSummarizerPanel: Received initial state:", state);
+                console.log('RedditSummarizerPanel: Initial getScrapingState callback. Received state:', JSON.stringify(state));
                 updatePanelUI(state);
                 // If scraping is not active and there's no error or summary, the panel might start hidden or show a ready message.
                 // The updatePanelUI logic handles visibility based on isActive.

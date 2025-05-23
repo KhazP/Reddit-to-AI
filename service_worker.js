@@ -97,10 +97,23 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
       (async () => {
           try {
+              console.log(`Service Worker: Attempting to inject floatingPanel.css into tab ${activeTab.id}`);
               await chrome.scripting.insertCSS({ target: { tabId: activeTab.id }, files: ['floatingPanel.css'] });
-              await chrome.scripting.executeScript({ target: { tabId: activeTab.id }, files: ['floatingPanel.js'] });
+              console.log(`Service Worker: floatingPanel.css injection attempted for tab ${activeTab.id}.`);
+
+              console.log(`Service Worker: Attempting to inject floatingPanel.js into tab ${activeTab.id}`);
+              const fpResults = await chrome.scripting.executeScript({ target: { tabId: activeTab.id }, files: ['floatingPanel.js'] });
+              console.log(`Service Worker: floatingPanel.js injection attempted for tab ${activeTab.id}. Results:`, JSON.stringify(fpResults || "No results array"));
+              if (fpResults && fpResults[0] && fpResults[0].error) {
+                  console.error(`Service Worker: Error reported in floatingPanel.js injection result for tab ${activeTab.id}:`, fpResults[0].error);
+                  // Potentially set an error state here if this indicates a critical failure
+                  // scrapingState.error = "Failed to inject floating panel UI.";
+                  // broadcastScrapingState();
+              }
               
-              scrapingState.message = 'Injecting main scraper...';
+              // This message might now be slightly out of order if fpResults shows an error,
+              // but the primary goal is to see the injection logs.
+              scrapingState.message = 'Panel scripts injection attempted. Injecting main scraper...'; 
               scrapingState.percentage = 20;
               broadcastScrapingState();
 
