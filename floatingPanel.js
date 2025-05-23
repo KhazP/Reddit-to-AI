@@ -346,26 +346,11 @@ if (!window.isRedditSummarizerPanelInjected) {
                 if (statusMessageEl) statusMessageEl.textContent = "No initial state from service worker. Popup might need to be opened once.";
                 if (userGuidanceEl) userGuidanceEl.style.display = 'none';
             }
-        });
-    });
+        }); 
+    }); 
 
     console.log("RedditSummarizerPanel: Script fully initialized and listeners active.");
 
-} else {
-    console.log("RedditSummarizerPanel: Script already injected. Skipping re-injection.");
-}
-// Removed duplicated block:
-// ... (The duplicated block was already removed in previous turns) ...
-        } else { // This else corresponds to the 'if (state)' from getScrapingState callback
-            // This case means 'state' was null or undefined from getScrapingState
-            // This was the location of the previously removed duplicated block
-            // No specific logic needed here if statusMessageEl etc. are checked inside updatePanelUI
-            // or if the initial console.warn covers it.
-        }
-    }); // This is the end of the chrome.runtime.sendMessage({ action: 'getScrapingState' } callback
-
-    console.log("RedditSummarizerPanel: Script fully initialized and listeners active."); // This log might be reached if panel is null and the if(!panel) block doesn't stop further execution.
-
-} else { // This else corresponds to if (!window.isRedditSummarizerPanelInjected)
+} else { 
     console.log("RedditSummarizerPanel: Script already injected. Skipping re-injection.");
 }
