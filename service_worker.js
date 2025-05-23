@@ -264,66 +264,78 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
                 // 5. Retrieve ALL relevant settings: AI model, prompt template, data storage
                 chrome.storage.sync.get([
-                    'selectedAiModelKey', 
-                    'selectedAiModelConfig', 
+                    // 'selectedAiModelKey', // Old setting
+                    // 'selectedAiModelConfig', // Old setting
                     'defaultPromptTemplate', 
-                    'dataStorageOption'
-                ], (settingsResult) => {
+                    'dataStorageOption',
+                    'selectedLlmProvider', // New setting for API provider
+                    'apiKey',              // New setting for API key
+                    'modelName'            // New setting for optional model name
+                ], async (settingsResult) => { // Made this callback async
                   if (chrome.runtime.lastError) {
                     console.error('Service Worker: Error retrieving settings:', chrome.runtime.lastError.message);
                     sendPopupStatus('Error: Could not get settings.', 80, true);
                     showNotificationIfEnabled('Configuration Error', 'Could not retrieve extension settings.');
                     isScraping = false; scrapingTabId = null;
+                    // Handle data removal if necessary, similar to other error paths
+                    const dataStorageOption = settingsResult.dataStorageOption || 'persistent';
+                    if (dataStorageOption === 'persistent') chrome.storage.local.remove('redditThreadData');
+                    else if (dataStorageOption === 'sessionOnly') chrome.storage.session.remove('redditThreadData');
                     return;
                   }
 
-                  let aiConfig = settingsResult.selectedAiModelConfig;
-                  let aiKey = settingsResult.selectedAiModelKey;
+                  // let aiConfig = settingsResult.selectedAiModelConfig; // Old
+                  // let aiKey = settingsResult.selectedAiModelKey; // Old
                   const userPromptTemplate = settingsResult.defaultPromptTemplate;
-                  // Default to 'persistent' if not set, aligning with options.js
                   const dataStorageOption = settingsResult.dataStorageOption || 'persistent'; 
-                  let defaultedAi = false; // Renamed to avoid conflict
+                  // let defaultedAi = false; // Old
 
-                  const DEFAULT_MODEL_KEY = 'aistudio'; 
-                  const DEFAULT_PROMPT_TEMPLATE = "Scraped Content:\n\n{content}"; // From options.js
-                  const localAiModels = {
-                      gemini: { name: "Gemini", url: "https://gemini.google.com/app", inputSelector: "rich-textarea div[contenteditable='true']" },
-                      chatgpt: { name: "ChatGPT", url: "https://chatgpt.com/", inputSelector: "#prompt-textarea" },
-                      claude: { name: "Claude", url: "https://claude.ai/new", inputSelector: "div.ProseMirror[contenteditable='true']" },
-                      aistudio: { name: "AI Studio", url: "https://aistudio.google.com/prompts/new_chat", inputSelector: "textarea[aria-label*='Type something']" }
-                  };
+                  // const DEFAULT_MODEL_KEY = 'aistudio'; // Old
+                  const DEFAULT_PROMPT_TEMPLATE = "Scraped Content:\n\n{content}";
+                  // const localAiModels = { // Old - related to tab opening and pasting
+                  //     gemini: { name: "Gemini", url: "https://gemini.google.com/app", inputSelector: "rich-textarea div[contenteditable='true']" },
+                  //     chatgpt: { name: "ChatGPT", url: "https://chatgpt.com/", inputSelector: "#prompt-textarea" },
+                  //     claude: { name: "Claude", url: "https://claude.ai/new", inputSelector: "div.ProseMirror[contenteditable='true']" },
+                  //     aistudio: { name: "AI Studio", url: "https://aistudio.google.com/prompts/new_chat", inputSelector: "textarea[aria-label*='Type something']" }
+                  // };
+
+                  // New API settings
+                  const DEFAULT_LLM_PROVIDER = 'openai'; // Default provider
+                  const provider = settingsResult.selectedLlmProvider || DEFAULT_LLM_PROVIDER;
+                  const apiKey = settingsResult.apiKey;
+                  const modelName = settingsResult.modelName; // User-specified model name, can be empty
 
                   // Ensure the most current inputSelector from localAiModels is used if different from storage
-                  if (aiKey && localAiModels[aiKey] && aiConfig && aiConfig.inputSelector !== localAiModels[aiKey].inputSelector) {
-                    console.warn(`Service Worker: Stored inputSelector for '${aiKey}' ("${aiConfig.inputSelector}") differs from local definition ("${localAiModels[aiKey].inputSelector}"). Updating.`);
-                    aiConfig.inputSelector = localAiModels[aiKey].inputSelector; // Update in-memory config
-                    // Also update the configuration in storage to persist the correction
-                    chrome.storage.sync.set({ selectedAiModelConfig: aiConfig }, () => {
-                        console.log(`Service Worker: Corrected inputSelector for key '${aiKey}' has been saved to storage.`);
-                    });
-                  }
+                  // if (aiKey && localAiModels[aiKey] && aiConfig && aiConfig.inputSelector !== localAiModels[aiKey].inputSelector) {
+                  //   console.warn(`Service Worker: Stored inputSelector for '${aiKey}' ("${aiConfig.inputSelector}") differs from local definition ("${localAiModels[aiKey].inputSelector}"). Updating.`);
+                  //   aiConfig.inputSelector = localAiModels[aiKey].inputSelector; // Update in-memory config
+                  //   // Also update the configuration in storage to persist the correction
+                  //   chrome.storage.sync.set({ selectedAiModelConfig: aiConfig }, () => {
+                  //       console.log(`Service Worker: Corrected inputSelector for key '${aiKey}' has been saved to storage.`);
+                  //   });
+                  // }
 
-                  if (!aiConfig || !aiConfig.url || !aiConfig.inputSelector || !aiKey || !localAiModels[aiKey]) {
-                    console.warn('Service Worker: Invalid or missing AI configuration from storage. Attempting to recover or default.', 'Retrieved Key:', aiKey, 'Retrieved Config:', aiConfig);
+                  // if (!aiConfig || !aiConfig.url || !aiConfig.inputSelector || !aiKey || !localAiModels[aiKey]) {
+                  //   console.warn('Service Worker: Invalid or missing AI configuration from storage. Attempting to recover or default.', 'Retrieved Key:', aiKey, 'Retrieved Config:', aiConfig);
                     
-                    if (aiKey && localAiModels[aiKey] && (!aiConfig || !aiConfig.url || !aiConfig.inputSelector)) {
-                        console.log(`Service Worker: Key '${aiKey}' is valid but config object is missing/invalid. Using fresh config for '${aiKey}'.`);
-                        aiConfig = localAiModels[aiKey];
-                        chrome.storage.sync.set({ selectedAiModelConfig: aiConfig }, () => {
-                            console.log(`Service Worker: Corrected AI config for key '${aiKey}' saved to storage.`);
-                        });
-                    } else {
-                        console.log('Service Worker: Cannot recover from stored key. Defaulting to AI Studio.');
-                        aiKey = DEFAULT_MODEL_KEY;
-                        aiConfig = localAiModels[DEFAULT_MODEL_KEY];
-                        defaultedAi = true;
-                        sendPopupStatus(`AI Config error. Defaulted to ${aiConfig.name}. Check options.`, 80, true);
-                        showNotificationIfEnabled('Configuration Warning', `AI settings error. Defaulted to ${aiConfig.name}. Please check options.`);
-                        chrome.storage.sync.set({ selectedAiModelKey: aiKey, selectedAiModelConfig: aiConfig }, () => {
-                            console.log('Service Worker: Saved default AI (AI Studio) config to storage.');
-                        });
-                    }
-                  }
+                  //   if (aiKey && localAiModels[aiKey] && (!aiConfig || !aiConfig.url || !aiConfig.inputSelector)) {
+                  //       console.log(`Service Worker: Key '${aiKey}' is valid but config object is missing/invalid. Using fresh config for '${aiKey}'.`);
+                  //       aiConfig = localAiModels[aiKey];
+                  //       chrome.storage.sync.set({ selectedAiModelConfig: aiConfig }, () => {
+                  //           console.log(`Service Worker: Corrected AI config for key '${aiKey}' saved to storage.`);
+                  //       });
+                  //   } else {
+                  //       console.log('Service Worker: Cannot recover from stored key. Defaulting to AI Studio.');
+                  //       aiKey = DEFAULT_MODEL_KEY;
+                  //       aiConfig = localAiModels[DEFAULT_MODEL_KEY];
+                  //       defaultedAi = true;
+                  //       sendPopupStatus(`AI Config error. Defaulted to ${aiConfig.name}. Check options.`, 80, true);
+                  //       showNotificationIfEnabled('Configuration Warning', `AI settings error. Defaulted to ${aiConfig.name}. Please check options.`);
+                  //       chrome.storage.sync.set({ selectedAiModelKey: aiKey, selectedAiModelConfig: aiConfig }, () => {
+                  //           console.log('Service Worker: Saved default AI (AI Studio) config to storage.');
+                  //       });
+                  //   }
+                  // }
                   
                   // --- Apply Prompt Template ---
                   // Assuming processedData contains the structured data object (not stringified yet for flexibility)
@@ -350,7 +362,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                     textForAI = textForAI.substring(0, MAX_LENGTH - "... (truncated)".length) + "... (truncated)";
                   }
 
-                  let finalContentToPaste = textForAI;
+                  let finalContentToPaste = textForAI; // This variable name is kept for now, but it's content for API
                   const templateToUse = userPromptTemplate || DEFAULT_PROMPT_TEMPLATE;
 
                   if (templateToUse && typeof templateToUse === 'string') {
@@ -368,110 +380,111 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                       // But as a fallback, use the basic textForAI.
                       console.log('Service Worker: No prompt template found or template is invalid. Using raw scraped content.');
                   }
-                  // Now, finalContentToPaste is ready.
-                  // It should be passed to aiPaster.js directly if dataStorageOption is 'dontSave' or 'sessionOnly'.
-                  // If 'persistent', aiPaster.js will fetch from local storage (old way), but we can update it to accept direct data too.
-
-                  // --- Data Storage Logic ---
-                  const storeAndProceed = () => {
-                    console.log(`Service Worker: Using AI Model: ${aiConfig.name} (Key: ${aiKey}) ${defaultedAi ? '(Defaulted)' : ''}`);
-                    sendPopupStatus(`Opening ${aiConfig.name}...`, 82, false);
-                    chrome.tabs.create({ url: aiConfig.url, active: true }, (aiTab) => {
-                      if (chrome.runtime.lastError || !aiTab) {
-                        console.error(`Service Worker: Failed to open ${aiConfig.name} tab.`, chrome.runtime.lastError?.message);
-                        sendResponse({ status: `Error: Failed to open ${aiConfig.name} tab` });
-                        sendPopupStatus(`Error: Failed to open ${aiConfig.name}.`, 80, true);
-                        showNotificationIfEnabled('AI Platform Error', `Failed to open ${aiConfig.name} tab.`);
+                  // Now, finalContentToPaste is ready for the API.
+                  
+                  // --- Data Storage Logic & API Call ---
+                  const processWithApi = async () => {
+                    if (!apiKey) {
+                        console.error('Service Worker: API key not found. Please configure it in options.');
+                        sendPopupStatus('Error: API key missing. Check options.', -1, true);
+                        showNotificationIfEnabled('API Key Error', 'API key is missing. Please set it in the extension options.');
                         isScraping = false; scrapingTabId = null;
+                        // Handle data removal based on storage option
+                        if (dataStorageOption === 'persistent') chrome.storage.local.remove('redditThreadData');
+                        else if (dataStorageOption === 'sessionOnly') chrome.storage.session.remove('redditThreadData');
                         return;
-                      }
-                      console.log(`Service Worker: ${aiConfig.name} tab opened with ID:`, aiTab.id);
-                      sendPopupStatus(`${aiConfig.name} opened. Waiting for page to load...`, 85, false);
-                      showNotificationIfEnabled('AI Platform', `${aiConfig.name} tab opened successfully.`);
-                      
-                      const listener = (tabId, changeInfo, tab) => {
-                        if (tabId === aiTab.id && changeInfo.status === 'complete') {
-                          console.log(`Service Worker: ${aiConfig.name} tab loaded. Injecting aiPaster.js.`);
-                          sendPopupStatus(`${aiConfig.name} loaded. Pasting content...`, 90, false);
-                          chrome.scripting.executeScript({
-                            target: { tabId: aiTab.id },
-                            files: ['aiPaster.js']
-                          }, (injectionResults) => {
-                            try { 
-                              if (chrome.runtime.lastError || !injectionResults || injectionResults.length === 0) {
-                                console.error(`Service Worker: Failed to inject aiPaster.js into ${aiConfig.name}`, chrome.runtime.lastError?.message);
-                                sendPopupStatus(`Error: Could not paste into ${aiConfig.name}.`, 90, true);
-                                showNotificationIfEnabled('Reddit AI Tool', `Could not paste into ${aiConfig.name}. Site might have updated. Data (if saved) is in storage.`);
-                              } else {
-                                console.log('Service Worker: aiPaster.js injected. Sending executePaste command.');
-                                // Pass finalContentToPaste directly to aiPaster.js
-                                // aiPaster.js will need to be updated to use this data if provided.
-                                chrome.tabs.sendMessage(aiTab.id, { 
-                                    action: 'executePaste', 
-                                    aiConfig: aiConfig, 
-                                    scrapedData: finalContentToPaste // Pass the (template-applied) data
-                                }, (pasteResponse) => {
-                                  try { 
-                                    if (chrome.runtime.lastError) {
-                                      console.error(`Service Worker: Error during paste execution in ${aiConfig.name} or no response:`, chrome.runtime.lastError.message);
-                                      sendPopupStatus(`Pasting may have failed. Check ${aiConfig.name}.`, 95, true);
-                                      showNotificationIfEnabled('AI Platform Warning', `Pasting to ${aiConfig.name} may have failed. Please check the tab.`);
-                                    } else if (pasteResponse && pasteResponse.status) {
-                                      console.log('Service Worker: Paste script responded:', pasteResponse.status);
-                                      sendPopupStatus(pasteResponse.status, 100, true);
-                                      showNotificationIfEnabled('AI Platform Update', `${aiConfig.name}: ${pasteResponse.status}`);
-                                    } else {
-                                      sendPopupStatus('Pasting complete.', 100, true);
-                                      showNotificationIfEnabled('AI Platform Update', `Content pasting to ${aiConfig.name} initiated.`);
-                                    }
-                                  } finally {
-                                    // Cleanup based on storage option
-                                    if (dataStorageOption === 'persistent') {
-                                        // This is the main success path for persistent, data is used, then removed.
-                                        chrome.storage.local.remove('redditThreadData', () => {
-                                            console.log('Service Worker: redditThreadData removed from local storage after successful use (persistent mode).');
-                                        });
-                                    } else if (dataStorageOption === 'sessionOnly') {
-                                        // Data in session storage is also "used up" once pasted.
-                                        // While session storage clears on browser close, removing it here ensures it's gone immediately
-                                        // if the user were to try another scrape in the same session without closing.
-                                        chrome.storage.session.remove('redditThreadData', () => { 
-                                            console.log('Service Worker: redditThreadData removed from session storage after successful use (sessionOnly mode).');
-                                        });
-                                    }
-                                    // For 'dontSave', no data was stored in .local or .session, so no cleanup needed here.
-                                    
-                                    isScraping = false; 
-                                    scrapingTabId = null;
-                                    console.log('Service Worker: Scraping process complete. isScraping set to false.');
-                                    showNotificationIfEnabled('Reddit AI Tool', 'Scraping and AI interaction process complete!');
-                                  }
-                                });
-                              }
-                            } finally {
-                              chrome.tabs.onUpdated.removeListener(listener);
-                              if (!(injectionResults && injectionResults.length > 0)) {
-                               isScraping = false;
-                               scrapingTabId = null;
-                               sendPopupStatus('Process ended due to paste script injection failure.', 90, true);
-                               showNotificationIfEnabled('AI Platform Error', `Failed to inject pasting script into ${aiConfig.name}.`);
-                               console.log('Service Worker: Scraping process ended (aiPaster.js injection failed). isScraping set to false.');
-                              }
-                            }
-                          });
-                        }
-                      };
-                      chrome.tabs.onUpdated.addListener(listener);
-                      sendResponse({ status: 'Scraping initiated, AI tab opened.' });
-                    });
-                  };
+                    }
+                    sendPopupStatus('Preparing summary request...', 80, false);
 
+                    let apiUrl = '';
+                    let headers = {};
+                    let body = {};
+
+                    if (provider === 'openai') {
+                        apiUrl = 'https://api.openai.com/v1/chat/completions';
+                        headers = { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' };
+                        body = JSON.stringify({ model: modelName || 'gpt-3.5-turbo', messages: [{ role: 'user', content: finalContentToPaste }] });
+                    } else if (provider === 'gemini') {
+                        apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName || 'gemini-1.5-flash-latest'}:generateContent?key=${apiKey}`;
+                        headers = { 'Content-Type': 'application/json' };
+                        body = JSON.stringify({ contents: [{ parts: [{ text: finalContentToPaste }] }] });
+                    } else {
+                        console.error('Service Worker: Unknown LLM provider selected:', provider);
+                        sendPopupStatus(`Error: Unknown LLM provider: ${provider}`, -1, true);
+                        showNotificationIfEnabled('Configuration Error', `Unknown LLM provider selected: ${provider}. Check options.`);
+                        isScraping = false; scrapingTabId = null;
+                        if (dataStorageOption === 'persistent') chrome.storage.local.remove('redditThreadData');
+                        else if (dataStorageOption === 'sessionOnly') chrome.storage.session.remove('redditThreadData');
+                        return;
+                    }
+
+                    try {
+                        sendPopupStatus(`Sending request to ${provider} API...`, 85, false);
+                        const response = await fetch(apiUrl, { method: 'POST', headers: headers, body: body });
+
+                        if (!response.ok) {
+                            const errorBodyText = await response.text();
+                            console.error(`Service Worker: API request to ${provider} failed with status ${response.status}:`, errorBodyText);
+                            sendPopupStatus(`Error: API request failed (${response.status}). Check console.`, -1, true);
+                            showNotificationIfEnabled('API Request Error', `Request to ${provider} failed: ${response.status}. Details in console.`);
+                            throw new Error(`API request failed: ${response.status}`);
+                        }
+
+                        const data = await response.json();
+                        let summaryText = '';
+
+                        if (provider === 'openai') {
+                            summaryText = data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message.content : '[No summary found in OpenAI response]';
+                        } else if (provider === 'gemini') {
+                            summaryText = data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] ? data.candidates[0].content.parts[0].text : '[No summary found in Gemini response]';
+                            if (!summaryText && data.promptFeedback && data.promptFeedback.blockReason) {
+                                summaryText = `[Content blocked by Gemini API due to: ${data.promptFeedback.blockReason}]`;
+                                console.warn("Gemini API blocked content:", data.promptFeedback);
+                            }
+                        }
+
+                        console.log(`Service Worker: Summary received from ${provider}:`, summaryText.substring(0, 200) + "...");
+                        sendPopupStatus('Summary received!', 95, false);
+                        showNotificationIfEnabled(
+                            `${provider} Summary Ready`,
+                            summaryText.length > 200 ? summaryText.substring(0, 197) + "..." : summaryText,
+                            `summary-${provider}-${Date.now()}`
+                        );
+                        sendPopupStatus('Summarization complete!', 100, true);
+
+                    } catch (error) {
+                        console.error(`Service Worker: Error during API call to ${provider}:`, error);
+                        // Avoid double notification for API key missing if already handled.
+                        if (!String(error.message).toLowerCase().includes("api key missing") && !String(error.message).includes("failed to fetch")) {
+                             // For "failed to fetch", it's often a CORS or network issue, or misconfigured URL.
+                             // The earlier API key check should catch missing keys.
+                             showNotificationIfEnabled('API Error', `Could not get summary from ${provider}. ${error.message}`);
+                        }
+                        sendPopupStatus(`Error: ${error.message || 'API call failed.'}`, -1, true);
+                    } finally {
+                        // Cleanup based on dataStorageOption (already retrieved as settingsResult.dataStorageOption)
+                        if (dataStorageOption === 'persistent') {
+                            chrome.storage.local.remove('redditThreadData', () => {
+                                console.log('Service Worker: redditThreadData removed from local storage after API attempt (persistent mode).');
+                            });
+                        } else if (dataStorageOption === 'sessionOnly') {
+                            chrome.storage.session.remove('redditThreadData', () => {
+                                console.log('Service Worker: redditThreadData removed from session storage after API attempt (sessionOnly mode).');
+                            });
+                        }
+                        isScraping = false;
+                        scrapingTabId = null;
+                        console.log('Service Worker: Scraping & summarization process complete/ended. isScraping set to false.');
+                    }
+                  };
+                  
+                  // Call processWithApi after data storage handling
                   if (dataStorageOption === 'dontSave') {
                     console.log('Service Worker: Data storage option is "dontSave". Data will not be saved to any storage.');
                     // Ensure no old persistent data is lingering if mode was switched
                     chrome.storage.local.remove('redditThreadData', () => {
                         console.log('Service Worker: Cleared any lingering redditThreadData from local storage due to "dontSave" mode.');
-                        storeAndProceed(); // Proceed without saving
+                        processWithApi(); // Proceed without saving to chrome.storage.local/session
                     });
                   } else if (dataStorageOption === 'sessionOnly') {
                     sendPopupStatus('Saving data to session storage...', 78, false);
@@ -481,14 +494,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                         chrome.storage.session.set({ redditThreadData: processedData }, () => { // Save original processedData
                             if (chrome.runtime.lastError) {
                                 console.error('Service Worker: Error saving data to session storage:', chrome.runtime.lastError.message);
-                                sendResponse({ status: 'Error: Failed to save data to session' });
+                                // sendResponse({ status: 'Error: Failed to save data to session' }); // sendResponse might not be valid here anymore
                                 sendPopupStatus('Error: Failed to save data to session.', 78, true);
                                 showNotificationIfEnabled('Storage Error', 'Failed to save scraped data to session storage.');
                                 isScraping = false; scrapingTabId = null;
                                 return;
                             }
                             console.log('Service Worker: Scraped data stored in chrome.storage.session.');
-                            storeAndProceed();
+                            processWithApi();
                         });
                     });
                   } else { // 'persistent' or default
@@ -496,29 +509,29 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                     chrome.storage.local.set({ redditThreadData: processedData }, () => { // Save original processedData
                         if (chrome.runtime.lastError) {
                             console.error('Service Worker: Error saving data to local storage:', chrome.runtime.lastError.message);
-                            sendResponse({ status: 'Error: Failed to save data' });
+                            // sendResponse({ status: 'Error: Failed to save data' });
                             sendPopupStatus('Error: Failed to save data.', 78, true);
                             showNotificationIfEnabled('Storage Error', 'Failed to save scraped data to local storage.');
                             isScraping = false; scrapingTabId = null;
                             return;
                         }
                         console.log('Service Worker: Scraped data stored in chrome.storage.local.');
-                        storeAndProceed();
+                        processWithApi();
                     });
                   }
-                });
-              });
-            } else {
+                }); // This closes chrome.storage.sync.get for settings
+              }); // This closes chrome.storage.local.set for redditThreadData (or session.set)
+            } else { // This 'else' is for: if (scrapeResponse && scrapeResponse.data)
               console.error('Service Worker: No data received from redditScraper.js or scrapeResponse was falsy', scrapeResponse);
-              sendResponse({ status: 'Error: No data from scraper' });
-              sendPopupStatus('Error: No data received from scraper.', 70, true); // Assume data collection failed
+              sendResponse({ status: 'Error: No data from scraper' }); // This sendResponse is for scrapeReddit message to content script
+              sendPopupStatus('Error: No data received from scraper.', 70, true);
               showNotificationIfEnabled('Scraping Error', 'No data was received from the Reddit page scraper.');
               isScraping = false; scrapingTabId = null;
             }
-          });
-        });
-      });
-    } catch (e) {
+          }); // This closes chrome.tabs.sendMessage to content script (scrapeReddit action)
+        }); // This closes chrome.scripting.executeScript (injecting redditScraper.js)
+      }); // This closes chrome.tabs.query (getting active tab)
+    } catch (e) { // This catch is for the main try block of scrapeReddit handler
         console.error("Service Worker: Uncaught error in scrapeReddit handler", e);
         sendPopupStatus('Critical error in service worker.', -1, true);
         showNotificationIfEnabled('Critical Extension Error', 'An unexpected error occurred. Please try again or check console.');
@@ -526,12 +539,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         scrapingTabId = null;
         // Attempt to send a response if the port is still open
         try {
-            sendResponse({ status: 'Error: Internal Server Worker Error' });
+            sendResponse({ status: 'Error: Internal Server Worker Error' }); // This sendResponse is for the initial 'scrapeReddit' message from popup
         } catch (sendErr) {
             console.error("Service Worker: Failed to send error response after uncaught exception", sendErr);
         }
     }
-    return true; // Indicates that the response will be sent asynchronously
+    return true; // Indicates that the response will be sent asynchronously for the 'scrapeReddit' message from popup
   } else if (request.action === "stopScraping") {
     console.log("Service Worker: Received stopScraping message.");
     if (!isScraping && !stopRequested) { 
