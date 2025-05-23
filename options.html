@@ -58,9 +58,14 @@
             <div class="form-group">
                 <label for="modelNameInput">Model Name (Optional):</label>
                 <input type="text" id="modelNameInput" name="modelNameInput" placeholder="e.g., gpt-3.5-turbo, gemini-1.5-flash-latest" style="width: 300px;">
+                
+                <!-- New elements for dynamic model selection -->
+                <select id="modelNameSelect" style="display:none; margin-top: 5px; width: 300px;"></select>
+                <button type="button" id="fetchModelsBtn" style="margin-left: 5px; margin-top: 5px;">Load Models</button>
+                <small id="fetchModelsStatus" style="margin-left: 10px; display: block; margin-top: 5px;"></small>
             </div>
             <div class="form-group">
-                <p><small>API keys are stored using Chrome's storage. Handle them with care and be aware of the risks of storing sensitive data in browser storage.</small></p>
+                <p><small>API keys are stored using Chrome's storage. Handle them with care and be aware of the risks of storing sensitive data in browser storage. "Load Models" will use your API key to fetch available models from the provider.</small></p>
             </div>
         </div>
 
