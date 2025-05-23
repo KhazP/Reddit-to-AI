@@ -211,26 +211,51 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                             scrapingState.message = `Sending request to ${provider} API...`;
                             scrapingState.percentage = 85; broadcastScrapingState();
                             const response = await fetch(apiUrl, { method: 'POST', headers: headers, body: body });
-                            if (!response.ok) { /* ... error handling ... */ throw new Error(/* ... */); }
-                            const data = await response.json();
+                            if (!response.ok) { 
+                                // Simplified original error handling for brevity in this diff
+                                const errorBodyText = await response.text(); // Attempt to get error body
+                                scrapingState.error = `API request failed (${response.status}): ${errorBodyText}`;
+                                console.error(`Service Worker (Step 6 Modified): API request to ${provider} failed with status ${response.status}:`, errorBodyText);
+                                throw new Error(scrapingState.error); 
+                            }
+
+                            const responseText = await response.clone().text(); // Get raw text first
+
+                            let data;
+                            try {
+                                data = await response.json(); // Attempt to parse JSON
+                            } catch (jsonParseError) {
+                                console.error(`Service Worker (Step 6 Modified): Failed to parse API response as JSON. Provider: ${provider}. Raw response text:`, responseText);
+                                // Re-throw the original jsonParseError so it's caught by the outer catch block
+                                throw jsonParseError; 
+                            }
+                            
                             let summaryText = '';
-                            if (provider === 'openai') { /* ... */ } else if (provider === 'gemini') { /* ... */ }
+                            if (provider === 'openai') { 
+                                summaryText = data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message.content : '[No summary found in OpenAI response]';
+                             } else if (provider === 'gemini') { 
+                                summaryText = data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] ? data.candidates[0].content.parts[0].text : '[No summary found in Gemini response]';
+                                if (!summaryText && data.promptFeedback && data.promptFeedback.blockReason) {
+                                   summaryText = `[Content blocked by Gemini API due to: ${data.promptFeedback.blockReason}]`;
+                                   console.warn("Service Worker (Step 6 Modified): Gemini API blocked content:", data.promptFeedback);
+                                }
+                             }
                             scrapingState.summary = summaryText;
                             scrapingState.message = 'Summarization complete!';
                             scrapingState.percentage = 100;
-                            showNotificationIfEnabled( /* simplified args from Turn 7/8 for safety */
+                            showNotificationIfEnabled( 
                                 `${provider} Summary Ready`, "Summary details here.", "notification-id"
                             );
                         } catch (error) { // THIS IS THE CATCH BLOCK (user reported (e) here)
-                            console.error(`Service Worker (Step 6): Error during API call to ${provider}:`, error);
+                            console.error(`Service Worker (Step 6 Modified): Error during API call to ${provider}:`, error);
                             scrapingState.message = `Error: ${error.message || 'API call failed.'}`;
                             if (!scrapingState.error) scrapingState.error = error.message || 'API call failed.';
                             scrapingState.percentage = -1;
                         } finally {
                             scrapingState.isActive = false;
                             broadcastScrapingState();
-                            // ... (original storage removal logic) ...
-                            if (dataStorageOption === 'persistent') { /* remove local */ } else if (dataStorageOption === 'sessionOnly') { /* remove session */ }
+                            // ... (original storage removal logic, ensure it's still here or add back if search block was too short) ...
+                            if (dataStorageOption === 'persistent') { chrome.storage.local.remove('redditThreadData'); } else if (dataStorageOption === 'sessionOnly') { chrome.storage.session.remove('redditThreadData'); }
                         }
                     }; // End of processWithApi
                     
