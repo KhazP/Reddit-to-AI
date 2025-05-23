@@ -1,6 +1,57 @@
+// Flag to ensure marked.min.js is loaded only once
+let markedScriptLoaded = false;
+let markedLoadingInProgress = false; // To prevent multiple load attempts
+let markedGlobal = null; // To store the loaded marked library
+
+function loadMarkedScript(callback) {
+  if (markedScriptLoaded && typeof marked !== 'undefined' && markedGlobal) {
+    if (callback) callback();
+    return;
+  }
+  if (markedLoadingInProgress) {
+    // Poll until marked is available or give up after a timeout
+    let attempts = 0;
+    const interval = setInterval(() => {
+      attempts++;
+      if (typeof marked !== 'undefined') {
+        clearInterval(interval);
+        markedScriptLoaded = true;
+        markedGlobal = marked; // Store it
+        if (callback) callback();
+      } else if (attempts > 50) { // Timeout after ~5 seconds
+        clearInterval(interval);
+        console.error("RedditSummarizerPanel: Timeout loading marked.js");
+        if (callback) callback(new Error("Timeout loading marked.js"));
+      }
+    }, 100);
+    return;
+  }
+
+  markedLoadingInProgress = true;
+  const script = document.createElement('script');
+  script.src = chrome.runtime.getURL('marked.min.js');
+  script.onload = () => {
+    console.log('RedditSummarizerPanel: marked.min.js loaded successfully.');
+    markedScriptLoaded = true;
+    markedLoadingInProgress = false;
+    markedGlobal = window.marked; // Access marked from window scope
+    if (callback) callback();
+  };
+  script.onerror = (e) => {
+    console.error('RedditSummarizerPanel: Error loading marked.min.js:', e);
+    markedLoadingInProgress = false;
+    if (callback) callback(new Error('Error loading marked.min.js'));
+  };
+  (document.head || document.documentElement).appendChild(script);
+}
+
+
 if (!window.isRedditSummarizerPanelInjected) {
     window.isRedditSummarizerPanelInjected = true;
     console.log("RedditSummarizerPanel: Injecting script.");
+
+    // Initial attempt to load marked.js
+    loadMarkedScript();
 
     const panelHTML = `
         <div id="redditSummarizerPanel" class="rs-panel">
@@ -15,7 +66,7 @@ if (!window.isRedditSummarizerPanelInjected) {
                 </div>
                 <div id="rsSummaryArea" class="rs-summary-area">
                     <h4>Summary:</h4>
-                    <pre id="rsSummaryText"></pre>
+                    <div id="rsSummaryText"></div>
                 </div>
                 <p id="rsUserGuidance" class="rs-user-guidance"></p>
             </div>
@@ -115,11 +166,16 @@ if (!window.isRedditSummarizerPanelInjected) {
         }
         
         if (data.summary) {
-            summaryTextEl.textContent = data.summary;
+            if (markedGlobal && typeof markedGlobal.parse === 'function') {
+                summaryTextEl.innerHTML = markedGlobal.parse(data.summary);
+            } else {
+                console.warn("RedditSummarizerPanel: marked.parse is not available. Displaying summary as plain text.");
+                summaryTextEl.textContent = data.summary; // Fallback to plain text
+            }
             summaryAreaEl.style.display = 'block';
         } else {
             summaryAreaEl.style.display = 'none';
-            summaryTextEl.textContent = ''; // Clear previous summary
+            summaryTextEl.innerHTML = ''; // Clear previous summary
         }
 
         if (data.isActive) {
@@ -141,7 +197,14 @@ if (!window.isRedditSummarizerPanelInjected) {
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         if (request.action === 'updateFloatingPanel') {
             console.log("RedditSummarizerPanel: Received updateFloatingPanel", request.data);
-            updatePanelUI(request.data);
+            // Ensure marked is loaded before updating UI
+            loadMarkedScript((err) => {
+                if (err) {
+                    console.error("RedditSummarizerPanel: Failed to load marked.js for panel update.");
+                    // UI will fallback to textContent if markedGlobal is not available
+                }
+                updatePanelUI(request.data);
+            });
             // Optional: sendResponse({status: "Panel updated"}); 
         }
         return true; // Keep channel open for other listeners if any, or for async sendResponse.
@@ -149,18 +212,53 @@ if (!window.isRedditSummarizerPanelInjected) {
 
     // --- Initial State Request ---
     console.log("RedditSummarizerPanel: Requesting initial state from service worker...");
-    chrome.runtime.sendMessage({ action: 'getScrapingState' }, (state) => {
-        if (chrome.runtime.lastError) {
-            console.error("RedditSummarizerPanel: Error getting initial state:", chrome.runtime.lastError.message);
-            statusMessageEl.textContent = "Could not connect to extension background. Please try refreshing.";
-            userGuidanceEl.style.display = 'none';
-            return;
+    // Ensure marked is loaded before processing initial state
+    loadMarkedScript((err) => {
+        if (err) {
+            console.error("RedditSummarizerPanel: Failed to load marked.js on initialization.");
+            // Attempt to update UI anyway, it will fallback or show error for summary.
         }
-        if (state) {
-            console.log("RedditSummarizerPanel: Received initial state:", state);
-            updatePanelUI(state);
-            // If scraping is not active and there's no error or summary, the panel might start hidden or show a ready message.
-            // The updatePanelUI logic handles visibility based on isActive.
+        chrome.runtime.sendMessage({ action: 'getScrapingState' }, (state) => {
+            if (chrome.runtime.lastError) {
+                console.error("RedditSummarizerPanel: Error getting initial state:", chrome.runtime.lastError.message);
+                if (statusMessageEl) statusMessageEl.textContent = "Could not connect to extension background. Please try refreshing.";
+                if (userGuidanceEl) userGuidanceEl.style.display = 'none';
+                return;
+            }
+            if (state) {
+                console.log("RedditSummarizerPanel: Received initial state:", state);
+                updatePanelUI(state);
+                // If scraping is not active and there's no error or summary, the panel might start hidden or show a ready message.
+                // The updatePanelUI logic handles visibility based on isActive.
+                if (panel) { // Ensure panel exists before trying to access its style
+                    if (!state.isActive && panel.style.display !== 'none') { // if panel is visible but process isn't active
+                        // Only display if there is no error or summary to show
+                        if (!state.error && !state.summary) {
+                             panel.style.display = 'flex'; // Ensure it's visible to show "Ready" or last state
+                        } else if (state.error || state.summary) {
+                             panel.style.display = 'flex'; // Show if there is an error or summary
+                        }
+                    } else if (state.isActive) {
+                        panel.style.display = 'flex'; // Ensure visible if scraping is active
+                    }
+                }
+
+            } else {
+                console.warn("RedditSummarizerPanel: No initial state received from service worker.");
+                if (statusMessageEl) statusMessageEl.textContent = "No initial state from service worker. Popup might need to be opened once.";
+                if (userGuidanceEl) userGuidanceEl.style.display = 'none';
+            }
+        });
+    });
+
+    console.log("RedditSummarizerPanel: Script fully initialized and listeners active.");
+
+} else {
+    console.log("RedditSummarizerPanel: Script already injected. Skipping re-injection.");
+    // Optionally, if the panel was hidden by the user, this re-injection attempt could show it again
+    // or re-request state if that's desired behavior. For now, it does nothing.
+    // Example: document.getElementById('redditSummarizerPanel').style.display = 'flex';
+}
             // If state.isActive is false and panel was hidden by user, this won't show it, which is good.
             // If it's the first time and state.isActive is false, it will show "Ready to scrape."
             if (!state.isActive && panel.style.display !== 'none') { // if panel is visible but process isn't active
