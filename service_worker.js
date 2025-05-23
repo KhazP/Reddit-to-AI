@@ -412,13 +412,25 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                     let apiUrl = '';
                     let headers = {};
                     let body = {};
+                    let effectiveModelName = modelName; // modelName is from settingsResult.modelName
 
                     if (provider === 'openai') {
+                        const defaultOpenAiModel = 'gpt-3.5-turbo';
+                        if (!effectiveModelName) {
+                            effectiveModelName = defaultOpenAiModel;
+                        }
                         apiUrl = 'https://api.openai.com/v1/chat/completions';
                         headers = { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' };
-                        body = JSON.stringify({ model: modelName || 'gpt-3.5-turbo', messages: [{ role: 'user', content: finalContentToPaste }] });
+                        body = JSON.stringify({ model: effectiveModelName, messages: [{ role: 'user', content: finalContentToPaste }] });
                     } else if (provider === 'gemini') {
-                        apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName || 'gemini-1.5-flash-latest'}:generateContent?key=${apiKey}`;
+                        const defaultGeminiModel = 'gemini-1.5-flash-latest';
+                        if (!effectiveModelName) { // If modelName from settings is empty or undefined
+                            effectiveModelName = defaultGeminiModel;
+                        }
+                        if (!effectiveModelName.startsWith('models/')) {
+                            effectiveModelName = 'models/' + effectiveModelName;
+                        }
+                        apiUrl = `https://generativelanguage.googleapis.com/v1beta/${effectiveModelName}:generateContent?key=${apiKey}`;
                         headers = { 'Content-Type': 'application/json' };
                         body = JSON.stringify({ contents: [{ parts: [{ text: finalContentToPaste }] }] });
                     } else {
@@ -430,6 +442,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                         else if (dataStorageOption === 'sessionOnly') chrome.storage.session.remove('redditThreadData');
                         return;
                     }
+                    console.log(`Service Worker: Using effective model name: ${effectiveModelName} for provider: ${provider}`);
 
                     try {
                         sendPopupStatus(`Sending request to ${provider} API...`, 85, false);
