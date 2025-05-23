@@ -1,0 +1,105 @@
+#redditSummarizerPanel {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 350px;
+    max-height: 400px;
+    background-color: #f9f9f9;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    z-index: 99999;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    display: flex;
+    flex-direction: column;
+}
+
+.rs-header {
+    padding: 10px;
+    background-color: #eee;
+    cursor: move;
+    border-bottom: 1px solid #ccc;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.rs-header span {
+    font-weight: bold;
+}
+
+.rs-close-btn {
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.rs-content {
+    padding: 10px;
+    overflow-y: auto;
+    flex-grow: 1;
+}
+
+.rs-progress-bar-container {
+    width: 100%;
+    background-color: #e0e0e0;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    display: none; /* Initially hidden */
+}
+
+.rs-progress-bar {
+    width: 0%;
+    height: 20px;
+    background-color: #4CAF50; /* Green */
+    border-radius: 4px;
+    text-align: center;
+    line-height: 20px;
+    color: white;
+}
+
+.rs-summary-area {
+    margin-top: 10px;
+    display: none; /* Initially hidden */
+}
+
+.rs-summary-area h4 {
+    margin-top: 0;
+    margin-bottom: 5px;
+}
+
+.rs-summary-area pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    padding: 8px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.rs-user-guidance {
+    font-size: 0.9em;
+    color: #555;
+    margin-top: 10px;
+    padding: 5px;
+    background-color: #fffde7; /* Light yellow */
+    border: 1px solid #ffcc80; /* Orange-yellow border */
+    border-radius: 3px;
+    display:none; /* Initially hidden */
+}
+
+/* Optional: Resize Handle */
+/*
+.rs-resize-handle {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 10px;
+    height: 10px;
+    cursor: nwse-resize;
+    background-color: #ddd; // Optional: make it visible for easier grabbing
+}
+*/

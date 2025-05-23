@@ -44,6 +44,16 @@
       <div id="progressBarContainer" class="progress-bar-container">
         <div id="progressBar" class="progress-bar"></div>
       </div>
+      <div id="resultsArea" style="margin-top: 12px;">
+          <div id="summaryDisplayPopup" style="display: none;">
+              <h4>Summary:</h4>
+              <pre id="summaryTextPopup" class="popup-text-display"></pre>
+          </div>
+          <div id="errorDisplayPopup" style="display: none;">
+              <h4>Error:</h4>
+              <pre id="errorTextPopup" class="popup-text-display popup-error-text"></pre>
+          </div>
+      </div>
     </div>
 
     <div class="action-buttons-section">
@@ -54,6 +64,23 @@
   </div>
   <!-- Options view remains hidden and managed by JS if needed, or could be a separate page -->
   <!-- <div id="optionsView" style="display: none;"></div> -->
+  <style>
+    .popup-text-display {
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        background-color: #f0f0f0;
+        border: 1px solid #ddd;
+        padding: 8px;
+        max-height: 150px; /* Adjust as needed */
+        overflow-y: auto;
+        font-size: 0.9em;
+    }
+    .popup-error-text {
+        background-color: #ffebee; /* Light red background for errors */
+        border-color: #ffcdd2;
+        color: #c62828; /* Darker red text */
+    }
+  </style>
   <script src="popup.js"></script>
 </body>
 </html>
