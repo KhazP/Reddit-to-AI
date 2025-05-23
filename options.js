@@ -22,10 +22,16 @@ window.initializeOptions = function() {
     const llmProviderSelect = document.getElementById('llmProviderSelect');
     const apiKeyInput = document.getElementById('apiKeyInput');
     const modelNameInput = document.getElementById('modelNameInput');
+    // New elements for dynamic model selection
+    const modelNameSelect = document.getElementById('modelNameSelect');
+    const fetchModelsBtn = document.getElementById('fetchModelsBtn');
+    const fetchModelsStatus = document.getElementById('fetchModelsStatus');
+
 
     if (!originalAttemptsSlider || !attemptsValueDisplay || !showNotificationsCheckbox ||
         !defaultPromptTemplateTextarea || !dataStorageDontSaveRadio || !dataStorageSessionOnlyRadio || !dataStoragePersistentRadio ||
-        !llmProviderSelect || !apiKeyInput || !modelNameInput) { // Added checks for new elements
+        !llmProviderSelect || !apiKeyInput || !modelNameInput || 
+        !modelNameSelect || !fetchModelsBtn || !fetchModelsStatus ) { // Added checks for new elements
         console.warn("Required UI elements not found. Check IDs and HTML structure.", {
             attemptsSlider: !!originalAttemptsSlider,
             attemptsValueDisplay: !!attemptsValueDisplay,
@@ -36,6 +42,9 @@ window.initializeOptions = function() {
             llmProviderSelect: !!llmProviderSelect,
             apiKeyInput: !!apiKeyInput,
             modelNameInput: !!modelNameInput,
+            modelNameSelect: !!modelNameSelect,
+            fetchModelsBtn: !!fetchModelsBtn,
+            fetchModelsStatus: !!fetchModelsStatus,
             dataStorageDontSaveRadio: !!dataStorageDontSaveRadio,
             dataStorageSessionOnlyRadio: !!dataStorageSessionOnlyRadio,
             dataStoragePersistentRadio: !!dataStoragePersistentRadio,
@@ -197,45 +206,48 @@ window.initializeOptions = function() {
         }
 
         // Load and set new Background Summarization Settings
+        const loadedProvider = result.selectedLlmProvider || DEFAULT_LLM_PROVIDER;
+        const loadedApiKey = result.apiKey || '';
+        const loadedModelName = result.modelName || '';
+
         if (llmProviderSelect) {
-            llmProviderSelect.value = result.selectedLlmProvider || DEFAULT_LLM_PROVIDER;
-            if (!result.selectedLlmProvider) {
-                chrome.storage.sync.set({ selectedLlmProvider: DEFAULT_LLM_PROVIDER });
-            }
-            console.log("Set LLM Provider to:", llmProviderSelect.value);
+            llmProviderSelect.value = loadedProvider;
         }
         if (apiKeyInput) {
-            apiKeyInput.value = result.apiKey || '';
-            if (!result.apiKey) {
-                // Do not save empty API key by default, user should input this.
-            }
-            console.log("Set API Key (length):", (result.apiKey || '').length);
+            apiKeyInput.value = loadedApiKey;
         }
         if (modelNameInput) {
-            modelNameInput.value = result.modelName || '';
-            if (!result.modelName) {
-                // Do not save empty model name by default.
-            }
-            console.log("Set Model Name to:", modelNameInput.value);
+            modelNameInput.value = loadedModelName;
         }
-         // Initial save for defaults if they were not present
-        if (!result.selectedLlmProvider || !result.apiKey || !result.modelName) {
-            // This save is a bit broad, ideally only save if a specific default was applied and not already present
-            // For now, this ensures defaults are stored if first time.
-             const initialBackgroundSettings = {
-                selectedLlmProvider: llmProviderSelect ? llmProviderSelect.value : DEFAULT_LLM_PROVIDER,
-                apiKey: apiKeyInput ? apiKeyInput.value : '',
-                modelName: modelNameInput ? modelNameInput.value : ''
+
+        console.log("Loaded LLM Provider:", loadedProvider);
+        console.log("Loaded API Key (length):", loadedApiKey.length);
+        console.log("Loaded Model Name:", loadedModelName);
+
+        // Pre-fill placeholder for Gemini API key if no key is set
+        if (llmProviderSelect && apiKeyInput && llmProviderSelect.value === 'gemini' && !apiKeyInput.value) {
+            apiKeyInput.value = "YOUR_GEMINI_API_KEY_HERE (replace with your actual key)";
+            // This placeholder is for UI display only and should not be saved to storage.
+            // The 'input' event listener on apiKeyInput handles saving user's actual key.
+            console.log("Applied placeholder for Gemini API key.");
+        }
+        
+        // Save defaults if settings were not found in storage.
+        // This ensures that if a provider is selected for the first time, 
+        // its default (empty key) is "saved" before placeholder logic runs,
+        // or that placeholder logic doesn't trigger an unwanted save.
+        if (result.selectedLlmProvider === undefined || result.apiKey === undefined || result.modelName === undefined) {
+            // Only save if one of the actual storage values was undefined, implying first time or cleared storage.
+            // Do not save the placeholder key here.
+            const settingsToSaveOnFirstLoad = {
+                selectedLlmProvider: loadedProvider,
+                apiKey: loadedApiKey, // This will be an empty string if it was not previously set
+                modelName: loadedModelName
             };
-            // Avoid saving empty API key or model name if the fields were initially empty and no specific default value.
-            // The current logic sets them to '' if not found, so this condition might need refinement
-            // if we want to avoid saving empty strings unless they were explicitly set by the user.
-            // For now, it means if a value was missing, it's set to its current state (empty or default).
-            // chrome.storage.sync.set(initialBackgroundSettings);
-            // console.log("Initial background settings potentially saved if any were missing:", initialBackgroundSettings);
+            chrome.storage.sync.set(settingsToSaveOnFirstLoad, () => {
+                 console.log("Saved default background summarization settings because some were undefined in storage:", settingsToSaveOnFirstLoad);
+            });
         }
-
-
     });
 
     // No longer need to clone the slider here as it's done above.
@@ -346,15 +358,23 @@ window.initializeOptions = function() {
 
     // Function to save background summarization settings
     function saveBackgroundSummarizationSettings() {
-        if (!llmProviderSelect || !apiKeyInput || !modelNameInput) {
+        if (!llmProviderSelect || !apiKeyInput || !modelNameInput || !modelNameSelect) {
             console.warn("One or more background summarization UI elements are missing. Cannot save.");
             return;
         }
+        let currentModelName;
+        if (modelNameSelect.style.display !== 'none' && modelNameSelect.value) {
+            currentModelName = modelNameSelect.value;
+        } else {
+            currentModelName = modelNameInput.value;
+        }
+
         const settingsToSave = {
             selectedLlmProvider: llmProviderSelect.value,
-            apiKey: apiKeyInput.value,
-            modelName: modelNameInput.value
+            apiKey: apiKeyInput.value === "YOUR_GEMINI_API_KEY_HERE (replace with your actual key)" ? "" : apiKeyInput.value, // Don't save placeholder
+            modelName: currentModelName
         };
+
         chrome.storage.sync.set(settingsToSave, () => {
             console.log('Background summarization settings saved:', settingsToSave);
             if (saveStatusDisplay) {
@@ -368,19 +388,165 @@ window.initializeOptions = function() {
 
     // Add event listeners for new Background Summarization settings
     if (llmProviderSelect && !llmProviderSelect.dataset.listenerAttached) {
-        llmProviderSelect.addEventListener('change', saveBackgroundSummarizationSettings);
+        llmProviderSelect.addEventListener('change', () => {
+            saveBackgroundSummarizationSettings();
+            // Clear model dropdown and status, show text input by default
+            modelNameSelect.innerHTML = '';
+            modelNameSelect.style.display = 'none';
+            modelNameInput.style.display = 'inline-block'; // Or 'block' if it's on its own line
+            fetchModelsStatus.textContent = '';
+
+            if (apiKeyInput && llmProviderSelect.value === 'gemini' && !apiKeyInput.value) {
+                apiKeyInput.value = "YOUR_GEMINI_API_KEY_HERE (replace with your actual key)";
+            } else if (apiKeyInput && llmProviderSelect.value !== 'gemini' && apiKeyInput.value === "YOUR_GEMINI_API_KEY_HERE (replace with your actual key)") {
+                 apiKeyInput.value = ""; // Clear placeholder if switching away from Gemini and it was present
+            }
+            // Optionally auto-fetch models if API key exists
+            // if (apiKeyInput.value && apiKeyInput.value !== "YOUR_GEMINI_API_KEY_HERE (replace with your actual key)") {
+            //     fetchModels();
+            // }
+        });
         llmProviderSelect.dataset.listenerAttached = 'true';
         console.log("Attached change listener to LLM Provider select.");
     }
+
     if (apiKeyInput && !apiKeyInput.dataset.listenerAttached) {
-        apiKeyInput.addEventListener('input', saveBackgroundSummarizationSettings);
+        apiKeyInput.addEventListener('input', () => {
+            // If user types into API key field and it had the placeholder, clear it
+            if (apiKeyInput.value !== "YOUR_GEMINI_API_KEY_HERE (replace with your actual key)") {
+                // This condition is a bit tricky. If they are typing *over* the placeholder,
+                // this 'input' event fires for each character.
+                // A better approach might be to clear it on 'focus' if it's the placeholder.
+            }
+            saveBackgroundSummarizationSettings();
+        });
+         apiKeyInput.addEventListener('focus', () => {
+            if (apiKeyInput.value === "YOUR_GEMINI_API_KEY_HERE (replace with your actual key)") {
+                apiKeyInput.value = ""; // Clear placeholder on focus
+            }
+        });
         apiKeyInput.dataset.listenerAttached = 'true';
         console.log("Attached input listener to API Key input.");
     }
+
     if (modelNameInput && !modelNameInput.dataset.listenerAttached) {
         modelNameInput.addEventListener('input', saveBackgroundSummarizationSettings);
         modelNameInput.dataset.listenerAttached = 'true';
         console.log("Attached input listener to Model Name input.");
     }
+    
+    if (modelNameSelect && !modelNameSelect.dataset.listenerAttached) {
+        modelNameSelect.addEventListener('change', () => {
+            // When a model is selected from the dropdown, update the text input (optional, but good for consistency)
+            // and then save.
+            if (modelNameInput) {
+                modelNameInput.value = modelNameSelect.value; 
+            }
+            saveBackgroundSummarizationSettings();
+        });
+        modelNameSelect.dataset.listenerAttached = 'true';
+        console.log("Attached change listener to Model Name select.");
+    }
 
+    async function fetchModels() {
+        const selectedProvider = llmProviderSelect.value;
+        const apiKey = apiKeyInput.value;
+
+        fetchModelsStatus.textContent = 'Fetching...';
+        fetchModelsBtn.disabled = true;
+        modelNameSelect.style.display = 'none';
+        modelNameInput.style.display = 'inline-block'; // Fallback to text input
+
+        if (!apiKey || apiKey === "YOUR_GEMINI_API_KEY_HERE (replace with your actual key)") {
+            fetchModelsStatus.textContent = 'API key required to fetch models.';
+            fetchModelsBtn.disabled = false;
+            return;
+        }
+
+        let url = '';
+        let headers = {};
+        let models = [];
+
+        try {
+            if (selectedProvider === 'openai') {
+                url = 'https://api.openai.com/v1/models';
+                headers = { 'Authorization': `Bearer ${apiKey}` };
+                const response = await fetch(url, { headers });
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(`OpenAI API Error: ${response.status} ${response.statusText} - ${errorData.error?.message || 'Unknown error'}`);
+                }
+                const data = await response.json();
+                models = data.data.map(model => model.id).filter(id => id.includes('gpt')); // Basic filter
+            } else if (selectedProvider === 'gemini') {
+                url = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`;
+                const response = await fetch(url);
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                     throw new Error(`Gemini API Error: ${response.status} ${response.statusText} - ${errorData.error?.message || 'Unknown error'}`);
+                }
+                const data = await response.json();
+                models = data.models.map(model => model.name)
+                                .filter(name => name.includes('gemini') && (modelNameInput.value.includes('flash') ? name.includes('flash') : true) ); // Filter for gemini and optionally flash
+                                // A more robust filter would check model.supportedGenerationMethods for 'generateContent'
+            } else {
+                fetchModelsStatus.textContent = 'Provider not supported for model fetching.';
+                fetchModelsBtn.disabled = false;
+                return;
+            }
+            populateModelDropdown(models, selectedProvider);
+        } catch (error) {
+            console.error('Failed to fetch models:', error);
+            fetchModelsStatus.textContent = `Error: ${error.message}. Check API key or network.`;
+            modelNameSelect.style.display = 'none';
+            modelNameInput.style.display = 'inline-block';
+        } finally {
+            fetchModelsBtn.disabled = false;
+        }
+    }
+
+    function populateModelDropdown(modelList, provider) {
+        modelNameSelect.innerHTML = ''; // Clear existing options
+
+        if (!modelList || modelList.length === 0) {
+            fetchModelsStatus.textContent = 'No compatible models found or error fetching.';
+            modelNameSelect.style.display = 'none';
+            modelNameInput.style.display = 'inline-block';
+            return;
+        }
+
+        modelList.forEach(modelId => {
+            const option = document.createElement('option');
+            let displayName = modelId;
+            if (provider === 'gemini' && modelId.startsWith('models/')) {
+                displayName = modelId.substring('models/'.length);
+            }
+            option.value = modelId; // Store full ID for Gemini
+            option.textContent = displayName;
+            modelNameSelect.appendChild(option);
+        });
+
+        // Try to set the dropdown to the currently saved/input model name
+        const currentModel = modelNameInput.value;
+        if (currentModel && modelList.includes(currentModel)) {
+            modelNameSelect.value = currentModel;
+        } else if (modelList.length > 0) {
+            // If current model not in list, select the first one from the fetched list
+            modelNameSelect.selectedIndex = 0;
+            // And update the modelNameInput to reflect this auto-selection if dropdown is now primary
+            modelNameInput.value = modelNameSelect.value; 
+        }
+        
+        modelNameSelect.style.display = 'inline-block';
+        modelNameInput.style.display = 'none'; // Hide text input if dropdown is populated
+        fetchModelsStatus.textContent = 'Models loaded. Select one or manually enter if needed.';
+        
+        // Important: Save settings after dropdown is populated and a value is potentially auto-selected
+        saveBackgroundSummarizationSettings(); 
+    }
+
+    if (fetchModelsBtn && !fetchModelsBtn.dataset.listenerAttached) {
+        fetchModelsBtn.addEventListener('click', fetchModels);
+        fetchModelsBtn.dataset.listenerAttached = 'true';
+    }
 };

@@ -351,9 +351,22 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                       textForAI += `(Post has ${processedData.post.imageDataUrls.length} image(s) attached)\n\n`;
                   }
                   textForAI += "Comments:\n";
-                  let commentIndex = 1;
+                  let commentIndex = 1; // Initialization confirmed
                   processedData.comments.forEach(comment => {
-                    textForAI += `${commentIndex}. ${comment.author}: ${comment.body.replace(/\n/g, ' ')}\n`; // Basic formatting
+                    if (comment && comment.text && typeof comment.text === 'string') {
+                        // Ensure author is also a string or provide a default
+                        const author = (comment.author && typeof comment.author === 'string') ? comment.author : '[unknown author]';
+                        textForAI += `${commentIndex}. ${author}: ${comment.text.replace(/\n/g, ' ')}\n`;
+                    } else if (comment) {
+                        // Comment object exists, but text is missing or not a string
+                        const author = (comment.author && typeof comment.author === 'string') ? comment.author : '[unknown author]';
+                        textForAI += `${commentIndex}. ${author}: [Comment text not available or in unexpected format]\n`;
+                        console.warn('Encountered a comment with missing or non-string text property:', comment);
+                    } else {
+                        // comment object itself is null or undefined in the array
+                        textForAI += `${commentIndex}. [Invalid comment object found]\n`;
+                        console.warn('Encountered a null or undefined comment object in processedData.comments array at index:', commentIndex -1);
+                    }
                     commentIndex++;
                   });
                   // Limit length if necessary, though AI platforms handle large inputs
