@@ -204,11 +204,35 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                         scrapingState.message = 'Preparing summary request...';
                         scrapingState.percentage = 80; broadcastScrapingState();
                         let apiUrl = '', headers = {}, body = {}, effectiveModelName = modelName;
-                        // ... (original API URL, headers, body setup based on provider) ...
-                        if (provider === 'openai') { /* ... */ } else if (provider === 'gemini') { /* ... */ } else { /* error handling */ return; }
-
-                        console.log(`Service Worker (Step 6 Modified): Using effective model name: ${effectiveModelName} for provider: ${provider}`); // Ensure this log is also updated if it wasn't
-                        console.log(`Service Worker (Step 6 Modified): Fetching API. URL: ${apiUrl}`, `Body: ${body}`); // Log URL and body
+                        
+                        if (provider === 'openai') {
+                            const defaultOpenAiModel = 'gpt-3.5-turbo';
+                            if (!effectiveModelName) effectiveModelName = defaultOpenAiModel;
+                            apiUrl = 'https://api.openai.com/v1/chat/completions';
+                            headers = { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' };
+                            body = JSON.stringify({ model: effectiveModelName, messages: [{ role: 'user', content: finalContentToPaste }] });
+                        } else if (provider === 'gemini') {
+                            const defaultGeminiModel = 'gemini-1.5-flash-latest';
+                            if (!effectiveModelName) effectiveModelName = defaultGeminiModel;
+                            if (!effectiveModelName.startsWith('models/')) effectiveModelName = 'models/' + effectiveModelName;
+                            apiUrl = `https://generativelanguage.googleapis.com/v1beta/${effectiveModelName}:generateContent?key=${apiKey}`;
+                            headers = { 'Content-Type': 'application/json' };
+                            body = JSON.stringify({ contents: [{ parts: [{ text: finalContentToPaste }] }] });
+                        } else {
+                            console.error('Service Worker (Step 6 Corrected): Unknown LLM provider selected:', provider);
+                            scrapingState.isActive = false;
+                            scrapingState.message = `Error: Unknown LLM provider: ${provider}`;
+                            scrapingState.percentage = -1;
+                            scrapingState.error = `Unknown LLM provider: ${provider}`;
+                            broadcastScrapingState();
+                            // showNotificationIfEnabled('Configuration Error', `Unknown LLM provider selected: ${provider}. Check options.`);
+                            // if (dataStorageOption === 'persistent') chrome.storage.local.remove('redditThreadData');
+                            // else if (dataStorageOption === 'sessionOnly') chrome.storage.session.remove('redditThreadData');
+                            return; // Exits processWithApi
+                        }
+                        
+                        console.log(`Service Worker (Step 6 Corrected): Using effective model name: ${effectiveModelName} for provider: ${provider}`);
+                        console.log(`Service Worker (Step 6 Corrected): Fetching API. URL: ${apiUrl}`, `Body: ${typeof body === 'string' ? body.substring(0,100) + '...' : '[body is not a string or is empty]'}`); // Log URL and snippet of body
                         try { // THIS IS THE TRY BLOCK NEAR ORIGINAL ERROR LINE 647
                             scrapingState.message = `Sending request to ${provider} API...`;
                             scrapingState.percentage = 85; broadcastScrapingState();
