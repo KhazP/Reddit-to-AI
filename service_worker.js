@@ -1,8 +1,8 @@
-// Service Worker - Step 4: Adding tab query and initial checks to scrapeReddit
+// Service Worker - Step 5: Adding script injection to scrapeReddit
 
-console.log('Service Worker (Step 4): Script loaded.');
+console.log('Service Worker (Step 5): Script loaded.');
 
-// --- Global State Variables (from original file) ---
+// --- Global State Variables ---
 let scrapingState = {
     isActive: false,
     message: 'Ready to scrape.',
@@ -11,13 +11,13 @@ let scrapingState = {
     error: null,
     lastScrapedTabId: null
 };
-let isScraping = false; // Old flag
-let scrapingTabId = null; // Old flag
+let isScraping = false;
+let scrapingTabId = null;
 let stopRequested = false;
 
-// --- Helper Functions (from original file) ---
+// --- Helper Functions ---
 function broadcastScrapingState() {
-    console.log("Service Worker (Step 4): Broadcasting state:", scrapingState);
+    console.log("Service Worker (Step 5): Broadcasting state:", scrapingState);
     chrome.runtime.sendMessage({
         action: "scrapingStateUpdate",
         data: scrapingState
@@ -26,8 +26,11 @@ function broadcastScrapingState() {
             // console.log('Popup status update error:', chrome.runtime.lastError.message);
         }
     });
-    // Floating panel part still commented
-    console.log('Service Worker (Step 4): Floating panel broadcast temporarily skipped.');
+    // Floating panel part still commented for now, but we're getting closer
+    if (scrapingState.lastScrapedTabId) {
+        // Temporarily log instead of sending
+        // console.log("Service Worker (Step 5): Would attempt to update floating panel if uncommented for tab:", scrapingState.lastScrapedTabId);
+    }
 }
 
 function showNotificationIfEnabled(title, message, notificationIdBase = 'redditAI') {
@@ -51,17 +54,17 @@ function showNotificationIfEnabled(title, message, notificationIdBase = 'redditA
 
 // --- Event Listeners ---
 chrome.runtime.onInstalled.addListener(() => {
-  console.log('Service Worker (Step 4): Extension Installed.');
+  console.log('Service Worker (Step 5): Extension Installed.');
 });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  console.log('Service Worker (Step 4): Message received:', request);
+  console.log('Service Worker (Step 5): Message received:', request);
 
   if (request.action === 'scrapeReddit') {
-    console.log('Service Worker (Step 4): scrapeReddit action received.');
+    console.log('Service Worker (Step 5): scrapeReddit action received.');
     
     if (scrapingState.isActive) {
-      console.log('Service Worker (Step 4): Scraping already in progress.');
+      console.log('Service Worker (Step 5): Scraping already in progress.');
       sendResponse({ status: 'Error: Scraping already in progress', currentState: scrapingState });
       return false; 
     }
@@ -73,123 +76,112 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     scrapingState.error = null;
     broadcastScrapingState();
 
-    // 1. Get current active tab (reintroducing this part)
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (chrome.runtime.lastError) {
-        console.error('Service Worker (Step 4): Error querying tabs:', chrome.runtime.lastError.message);
+        console.error('Service Worker (Step 5): Error querying tabs:', chrome.runtime.lastError.message);
+        // Simplified error handling for this step
         scrapingState.isActive = false;
-        scrapingState.message = 'Error: Could not query tabs.';
-        scrapingState.error = 'Error querying tabs: ' + chrome.runtime.lastError.message;
+        scrapingState.message = 'Error querying tabs.';
         broadcastScrapingState();
-        // No sendResponse here as it's async and might have already been sent or port closed
-        // For robust error handling here, we might need to change how sendResponse is called.
-        // For now, let's assume this error is less likely for a syntax check.
         return; 
       }
-
-      if (stopRequested) {
-        console.log("Service Worker (Step 4): Stop requested before tab query completed.");
-        scrapingState.isActive = false;
-        scrapingState.message = 'Scraping stopped by user.';
-        broadcastScrapingState();
-        // sendResponse({ status: 'Scraping stopped', currentState: scrapingState }); // Problematic here
-        return;
-      }
-
       if (tabs.length === 0) {
-        console.error('Service Worker (Step 4): No active tab found.');
         scrapingState.isActive = false;
         scrapingState.message = 'Error: No active tab found.';
-        scrapingState.error = 'No active tab found.';
         broadcastScrapingState();
-        // sendResponse({ status: 'Error: No active tab', currentState: scrapingState }); // Problematic here
         return;
       }
       
       const activeTab = tabs[0];
       scrapingState.lastScrapedTabId = activeTab.id;
 
-      scrapingState.message = 'Checking if active tab is Reddit...';
-      scrapingState.percentage = 10;
-      broadcastScrapingState();
-
       if (!activeTab.url || !activeTab.url.includes('reddit.com')) {
-        console.error('Service Worker (Step 4): Active tab is not a Reddit page.');
         scrapingState.isActive = false;
         scrapingState.message = 'Error: Active tab is not a Reddit page.';
-        scrapingState.error = 'Active tab is not a Reddit page.';
         broadcastScrapingState();
-        // sendResponse({ status: 'Error: Not a Reddit page', currentState: scrapingState }); // Problematic here
         return;
       }
 
-      // If all checks pass so far:
-      console.log('Service Worker (Step 4): Tab is a Reddit page. Path for script injection would follow here.');
-      scrapingState.message = 'Tab identified. Ready for next step (not implemented in Step 4).';
+      console.log('Service Worker (Step 5): Tab is a Reddit page. Proceeding with script injections.');
+      scrapingState.message = 'Injecting scripts...';
       scrapingState.percentage = 15;
-      // For now, simulate completion as we're not injecting scripts yet
-      scrapingState.isActive = false; 
       broadcastScrapingState();
-      // sendResponse({ status: 'Tab identified (Step 4 test)', currentState: scrapingState }); // Problematic here
-    });
 
-    // IMPORTANT: Because chrome.tabs.query is asynchronous, sendResponse needs to be handled carefully.
-    // If we call it outside the callback, it might be too early.
-    // If we call it inside, we need to ensure it's called on all paths or return true from the main listener.
-    // For this incremental step, we will rely on returning true from the main listener and
-    // ensure sendResponse is called within the async callback or not at all if error occurs early.
-    // However, the original code returned true from the main listener ONLY if action was scrapeReddit.
-    // Let's simplify: we will send an initial response and then let updates flow.
-    // The `return true` from the main listener is now crucial.
-    
-    // The original `sendResponse` was inside the final callback of the entire chain.
-    // For this step, we are not going that far.
-    // Let's send an early "processing" response.
-    // sendResponse({ status: 'Processing scrape request (Step 4)...', currentState: scrapingState });
-    // No, this is also tricky. The original code only sent response at the very end OR on early errors.
+      // Reintroducing script injection using an IIFE async function
+      (async () => {
+          try {
+              console.log("Service Worker (Step 5): Attempting to inject floatingPanel.css");
+              await chrome.scripting.insertCSS({
+                  target: { tabId: activeTab.id },
+                  files: ['floatingPanel.css']
+              });
+              console.log("Service Worker (Step 5): floatingPanel.css injected.");
 
-    // For testing syntax, the most important part is whether this structure *parses*.
-    // The runtime behavior of sendResponse is secondary for *this specific diagnostic step*.
-    // The original code returned `true` from the main listener for `scrapeReddit`.
-    // Let's stick to that.
-    return true; 
+              console.log("Service Worker (Step 5): Attempting to execute floatingPanel.js");
+              await chrome.scripting.executeScript({
+                  target: { tabId: activeTab.id },
+                  files: ['floatingPanel.js']
+              });
+              console.log("Service Worker (Step 5): floatingPanel.js executed.");
+              
+              // Now update state and proceed with scraper injection
+              scrapingState.message = 'Injecting main scraper...';
+              scrapingState.percentage = 20; // Adjusted percentage
+              broadcastScrapingState();
+
+              console.log("Service Worker (Step 5): Attempting to execute redditScraper.js");
+              const injectionResults = await chrome.scripting.executeScript({
+                target: { tabId: activeTab.id },
+                files: ['redditScraper.js']
+              });
+              console.log("Service Worker (Step 5): redditScraper.js executed.", injectionResults);
+
+              // For this step, we stop here. We don't send a message to the content script yet.
+              // Simulate completion after injection.
+              scrapingState.message = 'Scripts injected (Step 5). Further interaction pending.';
+              scrapingState.percentage = 25;
+              scrapingState.isActive = false; // Simulate end of process for this step
+              broadcastScrapingState();
+
+          } catch (err) {
+              console.error("Service Worker (Step 5): Error during script injection:", err);
+              scrapingState.isActive = false;
+              scrapingState.message = 'Error during script injection: ' + err.message;
+              scrapingState.error = err.message;
+              scrapingState.percentage = -1; // Indicate error
+              broadcastScrapingState();
+          }
+      })(); // End of IIFE for script injection
+
+    }); // End of chrome.tabs.query callback
+
+    return true; // Indicate async response for scrapeReddit
 
   } else if (request.action === "stopScraping") {
-    // ... (same as Step 3) ...
-    console.log("Service Worker (Step 4): Received stopScraping message (minimal handler).");
+    console.log("Service Worker (Step 5): Received stopScraping.");
     stopRequested = true;
     scrapingState.isActive = false;
-    scrapingState.message = 'Scraping process halting (Step 4 test).';
+    scrapingState.message = 'Scraping stopped by user.';
     broadcastScrapingState();
-    sendResponse({ status: "Stop signal received (Step 4 test).", currentState: scrapingState });
-    return false;
-
+    sendResponse({ status: "Stop signal received.", currentState: scrapingState });
+    return false; 
   } else if (request.action === "progressUpdate") {
-    // ... (same as Step 3) ...
-    console.log("Service Worker (Step 4): ProgressUpdate (minimal handler):", request.message);
     scrapingState.message = request.message;
-    if (request.percentage !== undefined) {
-        scrapingState.percentage = request.percentage;
-    }
+    if (request.percentage !== undefined) scrapingState.percentage = request.percentage;
     broadcastScrapingState();
-    sendResponse({status: "progress acknowledged by service worker (Step 4)"});
-    return false;
-
+    sendResponse({status: "progress acknowledged"});
+    return false; 
   } else if (request.action === 'getScrapingState') {
-    // ... (same as Step 3) ...
     sendResponse(scrapingState);
     return false; 
-
   } else if (request.action === 'notifyUser') {
-    // ... (same as Step 3) ...
-    console.log('Service Worker (Step 4): notifyUser (minimal handler)');
-    showNotificationIfEnabled(request.title || 'Reddit AI Tool Notification', request.message || 'You have a new notification.');
-    sendResponse({ status: 'Notification request processed (Step 4)' });
+    showNotificationIfEnabled(request.title, request.message);
+    sendResponse({ status: 'Notification request processed' });
     return false;
   }
 
-  console.warn("Service Worker (Step 4): Unhandled message action:", request.action);
+  console.warn("Service Worker (Step 5): Unhandled message action:", request.action);
   return false; 
 });
 
-console.log('Service Worker (Step 4): All listeners registered.');
+console.log('Service Worker (Step 5): All listeners registered.');
