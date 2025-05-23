@@ -39,7 +39,8 @@ function broadcastScrapingState() {
             if (chrome.runtime.lastError) {
                 // console.warn('Floating panel update error (normal if panel not ready/tab closed):', scrapingState.lastScrapedTabId, chrome.runtime.lastError.message);
             }
-        }).catch(e => { /* console.warn('Catch: Floating panel update error:', e.message) */ });
+            // Removed .catch(e => { /* console.warn('Catch: Floating panel update error:', e.message) */ });
+        });
     }
 }
 
