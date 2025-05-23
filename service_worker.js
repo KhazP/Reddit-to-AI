@@ -1,6 +1,6 @@
-// Minimal service_worker.js for testing - Step 2: Adding globals and helpers
+// Service Worker - Step 3: Adding main onMessage structure
 
-console.log('Service Worker (Step 2): Script loaded.');
+console.log('Service Worker (Step 3): Script loaded.');
 
 // --- Global State Variables (from original file) ---
 let scrapingState = {
@@ -11,37 +11,23 @@ let scrapingState = {
     error: null,
     lastScrapedTabId: null
 };
-let isScraping = false; // Old flag - to be phased out or synced
+let isScraping = false; // Old flag
 let scrapingTabId = null; // Old flag
 let stopRequested = false;
 
 // --- Helper Functions (from original file) ---
-
 function broadcastScrapingState() {
-    console.log("Service Worker (Step 2): Broadcasting state:", scrapingState);
-
-    // Update Popup
+    console.log("Service Worker (Step 3): Broadcasting state:", scrapingState);
     chrome.runtime.sendMessage({
         action: "scrapingStateUpdate",
         data: scrapingState
     }, (response) => {
         if (chrome.runtime.lastError) {
-            // console.log('Popup status update error (normal if popup is closed):', chrome.runtime.lastError.message);
+            // console.log('Popup status update error:', chrome.runtime.lastError.message);
         }
     });
-
-    // Update Floating Panel (Temporarily simplified/commented to avoid errors)
-    // if (scrapingState.lastScrapedTabId) {
-    //     chrome.tabs.sendMessage(scrapingState.lastScrapedTabId, {
-    //         action: "updateFloatingPanel",
-    //         data: scrapingState
-    //     }, (response) => {
-    //         if (chrome.runtime.lastError) {
-    //             // console.warn('Floating panel update error:', chrome.runtime.lastError.message);
-    //         }
-    //     });
-    // }
-    console.log('Service Worker (Step 2): Floating panel broadcast temporarily skipped.');
+    // Floating panel part still commented
+    console.log('Service Worker (Step 3): Floating panel broadcast temporarily skipped.');
 }
 
 function showNotificationIfEnabled(title, message, notificationIdBase = 'redditAI') {
@@ -63,21 +49,74 @@ function showNotificationIfEnabled(title, message, notificationIdBase = 'redditA
   });
 }
 
-// --- Minimal Event Listeners (from previous step) ---
+// --- Event Listeners ---
 chrome.runtime.onInstalled.addListener(() => {
-  console.log('Service Worker (Step 2): Extension Installed.');
+  console.log('Service Worker (Step 3): Extension Installed.');
 });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  console.log('Service Worker (Step 2): Message received:', request);
-  if (request.action === 'ping') {
-    sendResponse({ status: 'pong' });
-  } else if (request.action === 'getScrapingState') { // Add basic handler for this common request
-    sendResponse(scrapingState); // Send back the current state
+  console.log('Service Worker (Step 3): Message received:', request);
+
+  if (request.action === 'scrapeReddit') {
+    console.log('Service Worker (Step 3): scrapeReddit action received.');
+    // Original complex logic will be added back incrementally.
+    // For now, just set state and respond to prevent port closed errors.
+    if (scrapingState.isActive) {
+      console.log('Service Worker (Step 3): Scraping already in progress.');
+      sendResponse({ status: 'Error: Scraping already in progress', currentState: scrapingState });
+      return false; // Indicate synchronous response
+    }
+    scrapingState.isActive = true;
+    scrapingState.message = 'Scraping initiated (Step 3 test)...';
+    scrapingState.percentage = 5;
+    broadcastScrapingState();
+    // Simulate some activity then stop
+    setTimeout(() => {
+        scrapingState.isActive = false;
+        scrapingState.message = 'Scraping simulation finished (Step 3 test).';
+        scrapingState.percentage = 100;
+        broadcastScrapingState();
+        console.log('Service Worker (Step 3): Simulated scrape finished.');
+    }, 2000);
+    sendResponse({ status: 'Scraping initiated (Step 3 test)', currentState: scrapingState });
+    return false; // Indicate synchronous response for now, as setTimeout is faking async work
+
+  } else if (request.action === "stopScraping") {
+    console.log("Service Worker (Step 3): Received stopScraping message (minimal handler).");
+    stopRequested = true;
+    scrapingState.isActive = false;
+    scrapingState.message = 'Scraping process halting (Step 3 test).';
+    broadcastScrapingState();
+    sendResponse({ status: "Stop signal received (Step 3 test).", currentState: scrapingState });
+    return false; // Indicate synchronous response
+
+  } else if (request.action === "progressUpdate") {
+    console.log("Service Worker (Step 3): ProgressUpdate (minimal handler):", request.message);
+    scrapingState.message = request.message;
+    if (request.percentage !== undefined) {
+        scrapingState.percentage = request.percentage;
+    }
+    broadcastScrapingState();
+    sendResponse({status: "progress acknowledged by service worker (Step 3)"});
+    return false; // Indicate synchronous response
+
+  } else if (request.action === 'getScrapingState') {
+    sendResponse(scrapingState);
+    return false; // Indicate synchronous response
+
+  } else if (request.action === 'notifyUser') {
+    console.log('Service Worker (Step 3): notifyUser (minimal handler)');
+    showNotificationIfEnabled(request.title || 'Reddit AI Tool Notification', request.message || 'You have a new notification.');
+    sendResponse({ status: 'Notification request processed (Step 3)' });
+    return false; // Indicate synchronous response
   }
-  // Return true if you intend to send a response asynchronously.
-  // Only return true if action === 'ping' or action === 'getScrapingState' for now.
-  return request.action === 'ping' || request.action === 'getScrapingState';
+
+  // Default: if no specific action matched, and we didn't respond yet.
+  // This helps catch unexpected messages.
+  // Consider if we need 'return true' for any other specific future async actions.
+  console.warn("Service Worker (Step 3): Unhandled message action:", request.action);
+  // sendResponse({status: "Unknown action"}); // Optional: respond for unknown actions
+  return false; // Default to synchronous for unhandled actions
 });
 
-console.log('Service Worker (Step 2): Globals, helpers, and listeners registered.');
+console.log('Service Worker (Step 3): All listeners registered.');
