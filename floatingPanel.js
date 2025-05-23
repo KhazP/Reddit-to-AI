@@ -3,25 +3,44 @@ let markedScriptLoaded = false;
 let markedLoadingInProgress = false; // To prevent multiple load attempts
 let markedGlobal = null; // To store the loaded marked library
 
+// Helper function for HTML decoding
+function htmlDecode(input) {
+    if (typeof input !== 'string') {
+        console.warn('RedditSummarizerPanel: htmlDecode received non-string input:', input);
+        return input; // Return as is or handle error
+    }
+    try {
+        const tempDoc = new DOMParser().parseFromString(input, "text/html");
+        return tempDoc.documentElement.textContent;
+    } catch (e) {
+        console.error('RedditSummarizerPanel: Error in htmlDecode:', e);
+        return input; // Fallback to original input on error
+    }
+}
+
 function loadMarkedScript(callback) {
-  if (markedScriptLoaded && typeof marked !== 'undefined' && markedGlobal) {
+  console.log('RedditSummarizerPanel: loadMarkedScript called.');
+  if (markedScriptLoaded && typeof markedGlobal !== 'undefined' && markedGlobal) { // Check markedGlobal directly
     if (callback) callback();
     return;
   }
   if (markedLoadingInProgress) {
-    // Poll until marked is available or give up after a timeout
+    // Poll until markedGlobal is available or give up after a timeout
     let attempts = 0;
     const interval = setInterval(() => {
       attempts++;
-      if (typeof marked !== 'undefined') {
+      if (typeof window.marked !== 'undefined') { // Check window.marked for actual load
         clearInterval(interval);
         markedScriptLoaded = true;
-        markedGlobal = marked; // Store it
+        markedLoadingInProgress = false; // Should have been set by onload, but ensure
+        markedGlobal = window.marked; 
+        console.log('RedditSummarizerPanel: marked.min.js loaded (polled). markedGlobal:', markedGlobal);
         if (callback) callback();
       } else if (attempts > 50) { // Timeout after ~5 seconds
         clearInterval(interval);
-        console.error("RedditSummarizerPanel: Timeout loading marked.js");
-        if (callback) callback(new Error("Timeout loading marked.js"));
+        markedLoadingInProgress = false;
+        console.error("RedditSummarizerPanel: Timeout loading marked.js via poll.");
+        if (callback) callback(new Error("Timeout loading marked.js via poll"));
       }
     }, 100);
     return;
@@ -31,13 +50,15 @@ function loadMarkedScript(callback) {
   const script = document.createElement('script');
   script.src = chrome.runtime.getURL('marked.min.js');
   script.onload = () => {
-    console.log('RedditSummarizerPanel: marked.min.js loaded successfully.');
+    console.log('RedditSummarizerPanel: marked.min.js script object loaded. window.marked:', window.marked);
     markedScriptLoaded = true;
     markedLoadingInProgress = false;
     markedGlobal = window.marked; // Access marked from window scope
+    console.log('RedditSummarizerPanel: markedGlobal after assignment:', markedGlobal);
     if (callback) callback();
   };
   script.onerror = (e) => {
+    console.error('RedditSummarizerPanel: marked.min.js script.onerror triggered.');
     console.error('RedditSummarizerPanel: Error loading marked.min.js:', e);
     markedLoadingInProgress = false;
     if (callback) callback(new Error('Error loading marked.min.js'));
@@ -129,6 +150,7 @@ if (!window.isRedditSummarizerPanelInjected) {
     
     // --- Update Panel UI Function ---
     function updatePanelUI(data) {
+        console.log('RedditSummarizerPanel: updatePanelUI called with data:', JSON.stringify(data));
         if (!panel || !statusMessageEl || !progressBarContainerEl || !progressBarEl || !summaryAreaEl || !summaryTextEl || !userGuidanceEl) {
             console.error("RedditSummarizerPanel: One or more panel elements are missing. Cannot update UI.");
             return;
@@ -165,12 +187,70 @@ if (!window.isRedditSummarizerPanelInjected) {
             statusMessageEl.style.color = ''; // Reset color
         }
         
+        // console.log('RedditSummarizerPanel: Processing summary. Raw summary:', data.summary); // Original log, will be replaced
         if (data.summary) {
+            // Step 1: Direct HTML Test (using innerHTML) - REMAINS UNCHANGED
+            const directTestHTML = '<p style="color: green;"><strong>Direct HTML Test:</strong> This should be green and bold.</p><ul><li>Item 1</li><li>Item 2</li></ul>';
+            summaryTextEl.innerHTML = directTestHTML;
+            console.log('RedditSummarizerPanel: Rendered direct test HTML via innerHTML. Check panel visually.');
+
+            // Step 2: Decode and Parse
+            console.log('RedditSummarizerPanel: Original data.summary:', data.summary);
+            const decodedSummary = htmlDecode(data.summary);
+            console.log('RedditSummarizerPanel: Decoded data.summary:', decodedSummary);
+
+            let htmlOutput = '';
             if (markedGlobal && typeof markedGlobal.parse === 'function') {
-                summaryTextEl.innerHTML = markedGlobal.parse(data.summary);
+                console.log('RedditSummarizerPanel: markedGlobal is available. Parsing decoded summary.');
+                htmlOutput = markedGlobal.parse(decodedSummary);
+                console.log('RedditSummarizerPanel: HTML output from marked.parse(decodedSummary):', htmlOutput);
+                
+                if (htmlOutput && htmlOutput.trim() !== "") {
+                    try {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(htmlOutput, "text/html");
+                        
+                        // Clear previous content (the directTestHTML)
+                        while (summaryTextEl.firstChild) {
+                            summaryTextEl.removeChild(summaryTextEl.firstChild);
+                        }
+                        
+                        // Append nodes from the parsed document's body
+                        if (doc.body.childNodes.length > 0) {
+                            Array.from(doc.body.childNodes).forEach(node => {
+                                summaryTextEl.appendChild(document.importNode(node, true));
+                            });
+                            console.log('RedditSummarizerPanel: Appended actual summary HTML (from decoded input) using DOMParser.');
+                        } else {
+                            console.warn('RedditSummarizerPanel: DOMParser produced a document with no childNodes in body from decoded summary. HTML was:', htmlOutput);
+                            summaryTextEl.innerHTML = '<p style="color: red;"><em>DOMParser (decoded) resulted in empty content. Check console.</em></p>';
+                        }
+                    } catch (e) {
+                        console.error('RedditSummarizerPanel: Error using DOMParser for decoded summary:', e);
+                        // Fallback: If DOMParser fails, clear directTestHTML and show an error or decoded summary
+                        while (summaryTextEl.firstChild) {
+                            summaryTextEl.removeChild(summaryTextEl.firstChild);
+                        }
+                        summaryTextEl.textContent = `DOMParser Error. Raw summary (decoded attempt): ${decodedSummary}`; 
+                    }
+                } else {
+                    // If htmlOutput from decoded summary is empty, clear the directTestHTML and show an empty message
+                    while (summaryTextEl.firstChild) { 
+                         summaryTextEl.removeChild(summaryTextEl.firstChild);
+                    }
+                    summaryTextEl.innerHTML = '<p style="color: orange;"><em>Actual summary from marked.js (after decoding) was empty.</em></p>';
+                    console.log('RedditSummarizerPanel: Actual parsed summary (from decoded input) was empty.');
+                }
             } else {
-                console.warn("RedditSummarizerPanel: marked.parse is not available. Displaying summary as plain text.");
-                summaryTextEl.textContent = data.summary; // Fallback to plain text
+                console.warn('RedditSummarizerPanel: markedGlobal.parse is NOT available. markedGlobal:', markedGlobal, 'Displaying decoded summary as plain text.');
+                // Clear directTestHTML and show decoded summary as text
+                const directTestHTMLCheck = '<p style="color: green;"><strong>Direct HTML Test:</strong> This should be green and bold.</p><ul><li>Item 1</li><li>Item 2</li></ul>';
+                if (summaryTextEl.innerHTML === directTestHTMLCheck) { // Only clear if it's still the direct test
+                    while (summaryTextEl.firstChild) {
+                        summaryTextEl.removeChild(summaryTextEl.firstChild);
+                    }
+                }
+                summaryTextEl.textContent = decodedSummary; // Use decoded summary
             }
             summaryAreaEl.style.display = 'block';
         } else {
@@ -231,6 +311,9 @@ if (!window.isRedditSummarizerPanelInjected) {
                 // If scraping is not active and there's no error or summary, the panel might start hidden or show a ready message.
                 // The updatePanelUI logic handles visibility based on isActive.
                 if (panel) { // Ensure panel exists before trying to access its style
+                 // The following logic seems to be a duplicate of what's inside updatePanelUI or general panel visibility management.
+                 // Commenting out the duplicated section as per cleanup requirement.
+                 /*
                     if (!state.isActive && panel.style.display !== 'none') { // if panel is visible but process isn't active
                         // Only display if there is no error or summary to show
                         if (!state.error && !state.summary) {
@@ -241,6 +324,7 @@ if (!window.isRedditSummarizerPanelInjected) {
                     } else if (state.isActive) {
                         panel.style.display = 'flex'; // Ensure visible if scraping is active
                     }
+                */
                 }
 
             } else {
@@ -259,18 +343,19 @@ if (!window.isRedditSummarizerPanelInjected) {
     // or re-request state if that's desired behavior. For now, it does nothing.
     // Example: document.getElementById('redditSummarizerPanel').style.display = 'flex';
 }
-            // If state.isActive is false and panel was hidden by user, this won't show it, which is good.
-            // If it's the first time and state.isActive is false, it will show "Ready to scrape."
-            if (!state.isActive && panel.style.display !== 'none') { // if panel is visible but process isn't active
-                // Only display if there is no error or summary to show
-                if (!state.error && !state.summary) {
-                     panel.style.display = 'flex'; // Ensure it's visible to show "Ready" or last state
-                } else if (state.error || state.summary) {
-                     panel.style.display = 'flex'; // Show if there is an error or summary
-                }
-            } else if (state.isActive) {
-                panel.style.display = 'flex'; // Ensure visible if scraping is active
-            }
+// Removed duplicated block:
+//            // If state.isActive is false and panel was hidden by user, this won't show it, which is good.
+//            // If it's the first time and state.isActive is false, it will show "Ready to scrape."
+//            if (!state.isActive && panel.style.display !== 'none') { // if panel is visible but process isn't active
+//                // Only display if there is no error or summary to show
+//                if (!state.error && !state.summary) {
+//                     panel.style.display = 'flex'; // Ensure it's visible to show "Ready" or last state
+//                } else if (state.error || state.summary) {
+//                     panel.style.display = 'flex'; // Show if there is an error or summary
+//                }
+//            } else if (state.isActive) {
+//                panel.style.display = 'flex'; // Ensure visible if scraping is active
+//            }
 
         } else {
             console.warn("RedditSummarizerPanel: No initial state received from service worker.");
