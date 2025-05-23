@@ -207,6 +207,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                         // ... (original API URL, headers, body setup based on provider) ...
                         if (provider === 'openai') { /* ... */ } else if (provider === 'gemini') { /* ... */ } else { /* error handling */ return; }
 
+                        console.log(`Service Worker (Step 6 Modified): Using effective model name: ${effectiveModelName} for provider: ${provider}`); // Ensure this log is also updated if it wasn't
+                        console.log(`Service Worker (Step 6 Modified): Fetching API. URL: ${apiUrl}`, `Body: ${body}`); // Log URL and body
                         try { // THIS IS THE TRY BLOCK NEAR ORIGINAL ERROR LINE 647
                             scrapingState.message = `Sending request to ${provider} API...`;
                             scrapingState.percentage = 85; broadcastScrapingState();
