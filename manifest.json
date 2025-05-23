@@ -13,10 +13,8 @@
   "host_permissions": [
     "*://*.reddit.com/*",
     "https://*.redd.it/*",
-    "https://gemini.google.com/*",
-    "https://chatgpt.com/*",
-    "https://claude.ai/*",
-    "https://aistudio.google.com/*"
+    "https://api.openai.com/*",
+    "https://generativelanguage.googleapis.com/*"
   ],
   "action": {
     "default_popup": "popup.html",

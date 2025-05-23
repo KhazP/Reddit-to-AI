@@ -24,7 +24,7 @@
             </div>
         </div>
 
-        <div class="settings-section" id="aiSettings">
+        <div class="settings-section" id="aiSettings" style="display:none;">
             <h2>AI Settings</h2>
             <div class="form-group">
                 <label for="aiModelSelect">Select AI Model:</label>
@@ -42,6 +42,25 @@
                 <p class="description">
                     The {content} placeholder will be replaced with the scraped Reddit content when sending to the AI.
                 </p>
+            </div>
+        </div>
+
+        <div class="settings-section" id="backgroundSummarizationSettings">
+            <h2>Background Summarization Settings</h2>
+            <div class="form-group">
+                <label for="llmProviderSelect">Select LLM Provider:</label>
+                <select id="llmProviderSelect" name="llmProviderSelect"></select>
+            </div>
+            <div class="form-group">
+                <label for="apiKeyInput">API Key:</label>
+                <input type="password" id="apiKeyInput" name="apiKeyInput" style="width: 300px;">
+            </div>
+            <div class="form-group">
+                <label for="modelNameInput">Model Name (Optional):</label>
+                <input type="text" id="modelNameInput" name="modelNameInput" placeholder="e.g., gpt-3.5-turbo, gemini-1.5-flash-latest" style="width: 300px;">
+            </div>
+            <div class="form-group">
+                <p><small>API keys are stored using Chrome's storage. Handle them with care and be aware of the risks of storing sensitive data in browser storage.</small></p>
             </div>
         </div>
 

@@ -11,25 +11,34 @@ window.initializeOptions = function() {
     const originalAttemptsSlider = document.getElementById('loadMoreAttempts');
     const attemptsValueDisplay = document.getElementById('attemptsValue');
     const saveStatusDisplay = document.getElementById('saveStatus');
-    const aiModelSelect = document.getElementById('aiModelSelect');
+    const aiModelSelect = document.getElementById('aiModelSelect'); // Old element
     const showNotificationsCheckbox = document.getElementById('showNotifications');
     const defaultPromptTemplateTextarea = document.getElementById('defaultPromptTemplate');
     const dataStorageDontSaveRadio = document.getElementById('dataStorageDontSave');
     const dataStorageSessionOnlyRadio = document.getElementById('dataStorageSessionOnly');
     const dataStoragePersistentRadio = document.getElementById('dataStoragePersistent');
 
-    if (!originalAttemptsSlider || !attemptsValueDisplay || !aiModelSelect || !showNotificationsCheckbox ||
-        !defaultPromptTemplateTextarea || !dataStorageDontSaveRadio || !dataStorageSessionOnlyRadio || !dataStoragePersistentRadio) {
-        console.warn("Options UI elements not found:", {
+    // New UI elements for background summarization
+    const llmProviderSelect = document.getElementById('llmProviderSelect');
+    const apiKeyInput = document.getElementById('apiKeyInput');
+    const modelNameInput = document.getElementById('modelNameInput');
+
+    if (!originalAttemptsSlider || !attemptsValueDisplay || !showNotificationsCheckbox ||
+        !defaultPromptTemplateTextarea || !dataStorageDontSaveRadio || !dataStorageSessionOnlyRadio || !dataStoragePersistentRadio ||
+        !llmProviderSelect || !apiKeyInput || !modelNameInput) { // Added checks for new elements
+        console.warn("Required UI elements not found. Check IDs and HTML structure.", {
             attemptsSlider: !!originalAttemptsSlider,
             attemptsValueDisplay: !!attemptsValueDisplay,
             saveStatusDisplay: !!saveStatusDisplay,
-            aiModelSelect: !!aiModelSelect,
+            // aiModelSelect: !!aiModelSelect, // This is now hidden, so less critical if it's not found for the new logic
             showNotificationsCheckbox: !!showNotificationsCheckbox,
             defaultPromptTemplateTextarea: !!defaultPromptTemplateTextarea,
+            llmProviderSelect: !!llmProviderSelect,
+            apiKeyInput: !!apiKeyInput,
+            modelNameInput: !!modelNameInput,
             dataStorageDontSaveRadio: !!dataStorageDontSaveRadio,
             dataStorageSessionOnlyRadio: !!dataStorageSessionOnlyRadio,
-            dataStoragePersistentRadio: !!dataStoragePersistentRadio
+            dataStoragePersistentRadio: !!dataStoragePersistentRadio,
         });
         return;
     }
@@ -44,29 +53,58 @@ window.initializeOptions = function() {
     const DEFAULT_ATTEMPTS = 75;
     const MAX_STEPS_LIMIT = 500;
 
-    // AI Model Configurations
-    const aiModels = {
-        gemini: { name: "Gemini", url: "https://gemini.google.com/app", inputSelector: "rich-textarea div[contenteditable='true']" },
-        chatgpt: { name: "ChatGPT", url: "https://chatgpt.com/", inputSelector: "#prompt-textarea" }, // Corrected selector
-        claude: { name: "Claude", url: "https://claude.ai/new", inputSelector: "div.ProseMirror[contenteditable='true']" },
-        aistudio: { name: "AI Studio", url: "https://aistudio.google.com/prompts/new_chat", inputSelector: "textarea[aria-label='Type something or pick one from prompt gallery']" }
-    };
-    const DEFAULT_AI_MODEL = 'aistudio'; // Changed default to AI Studio
+    // AI Model Configurations (Old - for tab opening - keep for now if other parts rely on it, but disable UI interaction)
+    // const aiModels = {
+    //     gemini: { name: "Gemini", url: "https://gemini.google.com/app", inputSelector: "rich-textarea div[contenteditable='true']" },
+    //     chatgpt: { name: "ChatGPT", url: "https://chatgpt.com/", inputSelector: "#prompt-textarea" },
+    //     claude: { name: "Claude", url: "https://claude.ai/new", inputSelector: "div.ProseMirror[contenteditable='true']" },
+    //     aistudio: { name: "AI Studio", url: "https://aistudio.google.com/prompts/new_chat", inputSelector: "textarea[aria-label='Type something or pick one from prompt gallery']" }
+    // };
+    // const DEFAULT_AI_MODEL = 'aistudio';
     const DEFAULT_PROMPT_TEMPLATE = "Scraped Content:\n\n{content}";
     const DEFAULT_DATA_STORAGE_OPTION = 'persistent';
 
-    // Populate AI Model Select Dropdown
-    // Clear existing options before populating
-    while (aiModelSelect.firstChild) {
-        aiModelSelect.removeChild(aiModelSelect.firstChild);
+    // New LLM Provider configurations
+    const llmProviders = {
+        openai: "OpenAI",
+        gemini: "Google Gemini"
+        // Add more in the future if needed
+    };
+    const DEFAULT_LLM_PROVIDER = 'openai';
+
+    // Populate LLM Provider Dropdown
+    if (llmProviderSelect) {
+        while (llmProviderSelect.firstChild) {
+            llmProviderSelect.removeChild(llmProviderSelect.firstChild);
+        }
+        Object.keys(llmProviders).forEach(key => {
+            const option = document.createElement('option');
+            option.value = key;
+            option.textContent = llmProviders[key];
+            llmProviderSelect.appendChild(option);
+        });
+        console.log("Populated LLM provider select dropdown.");
+    } else {
+        console.warn("LLM Provider select element not found. Skipping population.");
     }
-    Object.keys(aiModels).forEach(key => {
-        const option = document.createElement('option');
-        option.value = key;
-        option.textContent = aiModels[key].name;
-        aiModelSelect.appendChild(option);
-    });
-    console.log("Populated AI model select dropdown.");
+
+
+    // Populate AI Model Select Dropdown (Old - for tab opening - disabled as section is hidden)
+    // if (aiModelSelect) {
+    //     while (aiModelSelect.firstChild) {
+    //         aiModelSelect.removeChild(aiModelSelect.firstChild);
+    //     }
+    //     Object.keys(aiModels).forEach(key => {
+    //         const option = document.createElement('option');
+    //         option.value = key;
+    //         option.textContent = aiModels[key].name;
+    //         aiModelSelect.appendChild(option);
+    //     });
+    //     console.log("Populated AI model select dropdown (old).");
+    // } else {
+    //     console.warn("Old AI Model select element not found. Skipping population.");
+    // }
+
 
     // Ensure the max attribute is set correctly on the new slider
     attemptsSlider.setAttribute('max', String(MAX_STEPS_LIMIT));
@@ -80,12 +118,15 @@ window.initializeOptions = function() {
 
     // Load saved settings
     chrome.storage.sync.get([
-        'maxLoadMoreAttempts', 
-        'selectedAiModelKey', 
-        'selectedAiModelConfig', 
+        'maxLoadMoreAttempts',
+        // 'selectedAiModelKey', // Old setting
+        // 'selectedAiModelConfig', // Old setting
         'showNotifications',
         'defaultPromptTemplate',
-        'dataStorageOption'
+        'dataStorageOption',
+        'selectedLlmProvider', // New setting
+        'apiKey', // New setting
+        'modelName' // New setting
     ], (result) => {
         console.log("Loaded settings from storage:", result);
         let savedAttempts = result.maxLoadMoreAttempts;
@@ -105,18 +146,19 @@ window.initializeOptions = function() {
             console.log("Set slider to default value:", DEFAULT_ATTEMPTS);
         }
 
-        // Load and set AI model
-        let savedAiModelKey = result.selectedAiModelKey;
-        if (savedAiModelKey && aiModels[savedAiModelKey]) {
-            aiModelSelect.value = savedAiModelKey;
-            console.log("Set AI model select to saved value:", savedAiModelKey);
-        } else {
-            aiModelSelect.value = DEFAULT_AI_MODEL;
-            chrome.storage.sync.set({ selectedAiModelKey: DEFAULT_AI_MODEL, selectedAiModelConfig: aiModels[DEFAULT_AI_MODEL] }, () => {
-                console.log("Default AI model (AI Studio) set and saved as no valid saved model was found.");
-            });
-            console.log("Set AI model select to default value (AI Studio):", DEFAULT_AI_MODEL);
-        }
+        // Load and set AI model (Old - for tab opening - logic disabled)
+        // let savedAiModelKey = result.selectedAiModelKey;
+        // if (aiModelSelect && savedAiModelKey && aiModels[savedAiModelKey]) {
+        //     aiModelSelect.value = savedAiModelKey;
+        //     console.log("Set AI model select to saved value (old):", savedAiModelKey);
+        // } else if (aiModelSelect) {
+        //     aiModelSelect.value = DEFAULT_AI_MODEL;
+        //     // chrome.storage.sync.set({ selectedAiModelKey: DEFAULT_AI_MODEL, selectedAiModelConfig: aiModels[DEFAULT_AI_MODEL] }, () => {
+        //     //     console.log("Default AI model (AI Studio) set and saved as no valid saved model was found (old).");
+        //     // });
+        //     console.log("Set AI model select to default value (AI Studio) (old):", DEFAULT_AI_MODEL);
+        // }
+
 
         // Load and set Show Notifications checkbox
         if (typeof result.showNotifications === 'boolean') {
@@ -153,6 +195,47 @@ window.initializeOptions = function() {
             chrome.storage.sync.set({ dataStorageOption: DEFAULT_DATA_STORAGE_OPTION });
             console.log("Set Data Storage Option to default (" + DEFAULT_DATA_STORAGE_OPTION + ") and saved.");
         }
+
+        // Load and set new Background Summarization Settings
+        if (llmProviderSelect) {
+            llmProviderSelect.value = result.selectedLlmProvider || DEFAULT_LLM_PROVIDER;
+            if (!result.selectedLlmProvider) {
+                chrome.storage.sync.set({ selectedLlmProvider: DEFAULT_LLM_PROVIDER });
+            }
+            console.log("Set LLM Provider to:", llmProviderSelect.value);
+        }
+        if (apiKeyInput) {
+            apiKeyInput.value = result.apiKey || '';
+            if (!result.apiKey) {
+                // Do not save empty API key by default, user should input this.
+            }
+            console.log("Set API Key (length):", (result.apiKey || '').length);
+        }
+        if (modelNameInput) {
+            modelNameInput.value = result.modelName || '';
+            if (!result.modelName) {
+                // Do not save empty model name by default.
+            }
+            console.log("Set Model Name to:", modelNameInput.value);
+        }
+         // Initial save for defaults if they were not present
+        if (!result.selectedLlmProvider || !result.apiKey || !result.modelName) {
+            // This save is a bit broad, ideally only save if a specific default was applied and not already present
+            // For now, this ensures defaults are stored if first time.
+             const initialBackgroundSettings = {
+                selectedLlmProvider: llmProviderSelect ? llmProviderSelect.value : DEFAULT_LLM_PROVIDER,
+                apiKey: apiKeyInput ? apiKeyInput.value : '',
+                modelName: modelNameInput ? modelNameInput.value : ''
+            };
+            // Avoid saving empty API key or model name if the fields were initially empty and no specific default value.
+            // The current logic sets them to '' if not found, so this condition might need refinement
+            // if we want to avoid saving empty strings unless they were explicitly set by the user.
+            // For now, it means if a value was missing, it's set to its current state (empty or default).
+            // chrome.storage.sync.set(initialBackgroundSettings);
+            // console.log("Initial background settings potentially saved if any were missing:", initialBackgroundSettings);
+        }
+
+
     });
 
     // No longer need to clone the slider here as it's done above.
@@ -181,52 +264,29 @@ window.initializeOptions = function() {
         });
     });
 
-    // Add change event listener for AI model select
-    // const newAiModelSelect = aiModelSelect.cloneNode(true); // Clone to remove old listeners if any
-    // aiModelSelect.parentNode.replaceChild(newAiModelSelect, aiModelSelect);
-    // console.log("Replaced AI model select element to remove stale listeners (if any).");
-    // No need to clone and replace if we add the listener directly to the original aiModelSelect,
-    // assuming initializeOptions is structured to be called safely multiple times or only once per actual element existence.
-    // If event listeners are stacking up, a more robust solution for listener management would be needed,
-    // but clearing and re-populating options should not affect listeners on the select element itself if added once.
-
-    // Remove previous listener if it exists to prevent multiple listeners
-    // A simple way is to replace the element, but we've already populated it.
-    // Better: store the listener function and remove it, or use a flag.
-    // For now, let's assume initializeOptions is called in a way that this doesn't stack listeners badly,
-    // or that the popup handles re-creating the options view cleanly.
-
-    // If newAiModelSelect was used, ensure the event listener is on the most current element.
-    // Since we are now modifying aiModelSelect directly and not replacing it after population,
-    // we can add the event listener to aiModelSelect.
-    // To prevent adding multiple listeners if initializeOptions is called multiple times on the same element:
-    if (!aiModelSelect.dataset.listenerAttached) {
-        aiModelSelect.addEventListener('change', (event) => {
-            const selectedKey = event.target.value;
-            const selectedConfig = aiModels[selectedKey];
-            if (selectedConfig) {
-                // Ensure the selector being saved matches the one in service_worker.js for consistency
-                // This step is crucial if options.js and service_worker.js could have divergent selectors.
-                // However, with the current fix, they should be aligned.
-                // For absolute safety, one could fetch the definitive list from service_worker via a message,
-                // but for now, we ensure aiModels here is the source of truth for what options.js saves.
-                chrome.storage.sync.set({ selectedAiModelKey: selectedKey, selectedAiModelConfig: selectedConfig }, () => {
-                    console.log('Selected AI Model saved:', selectedKey, selectedConfig);
-                    if (saveStatusDisplay) {
-                        saveStatusDisplay.textContent = 'Settings saved!';
-                        setTimeout(() => {
-                            saveStatusDisplay.textContent = '';
-                        }, 2000);
-                    }
-                });
-            }
-        });
-        aiModelSelect.dataset.listenerAttached = 'true';
-        console.log("Attached change listener to AI model select.");
-    }
+    // Add change event listener for AI model select (Old - for tab opening - listener disabled)
+    // if (aiModelSelect && !aiModelSelect.dataset.listenerAttached) {
+    //     aiModelSelect.addEventListener('change', (event) => {
+    //         const selectedKey = event.target.value;
+    //         const selectedConfig = aiModels[selectedKey];
+    //         if (selectedConfig) {
+    //             chrome.storage.sync.set({ selectedAiModelKey: selectedKey, selectedAiModelConfig: selectedConfig }, () => {
+    //                 console.log('Selected AI Model saved (old):', selectedKey, selectedConfig);
+    //                 if (saveStatusDisplay) {
+    //                     saveStatusDisplay.textContent = 'Settings saved!';
+    //                     setTimeout(() => {
+    //                         saveStatusDisplay.textContent = '';
+    //                     }, 2000);
+    //                 }
+    //             });
+    //         }
+    //     });
+    //     aiModelSelect.dataset.listenerAttached = 'true';
+    //     console.log("Attached change listener to AI model select (old).");
+    // }
 
     // Add change event listener for Show Notifications checkbox
-    if (!showNotificationsCheckbox.dataset.listenerAttached) {
+    if (showNotificationsCheckbox && !showNotificationsCheckbox.dataset.listenerAttached) {
         showNotificationsCheckbox.addEventListener('change', (event) => {
             const isChecked = event.target.checked;
             chrome.storage.sync.set({ showNotifications: isChecked }, () => {
@@ -244,7 +304,7 @@ window.initializeOptions = function() {
     }
 
     // Add event listener for Default Prompt Template textarea
-    if (!defaultPromptTemplateTextarea.dataset.listenerAttached) {
+    if (defaultPromptTemplateTextarea && !defaultPromptTemplateTextarea.dataset.listenerAttached) {
         defaultPromptTemplateTextarea.addEventListener('input', (event) => {
             const value = event.target.value;
             chrome.storage.sync.set({ defaultPromptTemplate: value }, () => {
@@ -264,7 +324,7 @@ window.initializeOptions = function() {
     // Add event listeners for Data Storage radio buttons
     const dataStorageRadios = [dataStorageDontSaveRadio, dataStorageSessionOnlyRadio, dataStoragePersistentRadio];
     dataStorageRadios.forEach(radio => {
-        if (!radio.dataset.listenerAttached) {
+        if (radio && !radio.dataset.listenerAttached) {
             radio.addEventListener('change', (event) => {
                 if (event.target.checked) {
                     const selectedValue = event.target.value;
@@ -283,4 +343,44 @@ window.initializeOptions = function() {
             console.log(`Attached change listener to Data Storage radio: ${radio.id}`);
         }
     });
+
+    // Function to save background summarization settings
+    function saveBackgroundSummarizationSettings() {
+        if (!llmProviderSelect || !apiKeyInput || !modelNameInput) {
+            console.warn("One or more background summarization UI elements are missing. Cannot save.");
+            return;
+        }
+        const settingsToSave = {
+            selectedLlmProvider: llmProviderSelect.value,
+            apiKey: apiKeyInput.value,
+            modelName: modelNameInput.value
+        };
+        chrome.storage.sync.set(settingsToSave, () => {
+            console.log('Background summarization settings saved:', settingsToSave);
+            if (saveStatusDisplay) {
+                saveStatusDisplay.textContent = 'Settings saved!';
+                setTimeout(() => {
+                    saveStatusDisplay.textContent = '';
+                }, 2000);
+            }
+        });
+    }
+
+    // Add event listeners for new Background Summarization settings
+    if (llmProviderSelect && !llmProviderSelect.dataset.listenerAttached) {
+        llmProviderSelect.addEventListener('change', saveBackgroundSummarizationSettings);
+        llmProviderSelect.dataset.listenerAttached = 'true';
+        console.log("Attached change listener to LLM Provider select.");
+    }
+    if (apiKeyInput && !apiKeyInput.dataset.listenerAttached) {
+        apiKeyInput.addEventListener('input', saveBackgroundSummarizationSettings);
+        apiKeyInput.dataset.listenerAttached = 'true';
+        console.log("Attached input listener to API Key input.");
+    }
+    if (modelNameInput && !modelNameInput.dataset.listenerAttached) {
+        modelNameInput.addEventListener('input', saveBackgroundSummarizationSettings);
+        modelNameInput.dataset.listenerAttached = 'true';
+        console.log("Attached input listener to Model Name input.");
+    }
+
 };
