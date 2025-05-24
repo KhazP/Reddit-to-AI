@@ -46,10 +46,10 @@ window.initializeOptions = function() {
 
     // AI Model Configurations
     const aiModels = {
-        gemini: { name: "Gemini", url: "https://gemini.google.com/app", inputSelector: "rich-textarea div[contenteditable='true']" },
-        chatgpt: { name: "ChatGPT", url: "https://chatgpt.com/", inputSelector: "#prompt-textarea" }, // Corrected selector
-        claude: { name: "Claude", url: "https://claude.ai/new", inputSelector: "div.ProseMirror[contenteditable='true']" },
-        aistudio: { name: "AI Studio", url: "https://aistudio.google.com/prompts/new_chat", inputSelector: "textarea[aria-label='Type something or pick one from prompt gallery']" }
+        gemini: { name: "Gemini", url: "https://gemini.google.com/app", selectors: ["rich-textarea div[contenteditable='true']"] },
+        chatgpt: { name: "ChatGPT", url: "https://chatgpt.com/", selectors: ["#prompt-textarea"] }, // Corrected selector
+        claude: { name: "Claude", url: "https://claude.ai/new", selectors: ["div.ProseMirror[contenteditable='true']"] },
+        aistudio: { name: "AI Studio", url: "https://aistudio.google.com/prompts/new_chat", selectors: ["textarea[aria-label='Type something or pick one from prompt gallery']"] }
     };
     const DEFAULT_AI_MODEL = 'aistudio'; // Changed default to AI Studio
     const DEFAULT_PROMPT_TEMPLATE = "Scraped Content:\n\n{content}";
@@ -67,6 +67,53 @@ window.initializeOptions = function() {
         aiModelSelect.appendChild(option);
     });
     console.log("Populated AI model select dropdown.");
+
+    // Function to display AI model specific settings
+    function displayAiModelSettings(modelKey) {
+        const model = aiModels[modelKey];
+        const settingsContainer = document.getElementById('aiModelSpecificSettings');
+        settingsContainer.innerHTML = ''; // Clear previous settings
+
+        if (model) {
+            const selectorsLabel = document.createElement('label');
+            selectorsLabel.setAttribute('for', 'aiModelSelectors');
+            selectorsLabel.textContent = 'CSS Selectors (one per line):';
+            settingsContainer.appendChild(selectorsLabel);
+
+            const selectorsTextarea = document.createElement('textarea');
+            selectorsTextarea.setAttribute('id', 'aiModelSelectors');
+            selectorsTextarea.setAttribute('name', 'aiModelSelectors');
+            selectorsTextarea.setAttribute('rows', '3');
+            selectorsTextarea.value = model.selectors ? model.selectors.join('\n') : '';
+            settingsContainer.appendChild(selectorsTextarea);
+
+            const description = document.createElement('p');
+            description.classList.add('description');
+            description.textContent = 'Enter CSS selectors, one per line. The extension will try them in order to find the input field on the AI platform page.';
+            settingsContainer.appendChild(description);
+
+            selectorsTextarea.addEventListener('input', (event) => {
+                const newSelectors = event.target.value.split('\n').map(s => s.trim()).filter(s => s);
+                // Update the local aiModels configuration temporarily
+                // The actual saving happens when the model selection changes or on general save
+                aiModels[modelKey].selectors = newSelectors; 
+                
+                // Save the updated config for the currently selected model
+                const currentSelectedModelKey = aiModelSelect.value;
+                if (currentSelectedModelKey === modelKey) {
+                    chrome.storage.sync.set({ selectedAiModelKey: modelKey, selectedAiModelConfig: aiModels[modelKey] }, () => {
+                        console.log('AI Model selectors updated and saved for:', modelKey);
+                        if (saveStatusDisplay) {
+                            saveStatusDisplay.textContent = 'Settings saved!';
+                            setTimeout(() => {
+                                saveStatusDisplay.textContent = '';
+                            }, 2000);
+                        }
+                    });
+                }
+            });
+        }
+    }
 
     // Ensure the max attribute is set correctly on the new slider
     attemptsSlider.setAttribute('max', String(MAX_STEPS_LIMIT));
@@ -107,15 +154,44 @@ window.initializeOptions = function() {
 
         // Load and set AI model
         let savedAiModelKey = result.selectedAiModelKey;
+        let currentModelConfig = result.selectedAiModelConfig;
+
+        // Backward compatibility for selector vs selectors
+        if (currentModelConfig && currentModelConfig.selector && !currentModelConfig.selectors) {
+            console.log("Found old 'selector' format, converting to 'selectors' array.");
+            currentModelConfig.selectors = [currentModelConfig.selector];
+            delete currentModelConfig.selector;
+            // Also update the aiModels object in memory for the current session
+            if (savedAiModelKey && aiModels[savedAiModelKey]) {
+                 aiModels[savedAiModelKey].selectors = currentModelConfig.selectors;
+                 if (aiModels[savedAiModelKey].selector) {
+                    delete aiModels[savedAiModelKey].selector;
+                 }
+            }
+            // No need to re-save here, will be saved when model selection changes or if other settings trigger save.
+            // Or, explicitly save if this is the only place we handle this conversion:
+            chrome.storage.sync.set({ selectedAiModelConfig: currentModelConfig }, () => {
+                console.log("Converted and saved model config with new 'selectors' format.");
+            });
+        }
+
+
         if (savedAiModelKey && aiModels[savedAiModelKey]) {
             aiModelSelect.value = savedAiModelKey;
             console.log("Set AI model select to saved value:", savedAiModelKey);
+            // If loaded config is valid, update the in-memory aiModels entry too, especially for selectors
+            if (currentModelConfig && currentModelConfig.selectors) {
+                aiModels[savedAiModelKey].selectors = currentModelConfig.selectors;
+            }
+            displayAiModelSettings(savedAiModelKey); // Display settings for the loaded model
         } else {
             aiModelSelect.value = DEFAULT_AI_MODEL;
+            // Save the default model's config (which now uses 'selectors' array)
             chrome.storage.sync.set({ selectedAiModelKey: DEFAULT_AI_MODEL, selectedAiModelConfig: aiModels[DEFAULT_AI_MODEL] }, () => {
-                console.log("Default AI model (AI Studio) set and saved as no valid saved model was found.");
+                console.log("Default AI model (" + aiModels[DEFAULT_AI_MODEL].name + ") set and saved as no valid saved model was found.");
             });
-            console.log("Set AI model select to default value (AI Studio):", DEFAULT_AI_MODEL);
+            console.log("Set AI model select to default value (" + aiModels[DEFAULT_AI_MODEL].name + "):", DEFAULT_AI_MODEL);
+            displayAiModelSettings(DEFAULT_AI_MODEL); // Display settings for the default model
         }
 
         // Load and set Show Notifications checkbox
@@ -203,13 +279,16 @@ window.initializeOptions = function() {
     if (!aiModelSelect.dataset.listenerAttached) {
         aiModelSelect.addEventListener('change', (event) => {
             const selectedKey = event.target.value;
-            const selectedConfig = aiModels[selectedKey];
+            // aiModels[selectedKey] should already have up-to-date selectors if textarea was edited
+            const selectedConfig = aiModels[selectedKey]; 
             if (selectedConfig) {
-                // Ensure the selector being saved matches the one in service_worker.js for consistency
-                // This step is crucial if options.js and service_worker.js could have divergent selectors.
-                // However, with the current fix, they should be aligned.
-                // For absolute safety, one could fetch the definitive list from service_worker via a message,
-                // but for now, we ensure aiModels here is the source of truth for what options.js saves.
+                 // Make sure the selectors are current from the textarea if it exists
+                const selectorsTextarea = document.getElementById('aiModelSelectors');
+                if (selectorsTextarea) { // Check if textarea is on the page
+                    const currentSelectors = selectorsTextarea.value.split('\n').map(s => s.trim()).filter(s => s);
+                    selectedConfig.selectors = currentSelectors;
+                }
+
                 chrome.storage.sync.set({ selectedAiModelKey: selectedKey, selectedAiModelConfig: selectedConfig }, () => {
                     console.log('Selected AI Model saved:', selectedKey, selectedConfig);
                     if (saveStatusDisplay) {
@@ -219,6 +298,7 @@ window.initializeOptions = function() {
                         }, 2000);
                     }
                 });
+                displayAiModelSettings(selectedKey); // Update UI for newly selected model
             }
         });
         aiModelSelect.dataset.listenerAttached = 'true';

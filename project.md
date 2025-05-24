@@ -55,7 +55,7 @@ The Reddit AITools Chrome extension is designed to scrape content from Reddit th
     *   Loads saved settings (`maxLoadMoreAttempts`, `selectedAiModel`) from `chrome.storage.sync`.
     *   Saves selected values to `chrome.storage.sync` when the user changes them.
     *   Updates the displayed value next to the slider.
-    *   Manages AI model configurations (name, URL, CSS selector for input).
+    *   Manages AI model configurations (name, URL, and an array of CSS selectors for input). Users can input multiple selectors (typically in a textarea, one per line) in the options, which are stored in `selectedAiModelConfig.selectors`.
 
 ### 3.5. `service_worker.js` (Background Script)
 *   **Purpose**: Manages the extension's background tasks, acting as a central coordinator for the scraping process.
@@ -67,10 +67,10 @@ The Reddit AITools Chrome extension is designed to scrape content from Reddit th
     *   Receiving scraped data or error messages from `redditScraper.js`.
     *   Receiving progress updates from `redditScraper.js` and relaying them to `popup.js`.
     *   Storing the scraped data temporarily in `chrome.storage.local`.
-    *   Retrieving the selected AI model configuration from `chrome.storage.sync`.
+    *   Retrieving the selected AI model configuration (including an array of CSS selectors, `aiConfig.selectors`) from `chrome.storage.sync`.
     *   Opening a new tab for the selected AI platform (Gemini, ChatGPT, Claude, AI Studio).
     *   Injecting `aiPaster.js` into the AI platform's tab once it's loaded.
-    *   Passing the AI-specific configuration (e.g., CSS selector) to `aiPaster.js`.
+    *   Passing the AI-specific configuration (including the array of CSS selectors) to `aiPaster.js`.
     *   Cleaning up stored data after the process or if an error occurs/stop is requested.
     *   Handling the `stopScraping` request by setting a flag and attempting to notify the content script.
 
@@ -90,11 +90,13 @@ The Reddit AITools Chrome extension is designed to scrape content from Reddit th
 ### 3.7. `aiPaster.js` (Content Script for AI Platforms, formerly `geminiPaster.js`)
 *   **Purpose**: Injected into the selected AI platform's page to paste the scraped Reddit data.
 *   **Key Responsibilities**:
-    *   Receiving the AI-specific configuration (name, URL, CSS selector) from `service_worker.js`.
+    *   Receiving the AI-specific configuration (name, URL, and an array of CSS selectors) from `service_worker.js`.
     *   Retrieving the stored Reddit data (including an array of image dataURLs) from `chrome.storage.local`.
     *   Formatting the textual data into a string suitable for pasting.
-    *   Locating the appropriate input area on the AI platform's page using the provided CSS selector. Implements a retry mechanism (e.g., for AI Studio) to handle cases where the target element might not be immediately available.
-    *   Pasting the formatted textual data into the input area.
+    *   Locating the appropriate input area on the AI platform's page. It first attempts each CSS selector from the provided array, in order.
+    *   **Content-Based Heuristic Fallback**: If none of the configured CSS selectors find an element, `aiPaster.js` employs a content-based heuristic search. This heuristic looks for common input elements like `textarea` or `div[contenteditable="true"]` and scores them based on attributes such as `aria-label`, `placeholder`, `id`, and `class` to identify the most likely input field. This makes pasting more resilient to minor HTML structure changes on AI platform websites.
+    *   **Retry Mechanism**: The script implements a retry mechanism. Within each attempt, it first tries all configured CSS selectors. If they fail, it then tries the content-based heuristics. If no input field is found, it waits and retries the entire process (selectors then heuristics) up to a maximum number of attempts.
+    *   Pasting the formatted textual data into the identified input area.
     *   Iterating through the array of image dataURLs, converting each to a File object, and attempting to paste each image using simulated drag-and-drop events, with small delays between each image.
     *   Sending a status message back to `service_worker.js` indicating success or failure of the paste operation.
 
@@ -122,14 +124,14 @@ The Reddit AITools Chrome extension is designed to scrape content from Reddit th
 6.  **Service Worker Processing & AI Platform Interaction**:
     *   `service_worker.js` receives the data/status.
     *   If data is received, it's stored in `chrome.storage.local` under `redditThreadData`.
-    *   `service_worker.js` retrieves the selected AI model configuration (URL, selector) from `chrome.storage.sync`.
+    *   `service_worker.js` retrieves the selected AI model configuration (URL, array of selectors) from `chrome.storage.sync`.
     *   `service_worker.js` opens the selected AI platform's URL (e.g., `https://gemini.google.com/app`, `https://chat.openai.com/`, etc.) in a new tab.
     *   It waits for the AI platform's tab to finish loading.
-    *   It then injects `aiPaster.js` into the tab, passing the AI-specific configuration.
+    *   It then injects `aiPaster.js` into the tab, passing the AI-specific configuration, including the array of selectors.
 7.  **Pasting on AI Platform Page**:
-    *   `aiPaster.js` receives the AI configuration (including the CSS selector for the input field).
+    *   `aiPaster.js` receives the AI configuration (including the array of CSS selectors).
     *   It retrieves `redditThreadData` from `chrome.storage.local`.
-    *   It formats the data and attempts to paste it into the AI platform's input field using the provided selector.
+    *   It formats the data and attempts to paste it into the AI platform's input field using the provided array of selectors (trying each one) and the content-based heuristic fallback if necessary.
     *   It sends a status message (e.g., "Pasting complete" or "Error pasting") back to `service_worker.js`.
 8.  **Finalization & Feedback**:
     *   `service_worker.js` receives the paste status.
@@ -163,7 +165,8 @@ The Reddit AITools Chrome extension is designed to scrape content from Reddit th
 *   Accessible via the "Options" button in the popup (embedded) or directly if the extension settings are opened via Chrome's extension management page.
 *   **Controls**:
     *   **Slider for "Load More Comments" Attempts**: Allows users to set a value (e.g., 1-500, default 75). The current value is displayed.
-    *   **Dropdown for AI Model Selection**: Allows users to choose between Gemini (default), ChatGPT, Claude, and AI Studio.
+    *   **Dropdown for AI Model Selection**: Allows users to choose between Gemini (default), ChatGPT, Claude, and AI Studio. Associated with each model is a configuration including its URL and an array of CSS selectors for identifying the input field.
+    *   **Textarea for CSS Selectors**: For the selected AI model, users can specify one or more CSS selectors (one per line) to help the extension find the chat input field on the AI platform's page.
     *   **Description**: Explains what the setting does and the implications of high/low values.
 
 ## 6. Configuration
@@ -171,8 +174,8 @@ The Reddit AITools Chrome extension is designed to scrape content from Reddit th
 *   **Max Load More Attempts**: Configured via the options page/slider. Determines how many times the scraper tries to load more comments. Stored in `chrome.storage.sync` under the key `maxLoadMoreAttempts`.
     *   Default: 75
     *   Range: 1-500 (as per `options.html`)
-*   **Selected AI Model**: Configured via a dropdown in the options view. Determines which AI platform the data is sent to. Stored in `chrome.storage.sync` under keys `selectedAiModel` (string key) and `selectedAiModelConfig` (object with URL, selector, name).
-    *   Default: Gemini
+*   **Selected AI Model**: Configured via a dropdown in the options view. Determines which AI platform the data is sent to. Stored in `chrome.storage.sync` under keys `selectedAiModelKey` (string key) and `selectedAiModelConfig` (object with URL, name, and `selectors` which is an array of CSS selector strings).
+    *   Default: AI Studio (updated from Gemini)
     *   Options: Gemini, ChatGPT, Claude, AI Studio
 *   **Include Hidden/Spam Comments**: Configured via a checkbox in the popup. This setting is passed from `popup.js` to `service_worker.js` and then to `redditScraper.js` for each scraping session. It's not persistently stored between sessions by default (state is read from checkbox at time of scrape).
 
@@ -190,11 +193,12 @@ The Reddit AITools Chrome extension is designed to scrape content from Reddit th
 *   **Dynamic Paster Script**: `aiPaster.js` now handles pasting for multiple AI platforms based on configuration passed from the service worker.
 *   **Improved Progress Bar Accuracy**: Calculations in `service_worker.js` and `redditScraper.js` updated for more realistic progress representation, especially with high step values.
 *   **In-Popup Options**: Allows configuration changes directly within the popup without opening a new tab or a separate extension page.
-*   **Selector Mismatch Resolution**: Implemented logic in `service_worker.js` to ensure `aiPaster.js` receives the correct, most up-to-date CSS selector for the target AI platform, even if an outdated one was in storage. This fixed issues where `aiPaster.js` couldn't find the input element due to using an old selector.
-*   **Configuration Property Name Correction**: Corrected `aiPaster.js` to use `aiConfig.inputSelector` instead of the old `aiConfig.selector`, aligning it with `service_worker.js`.
+    *   **Enhanced AI Pasting Robustness**: Utilizes multiple configurable CSS selectors (per AI platform) and a content-based heuristic fallback in `aiPaster.js` to reliably find input fields on AI platforms. This makes the pasting process more resilient to website HTML updates.
+    *   **Selector Mismatch Resolution**: Implemented logic in `service_worker.js` to ensure `aiPaster.js` receives the correct, most up-to-date CSS selectors for the target AI platform, even if an outdated one was in storage. This fixed issues where `aiPaster.js` couldn't find the input element due to using an old selector.
+    *   **Configuration Property Name Correction**: Corrected `aiPaster.js` to use `aiConfig.selectors` (array) instead of the old `aiConfig.inputSelector` or `aiConfig.selector`, aligning it with `service_worker.js`.
 *   **Syntax Error Resolution**: Addressed "Identifier 'scrapeRedditData' has already been declared" by removing duplicate function definitions in `redditScraper.js`.
 *   **UI Text Update**: "Scrape and Send to Gemini" button changed to "Scrape and Send".
-*   **AI Studio Integration**: Added support for AI Studio. Updated `aiPaster.js` with retry logic to improve reliability when pasting to AI Studio, addressing issues where the target input element might not be immediately available.
+    *   **AI Studio Integration**: Added support for AI Studio.
 *   **Image Handling (Enhanced for Galleries & Gemini Workaround)**:
     *   Enhanced image scraping to identify and fetch all images from a Reddit post gallery (e.g., targeting `shreddit-gallery` elements or common `figure > img` patterns within the post content). If no gallery is detected, it falls back to finding a single prominent post image.
     *   The `service_worker.js` now processes an array of image URLs collected by the scraper. It fetches each image, converts it to a dataURL, and stores these as an array of dataURLs.
@@ -202,7 +206,7 @@ The Reddit AITools Chrome extension is designed to scrape content from Reddit th
     *   A note is added to the pasted text if multiple images were scraped and attempted for pasting.
     *   Added `https://*.redd.it/*` to `host_permissions` in `manifest.json` to resolve CORS issues when fetching images.
     *   Due to difficulties with robust image pasting into Gemini, a disclaimer was added to `options.html` informing users of this limitation and recommending AI Studio for posts with images.
-    *   The default AI model was changed from Gemini to AI Studio in `service_worker.js`.
+    *   **The default AI model was changed from Gemini to AI Studio in `options.js` and `service_worker.js`.**
 *   **YouTube Video URL Handling (for AI Studio Embedding)**:
     *   `redditScraper.js` in the `extractPostDetails` function has been updated to more robustly identify YouTube video URLs:
         1.  It prioritizes extracting the YouTube URL from the `shreddit-post` element's `content-href` attribute if the `post-type` attribute indicates a "link" and the `domain` attribute is a known video host (e.g., `youtube.com`, `youtu.be`). URLs are resolved to be absolute.
@@ -238,31 +242,17 @@ This section details the specific modifications made during the interactive sess
         *   A `title` attribute was added to this label: "Scrape comments that are hidden by default".
 
 *   **"Show Notifications" Feature Implementation**:
-    *   This feature allows users to control whether they receive desktop notifications for various extension activities.
-    *   **`options.html`**:
-        *   A new checkbox with the `id="showNotifications"` was added.
-        *   The label for this checkbox is "Show Notifications:".
-        *   A descriptive text `<small>Display status updates as notifications.</small>` was added.
-    *   **`options.js`**:
-        *   Enhanced to manage the "Show Notifications" checkbox.
-        *   Loads the `showNotifications` setting from `chrome.storage.sync`. If not found, it defaults to `true` (enabled) and saves this default.
-        *   Saves changes to the `showNotifications` setting in `chrome.storage.sync` when the checkbox state is changed by the user.
-    *   **`service_worker.js`**:
-        *   A new helper function `showNotificationIfEnabled(title, message, notificationIdBase)` was introduced. This function first retrieves the `showNotifications` setting from `chrome.storage.sync`.
-        *   If notifications are enabled (or the setting is not present, defaulting to enabled), it calls `chrome.notifications.create()` to display a desktop notification.
-        *   This `showNotificationIfEnabled` function was integrated at numerous points in the service worker's lifecycle to provide conditional notifications for:
-            *   Scraping process initiation, successful completion, user-initiated stops, and cancellations.
-            *   Various error conditions (e.g., scraping already in progress, no active tab, not a Reddit page, script injection failures, data storage errors, AI platform interaction issues like tab creation failure or pasting script injection failure).
-            *   Successful intermediate steps (e.g., AI platform tab opened).
-        *   The existing handler for `notifyUser` messages (typically from content scripts) was also updated to use `showNotificationIfEnabled`, ensuring these custom notifications also respect the user's preference.
-
+        *   This feature allows users to control whether they receive desktop notifications for various extension activities.
+        *   Implemented in `options.html`, `options.js`, and `service_worker.js`.
 *   **Project Renaming to "Reddit to AI"**:
-    *   The overall project name was changed.
-    *   **`manifest.json`**: The `name` field was updated from "Reddit AI Tool" to "Reddit to AI".
-    *   **`options.html`**:
-        *   The `<title>` tag was changed to "Reddit to AI Options".
-        *   The header logo text was updated from "RedditAITools" to "Reddit to AI".
-    *   *(Note: `popup.html`'s title and logo were already "Reddit to AI" prior to this specific chat segment, as reflected in user-provided files and previous `project.md` updates).*
+    *   The overall project name was changed in `manifest.json`, `options.html`, and `popup.html`.
+*   **Multi-Selector and Heuristic Pasting (Current Session Focus)**:
+    *   **`options.js`**: Updated to manage an array of CSS selectors (`selectedAiModelConfig.selectors`) for each AI platform, allowing users to input them via a textarea.
+    *   **`service_worker.js`**: Modified to handle the array of selectors and pass it to `aiPaster.js`.
+    *   **`aiPaster.js`**:
+        *   Now receives an array of CSS selectors and attempts them in order.
+        *   If all configured selectors fail, it triggers a content-based heuristic search (looking for `textarea`, `div[contenteditable="true"]` and scoring based on attributes like `aria-label`, `placeholder`) to find the input field.
+        *   This significantly improves the robustness of pasting content into AI platforms.
 
 These updates ensure that `project.md` accurately reflects the latest state of the extension, particularly the changes made interactively during this session.
 
@@ -279,5 +269,5 @@ These updates ensure that `project.md` accurately reflects the latest state of t
 *   More sophisticated AI interaction (e.g., pre-filling prompts, selecting specific models if API allows for the chosen platform).
 *   Allowing users to select which parts of the post/comments to scrape.
 *   Saving scraped data to a file directly.
-*   Support for other AI platforms beyond Gemini.
+*   Support for other AI platforms beyond the current selection.
 

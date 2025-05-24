@@ -287,29 +287,54 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                   const DEFAULT_MODEL_KEY = 'aistudio'; 
                   const DEFAULT_PROMPT_TEMPLATE = "Scraped Content:\n\n{content}"; // From options.js
                   const localAiModels = {
-                      gemini: { name: "Gemini", url: "https://gemini.google.com/app", inputSelector: "rich-textarea div[contenteditable='true']" },
-                      chatgpt: { name: "ChatGPT", url: "https://chatgpt.com/", inputSelector: "#prompt-textarea" },
-                      claude: { name: "Claude", url: "https://claude.ai/new", inputSelector: "div.ProseMirror[contenteditable='true']" },
-                      aistudio: { name: "AI Studio", url: "https://aistudio.google.com/prompts/new_chat", inputSelector: "textarea[aria-label*='Type something']" }
+                      gemini: { name: "Gemini", url: "https://gemini.google.com/app", selectors: ["rich-textarea div[contenteditable='true']"] },
+                      chatgpt: { name: "ChatGPT", url: "https://chatgpt.com/", selectors: ["#prompt-textarea"] },
+                      claude: { name: "Claude", url: "https://claude.ai/new", selectors: ["div.ProseMirror[contenteditable='true']"] },
+                      aistudio: { name: "AI Studio", url: "https://aistudio.google.com/prompts/new_chat", selectors: ["textarea[aria-label*='Type something']", "textarea[placeholder*='Send a message']"] } // Added a common fallback for AI Studio
                   };
 
-                  // Ensure the most current inputSelector from localAiModels is used if different from storage
-                  if (aiKey && localAiModels[aiKey] && aiConfig && aiConfig.inputSelector !== localAiModels[aiKey].inputSelector) {
-                    console.warn(`Service Worker: Stored inputSelector for '${aiKey}' ("${aiConfig.inputSelector}") differs from local definition ("${localAiModels[aiKey].inputSelector}"). Updating.`);
-                    aiConfig.inputSelector = localAiModels[aiKey].inputSelector; // Update in-memory config
-                    // Also update the configuration in storage to persist the correction
-                    chrome.storage.sync.set({ selectedAiModelConfig: aiConfig }, () => {
-                        console.log(`Service Worker: Corrected inputSelector for key '${aiKey}' has been saved to storage.`);
-                    });
+                  // Backward compatibility for selector vs selectors in retrieved config
+                  if (aiConfig && aiConfig.selector && !aiConfig.selectors) {
+                      console.log("Service Worker: Found old 'selector' format in stored config, converting to 'selectors' array.");
+                      aiConfig.selectors = [aiConfig.selector];
+                      delete aiConfig.selector;
+                      // Save the updated config back to storage
+                      chrome.storage.sync.set({ selectedAiModelConfig: aiConfig }, () => {
+                          console.log("Service Worker: Converted and saved model config with new 'selectors' format to storage.");
+                      });
                   }
 
-                  if (!aiConfig || !aiConfig.url || !aiConfig.inputSelector || !aiKey || !localAiModels[aiKey]) {
-                    console.warn('Service Worker: Invalid or missing AI configuration from storage. Attempting to recover or default.', 'Retrieved Key:', aiKey, 'Retrieved Config:', aiConfig);
+                  // Ensure the most current selectors from localAiModels are used if stored selectors are problematic or missing.
+                  // This also handles the case where aiConfig might exist but its 'selectors' field is empty or invalid.
+                  if (aiKey && localAiModels[aiKey]) {
+                      if (!aiConfig || !aiConfig.selectors || aiConfig.selectors.length === 0) {
+                          // This condition catches if aiConfig is missing, or if its selectors are empty/undefined.
+                          if (aiConfig && (!aiConfig.selectors || aiConfig.selectors.length === 0)) {
+                            console.warn(`Service Worker: Stored selectors for '${aiKey}' are missing or empty. Using local definition.`);
+                          } else if (!aiConfig) {
+                            console.warn(`Service Worker: No stored config for '${aiKey}'. Using local definition.`);
+                          }
+                          // aiConfig might be partially defined (e.g., URL is there but selectors are not)
+                          // We primarily care about ensuring selectors are valid.
+                          // Let's ensure we merge reasonably: if aiConfig exists, keep its URL, otherwise use local URL.
+                          const baseUrl = aiConfig?.url || localAiModels[aiKey].url;
+                          aiConfig = { ...localAiModels[aiKey], url: baseUrl }; // Prioritize local selectors, merge URL
+
+                          // Also update the configuration in storage to persist the correction/initialization
+                          chrome.storage.sync.set({ selectedAiModelConfig: aiConfig }, () => {
+                              console.log(`Service Worker: Corrected/initialized selectors for key '${aiKey}' has been saved to storage using local definition.`);
+                          });
+                      }
+                  }
+
+
+                  if (!aiConfig || !aiConfig.url || !aiConfig.selectors || aiConfig.selectors.length === 0 || !aiKey || !localAiModels[aiKey]) {
+                    console.warn('Service Worker: Invalid or missing AI configuration from storage even after attempts to fix. Attempting to recover or default.', 'Retrieved Key:', aiKey, 'Current Config:', aiConfig);
                     
-                    if (aiKey && localAiModels[aiKey] && (!aiConfig || !aiConfig.url || !aiConfig.inputSelector)) {
-                        console.log(`Service Worker: Key '${aiKey}' is valid but config object is missing/invalid. Using fresh config for '${aiKey}'.`);
-                        aiConfig = localAiModels[aiKey];
-                        chrome.storage.sync.set({ selectedAiModelConfig: aiConfig }, () => {
+                    if (aiKey && localAiModels[aiKey] && (!aiConfig || !aiConfig.url || !aiConfig.selectors || aiConfig.selectors.length === 0)) {
+                        console.log(`Service Worker: Key '${aiKey}' is valid but config object is still missing/invalid. Using fresh config for '${aiKey}'.`);
+                        aiConfig = localAiModels[aiKey]; // This will have .selectors
+                        chrome.storage.sync.set({ selectedAiModelKey: aiKey, selectedAiModelConfig: aiConfig }, () => { // Also save the key
                             console.log(`Service Worker: Corrected AI config for key '${aiKey}' saved to storage.`);
                         });
                     } else {

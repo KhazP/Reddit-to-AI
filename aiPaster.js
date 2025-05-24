@@ -25,7 +25,16 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         sendResponse({ status: 'Error: AI config missing or incomplete in aiPaster.js' });
         return false; // Synchronous response for this error path
     }
-    console.log('AI Paster: Using AI config:', aiConfig.name);
+    // Check for selectors array
+    if (!aiConfig.selectors || !Array.isArray(aiConfig.selectors) || aiConfig.selectors.length === 0) {
+        console.error('AI Paster: AI configuration missing `selectors` array or array is empty.');
+        try {
+            console.log('AI Paster: Received aiConfig was:', JSON.stringify(aiConfig, null, 2));
+        } catch (e) { console.log('AI Paster: Received aiConfig (raw):', aiConfig); }
+        sendResponse({ status: 'Error: AI config missing valid `selectors` array in aiPaster.js' });
+        return false;
+    }
+    console.log('AI Paster: Using AI config:', aiConfig.name, 'with selectors:', aiConfig.selectors.join('; '));
 
     // Directly use data passed in the request object
     const formattedText = request.scrapedData; // This is the final, template-applied text from service_worker
@@ -214,9 +223,9 @@ async function typeText(element, text, clearFirst = false) {
 
 
 async function pasteTextAndMedia(text, imageDataUrls, youtubeVideoUrls, aiConfig, sendResponse) {
-  const selector = aiConfig.inputSelector;
+  const selectors = aiConfig.selectors; // Now an array
   const aiName = aiConfig.name;
-  console.log(`AI Paster: Attempting to paste text and potentially media into ${aiName} using selector: ${selector}`);
+  console.log(`AI Paster: Attempting to paste text and potentially media into ${aiName} using selectors: "${selectors.join('", "')}"`);
   if (imageDataUrls && imageDataUrls.length > 0) {
     console.log(`AI Paster: Received ${imageDataUrls.length} image data URLs.`);
   }
@@ -229,9 +238,84 @@ async function pasteTextAndMedia(text, imageDataUrls, youtubeVideoUrls, aiConfig
   const intervalTime = 500; // 0.5 seconds
 
   const tryPastingContent = async () => {
-    const targetElement = document.querySelector(selector);
+    let targetElement = null;
+    for (const currentSelector of selectors) {
+      targetElement = document.querySelector(currentSelector);
+      if (targetElement) {
+        console.log(`AI Paster: Target element found with selector: "${currentSelector}"`, targetElement);
+        break; // Found a working selector
+      } else {
+        console.log(`AI Paster: Selector "${currentSelector}" did not find an element.`);
+      }
+    }
+
+    // If no element found by configured selectors, try heuristics
+    if (!targetElement) {
+      console.log("AI Paster: Configured selectors failed. Trying content-based heuristics...");
+      let candidates = [];
+      const potentialElements = document.querySelectorAll('textarea, div[contenteditable="true"]');
+
+      potentialElements.forEach(el => {
+        // Check visibility
+        const style = window.getComputedStyle(el);
+        const isVisible = el.offsetParent !== null && style.display !== 'none' && style.visibility !== 'hidden';
+
+        if (isVisible) {
+          let score = 0;
+          const keywords = ["chat", "input", "message", "prompt", "query", "send", "type", "ask", "compose"];
+
+          const checkAttribute = (attributeValue) => {
+            if (!attributeValue) return 0;
+            const valueLower = attributeValue.toLowerCase();
+            for (const keyword of keywords) {
+              if (valueLower.includes(keyword)) return 1; // Basic score for keyword presence
+            }
+            return 0;
+          };
+          
+          const ariaLabel = el.getAttribute('aria-label');
+          const placeholder = el.getAttribute('placeholder');
+          const id = el.getAttribute('id');
+          const className = el.className && typeof el.className === 'string' ? el.className : ''; // Ensure className is a string
+
+          if (ariaLabel) {
+            if (keywords.some(k => ariaLabel.toLowerCase().includes(k))) score += 3;
+          }
+          if (placeholder) {
+            if (keywords.some(k => placeholder.toLowerCase().includes(k))) score += 2;
+          }
+          if (id) {
+            if (keywords.some(k => id.toLowerCase().includes(k))) score += 1;
+          }
+          if (className) {
+             if (keywords.some(k => className.toLowerCase().includes(k))) score += 1;
+          }
+
+          if (el.tagName === 'TEXTAREA') score += 2; // Textareas are often good candidates
+          if (el.getAttribute('contenteditable') === 'true') score += 1;
+
+          // Bonus for specific, common attributes indicating a primary input field
+          if (ariaLabel && (ariaLabel.toLowerCase().includes("send message") || ariaLabel.toLowerCase().includes("type a message") || ariaLabel.toLowerCase().includes("chat input"))) score += 2;
+          if (placeholder && (placeholder.toLowerCase().includes("send a message") || placeholder.toLowerCase().includes("type a message") || placeholder.toLowerCase().includes("enter prompt here"))) score += 2;
+
+
+          if (score > 0) {
+            candidates.push({ element: el, score: score, ariaLabel: ariaLabel, placeholder: placeholder, id: id, tag: el.tagName });
+          }
+        }
+      });
+
+      if (candidates.length > 0) {
+        candidates.sort((a, b) => b.score - a.score); // Sort by score descending
+        targetElement = candidates[0].element;
+        console.log(`AI Paster: Heuristics found a potential target with score ${candidates[0].score}:`, targetElement, `Details: Tag=${candidates[0].tag}, Aria-Label="${candidates[0].ariaLabel}", Placeholder="${candidates[0].placeholder}", ID="${candidates[0].id}"`);
+      } else {
+        console.log("AI Paster: Heuristics did not find any suitable candidates.");
+      }
+    }
+
     if (targetElement) {
-      console.log('AI Paster: Target element found:', targetElement);
+      // Successfully found an element with one of the selectors OR by heuristics
       let pasteStatusMessage = "";
 
       try {
@@ -320,11 +404,11 @@ async function pasteTextAndMedia(text, imageDataUrls, youtubeVideoUrls, aiConfig
     } else {
       attempts++;
       if (attempts < maxAttempts) {
-        console.log(`AI Paster: Target element not found for ${aiName}. Attempt ${attempts}/${maxAttempts}. Retrying in ${intervalTime}ms...`);
+        console.log(`AI Paster: No target element found with any selector for ${aiName}. Attempt ${attempts}/${maxAttempts}. Retrying in ${intervalTime}ms...`);
         setTimeout(tryPastingContent, intervalTime);
       } else {
-        console.error(`AI Paster: Target element not found for ${aiName} with selector: ${selector} after ${maxAttempts} attempts.`);
-        sendResponse({ status: `Error: ${aiName} chat input not found after ${maxAttempts} attempts.` });
+        console.error(`AI Paster: Target element not found for ${aiName} with any of the selectors: "${selectors.join('", "')}" after ${maxAttempts} attempts.`);
+        sendResponse({ status: `Error: ${aiName} chat input not found with any provided selectors after ${maxAttempts} attempts.` });
       }
     }
   };
