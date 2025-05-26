@@ -1,7 +1,7 @@
 # 🚀 Reddit to AI - Chrome Extension 🚀
 
 [![Version](https://img.shields.io/badge/version-0.1.0-blue.svg?style=for-the-badge)](manifest.json)
-[![License](https://img.shields.io/badge/license-MIT-green.svg?style=for-the-badge)](LICENSE) 
+[![License](https://img.shields.io/badge/license-apache-green.svg?style=for-the-badge)](LICENSE) 
 [![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-orange.svg?style=for-the-badge)](#contributing)
 
 > **Transform your Reddit browsing into an AI-powered summarization experience!**
@@ -168,6 +168,5 @@ Contributions are welcome!
 ---
 ## 📄 License
 
-This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
-*(Ensure a LICENSE file exists in your project, or update this section accordingly.)*
+This project is licensed under the **Apache License**. See the [LICENSE](LICENSE) file for details.
 
