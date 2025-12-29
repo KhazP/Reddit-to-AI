@@ -1,2 +1,55 @@
-# SpecStory explanation file
-.specstory/.what-is-this.md
+# ===================
+# Development & IDE
+# ===================
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# ===================
+# AI Agent Folders
+# ===================
+.specstory/
+.claude/
+.cursor/
+
+# ===================
+# Documentation (dev only)
+# ===================
+docs/
+CLAUDE.md
+NOTES.md
+project.md
+
+# ===================
+# OS Generated
+# ===================
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ===================
+# Node (if applicable)
+# ===================
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+
+# ===================
+# Build & Packaging
+# ===================
+*.zip
+*.crx
+*.pem
+dist/
+build/
+
+# ===================
+# Temporary Files
+# ===================
+*.log
+*.tmp
+*.temp
+*.bak
+*~
