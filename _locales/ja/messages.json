@@ -1,0 +1,391 @@
+{
+    "extName": {
+        "message": "Reddit to AI"
+    },
+    "extDescription": {
+        "message": "Redditのスレッドを取得し、分析のために選択したAIチャットボットにコンテンツを送信します。"
+    },
+    "options_card_language_title": {
+        "message": "言語"
+    },
+    "options_label_select_language": {
+        "message": "インターフェース言語"
+    },
+    "options_language_auto": {
+        "message": "自動 (ブラウザのデフォルト)"
+    },
+    "options_hint_language": {
+        "message": "希望の言語を選択してください。変更を適用するには拡張機能をリロードする必要があります。"
+    },
+    "options_hint_language_reload": {
+        "message": "言語が変更されました！適用するには拡張機能をリロードしてください。"
+    },
+    "popup_header_sendTo": {
+        "message": "送信先"
+    },
+    "popup_filter_title": {
+        "message": "クイックフィルター"
+    },
+    "popup_filter_more": {
+        "message": "もっと見る →"
+    },
+    "popup_filter_minScore": {
+        "message": "最小スコア"
+    },
+    "popup_filter_hideBots": {
+        "message": "ボットを非表示"
+    },
+    "popup_filter_includeHidden": {
+        "message": "削除済みを含める"
+    },
+    "popup_status_navigate": {
+        "message": "Redditのスレッドに移動してください"
+    },
+    "popup_status_ready": {
+        "message": "スレッドを取得する準備ができました"
+    },
+    "popup_status_starting": {
+        "message": "開始中..."
+    },
+    "popup_status_scraping": {
+        "message": "取得中..."
+    },
+    "popup_status_sent": {
+        "message": "AIタブに送信しました！"
+    },
+    "popup_btn_scrape": {
+        "message": "取得して送信"
+    },
+    "popup_btn_stop": {
+        "message": "停止"
+    },
+    "options_title": {
+        "message": "Reddit to AI - 設定"
+    },
+    "options_card_ai_title": {
+        "message": "AIアシスタント"
+    },
+    "options_label_select_platform": {
+        "message": "AIプラットフォームを選択"
+    },
+    "options_hint_platform": {
+        "message": "取得したコンテンツの送信先を選択します。新しいタブが開き、コンテンツが自動的に貼り付けられます。"
+    },
+    "options_card_scraping_title": {
+        "message": "取得設定"
+    },
+    "options_label_depth": {
+        "message": "コメントの階層の深さ"
+    },
+    "options_depth_quick": {
+        "message": "クイック"
+    },
+    "options_depth_standard": {
+        "message": "標準"
+    },
+    "options_depth_deep": {
+        "message": "ディープ"
+    },
+    "options_depth_full": {
+        "message": "フル"
+    },
+    "options_depth_quick_desc": {
+        "message": "トップレベルのみ"
+    },
+    "options_depth_standard_desc": {
+        "message": "返信3階層まで"
+    },
+    "options_depth_deep_desc": {
+        "message": "返信5階層まで"
+    },
+    "options_depth_full_desc": {
+        "message": "すべてのネストされた返信"
+    },
+    "options_hint_depth": {
+        "message": "スクレイパーが返信チェーンのどこまで深く潜るかを制御します。階層が深いほど文脈が増えますが、データ量も多くなります。"
+    },
+    "options_card_filters_title": {
+        "message": "コンテンツフィルター"
+    },
+    "options_label_min_score": {
+        "message": "最小スコア"
+    },
+    "options_hint_score": {
+        "message": "この数値以上のアップボートがあるコメントのみを含めます。すべてのコメントを含めるには0に設定してください。"
+    },
+    "options_label_limit_comments": {
+        "message": "コメント数を制限"
+    },
+    "options_label_top": {
+        "message": "トップ"
+    },
+    "options_label_comments_zero": {
+        "message": "コメント (0 = すべて)"
+    },
+    "options_hint_limit": {
+        "message": "スコアの高い上位N件のコメントに制限します。無制限にするには0に設定してください。"
+    },
+    "options_label_filter_author": {
+        "message": "投稿者でフィルター"
+    },
+    "options_author_all": {
+        "message": "すべて"
+    },
+    "options_author_op": {
+        "message": "スレ主のみ"
+    },
+    "options_author_flaired": {
+        "message": "フレアー付き"
+    },
+    "options_label_hide_bots": {
+        "message": "ボットのコメントを非表示"
+    },
+    "options_hint_bot_list": {
+        "message": "AutoModerator, RemindMeBotなど"
+    },
+    "options_label_include_hidden": {
+        "message": "削除済みを含める"
+    },
+    "options_hint_hidden_desc": {
+        "message": "[removed] や [deleted] のコメントを含める"
+    },
+    "options_card_notifications_title": {
+        "message": "通知"
+    },
+    "options_label_show_notifications": {
+        "message": "通知を表示"
+    },
+    "options_hint_notifications": {
+        "message": "ステータス更新をブラウザ通知として表示する"
+    },
+    "options_card_presets_title": {
+        "message": "プロンプトプリセット"
+    },
+    "options_label_analysis_type": {
+        "message": "分析タイプを選択"
+    },
+    "options_label_template_preview": {
+        "message": "テンプレートのプレビュー"
+    },
+    "options_label_custom_template": {
+        "message": "カスタムテンプレート"
+    },
+    "options_btn_reset": {
+        "message": "デフォルトにリセット"
+    },
+    "options_placeholder_custom": {
+        "message": "カスタムプロンプトを入力してください..."
+    },
+    "options_hint_prompt": {
+        "message": "取得したRedditデータのプレースホルダーとして $CONTENT$ を使用してください。「カスタム」を選択して独自のテンプレートを作成できます。",
+        "placeholders": {
+            "content": {
+                "content": "{content}"
+            }
+        }
+    },
+    "options_card_storage_title": {
+        "message": "データ保存"
+    },
+    "options_storage_none": {
+        "message": "保存しない"
+    },
+    "options_storage_none_hint": {
+        "message": "送信後にコンテンツを破棄"
+    },
+    "options_storage_session": {
+        "message": "セッションのみ"
+    },
+    "options_storage_session_hint": {
+        "message": "ブラウザを閉じるまで保持"
+    },
+    "options_storage_persistent": {
+        "message": "永続的"
+    },
+    "options_storage_persistent_hint": {
+        "message": "ローカルストレージに保存"
+    },
+    "options_card_history_title": {
+        "message": "取得履歴"
+    },
+    "options_label_keep_last": {
+        "message": "最新の"
+    },
+    "options_label_threads": {
+        "message": "スレッドを保持"
+    },
+    "options_history_empty": {
+        "message": "取得されたスレッドはまだありません"
+    },
+    "options_btn_clear_all": {
+        "message": "すべて消去"
+    },
+    "options_toast_saved": {
+        "message": "✓ 保存されました"
+    },
+    "options_label_items": {
+        "message": "件"
+    },
+    "options_label_item": {
+        "message": "件"
+    },
+    "options_time_now": {
+        "message": "たった今"
+    },
+    "options_time_min": {
+        "message": "$MIN$分前",
+        "placeholders": {
+            "min": {
+                "content": "$1"
+            }
+        }
+    },
+    "options_time_hour": {
+        "message": "$HOUR$時間前",
+        "placeholders": {
+            "hour": {
+                "content": "$1"
+            }
+        }
+    },
+    "options_time_day": {
+        "message": "$DAY$日前",
+        "placeholders": {
+            "day": {
+                "content": "$1"
+            }
+        }
+    },
+    "options_label_resend": {
+        "message": "再送信先..."
+    },
+    "options_title_export": {
+        "message": "JSONを書き出し"
+    },
+    "options_title_delete": {
+        "message": "削除"
+    },
+    "options_confirm_clear": {
+        "message": "すべての取得履歴を消去しますか？この操作は取り消せません。"
+    },
+    "panel_title": {
+        "message": "Reddit to AI"
+    },
+    "panel_status_ready": {
+        "message": "準備完了"
+    },
+    "panel_guidance": {
+        "message": "取得中です。このタブを閉じないでください。"
+    },
+    "scraper_fetching": {
+        "message": "スレッドを取得中..."
+    },
+    "scraper_parsing": {
+        "message": "最初のコメントを解析中..."
+    },
+    "scraper_found_more": {
+        "message": "$COUNT$件のコメントが見つかりました。さらに$MORE$件を読み込み中...",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            },
+            "more": {
+                "content": "$2"
+            }
+        }
+    },
+    "scraper_loading_batch": {
+        "message": "コメントを読み込み中 (バッチ $CURRENT$/$TOTAL$)...",
+        "placeholders": {
+            "current": {
+                "content": "$1"
+            },
+            "total": {
+                "content": "$2"
+            }
+        }
+    },
+    "scraper_applying_filters": {
+        "message": "フィルターを適用中..."
+    },
+    "scraper_complete": {
+        "message": "完了！ フィルター適用後 $COUNT$件のコメントがあります。",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            }
+        }
+    },
+    "prompt_default_label": {
+        "message": "次のRedditスレッドを要約してください："
+    },
+    "prompt_title": {
+        "message": "スレッドタイトル："
+    },
+    "prompt_subreddit": {
+        "message": "サブレディット："
+    },
+    "prompt_author": {
+        "message": "投稿者："
+    },
+    "prompt_url": {
+        "message": "URL："
+    },
+    "prompt_content": {
+        "message": "本文："
+    },
+    "prompt_images": {
+        "message": "画像："
+    },
+    "prompt_links": {
+        "message": "参照リンク："
+    },
+    "prompt_comments": {
+        "message": "代表的なコメント："
+    },
+    "prompt_scraped_at": {
+        "message": "取得日時："
+    },
+    "prompt_count": {
+        "message": "分析されたコメント数："
+    },
+    "prompt_depth": {
+        "message": "階層の深さ："
+    },
+    "preset_summarize_name": {
+        "message": "要約"
+    },
+    "preset_debate_name": {
+        "message": "議論の分析"
+    },
+    "preset_sentiment_name": {
+        "message": "感情分析"
+    },
+    "preset_takeaways_name": {
+        "message": "重要なポイント"
+    },
+    "preset_eli5_name": {
+        "message": "ELI5 (5歳児向け解説)"
+    },
+    "preset_custom_name": {
+        "message": "カスタム"
+    },
+    "preset_summarize_desc": {
+        "message": "スレッドの要約"
+    },
+    "preset_debate_desc": {
+        "message": "異なる意見をマッピング"
+    },
+    "preset_sentiment_desc": {
+        "message": "ポジティブ・ネガティブの分析"
+    },
+    "preset_takeaways_desc": {
+        "message": "洞察を箇条書きで抽出"
+    },
+    "preset_eli5_desc": {
+        "message": "非常にわかりやすく解説"
+    },
+    "preset_custom_desc": {
+        "message": "独自のテンプレート"
+    }
+}

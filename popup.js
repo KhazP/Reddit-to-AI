@@ -1,6 +1,12 @@
 // Reddit to AI - Popup Script
 
-document.addEventListener('DOMContentLoaded', () => {
+// Localized helpers provided by i18n.js
+
+
+document.addEventListener('DOMContentLoaded', async () => {
+  await initI18n();
+  localizeHtmlPage();
+
   // Element references
   const scrapeBtn = document.getElementById('scrapeBtn');
   const stopScrapeBtn = document.getElementById('stopScrapeBtn');
@@ -105,13 +111,14 @@ document.addEventListener('DOMContentLoaded', () => {
           const url = new URL(tab.url);
           const isReddit = url.hostname.includes('reddit.com') || url.hostname.includes('redd.it');
           if (isReddit) {
-            updateStatus('✓', 'Ready to scrape this thread', 'ready');
+            updateStatus('✓', t('popup_status_ready'), 'ready');
           } else {
-            updateStatus('📍', 'Navigate to a Reddit thread', 'default');
+            updateStatus('📍', t('popup_status_navigate'), 'default');
           }
         } catch {
-          updateStatus('📍', 'Navigate to a Reddit thread', 'default');
+          updateStatus('📍', t('popup_status_navigate'), 'default');
         }
+
       }
     });
   }
@@ -124,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
       scrapeBtn.style.display = 'none';
       stopScrapeBtn.style.display = 'flex';
       stopScrapeBtn.disabled = false;
-      updateStatus('⏳', state.message || 'Scraping...', 'scraping');
+      updateStatus('⏳', state.message || t('popup_status_scraping'), 'scraping');
     } else {
       scrapeBtn.style.display = 'flex';
       scrapeBtn.disabled = false;
@@ -133,8 +140,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (state.error) {
         updateStatus('❌', state.error, 'error');
       } else if (state.message?.includes('sent') || state.message?.includes('Content')) {
-        updateStatus('✅', 'Sent to AI tab!', 'ready');
+        updateStatus('✅', t('popup_status_sent'), 'ready');
       } else {
+
         checkRedditStatus();
       }
     }
@@ -144,7 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (scrapeBtn) {
     scrapeBtn.addEventListener('click', () => {
       scrapeBtn.disabled = true;
-      updateStatus('⏳', 'Starting...', 'scraping');
+      updateStatus('⏳', t('popup_status_starting'), 'scraping');
 
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         const currentTab = tabs[0];
@@ -175,7 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
           });
         } else {
-          updateStatus('❌', 'Could not get current tab', 'error');
+          updateStatus('❌', t('error') + ': Could not get current tab', 'error');
           scrapeBtn.disabled = false;
         }
       });
@@ -186,7 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (stopScrapeBtn) {
     stopScrapeBtn.addEventListener('click', () => {
       stopScrapeBtn.disabled = true;
-      updateStatus('⏹', 'Stopping...', 'scraping');
+      updateStatus('⏹', t('popup_status_stopping') || 'Stopping...', 'scraping');
 
       chrome.runtime.sendMessage({ action: 'stopScraping' }, (response) => {
         if (response?.currentState) {
@@ -214,7 +222,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Get initial state
   chrome.runtime.sendMessage({ action: 'getScrapingState' }, (stateResponse) => {
     if (chrome.runtime.lastError) {
-      updateStatus('❌', 'Extension error', 'error');
+      updateStatus('❌', t('popup_error_extension') || 'Extension error', 'error');
       scrapeBtn.disabled = true;
       return;
     }

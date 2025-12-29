@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>Reddit to AI - Settings</title>
+    <title data-i18n="options_title">Reddit to AI - Settings</title>
     <meta charset="UTF-8">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -25,7 +25,7 @@
                     <div class="logo-text">
                         <span class="logo-title"><span class="logo-reddit">Reddit</span><span
                                 class="logo-to">to</span><span class="logo-ai">AI</span></span>
-                        <span class="logo-subtitle">Settings</span>
+                        <span class="logo-subtitle" data-i18n="options_title">Settings</span>
                     </div>
                 </div>
             </div>
@@ -46,11 +46,12 @@
                             <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z" />
                             <circle cx="12" cy="12" r="3" />
                         </svg>
-                        <h2 class="card-title">AI Assistant</h2>
+                        <h2 class="card-title" data-i18n="options_card_ai_title">AI Assistant</h2>
                     </div>
                     <div class="card-content">
                         <div class="form-group">
-                            <label class="form-label">Select AI Platform</label>
+                            <label class="form-label" data-i18n="options_label_select_platform">Select AI
+                                Platform</label>
                             <div class="platform-grid">
                                 <!-- Gemini -->
                                 <label class="platform-option">
@@ -58,7 +59,7 @@
                                     <div class="platform-box">
                                         <img src="images/gemini-color.svg" alt="Gemini" class="platform-icon" width="36"
                                             height="36">
-                                        <span class="platform-text">Gemini</span>
+                                        <span class="platform-text" data-i18n="platform_gemini_title">Gemini</span>
                                     </div>
                                 </label>
                                 <!-- ChatGPT -->
@@ -67,7 +68,7 @@
                                     <div class="platform-box">
                                         <img src="images/openai.svg" alt="ChatGPT" class="platform-icon" width="36"
                                             height="36">
-                                        <span class="platform-text">ChatGPT</span>
+                                        <span class="platform-text" data-i18n="platform_chatgpt_title">ChatGPT</span>
                                     </div>
                                 </label>
                                 <!-- Claude -->
@@ -76,7 +77,7 @@
                                     <div class="platform-box">
                                         <img src="images/claude-color.svg" alt="Claude" class="platform-icon" width="36"
                                             height="36">
-                                        <span class="platform-text">Claude</span>
+                                        <span class="platform-text" data-i18n="platform_claude_title">Claude</span>
                                     </div>
                                 </label>
                                 <!-- AI Studio -->
@@ -85,11 +86,12 @@
                                     <div class="platform-box">
                                         <img src="images/aistudio.svg" alt="AI Studio" class="platform-icon" width="36"
                                             height="36">
-                                        <span class="platform-text">AI Studio</span>
+                                        <span class="platform-text" data-i18n="platform_aistudio_title">AI Studio</span>
                                     </div>
                                 </label>
                             </div>
-                            <p class="form-hint">Choose where to send scraped content. A new tab will open with content
+                            <p class="form-hint" data-i18n="options_hint_platform">Choose where to send scraped content.
+                                A new tab will open with content
                                 auto-pasted.</p>
                         </div>
                     </div>
@@ -103,18 +105,19 @@
                             <path
                                 d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83" />
                         </svg>
-                        <h2 class="card-title">Scraping Settings</h2>
+                        <h2 class="card-title" data-i18n="options_card_scraping_title">Scraping Settings</h2>
                     </div>
                     <div class="card-content">
                         <div class="form-group">
-                            <label class="form-label">Comment Depth Level</label>
+                            <label class="form-label" data-i18n="options_label_depth">Comment Depth Level</label>
                             <div class="depth-options">
                                 <label class="depth-option">
                                     <input type="radio" name="scrapeDepth" value="1">
                                     <div class="depth-box">
                                         <span class="depth-level">1</span>
-                                        <span class="depth-name">Quick</span>
-                                        <span class="depth-desc">Top-level only</span>
+                                        <span class="depth-name" data-i18n="options_depth_quick">Quick</span>
+                                        <span class="depth-desc" data-i18n="options_depth_quick_desc">Top-level
+                                            only</span>
                                     </div>
                                 </label>
                                 <label class="depth-option">
@@ -137,12 +140,13 @@
                                     <input type="radio" name="scrapeDepth" value="999">
                                     <div class="depth-box">
                                         <span class="depth-level">∞</span>
-                                        <span class="depth-name">Full</span>
-                                        <span class="depth-desc">All nested replies</span>
+                                        <span class="depth-name" data-i18n="options_depth_full">Full</span>
+                                        <span class="depth-desc" data-i18n="options_depth_full_desc">All nested
+                                            replies</span>
                                     </div>
                                 </label>
                             </div>
-                            <p class="form-hint">
+                            <p class="form-hint" data-i18n="options_hint_depth">
                                 Controls how deep into reply chains the scraper goes. Higher depth = more context but
                                 larger data.
                             </p>
@@ -157,48 +161,51 @@
                             stroke="currentColor" stroke-width="2">
                             <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
                         </svg>
-                        <h2 class="card-title">Content Filters</h2>
+                        <h2 class="card-title" data-i18n="options_card_filters_title">Content Filters</h2>
                     </div>
                     <div class="card-content">
                         <!-- Min Score -->
                         <div class="form-group">
-                            <label class="form-label">Minimum Score</label>
+                            <label class="form-label" data-i18n="options_label_min_score">Minimum Score</label>
                             <div class="slider-row">
                                 <input type="range" id="filterMinScoreSlider" class="slider" min="0" max="100" value="0"
                                     step="5">
                                 <input type="number" id="filterMinScoreInput" class="slider-value" min="0" max="500"
                                     value="0">
                             </div>
-                            <p class="form-hint">Only include comments with this many upvotes or more. Set to 0 for all
+                            <p class="form-hint" data-i18n="options_hint_score">Only include comments with this many
+                                upvotes or more. Set to 0 for all
                                 comments.</p>
                         </div>
 
                         <!-- Top N Comments -->
                         <div class="form-group">
-                            <label class="form-label">Limit Comments</label>
+                            <label class="form-label" data-i18n="options_label_limit_comments">Limit Comments</label>
                             <div class="inline-input-row">
-                                <span class="inline-label">Top</span>
+                                <span class="inline-label" data-i18n="options_label_top">Top</span>
                                 <input type="number" id="filterTopN" class="number-input" min="0" max="1000" value="0">
-                                <span class="inline-label">comments (0 = all)</span>
+                                <span class="inline-label" data-i18n="options_label_comments_zero">comments (0 =
+                                    all)</span>
                             </div>
-                            <p class="form-hint">Limit to top N highest-scored comments. Set to 0 for no limit.</p>
+                            <p class="form-hint" data-i18n="options_hint_limit">Limit to top N highest-scored comments.
+                                Set to 0 for no limit.</p>
                         </div>
 
                         <!-- Author Filter -->
                         <div class="form-group">
-                            <label class="form-label">Filter by Author</label>
+                            <label class="form-label" data-i18n="options_label_filter_author">Filter by Author</label>
                             <div class="author-options">
                                 <label class="author-option">
                                     <input type="radio" name="filterAuthorType" value="all" checked>
-                                    <span class="author-pill">All</span>
+                                    <span class="author-pill" data-i18n="options_author_all">All</span>
                                 </label>
                                 <label class="author-option">
                                     <input type="radio" name="filterAuthorType" value="op">
-                                    <span class="author-pill">OP Only</span>
+                                    <span class="author-pill" data-i18n="options_author_op">OP Only</span>
                                 </label>
                                 <label class="author-option">
                                     <input type="radio" name="filterAuthorType" value="flaired">
-                                    <span class="author-pill">Flaired</span>
+                                    <span class="author-pill" data-i18n="options_author_flaired">Flaired</span>
                                 </label>
                             </div>
                         </div>
@@ -207,8 +214,10 @@
                         <div class="toggle-group">
                             <label class="toggle-row">
                                 <div class="toggle-info">
-                                    <span class="toggle-label">Hide bot comments</span>
-                                    <span class="toggle-hint">AutoModerator, RemindMeBot, etc.</span>
+                                    <span class="toggle-label" data-i18n="options_label_hide_bots">Hide bot
+                                        comments</span>
+                                    <span class="toggle-hint" data-i18n="options_hint_bot_list">AutoModerator,
+                                        RemindMeBot, etc.</span>
                                 </div>
                                 <div class="toggle-switch">
                                     <input type="checkbox" id="filterHideBots">
@@ -217,8 +226,10 @@
                             </label>
                             <label class="toggle-row">
                                 <div class="toggle-info">
-                                    <span class="toggle-label">Include removed/deleted</span>
-                                    <span class="toggle-hint">Include [removed] and [deleted] comments</span>
+                                    <span class="toggle-label" data-i18n="options_label_include_hidden">Include
+                                        removed/deleted</span>
+                                    <span class="toggle-hint" data-i18n="options_hint_hidden_desc">Include [removed] and
+                                        [deleted] comments</span>
                                 </div>
                                 <div class="toggle-switch">
                                     <input type="checkbox" id="includeHidden">
@@ -237,19 +248,55 @@
                             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
                             <path d="M13.73 21a2 2 0 0 1-3.46 0" />
                         </svg>
-                        <h2 class="card-title">Notifications</h2>
+                        <h2 class="card-title" data-i18n="options_card_notifications_title">Notifications</h2>
                     </div>
                     <div class="card-content">
                         <label class="toggle-row">
                             <div class="toggle-info">
-                                <span class="toggle-label">Show notifications</span>
-                                <span class="toggle-hint">Display status updates as browser notifications</span>
+                                <span class="toggle-label" data-i18n="options_label_show_notifications">Show
+                                    notifications</span>
+                                <span class="toggle-hint" data-i18n="options_hint_notifications">Display status updates
+                                    as browser notifications</span>
                             </div>
                             <div class="toggle-switch">
                                 <input type="checkbox" id="showNotifications">
                                 <span class="toggle-slider"></span>
                             </div>
                         </label>
+                    </div>
+                </div>
+
+                <!-- Language Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="2" y1="12" x2="22" y2="12"></line>
+                            <path
+                                d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z">
+                            </path>
+                        </svg>
+                        <h2 class="card-title" data-i18n="options_card_language_title">Language</h2>
+                    </div>
+                    <div class="card-content">
+                        <div class="form-group">
+                            <label class="form-label" data-i18n="options_label_select_language">Interface
+                                Language</label>
+                            <select id="languageSelect" class="select-input">
+                                <option value="auto" data-i18n="options_language_auto">Auto (Browser Default)</option>
+                                <option value="en">English</option>
+                                <option value="es">Español</option>
+                                <option value="fr">Français</option>
+                                <option value="de">Deutsch</option>
+                                <option value="pt">Português</option>
+                                <option value="ja">日本語</option>
+                                <option value="zh_CN">简体中文</option>
+                                <option value="tr">Türkçe</option>
+                            </select>
+                            <p class="form-hint" data-i18n="options_hint_language">Select your preferred language.
+                                Changes require reloading the extension.</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -266,23 +313,27 @@
                             <line x1="16" y1="13" x2="8" y2="13" />
                             <line x1="16" y1="17" x2="8" y2="17" />
                         </svg>
-                        <h2 class="card-title">Prompt Presets</h2>
+                        <h2 class="card-title" data-i18n="options_card_presets_title">Prompt Presets</h2>
                     </div>
                     <div class="card-content">
                         <div class="form-group">
-                            <label class="form-label">Select Analysis Type</label>
+                            <label class="form-label" data-i18n="options_label_analysis_type">Select Analysis
+                                Type</label>
                             <div class="preset-selector" id="presetSelector">
                                 <!-- Preset pills rendered by JS -->
                             </div>
                         </div>
                         <div class="form-group">
                             <div class="template-label-row">
-                                <label class="form-label" id="templateLabel">Template Preview</label>
-                                <button type="button" id="resetCustomBtn" class="btn-reset">Reset to default</button>
+                                <label class="form-label" id="templateLabel"
+                                    data-i18n="options_label_template_preview">Template Preview</label>
+                                <button type="button" id="resetCustomBtn" class="btn-reset"
+                                    data-i18n="options_btn_reset">Reset to default</button>
                             </div>
                             <textarea id="defaultPromptTemplate" class="textarea" rows="8"
-                                placeholder="Enter your custom prompt..."></textarea>
-                            <p class="form-hint">Use <code>{content}</code> as a placeholder for the scraped Reddit
+                                data-i18n-placeholder="options_placeholder_custom"></textarea>
+                            <p class="form-hint" data-i18n="options_hint_prompt">Use <code>{content}</code> as a
+                                placeholder for the scraped Reddit
                                 data. Select "Custom" to write your own template.</p>
                         </div>
                     </div>
@@ -297,30 +348,33 @@
                             <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
                             <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
                         </svg>
-                        <h2 class="card-title">Data Storage</h2>
+                        <h2 class="card-title" data-i18n="options_card_storage_title">Data Storage</h2>
                     </div>
                     <div class="card-content">
                         <div class="radio-group">
                             <label class="radio-option">
                                 <input type="radio" id="dataStorageDontSave" name="dataStorage" value="dontSave">
                                 <div class="radio-content">
-                                    <span class="radio-label">Don't save</span>
-                                    <span class="radio-hint">Discard content after sending</span>
+                                    <span class="radio-label" data-i18n="options_storage_none">Don't save</span>
+                                    <span class="radio-hint" data-i18n="options_storage_none_hint">Discard content after
+                                        sending</span>
                                 </div>
                             </label>
                             <label class="radio-option">
                                 <input type="radio" id="dataStorageSessionOnly" name="dataStorage" value="sessionOnly">
                                 <div class="radio-content">
-                                    <span class="radio-label">Session only</span>
-                                    <span class="radio-hint">Keep until browser closes</span>
+                                    <span class="radio-label" data-i18n="options_storage_session">Session only</span>
+                                    <span class="radio-hint" data-i18n="options_storage_session_hint">Keep until browser
+                                        closes</span>
                                 </div>
                             </label>
                             <label class="radio-option">
                                 <input type="radio" id="dataStoragePersistent" name="dataStorage" value="persistent"
                                     checked>
                                 <div class="radio-content">
-                                    <span class="radio-label">Persistent</span>
-                                    <span class="radio-hint">Save in local storage</span>
+                                    <span class="radio-label" data-i18n="options_storage_persistent">Persistent</span>
+                                    <span class="radio-hint" data-i18n="options_storage_persistent_hint">Save in local
+                                        storage</span>
                                 </div>
                             </label>
                         </div>
@@ -335,16 +389,17 @@
                             <circle cx="12" cy="12" r="10"></circle>
                             <polyline points="12 6 12 12 16 14"></polyline>
                         </svg>
-                        <h2 class="card-title">Scrape History</h2>
-                        <span id="historyCount" class="history-count">0 items</span>
+                        <h2 class="card-title" data-i18n="options_card_history_title">Scrape History</h2>
+                        <span id="historyCount" class="history-count">0 <span
+                                data-i18n="options_label_items">items</span></span>
                     </div>
                     <div class="card-content">
                         <!-- History limit control -->
                         <div class="form-group">
                             <div class="inline-input-row">
-                                <span class="inline-label">Keep last</span>
+                                <span class="inline-label" data-i18n="options_label_keep_last">Keep last</span>
                                 <input type="number" id="historyLimit" class="number-input" min="5" max="50" value="10">
-                                <span class="inline-label">threads</span>
+                                <span class="inline-label" data-i18n="options_label_threads">threads</span>
                             </div>
                         </div>
 
@@ -356,7 +411,7 @@
                                     <circle cx="12" cy="12" r="10"></circle>
                                     <polyline points="12 6 12 12 16 14"></polyline>
                                 </svg>
-                                <span>No scraped threads yet</span>
+                                <span data-i18n="options_history_empty">No scraped threads yet</span>
                             </div>
                         </div>
 
@@ -370,7 +425,7 @@
                                         d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
                                     </path>
                                 </svg>
-                                Clear All
+                                <span data-i18n="options_btn_clear_all">Clear All</span>
                             </button>
                         </div>
                     </div>
@@ -380,8 +435,8 @@
 
         <!-- Footer -->
         <footer class="footer">
-            <span class="footer-text">Reddit to AI v0.1.0</span>
-            <span class="footer-text">Settings are saved automatically</span>
+            <span class="footer-text" data-i18n="footer_version_text">Reddit to AI v0.1.0</span>
+            <span class="footer-text" data-i18n="options_footer_saved">Settings are saved automatically</span>
         </footer>
     </div>
 
@@ -396,6 +451,7 @@
     <small id="fetchModelsStatus" style="display:none;"></small>
     <span id="attemptsValue" style="display:none;">75</span>
 
+    <script src="i18n.js"></script>
     <script src="options.js"></script>
 </body>
 

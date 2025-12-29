@@ -86,7 +86,7 @@ if (window.__redditToAiScraperInitialized) {
     SCRAPER_STATE.stopRequested = false;
     SCRAPER_STATE.collectedMoreIds = new Set();
 
-    sendProgress('Fetching thread...', 5);
+    sendProgress(chrome.i18n.getMessage('scraper_fetching') || 'Fetching thread...', 5);
 
     // Phase 1: Get initial comments with high limit and depth
     const url = new URL(window.location.href);
@@ -115,7 +115,7 @@ if (window.__redditToAiScraperInitialized) {
 
     const post = extractPostDetails(postData);
 
-    sendProgress('Parsing initial comments...', 15);
+    sendProgress(chrome.i18n.getMessage('scraper_parsing') || 'Parsing initial comments...', 15);
 
     // Parse initial batch and collect "more" IDs
     const moreIds = [];
@@ -125,7 +125,7 @@ if (window.__redditToAiScraperInitialized) {
 
     // Phase 2: Fetch additional comments from "more" objects
     if (moreIds.length > 0 && !SCRAPER_STATE.stopRequested) {
-      sendProgress(`Found ${count} comments, loading ${moreIds.length} more...`, 20);
+      sendProgress(chrome.i18n.getMessage('scraper_found_more', [count.toString(), moreIds.length.toString()]) || `Found ${count} comments, loading ${moreIds.length} more...`, 20);
 
       const additionalComments = await fetchAllMoreComments(moreIds, includeHidden);
 
@@ -157,13 +157,13 @@ if (window.__redditToAiScraperInitialized) {
       console.log(`Reddit to AI: Added ${addedCount} more comments. Total: ${count}`);
     }
 
-    sendProgress(`Applying filters...`, 95);
+    sendProgress(chrome.i18n.getMessage('scraper_applying_filters') || `Applying filters...`, 95);
 
     // Apply filters to the comment tree
     const filteredRoots = applyFilters(roots);
     const filteredCount = countNestedReplies([{ replies: filteredRoots }]) - 1;
 
-    sendProgress(`Complete! ${filteredCount} comments after filtering.`, 100);
+    sendProgress(chrome.i18n.getMessage('scraper_complete', [filteredCount.toString()]) || `Complete! ${filteredCount} comments after filtering.`, 100);
 
     return {
       post,
@@ -225,7 +225,7 @@ if (window.__redditToAiScraperInitialized) {
     for (let i = 0; i < batches.length && !SCRAPER_STATE.stopRequested; i++) {
       const batch = batches[i];
       const progress = 20 + Math.floor(((i + 1) / batches.length) * 70);
-      sendProgress(`Loading comments batch ${i + 1}/${batches.length}...`, progress);
+      sendProgress(chrome.i18n.getMessage('scraper_loading_batch', [(i + 1).toString(), batches.length.toString()]) || `Loading comments batch ${i + 1}/${batches.length}...`, progress);
 
       try {
         const comments = await fetchMoreBatch(batch, includeHidden);

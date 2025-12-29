@@ -2,7 +2,8 @@ const DEFAULT_PROMPT_TEMPLATE = 'Summarize the following Reddit thread:\n\n{cont
 
 const DEFAULT_STATE = {
   isActive: false,
-  message: 'Ready to scrape.',
+  message: chrome.i18n.getMessage('panel_status_ready') || 'Ready to scrape.',
+
   percentage: 0,
   summary: null,
   error: null,
@@ -128,6 +129,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             isActive: false,
             error: error.message,
             message: `Error: ${error.message}`,
+
             percentage: -1
           });
           sendResponse({ status: 'error', error: error.message, currentState: scrapingState });
@@ -211,7 +213,8 @@ async function handleScrapeRequest(request, sender) {
 
   setScrapingState({
     isActive: true,
-    message: 'Preparing to scrape.',
+    message: chrome.i18n.getMessage('sw_status_preparing') || 'Preparing to scrape.',
+
     percentage: 5,
     summary: null,
     error: null
@@ -228,9 +231,10 @@ async function handleScrapeRequest(request, sender) {
     });
     setScrapingState({
       isActive: false,
-      message: 'Open a Reddit thread before scraping.',
+      message: chrome.i18n.getMessage('popup_status_navigate') || 'Open a Reddit thread before scraping.',
       percentage: -1,
-      error: 'Active tab is not a Reddit thread.'
+      error: chrome.i18n.getMessage('sw_error_not_reddit') || 'Active tab is not a Reddit thread.'
+
     });
     throw new Error('Active tab is not a Reddit thread.');
   }
@@ -246,7 +250,8 @@ async function handleScrapeRequest(request, sender) {
 
   await injectContentScripts(activeTab.id);
 
-  setScrapingState({ message: 'Collecting data from page.', percentage: 20 });
+  setScrapingState({ message: chrome.i18n.getMessage('sw_status_collecting') || 'Collecting data from page.', percentage: 20 });
+
 
   const scrapeResponse = await requestScrapeFromTab(activeTab.id, request.includeHidden);
   if (scrapeResponse && scrapeResponse.error) {
@@ -261,7 +266,8 @@ async function handleScrapeRequest(request, sender) {
     throw new Error('Scraping stopped by user.');
   }
 
-  setScrapingState({ message: 'Preparing scraped data.', percentage: 60 });
+  setScrapingState({ message: chrome.i18n.getMessage('sw_status_processing') || 'Preparing scraped data.', percentage: 60 });
+
 
   let settings = null;
   let storageOption = currentScrape.storageOption || 'persistent';
@@ -307,7 +313,8 @@ async function handleScrapeRequest(request, sender) {
     // We no longer require an API key validation here.
     // Instead of summarizing internally, we open the target AI tab.
 
-    setScrapingState({ message: 'Opening AI assistant...', percentage: 80 });
+    setScrapingState({ message: chrome.i18n.getMessage('sw_status_opening_ai') || 'Opening AI assistant...', percentage: 80 });
+
 
     const aiUrl = getAiUrl(settings.selectedLlmProvider); // We reuse this field or use a new one "selectedAiModel"
 
@@ -317,8 +324,9 @@ async function handleScrapeRequest(request, sender) {
       isActive: false,
       percentage: 100,
       summary: null, // No summary generated internally
-      message: 'Content sent to AI tab.',
+      message: chrome.i18n.getMessage('panel_status_sent') || 'Content sent to AI tab.',
       error: null
+
     });
 
     return { summary: null };
@@ -359,7 +367,8 @@ function stopActiveScrape() {
 
   currentScrape.stopRequested = true;
 
-  setScrapingState({ message: 'Stop requested.', percentage: scrapingState.percentage });
+  setScrapingState({ message: chrome.i18n.getMessage('sw_status_stop_requested') || 'Stop requested.', percentage: scrapingState.percentage });
+
 
   if (currentScrape.abortController) {
     currentScrape.abortController.abort();

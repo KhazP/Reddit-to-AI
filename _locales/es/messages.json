@@ -1,0 +1,391 @@
+{
+    "extName": {
+        "message": "Reddit to AI"
+    },
+    "extDescription": {
+        "message": "Extrae hilos de Reddit y envía el contenido al chatbot de IA elegido para su análisis."
+    },
+    "options_card_language_title": {
+        "message": "Idioma"
+    },
+    "options_label_select_language": {
+        "message": "Idioma de la interfaz"
+    },
+    "options_language_auto": {
+        "message": "Automático (predeterminado del navegador)"
+    },
+    "options_hint_language": {
+        "message": "Selecciona tu idioma preferido. Los cambios requieren recargar la extensión."
+    },
+    "options_hint_language_reload": {
+        "message": "¡Idioma cambiado! Por favor, recarga la extensión para aplicar."
+    },
+    "popup_header_sendTo": {
+        "message": "Enviar a"
+    },
+    "popup_filter_title": {
+        "message": "Filtros rápidos"
+    },
+    "popup_filter_more": {
+        "message": "Más →"
+    },
+    "popup_filter_minScore": {
+        "message": "Puntaje mín."
+    },
+    "popup_filter_hideBots": {
+        "message": "Ocultar bots"
+    },
+    "popup_filter_includeHidden": {
+        "message": "Incluir eliminados"
+    },
+    "popup_status_navigate": {
+        "message": "Navega a un hilo de Reddit"
+    },
+    "popup_status_ready": {
+        "message": "Listo para extraer este hilo"
+    },
+    "popup_status_starting": {
+        "message": "Iniciando..."
+    },
+    "popup_status_scraping": {
+        "message": "Extrayendo..."
+    },
+    "popup_status_sent": {
+        "message": "¡Enviado a la pestaña de IA!"
+    },
+    "popup_btn_scrape": {
+        "message": "Extraer y enviar"
+    },
+    "popup_btn_stop": {
+        "message": "Detener"
+    },
+    "options_title": {
+        "message": "Reddit to AI - Configuración"
+    },
+    "options_card_ai_title": {
+        "message": "Asistente de IA"
+    },
+    "options_label_select_platform": {
+        "message": "Seleccionar plataforma de IA"
+    },
+    "options_hint_platform": {
+        "message": "Elige dónde enviar el contenido extraído. Se abrirá una nueva pestaña con el contenido pegado automáticamente."
+    },
+    "options_card_scraping_title": {
+        "message": "Configuración de extracción"
+    },
+    "options_label_depth": {
+        "message": "Nivel de profundidad de comentarios"
+    },
+    "options_depth_quick": {
+        "message": "Rápido"
+    },
+    "options_depth_standard": {
+        "message": "Estándar"
+    },
+    "options_depth_deep": {
+        "message": "Profundo"
+    },
+    "options_depth_full": {
+        "message": "Completo"
+    },
+    "options_depth_quick_desc": {
+        "message": "Solo nivel superior"
+    },
+    "options_depth_standard_desc": {
+        "message": "3 niveles de respuesta"
+    },
+    "options_depth_deep_desc": {
+        "message": "5 niveles de respuesta"
+    },
+    "options_depth_full_desc": {
+        "message": "Todas las respuestas anidadas"
+    },
+    "options_hint_depth": {
+        "message": "Controla qué tan profundo llega el extractor en las cadenas de respuestas. Mayor profundidad = más contexto pero datos más grandes."
+    },
+    "options_card_filters_title": {
+        "message": "Filtros de contenido"
+    },
+    "options_label_min_score": {
+        "message": "Puntaje mínimo"
+    },
+    "options_hint_score": {
+        "message": "Solo incluir comentarios con este número de votos o más. Pon 0 para todos los comentarios."
+    },
+    "options_label_limit_comments": {
+        "message": "Limitar comentarios"
+    },
+    "options_label_top": {
+        "message": "Top"
+    },
+    "options_label_comments_zero": {
+        "message": "comentarios (0 = todos)"
+    },
+    "options_hint_limit": {
+        "message": "Limitar al top N de comentarios con mayor puntaje. Pon 0 para sin límite."
+    },
+    "options_label_filter_author": {
+        "message": "Filtrar por autor"
+    },
+    "options_author_all": {
+        "message": "Todos"
+    },
+    "options_author_op": {
+        "message": "Solo OP"
+    },
+    "options_author_flaired": {
+        "message": "Con flair"
+    },
+    "options_label_hide_bots": {
+        "message": "Ocultar comentarios de bots"
+    },
+    "options_hint_bot_list": {
+        "message": "AutoModerator, RemindMeBot, etc."
+    },
+    "options_label_include_hidden": {
+        "message": "Incluir eliminados"
+    },
+    "options_hint_hidden_desc": {
+        "message": "Incluir comentarios [removed] y [deleted]"
+    },
+    "options_card_notifications_title": {
+        "message": "Notificaciones"
+    },
+    "options_label_show_notifications": {
+        "message": "Mostrar notificaciones"
+    },
+    "options_hint_notifications": {
+        "message": "Mostrar actualizaciones de estado como notificaciones del navegador"
+    },
+    "options_card_presets_title": {
+        "message": "Preajustes de instrucciones"
+    },
+    "options_label_analysis_type": {
+        "message": "Seleccionar tipo de análisis"
+    },
+    "options_label_template_preview": {
+        "message": "Vista previa de la plantilla"
+    },
+    "options_label_custom_template": {
+        "message": "Plantilla personalizada"
+    },
+    "options_btn_reset": {
+        "message": "Restablecer por defecto"
+    },
+    "options_placeholder_custom": {
+        "message": "Ingresa tu instrucción personalizada..."
+    },
+    "options_hint_prompt": {
+        "message": "Usa $CONTENT$ como marcador para los datos de Reddit extraídos. Selecciona 'Personalizado' para escribir tu propia plantilla.",
+        "placeholders": {
+            "content": {
+                "content": "{content}"
+            }
+        }
+    },
+    "options_card_storage_title": {
+        "message": "Almacenamiento de datos"
+    },
+    "options_storage_none": {
+        "message": "No guardar"
+    },
+    "options_storage_none_hint": {
+        "message": "Descartar contenido después de enviar"
+    },
+    "options_storage_session": {
+        "message": "Solo sesión"
+    },
+    "options_storage_session_hint": {
+        "message": "Mantener hasta que se cierre el navegador"
+    },
+    "options_storage_persistent": {
+        "message": "Persistente"
+    },
+    "options_storage_persistent_hint": {
+        "message": "Guardar en almacenamiento local"
+    },
+    "options_card_history_title": {
+        "message": "Historial"
+    },
+    "options_label_keep_last": {
+        "message": "Mantener últimos"
+    },
+    "options_label_threads": {
+        "message": "hilos"
+    },
+    "options_history_empty": {
+        "message": "Aún no hay hilos extraídos"
+    },
+    "options_btn_clear_all": {
+        "message": "Borrar todo"
+    },
+    "options_toast_saved": {
+        "message": "✓ Guardado"
+    },
+    "options_label_items": {
+        "message": "ítems"
+    },
+    "options_label_item": {
+        "message": "ítem"
+    },
+    "options_time_now": {
+        "message": "Justo ahora"
+    },
+    "options_time_min": {
+        "message": "hace $MIN$m",
+        "placeholders": {
+            "min": {
+                "content": "$1"
+            }
+        }
+    },
+    "options_time_hour": {
+        "message": "hace $HOUR$h",
+        "placeholders": {
+            "hour": {
+                "content": "$1"
+            }
+        }
+    },
+    "options_time_day": {
+        "message": "hace $DAY$d",
+        "placeholders": {
+            "day": {
+                "content": "$1"
+            }
+        }
+    },
+    "options_label_resend": {
+        "message": "Reenviar a..."
+    },
+    "options_title_export": {
+        "message": "Exportar JSON"
+    },
+    "options_title_delete": {
+        "message": "Eliminar"
+    },
+    "options_confirm_clear": {
+        "message": "¿Borrar todo el historial? Esto no se puede deshacer."
+    },
+    "panel_title": {
+        "message": "Reddit to AI"
+    },
+    "panel_status_ready": {
+        "message": "Listo"
+    },
+    "panel_guidance": {
+        "message": "Extracción en progreso. Por favor, mantén esta pestaña abierta."
+    },
+    "scraper_fetching": {
+        "message": "Obteniendo hilo..."
+    },
+    "scraper_parsing": {
+        "message": "Analizando comentarios iniciales..."
+    },
+    "scraper_found_more": {
+        "message": "Se encontraron $COUNT$ comentarios, cargando $MORE$ más...",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            },
+            "more": {
+                "content": "$2"
+            }
+        }
+    },
+    "scraper_loading_batch": {
+        "message": "Cargando lote de comentarios $CURRENT$/$TOTAL$...",
+        "placeholders": {
+            "current": {
+                "content": "$1"
+            },
+            "total": {
+                "content": "$2"
+            }
+        }
+    },
+    "scraper_applying_filters": {
+        "message": "Aplicando filtros..."
+    },
+    "scraper_complete": {
+        "message": "¡Completo! $COUNT$ comentarios después de filtrar.",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            }
+        }
+    },
+    "prompt_default_label": {
+        "message": "Resume el siguiente hilo de Reddit:"
+    },
+    "prompt_title": {
+        "message": "Título del hilo:"
+    },
+    "prompt_subreddit": {
+        "message": "Subreddit:"
+    },
+    "prompt_author": {
+        "message": "Autor:"
+    },
+    "prompt_url": {
+        "message": "URL:"
+    },
+    "prompt_content": {
+        "message": "Contenido del post:"
+    },
+    "prompt_images": {
+        "message": "Imágenes:"
+    },
+    "prompt_links": {
+        "message": "Enlaces referenciados:"
+    },
+    "prompt_comments": {
+        "message": "Comentarios representativos:"
+    },
+    "prompt_scraped_at": {
+        "message": "Extraído el:"
+    },
+    "prompt_count": {
+        "message": "Comentarios analizados:"
+    },
+    "prompt_depth": {
+        "message": "Nivel de profundidad:"
+    },
+    "preset_summarize_name": {
+        "message": "Resumir"
+    },
+    "preset_debate_name": {
+        "message": "Análisis de debate"
+    },
+    "preset_sentiment_name": {
+        "message": "Sentimiento"
+    },
+    "preset_takeaways_name": {
+        "message": "Puntos clave"
+    },
+    "preset_eli5_name": {
+        "message": "ELI5"
+    },
+    "preset_custom_name": {
+        "message": "Personalizado"
+    },
+    "preset_summarize_desc": {
+        "message": "Resumen rápido del hilo"
+    },
+    "preset_debate_desc": {
+        "message": "Mapear diferentes posturas"
+    },
+    "preset_sentiment_desc": {
+        "message": "Análisis de actitud"
+    },
+    "preset_takeaways_desc": {
+        "message": "Lista de ideas principales"
+    },
+    "preset_eli5_desc": {
+        "message": "Explicación muy sencilla"
+    },
+    "preset_custom_desc": {
+        "message": "Tu propia plantilla"
+    }
+}

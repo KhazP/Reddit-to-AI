@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "Reddit to AI",
+  "name": "__MSG_extName__",
   "short_name": "R2AI",
   "version": "1.0.0",
-  "description": "Scrapes Reddit threads and sends content to chosen AI chatbot for analysis.",
+  "description": "__MSG_extDescription__",
   "author": "Alp Yalay",
   "homepage_url": "https://github.com/KhazP/Reddit-to-AI",
   "default_locale": "en",
@@ -34,6 +34,7 @@
         "https://aistudio.google.com/*"
       ],
       "js": [
+        "i18n.js",
         "aiPaster.js"
       ],
       "run_at": "document_idle"
@@ -44,6 +45,7 @@
         "https://*.redd.it/*"
       ],
       "js": [
+        "i18n.js",
         "floatingPanel.js"
       ],
       "css": [
@@ -72,7 +74,9 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "marked.min.js"
+        "images/*.svg",
+        "images/*.png",
+        "_locales/**/*.json"
       ],
       "matches": [
         "<all_urls>"

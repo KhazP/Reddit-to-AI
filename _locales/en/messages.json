@@ -6,5 +6,448 @@
     "extDescription": {
         "message": "Scrapes Reddit threads and sends content to chosen AI chatbot for analysis.",
         "description": "The description of the extension"
+    },
+    "options_card_language_title": {
+        "message": "Language"
+    },
+    "options_label_select_language": {
+        "message": "Interface Language"
+    },
+    "options_language_auto": {
+        "message": "Auto (Browser Default)"
+    },
+    "options_hint_language": {
+        "message": "Select your preferred language. Changes require reloading the extension."
+    },
+    "options_hint_language_reload": {
+        "message": "Language changed! Please reload the extension to apply."
+    },
+    "popup_header_sendTo": {
+        "message": "Send to"
+    },
+    "platform_gemini_title": {
+        "message": "Google Gemini"
+    },
+    "platform_chatgpt_title": {
+        "message": "OpenAI ChatGPT"
+    },
+    "platform_claude_title": {
+        "message": "Anthropic Claude"
+    },
+    "platform_aistudio_title": {
+        "message": "Google AI Studio"
+    },
+    "platform_gemini_name": {
+        "message": "Gemini"
+    },
+    "platform_chatgpt_name": {
+        "message": "ChatGPT"
+    },
+    "platform_claude_name": {
+        "message": "Claude"
+    },
+    "platform_aistudio_name": {
+        "message": "AI Studio"
+    },
+    "popup_status_stopping": {
+        "message": "Stopping..."
+    },
+    "popup_error_extension": {
+        "message": "Extension error"
+    },
+    "popup_filter_title": {
+        "message": "Quick Filters"
+    },
+    "popup_filter_more": {
+        "message": "More →"
+    },
+    "popup_filter_minScore": {
+        "message": "Min Score"
+    },
+    "popup_filter_hideBots": {
+        "message": "Hide Bots"
+    },
+    "popup_filter_includeHidden": {
+        "message": "Include removed/deleted"
+    },
+    "popup_status_navigate": {
+        "message": "Navigate to a Reddit thread"
+    },
+    "popup_status_ready": {
+        "message": "Ready to scrape this thread"
+    },
+    "popup_status_starting": {
+        "message": "Starting..."
+    },
+    "popup_status_scraping": {
+        "message": "Scraping..."
+    },
+    "popup_status_sent": {
+        "message": "Sent to AI tab!"
+    },
+    "popup_btn_scrape": {
+        "message": "Scrape & Send"
+    },
+    "popup_btn_stop": {
+        "message": "Stop"
+    },
+    "options_title": {
+        "message": "Reddit to AI - Settings"
+    },
+    "options_card_ai_title": {
+        "message": "AI Assistant"
+    },
+    "options_label_select_platform": {
+        "message": "Select AI Platform"
+    },
+    "options_hint_platform": {
+        "message": "Choose where to send scraped content. A new tab will open with content auto-pasted."
+    },
+    "options_card_scraping_title": {
+        "message": "Scraping Settings"
+    },
+    "options_label_depth": {
+        "message": "Comment Depth Level"
+    },
+    "options_depth_quick": {
+        "message": "Quick"
+    },
+    "options_depth_standard": {
+        "message": "Standard"
+    },
+    "options_depth_deep": {
+        "message": "Deep"
+    },
+    "options_depth_full": {
+        "message": "Full"
+    },
+    "options_depth_quick_desc": {
+        "message": "Top-level only"
+    },
+    "options_depth_standard_desc": {
+        "message": "3 reply levels"
+    },
+    "options_depth_deep_desc": {
+        "message": "5 reply levels"
+    },
+    "options_depth_full_desc": {
+        "message": "All nested replies"
+    },
+    "options_hint_depth": {
+        "message": "Controls how deep into reply chains the scraper goes. Higher depth = more context but larger data."
+    },
+    "options_card_filters_title": {
+        "message": "Content Filters"
+    },
+    "options_label_min_score": {
+        "message": "Minimum Score"
+    },
+    "options_hint_score": {
+        "message": "Only include comments with this many upvotes or more. Set to 0 for all comments."
+    },
+    "options_label_limit_comments": {
+        "message": "Limit Comments"
+    },
+    "options_label_top": {
+        "message": "Top"
+    },
+    "options_label_comments_zero": {
+        "message": "comments (0 = all)"
+    },
+    "options_hint_limit": {
+        "message": "Limit to top N highest-scored comments. Set to 0 for no limit."
+    },
+    "options_label_filter_author": {
+        "message": "Filter by Author"
+    },
+    "options_author_all": {
+        "message": "All"
+    },
+    "options_author_op": {
+        "message": "OP Only"
+    },
+    "options_author_flaired": {
+        "message": "Flaired"
+    },
+    "options_label_hide_bots": {
+        "message": "Hide bot comments"
+    },
+    "options_hint_bot_list": {
+        "message": "AutoModerator, RemindMeBot, etc."
+    },
+    "options_label_include_hidden": {
+        "message": "Include removed/deleted"
+    },
+    "options_hint_hidden_desc": {
+        "message": "Include [removed] and [deleted] comments"
+    },
+    "options_card_notifications_title": {
+        "message": "Notifications"
+    },
+    "options_label_show_notifications": {
+        "message": "Show notifications"
+    },
+    "options_hint_notifications": {
+        "message": "Display status updates as browser notifications"
+    },
+    "options_card_presets_title": {
+        "message": "Prompt Presets"
+    },
+    "options_label_analysis_type": {
+        "message": "Select Analysis Type"
+    },
+    "options_label_template_preview": {
+        "message": "Template Preview"
+    },
+    "options_label_custom_template": {
+        "message": "Custom Template"
+    },
+    "options_btn_reset": {
+        "message": "Reset to default"
+    },
+    "options_placeholder_custom": {
+        "message": "Enter your custom prompt..."
+    },
+    "options_hint_prompt": {
+        "message": "Use $CONTENT$ as a placeholder for the scraped Reddit data. Select 'Custom' to write your own template.",
+        "placeholders": {
+            "content": {
+                "content": "{content}"
+            }
+        }
+    },
+    "options_card_storage_title": {
+        "message": "Data Storage"
+    },
+    "options_storage_none": {
+        "message": "Don't save"
+    },
+    "options_storage_none_hint": {
+        "message": "Discard content after sending"
+    },
+    "options_storage_session": {
+        "message": "Session only"
+    },
+    "options_storage_session_hint": {
+        "message": "Keep until browser closes"
+    },
+    "options_storage_persistent": {
+        "message": "Persistent"
+    },
+    "options_storage_persistent_hint": {
+        "message": "Save in local storage"
+    },
+    "options_card_history_title": {
+        "message": "Scrape History"
+    },
+    "options_label_keep_last": {
+        "message": "Keep last"
+    },
+    "options_label_threads": {
+        "message": "threads"
+    },
+    "options_history_empty": {
+        "message": "No scraped threads yet"
+    },
+    "options_btn_clear_all": {
+        "message": "Clear All"
+    },
+    "options_footer_saved": {
+        "message": "Settings are saved automatically"
+    },
+    "footer_version_text": {
+        "message": "Reddit to AI v0.1.0"
+    },
+    "options_prompt_presets_header": {
+        "message": "Prompt Presets"
+    },
+    "options_toast_saved": {
+        "message": "✓ Saved"
+    },
+    "options_label_items": {
+        "message": "items"
+    },
+    "options_label_item": {
+        "message": "item"
+    },
+    "options_time_now": {
+        "message": "Just now"
+    },
+    "options_time_min": {
+        "message": "$MIN$m ago",
+        "placeholders": {
+            "min": {
+                "content": "$1"
+            }
+        }
+    },
+    "options_time_hour": {
+        "message": "$HOUR$h ago",
+        "placeholders": {
+            "hour": {
+                "content": "$1"
+            }
+        }
+    },
+    "options_time_day": {
+        "message": "$DAY$d ago",
+        "placeholders": {
+            "day": {
+                "content": "$1"
+            }
+        }
+    },
+    "options_label_resend": {
+        "message": "Re-send to"
+    },
+    "template_summarize": {
+        "message": "Provide a concise TL;DR summary of this Reddit thread.\nFocus on: the main topic, key points made, and overall conclusion.\nKeep it brief but comprehensive.\n\n{content}"
+    },
+    "template_debate": {
+        "message": "Analyze this Reddit thread as a debate.\nMap out:\n1. The different sides/perspectives presented\n2. Key arguments for each position\n3. Points of agreement and disagreement\n4. Which arguments are strongest and why\n\n{content}"
+    },
+    "template_sentiment": {
+        "message": "Perform a sentiment analysis on this Reddit thread.\nAnalyze:\n1. Overall sentiment (positive/negative/neutral)\n2. Breakdown by comment - what % are positive, negative, neutral\n3. Most emotionally charged comments\n4. Tone shifts throughout the discussion\n\n{content}"
+    },
+    "template_takeaways": {
+        "message": "Extract the key takeaways from this Reddit thread.\nProvide:\n- Main insights as bullet points\n- Actionable advice mentioned\n- Important facts or statistics shared\n- Common recommendations from multiple users\n\n{content}"
+    },
+    "template_eli5": {
+        "message": "Explain this Reddit thread like I'm 5 years old.\nUse simple language, analogies, and examples.\nAvoid jargon and technical terms.\nMake it easy to understand for someone new to this topic.\n\n{content}"
+    },
+    "preset_summarize_name": {
+        "message": "Summarize"
+    },
+    "options_label_resend": {
+        "message": "Re-send to..."
+    },
+    "options_title_export": {
+        "message": "Export JSON"
+    },
+    "options_title_delete": {
+        "message": "Delete"
+    },
+    "options_confirm_clear": {
+        "message": "Clear all scrape history? This cannot be undone."
+    },
+    "panel_title": {
+        "message": "Reddit to AI"
+    },
+    "panel_status_ready": {
+        "message": "Ready"
+    },
+    "panel_guidance": {
+        "message": "Scraping in progress. Please keep this tab open."
+    },
+    "scraper_fetching": {
+        "message": "Fetching thread..."
+    },
+    "scraper_parsing": {
+        "message": "Parsing initial comments..."
+    },
+    "scraper_found_more": {
+        "message": "Found $COUNT$ comments, loading $MORE$ more...",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            },
+            "more": {
+                "content": "$2"
+            }
+        }
+    },
+    "scraper_loading_batch": {
+        "message": "Loading comments batch $CURRENT$/$TOTAL$...",
+        "placeholders": {
+            "current": {
+                "content": "$1"
+            },
+            "total": {
+                "content": "$2"
+            }
+        }
+    },
+    "scraper_applying_filters": {
+        "message": "Applying filters..."
+    },
+    "scraper_complete": {
+        "message": "Complete! $COUNT$ comments after filtering.",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            }
+        }
+    },
+    "prompt_default_label": {
+        "message": "Summarize the following Reddit thread:"
+    },
+    "prompt_title": {
+        "message": "Thread Title:"
+    },
+    "prompt_subreddit": {
+        "message": "Subreddit:"
+    },
+    "prompt_author": {
+        "message": "Author:"
+    },
+    "prompt_url": {
+        "message": "URL:"
+    },
+    "prompt_content": {
+        "message": "Post Content:"
+    },
+    "prompt_images": {
+        "message": "Images:"
+    },
+    "prompt_links": {
+        "message": "Links referenced in post:"
+    },
+    "prompt_comments": {
+        "message": "Representative comments:"
+    },
+    "prompt_scraped_at": {
+        "message": "Scraped at:"
+    },
+    "prompt_count": {
+        "message": "Comments analysed:"
+    },
+    "prompt_depth": {
+        "message": "Depth level:"
+    },
+    "preset_summarize_name": {
+        "message": "Summarize"
+    },
+    "preset_debate_name": {
+        "message": "Debate Analysis"
+    },
+    "preset_sentiment_name": {
+        "message": "Sentiment"
+    },
+    "preset_takeaways_name": {
+        "message": "Key Takeaways"
+    },
+    "preset_eli5_name": {
+        "message": "ELI5"
+    },
+    "preset_custom_name": {
+        "message": "Custom"
+    },
+    "preset_summarize_desc": {
+        "message": "TL;DR of the thread"
+    },
+    "preset_debate_desc": {
+        "message": "Map out different sides"
+    },
+    "preset_sentiment_desc": {
+        "message": "Positive/negative breakdown"
+    },
+    "preset_takeaways_desc": {
+        "message": "Bullet points of insights"
+    },
+    "preset_eli5_desc": {
+        "message": "Explain like I'm 5"
+    },
+    "preset_custom_desc": {
+        "message": "Your own template"
     }
 }

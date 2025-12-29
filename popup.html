@@ -2,7 +2,7 @@
 <html>
 
 <head>
-  <title>Reddit to AI</title>
+  <title data-i18n="extName">Reddit to AI</title>
   <meta charset="UTF-8">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -37,27 +37,31 @@
 
     <!-- AI Platform Select -->
     <div class="platform-section">
-      <label class="section-label">Send to</label>
+      <label class="section-label" data-i18n="popup_header_sendTo">Send to</label>
       <div class="platform-cards" id="platformCards">
         <!-- Gemini -->
-        <button class="platform-card" data-platform="gemini" title="Google Gemini">
+        <button class="platform-card" data-platform="gemini" data-i18n-title="platform_gemini_title"
+          title="Google Gemini">
           <img src="images/gemini-color.svg" alt="Gemini" class="platform-icon" width="24" height="24">
-          <span class="platform-name">Gemini</span>
+          <span class="platform-name" data-i18n="platform_gemini_name">Gemini</span>
         </button>
         <!-- ChatGPT -->
-        <button class="platform-card" data-platform="chatgpt" title="OpenAI ChatGPT">
+        <button class="platform-card" data-platform="chatgpt" data-i18n-title="platform_chatgpt_title"
+          title="OpenAI ChatGPT">
           <img src="images/openai.svg" alt="ChatGPT" class="platform-icon" width="24" height="24">
-          <span class="platform-name">ChatGPT</span>
+          <span class="platform-name" data-i18n="platform_chatgpt_name">ChatGPT</span>
         </button>
         <!-- Claude -->
-        <button class="platform-card" data-platform="claude" title="Anthropic Claude">
+        <button class="platform-card" data-platform="claude" data-i18n-title="platform_claude_title"
+          title="Anthropic Claude">
           <img src="images/claude-color.svg" alt="Claude" class="platform-icon" width="24" height="24">
-          <span class="platform-name">Claude</span>
+          <span class="platform-name" data-i18n="platform_claude_name">Claude</span>
         </button>
         <!-- AI Studio -->
-        <button class="platform-card" data-platform="aistudio" title="Google AI Studio">
+        <button class="platform-card" data-platform="aistudio" data-i18n-title="platform_aistudio_title"
+          title="Google AI Studio">
           <img src="images/aistudio.svg" alt="AI Studio" class="platform-icon" width="24" height="24">
-          <span class="platform-name">AI Studio</span>
+          <span class="platform-name" data-i18n="platform_aistudio_name">AI Studio</span>
         </button>
       </div>
     </div>
@@ -65,14 +69,14 @@
     <!-- Quick Filters -->
     <div class="filters-section">
       <div class="filters-header">
-        <span class="filters-title">Quick Filters</span>
-        <a id="moreFiltersLink" class="more-filters-link" href="#">More →</a>
+        <span class="filters-title" data-i18n="popup_filter_title">Quick Filters</span>
+        <a id="moreFiltersLink" class="more-filters-link" href="#" data-i18n="popup_filter_more">More →</a>
       </div>
       <div class="filters-row">
         <div class="filter-item">
-          <label class="filter-label">Min Score</label>
+          <label class="filter-label" data-i18n="popup_filter_minScore">Min Score</label>
           <select id="filterMinScore" class="filter-select">
-            <option value="0">Any</option>
+            <option value="0" data-i18n="options_author_all">Any</option>
             <option value="5">5+</option>
             <option value="10">10+</option>
             <option value="25">25+</option>
@@ -81,7 +85,7 @@
           </select>
         </div>
         <div class="filter-item">
-          <label class="filter-label">Hide Bots</label>
+          <label class="filter-label" data-i18n="popup_filter_hideBots">Hide Bots</label>
           <div class="toggle-switch small">
             <input type="checkbox" id="filterHideBots">
             <span class="toggle-slider"></span>
@@ -89,7 +93,7 @@
         </div>
       </div>
       <label class="toggle-row compact">
-        <span class="toggle-label">Include removed/deleted</span>
+        <span class="toggle-label" data-i18n="popup_filter_includeHidden">Include removed/deleted</span>
         <div class="toggle-switch small">
           <input type="checkbox" id="includeHidden">
           <span class="toggle-slider"></span>
@@ -102,7 +106,7 @@
       <svg id="statusIcon" class="status-icon-svg ready" width="16" height="16" viewBox="0 0 16 16">
         <circle cx="8" cy="8" r="6" fill="currentColor" />
       </svg>
-      <span id="statusDisplay" class="status-text">Navigate to a Reddit thread</span>
+      <span id="statusDisplay" class="status-text" data-i18n="popup_status_navigate">Navigate to a Reddit thread</span>
     </div>
 
     <!-- Action Button -->
@@ -111,7 +115,7 @@
         stroke-width="2">
         <polygon points="5 3 19 12 5 21 5 3"></polygon>
       </svg>
-      <span class="btn-text">Scrape & Send</span>
+      <span class="btn-text" data-i18n="popup_btn_scrape">Scrape & Send</span>
     </button>
 
     <button id="stopScrapeBtn" class="btn btn-danger" style="display: none;">
@@ -119,9 +123,10 @@
         stroke-width="2">
         <rect x="6" y="6" width="12" height="12"></rect>
       </svg>
-      <span class="btn-text">Stop</span>
+      <span class="btn-text" data-i18n="popup_btn_stop">Stop</span>
     </button>
   </div>
+  <script src="i18n.js"></script>
   <script src="popup.js"></script>
 </body>
 

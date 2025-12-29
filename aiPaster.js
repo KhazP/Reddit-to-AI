@@ -10,6 +10,11 @@ setTimeout(initPaster, 1500);
 async function initPaster() {
     console.log('Reddit to AI: Checking for pending paste operation...');
 
+    // Initialize i18n
+    if (typeof initI18n === 'function') {
+        await initI18n();
+    }
+
     const { redditThreadData } = await chrome.storage.local.get('redditThreadData');
 
     if (!redditThreadData) {
@@ -82,7 +87,7 @@ async function attemptPaste(data) {
         chrome.storage.sync.get(['defaultPromptTemplate'], resolve);
     });
 
-    const template = settings.defaultPromptTemplate || "Please analyze the following Reddit thread.\n\n{content}";
+    const template = settings.defaultPromptTemplate || (t('default_prompt_template') || "Please analyze the following Reddit thread.\n\n{content}");
     const promptText = buildPromptText(data, template);
 
     console.log(`Reddit to AI: Prompt built. Total length: ${promptText.length} characters`);
@@ -112,36 +117,40 @@ function buildPromptText(data, template) {
     const sections = [];
 
     // Header info
-    sections.push(`Thread Title: ${data.post.title}`);
-    sections.push(`Subreddit: r/${data.post.subreddit}`);
-    sections.push(`Author: u/${data.post.author}`);
+    sections.push(`${t('prompt_title') || 'Thread Title'}: ${data.post.title}`);
+    sections.push(`${t('prompt_subreddit') || 'Subreddit'}: r/${data.post.subreddit}`);
+    sections.push(`${t('prompt_author') || 'Author'}: u/${data.post.author}`);
+
     if (data.post.url) {
-        sections.push(`URL: ${data.post.url}`);
+        sections.push(`${t('prompt_url') || 'URL'}: ${data.post.url}`);
     }
     sections.push('');
 
     // Post content
-    sections.push('--- POST CONTENT ---');
-    sections.push(data.post.content || '[No body content]');
+    sections.push(`--- ${t('prompt_section_post') || 'POST CONTENT'} ---`);
+    sections.push(data.post.content || `[${t('prompt_no_content') || 'No body content'}]`);
+
     sections.push('');
 
     // Images note
     if (Array.isArray(data.post.images) && data.post.images.length > 0) {
-        sections.push(`[${data.post.images.length} image(s) attached]`);
+        sections.push(`[${data.post.images.length} ${t('prompt_images_attached') || 'image(s) attached'}]`);
         sections.push('');
     }
 
     // Comments - ALL OF THEM
-    sections.push('--- COMMENTS ---');
+    sections.push(`--- ${t('prompt_section_comments') || 'COMMENTS'} ---`);
+
     const commentText = formatAllComments(data.comments);
     sections.push(commentText);
     sections.push('');
 
     // Metadata
     sections.push('---');
-    sections.push(`Scraped at: ${data.metadata?.scrapedAt || new Date().toISOString()}`);
-    sections.push(`Total comments: ${data.metadata?.commentCount || data.commentCount || 'unknown'}`);
-    sections.push(`Depth level: ${data.maxDepth || 'unknown'}`);
+    sections.push(`${t('prompt_scraped_at') || 'Scraped at'}: ${data.metadata?.scrapedAt || new Date().toISOString()}`);
+    sections.push(`${t('prompt_total_comments') || 'Total comments'}: ${data.metadata?.commentCount || data.commentCount || 'unknown'}`);
+    sections.push(`${t('options_label_depth') || 'Depth level'}: ${data.maxDepth || 'unknown'}`);
+
 
     const content = sections.join('\n');
     return template.replace('{content}', content);
@@ -153,7 +162,7 @@ function buildPromptText(data, template) {
  */
 function formatAllComments(comments) {
     if (!Array.isArray(comments) || comments.length === 0) {
-        return '[No comments]';
+        return `[${t('options_history_empty') || 'No comments'}]`;
     }
 
     const lines = [];

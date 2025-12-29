@@ -1,0 +1,391 @@
+{
+    "extName": {
+        "message": "Reddit to AI"
+    },
+    "extDescription": {
+        "message": "提取 Reddit 帖子内容并将其发送到选定的 AI 聊天机器人进行分析。"
+    },
+    "options_card_language_title": {
+        "message": "语言"
+    },
+    "options_label_select_language": {
+        "message": "界面语言"
+    },
+    "options_language_auto": {
+        "message": "自动（浏览器默认）"
+    },
+    "options_hint_language": {
+        "message": "选择您的首选语言。更改需要重新加载扩展程序。"
+    },
+    "options_hint_language_reload": {
+        "message": "语言已更改！请重新加载扩展程序以应用。"
+    },
+    "popup_header_sendTo": {
+        "message": "发送到"
+    },
+    "popup_filter_title": {
+        "message": "快速过滤"
+    },
+    "popup_filter_more": {
+        "message": "更多 →"
+    },
+    "popup_filter_minScore": {
+        "message": "最低分数"
+    },
+    "popup_filter_hideBots": {
+        "message": "隐藏机器人"
+    },
+    "popup_filter_includeHidden": {
+        "message": "包含已删除"
+    },
+    "popup_status_navigate": {
+        "message": "请导航至 Reddit 帖子页面"
+    },
+    "popup_status_ready": {
+        "message": "已准备好提取此帖子"
+    },
+    "popup_status_starting": {
+        "message": "正在启动..."
+    },
+    "popup_status_scraping": {
+        "message": "正在提取..."
+    },
+    "popup_status_sent": {
+        "message": "内容已发送至 AI 标签页！"
+    },
+    "popup_btn_scrape": {
+        "message": "提取并发送"
+    },
+    "popup_btn_stop": {
+        "message": "停止"
+    },
+    "options_title": {
+        "message": "Reddit to AI - 设置"
+    },
+    "options_card_ai_title": {
+        "message": "AI 助手"
+    },
+    "options_label_select_platform": {
+        "message": "选择 AI 平台"
+    },
+    "options_hint_platform": {
+        "message": "选择发送提取内容的平台。将打开新标签页并自动粘贴内容。"
+    },
+    "options_card_scraping_title": {
+        "message": "提取设置"
+    },
+    "options_label_depth": {
+        "message": "评论嵌套深度"
+    },
+    "options_depth_quick": {
+        "message": "快速"
+    },
+    "options_depth_standard": {
+        "message": "标准"
+    },
+    "options_depth_deep": {
+        "message": "深度"
+    },
+    "options_depth_full": {
+        "message": "完整"
+    },
+    "options_depth_quick_desc": {
+        "message": "仅首层评论"
+    },
+    "options_depth_standard_desc": {
+        "message": "3 层回复"
+    },
+    "options_depth_deep_desc": {
+        "message": "5 层回复"
+    },
+    "options_depth_full_desc": {
+        "message": "所有嵌套回复"
+    },
+    "options_hint_depth": {
+        "message": "控制提取评论回复的深度。深度越大，上下文越丰富，但数据量也越大。"
+    },
+    "options_card_filters_title": {
+        "message": "内容过滤"
+    },
+    "options_label_min_score": {
+        "message": "最低分数"
+    },
+    "options_hint_score": {
+        "message": "仅包含点赞数不低于此数字的评论。设置为 0 则包含所有评论。"
+    },
+    "options_label_limit_comments": {
+        "message": "评论数量限制"
+    },
+    "options_label_top": {
+        "message": "前"
+    },
+    "options_label_comments_zero": {
+        "message": "条评论 (0 = 全部)"
+    },
+    "options_hint_limit": {
+        "message": "限制为分数前 N 名的评论。设置为 0 则不限制。"
+    },
+    "options_label_filter_author": {
+        "message": "按作者过滤"
+    },
+    "options_author_all": {
+        "message": "全部"
+    },
+    "options_author_op": {
+        "message": "仅楼主"
+    },
+    "options_author_flaired": {
+        "message": "有头衔"
+    },
+    "options_label_hide_bots": {
+        "message": "隐藏机器人评论"
+    },
+    "options_hint_bot_list": {
+        "message": "AutoModerator, RemindMeBot 等"
+    },
+    "options_label_include_hidden": {
+        "message": "包含已删除"
+    },
+    "options_hint_hidden_desc": {
+        "message": "包含 [removed] 和 [deleted] 的评论"
+    },
+    "options_card_notifications_title": {
+        "message": "通知"
+    },
+    "options_label_show_notifications": {
+        "message": "显示通知"
+    },
+    "options_hint_notifications": {
+        "message": "以浏览器通知形式显示状态更新"
+    },
+    "options_card_presets_title": {
+        "message": "提示词预设"
+    },
+    "options_label_analysis_type": {
+        "message": "选择分析类型"
+    },
+    "options_label_template_preview": {
+        "message": "模板预览"
+    },
+    "options_label_custom_template": {
+        "message": "自定义模板"
+    },
+    "options_btn_reset": {
+        "message": "重置为默认"
+    },
+    "options_placeholder_custom": {
+        "message": "输入您的自定义提示词..."
+    },
+    "options_hint_prompt": {
+        "message": "使用 $CONTENT$ 作为提取的 Reddit 数据的占位符。选择“自定义”以编写您自己的模板。",
+        "placeholders": {
+            "content": {
+                "content": "{content}"
+            }
+        }
+    },
+    "options_card_storage_title": {
+        "message": "数据存储"
+    },
+    "options_storage_none": {
+        "message": "不保存"
+    },
+    "options_storage_none_hint": {
+        "message": "发送后清除内容"
+    },
+    "options_storage_session": {
+        "message": "仅限本次会话"
+    },
+    "options_storage_session_hint": {
+        "message": "保持直到浏览器关闭"
+    },
+    "options_storage_persistent": {
+        "message": "持久化保存"
+    },
+    "options_storage_persistent_hint": {
+        "message": "保存在本地存储中"
+    },
+    "options_card_history_title": {
+        "message": "提取历史"
+    },
+    "options_label_keep_last": {
+        "message": "保留最近"
+    },
+    "options_label_threads": {
+        "message": "个帖子"
+    },
+    "options_history_empty": {
+        "message": "尚无提取历史"
+    },
+    "options_btn_clear_all": {
+        "message": "全部清空"
+    },
+    "options_toast_saved": {
+        "message": "✓ 已保存"
+    },
+    "options_label_items": {
+        "message": "项"
+    },
+    "options_label_item": {
+        "message": "项"
+    },
+    "options_time_now": {
+        "message": "刚刚"
+    },
+    "options_time_min": {
+        "message": "$MIN$ 分钟前",
+        "placeholders": {
+            "min": {
+                "content": "$1"
+            }
+        }
+    },
+    "options_time_hour": {
+        "message": "$HOUR$ 小时前",
+        "placeholders": {
+            "hour": {
+                "content": "$1"
+            }
+        }
+    },
+    "options_time_day": {
+        "message": "$DAY$ 天前",
+        "placeholders": {
+            "day": {
+                "content": "$1"
+            }
+        }
+    },
+    "options_label_resend": {
+        "message": "重新发送至..."
+    },
+    "options_title_export": {
+        "message": "导出 JSON"
+    },
+    "options_title_delete": {
+        "message": "删除"
+    },
+    "options_confirm_clear": {
+        "message": "确定要清空所有提取历史吗？此操作不可撤销。"
+    },
+    "panel_title": {
+        "message": "Reddit to AI"
+    },
+    "panel_status_ready": {
+        "message": "就绪"
+    },
+    "panel_guidance": {
+        "message": "正在提取中，请保持此标签页开启。"
+    },
+    "scraper_fetching": {
+        "message": "正在获取帖子..."
+    },
+    "scraper_parsing": {
+        "message": "正在解析初始评论..."
+    },
+    "scraper_found_more": {
+        "message": "已找到 $COUNT$ 条评论，正在加载另外 $MORE$ 条...",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            },
+            "more": {
+                "content": "$2"
+            }
+        }
+    },
+    "scraper_loading_batch": {
+        "message": "正在加载评论批次 $CURRENT$/$TOTAL$...",
+        "placeholders": {
+            "current": {
+                "content": "$1"
+            },
+            "total": {
+                "content": "$2"
+            }
+        }
+    },
+    "scraper_applying_filters": {
+        "message": "正在应用过滤规则..."
+    },
+    "scraper_complete": {
+        "message": "完成！过滤后剩余 $COUNT$ 条评论。",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            }
+        }
+    },
+    "prompt_default_label": {
+        "message": "总结以下 Reddit 帖子："
+    },
+    "prompt_title": {
+        "message": "帖子标题："
+    },
+    "prompt_subreddit": {
+        "message": "版块 (Subreddit)："
+    },
+    "prompt_author": {
+        "message": "作者："
+    },
+    "prompt_url": {
+        "message": "URL："
+    },
+    "prompt_content": {
+        "message": "帖子正文："
+    },
+    "prompt_images": {
+        "message": "图片："
+    },
+    "prompt_links": {
+        "message": "帖子中引用的链接："
+    },
+    "prompt_comments": {
+        "message": "代表性评论："
+    },
+    "prompt_scraped_at": {
+        "message": "提取时间："
+    },
+    "prompt_count": {
+        "message": "分析的评论总数："
+    },
+    "prompt_depth": {
+        "message": "嵌套深度："
+    },
+    "preset_summarize_name": {
+        "message": "要约总结"
+    },
+    "preset_debate_name": {
+        "message": "辩论分析"
+    },
+    "preset_sentiment_name": {
+        "message": "情绪分析"
+    },
+    "preset_takeaways_name": {
+        "message": "核心要点"
+    },
+    "preset_eli5_name": {
+        "message": "通俗易懂 (ELI5)"
+    },
+    "preset_custom_name": {
+        "message": "自定义"
+    },
+    "preset_summarize_desc": {
+        "message": "帖子的简单总结 (TL;DR)"
+    },
+    "preset_debate_desc": {
+        "message": "梳理不同的观点"
+    },
+    "preset_sentiment_desc": {
+        "message": "分析正面/负面情绪"
+    },
+    "preset_takeaways_desc": {
+        "message": "提取关键见解清单"
+    },
+    "preset_eli5_desc": {
+        "message": "用极其简单的话解释"
+    },
+    "preset_custom_desc": {
+        "message": "定义您自己的模板"
+    }
+}

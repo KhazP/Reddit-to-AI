@@ -1,22 +1,25 @@
 // Reddit to AI - Options Page Script
 
-// Prompt Presets Library
-const PROMPT_PRESETS = {
-    summarize: {
-        name: 'Summarize',
-        icon: '📝',
-        description: 'TL;DR of the thread',
-        template: `Provide a concise TL;DR summary of this Reddit thread.
+// Localized helpers are now provided by i18n.js
+
+// Prompt Presets Library (Dynamic getter)
+function getPromptPresets() {
+    return {
+        summarize: {
+            name: t('preset_summarize_name') || 'Summarize',
+            icon: '📝',
+            description: t('preset_summarize_desc') || 'TL;DR of the thread',
+            template: t('template_summarize') || `Provide a concise TL;DR summary of this Reddit thread.
 Focus on: the main topic, key points made, and overall conclusion.
 Keep it brief but comprehensive.
 
 {content}`
-    },
-    debate: {
-        name: 'Debate Analysis',
-        icon: '⚖️',
-        description: 'Map out different sides',
-        template: `Analyze this Reddit thread as a debate.
+        },
+        debate: {
+            name: t('preset_debate_name') || 'Debate Analysis',
+            icon: '⚖️',
+            description: t('preset_debate_desc') || 'Map out different sides',
+            template: t('template_debate') || `Analyze this Reddit thread as a debate.
 Map out:
 1. The different sides/perspectives presented
 2. Key arguments for each position
@@ -24,12 +27,12 @@ Map out:
 4. Which arguments are strongest and why
 
 {content}`
-    },
-    sentiment: {
-        name: 'Sentiment',
-        icon: '😊',
-        description: 'Positive/negative breakdown',
-        template: `Perform a sentiment analysis on this Reddit thread.
+        },
+        sentiment: {
+            name: t('preset_sentiment_name') || 'Sentiment',
+            icon: '😊',
+            description: t('preset_sentiment_desc') || 'Positive/negative breakdown',
+            template: t('template_sentiment') || `Perform a sentiment analysis on this Reddit thread.
 Analyze:
 1. Overall sentiment (positive/negative/neutral)
 2. Breakdown by comment - what % are positive, negative, neutral
@@ -37,12 +40,12 @@ Analyze:
 4. Tone shifts throughout the discussion
 
 {content}`
-    },
-    takeaways: {
-        name: 'Key Takeaways',
-        icon: '💡',
-        description: 'Bullet points of insights',
-        template: `Extract the key takeaways from this Reddit thread.
+        },
+        takeaways: {
+            name: t('preset_takeaways_name') || 'Key Takeaways',
+            icon: '💡',
+            description: t('preset_takeaways_desc') || 'Bullet points of insights',
+            template: t('template_takeaways') || `Extract the key takeaways from this Reddit thread.
 Provide:
 - Main insights as bullet points
 - Actionable advice mentioned
@@ -50,25 +53,27 @@ Provide:
 - Common recommendations from multiple users
 
 {content}`
-    },
-    eli5: {
-        name: 'ELI5',
-        icon: '👶',
-        description: 'Explain like I\'m 5',
-        template: `Explain this Reddit thread like I'm 5 years old.
+        },
+        eli5: {
+            name: t('preset_eli5_name') || 'ELI5',
+            icon: '👶',
+            description: t('preset_eli5_desc') || 'Explain like I\'m 5',
+            template: t('template_eli5') || `Explain this Reddit thread like I'm 5 years old.
 Use simple language, analogies, and examples.
 Avoid jargon and technical terms.
 Make it easy to understand for someone new to this topic.
 
 {content}`
-    },
-    custom: {
-        name: 'Custom',
-        icon: '✏️',
-        description: 'Your own template',
-        template: null
-    }
-};
+        },
+        custom: {
+            name: t('preset_custom_name') || 'Custom',
+            icon: '✏️',
+            description: t('preset_custom_desc') || 'Your own template',
+            template: null
+        }
+    };
+}
+
 
 const DEFAULT_CUSTOM_TEMPLATE = `Please analyze the following Reddit thread.
 
@@ -81,10 +86,11 @@ Data:
 {content}`;
 
 document.addEventListener('DOMContentLoaded', () => {
+    // initializeOptions is now async and handles localization
     initializeOptions();
 });
 
-function initializeOptions() {
+async function initializeOptions() {
     console.log("Options: Initializing...");
 
     // Element references
@@ -117,11 +123,16 @@ function initializeOptions() {
     const historyLimitInput = document.getElementById('historyLimit');
     const clearHistoryBtn = document.getElementById('clearHistoryBtn');
 
-    // Constants
+    // Language element reference
+    const languageSelect = document.getElementById('languageSelect');
+
+
     const DEFAULT_DEPTH = 5;
     const DEFAULT_DATA_STORAGE_OPTION = 'persistent';
     const DEFAULT_LLM_PROVIDER = 'gemini';
     const DEFAULT_PRESET = 'summarize';
+    const DEFAULT_LANGUAGE = 'auto';
+
 
     // Current state
     let currentPreset = DEFAULT_PRESET;
@@ -141,8 +152,9 @@ function initializeOptions() {
     function renderPresetSelector() {
         if (!presetSelector) return;
 
+        const presets = getPromptPresets();
         presetSelector.innerHTML = '';
-        Object.entries(PROMPT_PRESETS).forEach(([key, preset]) => {
+        Object.entries(presets).forEach(([key, preset]) => {
             const pill = document.createElement('button');
             pill.type = 'button';
             pill.className = `preset-pill${key === currentPreset ? ' selected' : ''}`;
@@ -166,7 +178,12 @@ function initializeOptions() {
             pill.classList.toggle('selected', pill.dataset.preset === presetKey);
         });
 
-        const preset = PROMPT_PRESETS[presetKey];
+        document.querySelectorAll('.preset-pill').forEach(pill => {
+            pill.classList.toggle('selected', pill.dataset.preset === presetKey);
+        });
+
+        const presets = getPromptPresets();
+        const preset = presets[presetKey];
         const isCustom = presetKey === 'custom';
 
         // Update textarea
@@ -187,7 +204,9 @@ function initializeOptions() {
 
         // Update label and reset button
         if (templateLabel) {
-            templateLabel.textContent = isCustom ? 'Custom Template' : 'Template Preview';
+            templateLabel.textContent = isCustom ?
+                (t('options_label_custom_template') || 'Custom Template') :
+                (t('options_label_template_preview') || 'Template Preview');
         }
         if (resetCustomBtn) {
             resetCustomBtn.style.display = isCustom ? 'inline' : 'none';
@@ -215,9 +234,16 @@ function initializeOptions() {
         'filterTopN',
         'filterAuthorType',
         'filterHideBots',
-        'includeHidden'
-    ], (result) => {
+        'selectedLanguage'
+    ], async (result) => {
         console.log("Options: Loaded settings:", result);
+
+        // Load language first
+        const savedLanguage = result.selectedLanguage || DEFAULT_LANGUAGE;
+        await loadLanguage(savedLanguage);
+
+        // Now localize page with loaded language
+        localizeHtmlPage();
 
         // Scrape depth
         const savedDepth = result.scrapeDepth || DEFAULT_DEPTH;
@@ -244,7 +270,8 @@ function initializeOptions() {
         renderPresetSelector();
 
         // Load preset template
-        const preset = PROMPT_PRESETS[currentPreset];
+        const presets = getPromptPresets();
+        const preset = presets[currentPreset];
         const isCustom = currentPreset === 'custom';
 
         if (defaultPromptTemplateTextarea) {
@@ -260,7 +287,9 @@ function initializeOptions() {
         }
 
         if (templateLabel) {
-            templateLabel.textContent = isCustom ? 'Custom Template' : 'Template Preview';
+            templateLabel.textContent = isCustom ?
+                (t('options_label_custom_template') || 'Custom Template') :
+                (t('options_label_template_preview') || 'Template Preview');
         }
         if (resetCustomBtn) {
             resetCustomBtn.style.display = isCustom ? 'inline' : 'none';
@@ -307,6 +336,11 @@ function initializeOptions() {
         authorTypeRadios.forEach(radio => {
             radio.checked = radio.value === authorType;
         });
+
+        // Language setting
+        if (languageSelect) {
+            languageSelect.value = savedLanguage;
+        }
     });
 
     // Event listeners
@@ -328,6 +362,43 @@ function initializeOptions() {
             chrome.storage.sync.set({ showNotifications: e.target.checked }, showSaveToast);
         });
     }
+
+    // Language select
+    if (languageSelect) {
+        languageSelect.addEventListener('change', async (e) => {
+            const newLang = e.target.value;
+
+            // 1. Save setting
+            chrome.storage.sync.set({ selectedLanguage: newLang });
+
+            // 2. Load the new language
+            await loadLanguage(newLang);
+
+            // 3. Update all UI components
+            localizeHtmlPage();
+            renderPresetSelector(); // Update preset names/descriptions
+            selectPreset(currentPreset); // Update template labels
+            loadHistory(); // Update history relative times and labels
+
+            showSaveToast();
+
+            // 4. Show reload hint only if we can't fully hot-swap something (e.g. if we missed something)
+            // But we try to do it all. Still good to remind if deep integration issues exist.
+            const hint = languageSelect.parentElement?.querySelector('.form-hint');
+            if (hint) {
+                // We updated instant reload, so we can change the message or keep the localized one
+                // hinting that "Some changes might require reload".
+                // For now, let's keep the user feedback simple.
+                hint.style.color = '#10b981'; // Green for success
+                hint.textContent = t('options_toast_saved') || 'Saved and applied!';
+                setTimeout(() => {
+                    hint.style.color = '';
+                    hint.textContent = t('options_hint_language') || 'Select your preferred language.';
+                }, 3000);
+            }
+        });
+    }
+
 
     // Custom prompt template (debounced save) - only when custom is selected
     let promptSaveTimeout;
@@ -458,10 +529,10 @@ function initializeOptions() {
         const hours = Math.floor(diff / 3600000);
         const days = Math.floor(diff / 86400000);
 
-        if (minutes < 1) return 'Just now';
-        if (minutes < 60) return `${minutes}m ago`;
-        if (hours < 24) return `${hours}h ago`;
-        if (days < 7) return `${days}d ago`;
+        if (minutes < 1) return t('options_time_now') || 'Just now';
+        if (minutes < 60) return t('options_time_min', [minutes.toString()]) || `${minutes}m ago`;
+        if (hours < 24) return t('options_time_hour', [hours.toString()]) || `${hours}h ago`;
+        if (days < 7) return t('options_time_day', [days.toString()]) || `${days}d ago`;
         return new Date(timestamp).toLocaleDateString();
     }
 
@@ -495,7 +566,7 @@ function initializeOptions() {
             </div>
             <div class="history-item-actions">
                 <select class="ai-dropdown" data-action="resend">
-                    <option value="" disabled selected>Re-send to...</option>
+                    <option value="" disabled selected>${t('options_label_resend') || 'Re-send to...'}</option>
                     <option value="gemini">Gemini</option>
                     <option value="chatgpt">ChatGPT</option>
                     <option value="claude">Claude</option>
@@ -532,7 +603,10 @@ function initializeOptions() {
 
             // Update count
             if (historyCount) {
-                historyCount.textContent = `${history.length} item${history.length !== 1 ? 's' : ''}`;
+                const label = history.length === 1 ?
+                    (t('options_label_item') || 'item') :
+                    (t('options_label_items') || 'items');
+                historyCount.innerHTML = `${history.length} <span data-i18n="options_label_items">${label}</span>`;
             }
 
             // Update clear button
@@ -549,7 +623,7 @@ function initializeOptions() {
                                 <circle cx="12" cy="12" r="10"></circle>
                                 <polyline points="12 6 12 12 16 14"></polyline>
                             </svg>
-                            <span>No scraped threads yet</span>
+                            <span data-i18n="options_history_empty">${t('options_history_empty') || 'No scraped threads yet'}</span>
                         </div>
                     `;
                 } else {
@@ -632,7 +706,8 @@ function initializeOptions() {
     // Clear all history
     if (clearHistoryBtn) {
         clearHistoryBtn.addEventListener('click', () => {
-            if (confirm('Clear all scrape history? This cannot be undone.')) {
+            if (confirm(t('options_confirm_clear') || 'Clear all scrape history? This cannot be undone.')) {
+
                 chrome.runtime.sendMessage({ action: 'clearHistory' }, () => {
                     loadHistory();
                     showSaveToast();

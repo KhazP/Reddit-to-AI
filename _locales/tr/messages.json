@@ -1,0 +1,391 @@
+{
+    "extName": {
+        "message": "Reddit to AI"
+    },
+    "extDescription": {
+        "message": "Reddit başlıklarını kazıyarak analiz için seçilen yapay zeka sohbet robotuna gönderir."
+    },
+    "options_card_language_title": {
+        "message": "Dil"
+    },
+    "options_label_select_language": {
+        "message": "Arayüz Dili"
+    },
+    "options_language_auto": {
+        "message": "Otomatik (Tarayıcı Varsayılanı)"
+    },
+    "options_hint_language": {
+        "message": "Tercih ettiğiniz dili seçin. Değişiklikler eklentinin yeniden yüklenmesini gerektirir."
+    },
+    "options_hint_language_reload": {
+        "message": "Dil değişti! Uygulamak için lütfen eklentiyi yeniden yükleyin."
+    },
+    "popup_header_sendTo": {
+        "message": "Gönder"
+    },
+    "popup_filter_title": {
+        "message": "Hızlı Filtreler"
+    },
+    "popup_filter_more": {
+        "message": "Daha Fazla →"
+    },
+    "popup_filter_minScore": {
+        "message": "Min Puan"
+    },
+    "popup_filter_hideBots": {
+        "message": "Botları Gizle"
+    },
+    "popup_filter_includeHidden": {
+        "message": "Silinenleri Dahil Et"
+    },
+    "popup_status_navigate": {
+        "message": "Bir Reddit başlığına gidin"
+    },
+    "popup_status_ready": {
+        "message": "Kazımaya hazır"
+    },
+    "popup_status_starting": {
+        "message": "Başlatılıyor..."
+    },
+    "popup_status_scraping": {
+        "message": "Kazınıyor..."
+    },
+    "popup_status_sent": {
+        "message": "Yapay zeka sekmesine gönderildi!"
+    },
+    "popup_btn_scrape": {
+        "message": "Kazı ve Gönder"
+    },
+    "popup_btn_stop": {
+        "message": "Durdur"
+    },
+    "options_title": {
+        "message": "Reddit to AI - Ayarlar"
+    },
+    "options_card_ai_title": {
+        "message": "Yapay Zeka Asistanı"
+    },
+    "options_label_select_platform": {
+        "message": "Yapay Zeka Platformu Seçin"
+    },
+    "options_hint_platform": {
+        "message": "Kazınan içeriğin nereye gönderileceğini seçin. İçeriğin otomatik olarak yapıştırıldığı yeni bir sekme açılacaktır."
+    },
+    "options_card_scraping_title": {
+        "message": "Kazıma Ayarları"
+    },
+    "options_label_depth": {
+        "message": "Yorum Derinlik Seviyesi"
+    },
+    "options_depth_quick": {
+        "message": "Hızlı"
+    },
+    "options_depth_standard": {
+        "message": "Standart"
+    },
+    "options_depth_deep": {
+        "message": "Derin"
+    },
+    "options_depth_full": {
+        "message": "Tam"
+    },
+    "options_depth_quick_desc": {
+        "message": "Sadece üst seviye"
+    },
+    "options_depth_standard_desc": {
+        "message": "3 cevap seviyesi"
+    },
+    "options_depth_deep_desc": {
+        "message": "5 cevap seviyesi"
+    },
+    "options_depth_full_desc": {
+        "message": "Tüm iç içe cevaplar"
+    },
+    "options_hint_depth": {
+        "message": "Kazıyıcının cevap zincirlerinde ne kadar derine ineceğini kontrol eder. Daha fazla derinlik = daha fazla bağlam ancak daha büyük veri."
+    },
+    "options_card_filters_title": {
+        "message": "İçerik Filtreleri"
+    },
+    "options_label_min_score": {
+        "message": "Minimum Puan"
+    },
+    "options_hint_score": {
+        "message": "Sadece bu kadar veya daha fazla oy alan yorumları dahil et. Tüm yorumlar için 0 yapın."
+    },
+    "options_label_limit_comments": {
+        "message": "Yorumları Sınırla"
+    },
+    "options_label_top": {
+        "message": "En iyi"
+    },
+    "options_label_comments_zero": {
+        "message": "yorum (0 = hepsi)"
+    },
+    "options_hint_limit": {
+        "message": "En yüksek puanlı N yorumla sınırla. Sınırsız için 0 yapın."
+    },
+    "options_label_filter_author": {
+        "message": "Yazara Göre Filtrele"
+    },
+    "options_author_all": {
+        "message": "Hepsi"
+    },
+    "options_author_op": {
+        "message": "Sadece Konu Sahibi"
+    },
+    "options_author_flaired": {
+        "message": "Rozetli"
+    },
+    "options_label_hide_bots": {
+        "message": "Bot yorumlarını gizle"
+    },
+    "options_hint_bot_list": {
+        "message": "AutoModerator, RemindMeBot, vb."
+    },
+    "options_label_include_hidden": {
+        "message": "Silinenleri Dahil Et"
+    },
+    "options_hint_hidden_desc": {
+        "message": "[removed] ve [deleted] yorumları dahil et"
+    },
+    "options_card_notifications_title": {
+        "message": "Bildirimler"
+    },
+    "options_label_show_notifications": {
+        "message": "Bildirimleri göster"
+    },
+    "options_hint_notifications": {
+        "message": "Durum güncellemelerini tarayıcı bildirimi olarak göster"
+    },
+    "options_card_presets_title": {
+        "message": "Prompt Hazır Ayarları"
+    },
+    "options_label_analysis_type": {
+        "message": "Analiz Türünü Seçin"
+    },
+    "options_label_template_preview": {
+        "message": "Şablon Önizleme"
+    },
+    "options_label_custom_template": {
+        "message": "Özel Şablon"
+    },
+    "options_btn_reset": {
+        "message": "Varsayılana sıfırla"
+    },
+    "options_placeholder_custom": {
+        "message": "Özel promptunuzu girin..."
+    },
+    "options_hint_prompt": {
+        "message": "Kazınan Reddit verileri için yer tutucu olarak $CONTENT$ kullanın. Kendi şablonunuzu yazmak için 'Özel'i seçin.",
+        "placeholders": {
+            "content": {
+                "content": "{content}"
+            }
+        }
+    },
+    "options_card_storage_title": {
+        "message": "Veri Depolama"
+    },
+    "options_storage_none": {
+        "message": "Kaydetme"
+    },
+    "options_storage_none_hint": {
+        "message": "Gönderdikten sonra içeriği at"
+    },
+    "options_storage_session": {
+        "message": "Sadece oturum"
+    },
+    "options_storage_session_hint": {
+        "message": "Tarayıcı kapanana kadar tut"
+    },
+    "options_storage_persistent": {
+        "message": "Kalıcı"
+    },
+    "options_storage_persistent_hint": {
+        "message": "Yerel depolamaya kaydet"
+    },
+    "options_card_history_title": {
+        "message": "Kazıma Geçmişi"
+    },
+    "options_label_keep_last": {
+        "message": "Son"
+    },
+    "options_label_threads": {
+        "message": "başlığı tut"
+    },
+    "options_history_empty": {
+        "message": "Henüz kazınmış başlık yok"
+    },
+    "options_btn_clear_all": {
+        "message": "Tümünü Temizle"
+    },
+    "options_toast_saved": {
+        "message": "✓ Kaydedildi"
+    },
+    "options_label_items": {
+        "message": "öğeler"
+    },
+    "options_label_item": {
+        "message": "öğeler"
+    },
+    "options_time_now": {
+        "message": "Az önce"
+    },
+    "options_time_min": {
+        "message": "$MIN$dk önce",
+        "placeholders": {
+            "min": {
+                "content": "$1"
+            }
+        }
+    },
+    "options_time_hour": {
+        "message": "$HOUR$sa önce",
+        "placeholders": {
+            "hour": {
+                "content": "$1"
+            }
+        }
+    },
+    "options_time_day": {
+        "message": "$DAY$g önce",
+        "placeholders": {
+            "day": {
+                "content": "$1"
+            }
+        }
+    },
+    "options_label_resend": {
+        "message": "Şuraya tekrar gönder..."
+    },
+    "options_title_export": {
+        "message": "JSON Olarak Dışa Aktar"
+    },
+    "options_title_delete": {
+        "message": "Sil"
+    },
+    "options_confirm_clear": {
+        "message": "Tüm kazıma geçmişi temizlensin mi? Bu işlem geri alınamaz."
+    },
+    "panel_title": {
+        "message": "Reddit to AI"
+    },
+    "panel_status_ready": {
+        "message": "Hazır"
+    },
+    "panel_guidance": {
+        "message": "Kazıma devam ediyor. Lütfen bu sekmeyi açık tutun."
+    },
+    "scraper_fetching": {
+        "message": "Başlık getiriliyor..."
+    },
+    "scraper_parsing": {
+        "message": "İlk yorumlar analiz ediliyor..."
+    },
+    "scraper_found_more": {
+        "message": "$COUNT$ yorum bulundu, $MORE$ yorum daha yükleniyor...",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            },
+            "more": {
+                "content": "$2"
+            }
+        }
+    },
+    "scraper_loading_batch": {
+        "message": "Yorumlar yükleniyor (Grup $CURRENT$/$TOTAL$)...",
+        "placeholders": {
+            "current": {
+                "content": "$1"
+            },
+            "total": {
+                "content": "$2"
+            }
+        }
+    },
+    "scraper_applying_filters": {
+        "message": "Filtreler uygulanıyor..."
+    },
+    "scraper_complete": {
+        "message": "Tamamlandı! Filtreleme sonrası $COUNT$ yorum.",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            }
+        }
+    },
+    "prompt_default_label": {
+        "message": "Aşağıdaki Reddit başlığını özetle:"
+    },
+    "prompt_title": {
+        "message": "Başlık:"
+    },
+    "prompt_subreddit": {
+        "message": "Subreddit:"
+    },
+    "prompt_author": {
+        "message": "Yazar:"
+    },
+    "prompt_url": {
+        "message": "URL:"
+    },
+    "prompt_content": {
+        "message": "İçerik:"
+    },
+    "prompt_images": {
+        "message": "Resimler:"
+    },
+    "prompt_links": {
+        "message": "Bağlantılar:"
+    },
+    "prompt_comments": {
+        "message": "Temsili yorumlar:"
+    },
+    "prompt_scraped_at": {
+        "message": "Kazıma zamanı:"
+    },
+    "prompt_count": {
+        "message": "Analiz edilen yorumlar:"
+    },
+    "prompt_depth": {
+        "message": "Derinlik seviyesi:"
+    },
+    "preset_summarize_name": {
+        "message": "Özetle"
+    },
+    "preset_debate_name": {
+        "message": "Tartışma Analizi"
+    },
+    "preset_sentiment_name": {
+        "message": "Duygu Analizi"
+    },
+    "preset_takeaways_name": {
+        "message": "Önemli Noktalar"
+    },
+    "preset_eli5_name": {
+        "message": "ELI5 (5 yaşındaymışım gibi anlat)"
+    },
+    "preset_custom_name": {
+        "message": "Özel"
+    },
+    "preset_summarize_desc": {
+        "message": "Başlığın özeti"
+    },
+    "preset_debate_desc": {
+        "message": "Farklı görüşleri haritala"
+    },
+    "preset_sentiment_desc": {
+        "message": "Olumlu/olumsuz ayrımı"
+    },
+    "preset_takeaways_desc": {
+        "message": "Önemli çıkarımların listesi"
+    },
+    "preset_eli5_desc": {
+        "message": "Çok basitçe açıkla"
+    },
+    "preset_custom_desc": {
+        "message": "Kendi şablonunuz"
+    }
+}
