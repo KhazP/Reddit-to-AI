@@ -1,0 +1,10 @@
+{
+    "extName": {
+        "message": "Reddit to AI",
+        "description": "The name of the extension"
+    },
+    "extDescription": {
+        "message": "Scrapes Reddit threads and sends content to chosen AI chatbot for analysis.",
+        "description": "The description of the extension"
+    }
+}

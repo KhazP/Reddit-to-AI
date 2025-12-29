@@ -1,8 +1,12 @@
 {
   "manifest_version": 3,
   "name": "Reddit to AI",
-  "version": "0.1.0",
+  "short_name": "R2AI",
+  "version": "1.0.0",
   "description": "Scrapes Reddit threads and sends content to chosen AI chatbot for analysis.",
+  "author": "Alp Yalay",
+  "homepage_url": "https://github.com/KhazP/Reddit-to-AI",
+  "default_locale": "en",
   "permissions": [
     "activeTab",
     "scripting",

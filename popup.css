@@ -2,10 +2,11 @@
 
 :root {
   --bg-primary: #0d0d0d;
-  --bg-secondary: #1a1a1b;
-  --bg-card: rgba(39, 39, 42, 0.8);
-  --bg-glass: rgba(255, 255, 255, 0.05);
-  --border-color: rgba(255, 255, 255, 0.1);
+  --bg-secondary: rgba(26, 26, 27, 0.6);
+  --bg-card: rgba(39, 39, 42, 0.4);
+  --bg-glass: rgba(255, 255, 255, 0.03);
+  --bg-glass-hover: rgba(255, 255, 255, 0.06);
+  --border-color: rgba(255, 255, 255, 0.08);
   --text-primary: #ffffff;
   --text-secondary: #a0a0a0;
   --text-muted: #6b6b6b;
@@ -17,6 +18,7 @@
   --warning: #f59e0b;
   --radius-sm: 8px;
   --radius-md: 12px;
+  --blur: 12px;
   --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -30,9 +32,11 @@ body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   width: 320px;
   background: var(--bg-primary);
+  background-image: radial-gradient(circle at 50% 0%, rgba(255, 69, 0, 0.05) 0%, transparent 50%);
   color: var(--text-primary);
   font-size: 14px;
   line-height: 1.5;
+  min-height: 480px;
 }
 
 .popup-container {
@@ -128,6 +132,8 @@ body {
   gap: 6px;
   padding: 12px 6px;
   background: var(--bg-card);
+  backdrop-filter: blur(var(--blur));
+  -webkit-backdrop-filter: blur(var(--blur));
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   cursor: pointer;
@@ -135,13 +141,15 @@ body {
 }
 
 .platform-card:hover {
-  border-color: var(--accent);
-  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-2px);
+  background: var(--bg-glass-hover);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .platform-card.selected {
   border-color: var(--accent);
-  background: linear-gradient(135deg, rgba(255, 69, 0, 0.15) 0%, var(--bg-card) 100%);
+  background: linear-gradient(135deg, rgba(255, 69, 0, 0.2) 0%, rgba(39, 39, 42, 0.6) 100%);
   box-shadow: 0 0 16px var(--accent-glow);
 }
 
@@ -217,7 +225,8 @@ body {
 .filter-select {
   flex: 1;
   padding: 6px 8px;
-  background: var(--bg-secondary);
+  background: var(--bg-glass);
+  backdrop-filter: blur(4px);
   border: 1px solid var(--border-color);
   border-radius: 6px;
   color: var(--text-primary);
@@ -228,12 +237,14 @@ body {
 }
 
 .filter-select:hover {
-  border-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+  background: var(--bg-glass-hover);
 }
 
 .filter-select:focus {
   outline: none;
   border-color: var(--accent);
+  background: rgba(0, 0, 0, 0.4);
 }
 
 .toggle-row {
@@ -382,6 +393,19 @@ body {
 
 .status-area.scraping {
   border-color: rgba(245, 158, 11, 0.3);
+  animation: statusPulse 2s ease-in-out infinite;
+}
+
+@keyframes statusPulse {
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
+  }
+
+  50% {
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.3);
+  }
 }
 
 /* Action Button */
@@ -404,14 +428,17 @@ body {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 50%, #ff6b3d 100%);
+  background-size: 200% 200%;
   color: white;
-  box-shadow: 0 4px 16px var(--accent-glow);
+  box-shadow: 0 4px 16px var(--accent-glow), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .btn-primary:hover {
-  box-shadow: 0 6px 24px var(--accent-glow);
-  transform: translateY(-1px);
+  background-position: 100% 0;
+  box-shadow: 0 6px 24px var(--accent-glow), 0 0 30px var(--accent-glow), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
 }
 
 .btn-danger {
@@ -428,4 +455,21 @@ body {
 .btn-icon {
   width: 18px;
   height: 18px;
+}
+
+/* Animations */
+@keyframes slideUpFade {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.popup-container {
+  animation: slideUpFade 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
 }

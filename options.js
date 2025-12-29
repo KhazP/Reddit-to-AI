@@ -554,8 +554,11 @@ function initializeOptions() {
                     `;
                 } else {
                     historyList.innerHTML = '';
-                    history.forEach(item => {
-                        historyList.appendChild(renderHistoryItem(item));
+                    history.forEach((item, index) => {
+                        const el = renderHistoryItem(item);
+                        el.classList.add('entering');
+                        el.style.animationDelay = `${index * 0.05}s`;
+                        historyList.appendChild(el);
                     });
                 }
             }
