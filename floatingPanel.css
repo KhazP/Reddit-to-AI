@@ -1,160 +1,226 @@
+/* Reddit to AI - Floating Panel Styles */
+
+/* Panel Container */
 #redditSummarizerPanel {
     position: fixed;
     top: 20px;
     right: 20px;
-    width: 350px;
-    max-height: 400px; /* Can be adjusted if content often overflows */
-    background-color: #f0f2f5; /* Align with popup.css body */
-    color: #1c1e21; /* Align with popup.css body text color */
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; /* Align with popup.css */
-    font-size: 14px; /* Base font size */
-    border-radius: 8px; /* Align with popup.css .controls-section */
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1); /* Align with popup.css .controls-section */
-    /* border: 1px solid #ccc; Removed */
+    width: 360px;
+    max-height: 450px;
+    background: rgba(13, 13, 13, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    color: #ffffff;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow:
+        0 4px 32px rgba(0, 0, 0, 0.4),
+        0 0 0 1px rgba(255, 255, 255, 0.05) inset;
     z-index: 99999;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
+    animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(20px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
+/* Header */
 .rs-header {
-    padding: 10px 16px; /* Updated padding */
-    background-color: #e8eaf0; /* Slightly distinct from panel background */
-    /* cursor: move; Already set */
-    border-bottom: 1px solid #d0d0d0; /* Softer border */
+    padding: 14px 18px;
+    background: rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    cursor: move;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    user-select: none;
 }
 
 .rs-header span {
-    font-weight: bold;
-    color: #1c1e21; /* Ensure it uses the panel's default text color */
+    font-weight: 600;
+    font-size: 15px;
+    color: #FF4500;
+    letter-spacing: -0.3px;
 }
 
 .rs-close-btn {
-    background: none;
-    border: none;
-    font-size: 20px; /* Slightly larger for easier clicking */
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    font-size: 14px;
     cursor: pointer;
-    color: #606770; /* A common icon color, adjust as needed */
-}
-.rs-close-btn:hover {
-    color: #1c1e21; /* Darker on hover */
+    color: #6b6b6b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
 }
 
+.rs-close-btn:hover {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+}
+
+/* Content */
 .rs-content {
-    padding: 16px; /* Match popup.css .container padding */
+    padding: 18px;
     overflow-y: auto;
     flex-grow: 1;
-    background-color: #f0f2f5; /* Ensure content background matches panel */
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
 }
 
+/* Status Message */
+#rsStatusMessage {
+    font-size: 13px;
+    color: #a0a0a0;
+    margin: 0;
+    padding: 10px 14px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Progress Bar */
 .rs-progress-bar-container {
     width: 100%;
-    background-color: #e0e0e0; /* Matches popup.css */
-    border-radius: 4px;
-    margin-bottom: 10px; /* Spacing before summary or guidance */
-    display: none; 
+    height: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    overflow: hidden;
+    display: none;
 }
 
 .rs-progress-bar {
+    height: 100%;
     width: 0%;
-    height: 20px;
-    background-color: #4CAF50; /* Green, matches popup.css */
-    border-radius: 4px;
-    text-align: center;
-    line-height: 20px;
-    color: white;
-    font-size: 12px;
+    background: linear-gradient(90deg, #FF4500, #ff6b35);
+    border-radius: 8px;
+    transition: width 0.3s ease-out;
+    position: relative;
 }
 
+.rs-progress-bar::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+/* Summary Area */
 .rs-summary-area {
-    margin-top: 0; /* Adjusted as .rs-content now has padding */
-    margin-bottom: 10px; /* Spacing after summary area */
-    display: none; 
+    display: none;
+    flex-direction: column;
+    gap: 10px;
 }
 
 .rs-summary-area h4 {
-    margin-top: 0;
-    margin-bottom: 8px; /* Increased spacing */
-    font-size: 0.95em; /* Slightly larger */
-    color: #333; /* Original color was #555, this is a bit darker */
-    font-weight: 600; /* Slightly bolder */
+    margin: 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b6b6b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .rs-summary-area #rsSummaryText {
-    padding: 12px; /* Increased padding slightly from 8px */
-    max-height: 250px; /* Adjusted max-height */
+    padding: 14px;
+    max-height: 280px;
     overflow-y: auto;
-    font-size: 14px; /* Ensure base font size for markdown content */
-    line-height: 1.5; /* Improved readability for markdown */
-    color: #1c1e21; /* Main text color for summary */
-    background-color: #ffffff; /* White background for the text box, like .controls-section */
-    border: 1px solid #ddd; /* Keep border for clear separation */
-    border-radius: 6px; /* Slightly larger radius */
+    font-size: 13px;
+    line-height: 1.6;
+    color: #e0e0e0;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
     word-wrap: break-word;
 }
 
-/* Markdown element styling within #rsSummaryText */
+/* Markdown Styling */
 .rs-summary-area #rsSummaryText p {
-    margin-top: 0;
-    margin-bottom: 0.75em; /* Space between paragraphs */
+    margin: 0 0 0.75em 0;
+}
+
+.rs-summary-area #rsSummaryText p:last-child {
+    margin-bottom: 0;
 }
 
 .rs-summary-area #rsSummaryText ul,
 .rs-summary-area #rsSummaryText ol {
-    margin-top: 0;
-    margin-bottom: 0.75em;
-    padding-left: 24px; /* Indent lists more */
+    margin: 0 0 0.75em 0;
+    padding-left: 20px;
 }
 
 .rs-summary-area #rsSummaryText li {
-    margin-bottom: 0.35em; /* Space between list items */
+    margin-bottom: 0.35em;
 }
 
 .rs-summary-area #rsSummaryText code {
-    background-color: #e8eaf0; /* Match header, slightly lighter than #f0f0f0 */
-    padding: 0.2em 0.5em; /* Adjusted padding */
-    border-radius: 4px; /* Consistent radius */
-    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace; /* Common mono font stack */
-    font-size: 0.9em; 
-    color: #1c1e21; /* Ensure code text is readable */
+    background: rgba(255, 69, 0, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'SF Mono', Monaco, monospace;
+    font-size: 0.9em;
+    color: #FF4500;
 }
 
 .rs-summary-area #rsSummaryText pre {
-    background-color: #e8eaf0; /* Match header, slightly lighter than #f0f0f0 */
-    padding: 12px; /* Increased padding */
-    border-radius: 6px; /* Consistent radius */
-    overflow-x: auto; 
-    white-space: pre-wrap; 
-    word-wrap: break-word;
-    margin-bottom: 0.75em;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 12px;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 0 0 0.75em 0;
 }
 
 .rs-summary-area #rsSummaryText pre code {
-    background-color: transparent;
+    background: transparent;
     padding: 0;
-    border-radius: 0;
-    font-size: 1em; 
-    white-space: pre-wrap; /* Ensure wrapping within pre for very long lines */
-    word-break: break-all; /* Force break for very long unbreakable strings in code */
+    color: #e0e0e0;
 }
 
 .rs-summary-area #rsSummaryText blockquote {
-    margin-left: 0; 
-    margin-right: 0;
-    margin-bottom: 0.75em;
-    padding: 8px 12px; /* Adjusted padding */
-    border-left: 4px solid #ccd0d5; /* Softer border color */
-    color: #505050; /* Slightly adjusted color from #555 */
-    background-color: #f8f9fa; /* Very light background for blockquote */
+    margin: 0 0 0.75em 0;
+    padding: 10px 14px;
+    border-left: 3px solid #FF4500;
+    color: #a0a0a0;
+    background: rgba(255, 69, 0, 0.05);
+    border-radius: 0 8px 8px 0;
     font-style: italic;
 }
 
 .rs-summary-area #rsSummaryText a {
-    color: #007bff; /* Standard link color */
+    color: #FF4500;
     text-decoration: none;
 }
+
 .rs-summary-area #rsSummaryText a:hover {
     text-decoration: underline;
 }
@@ -165,40 +231,60 @@
 .rs-summary-area #rsSummaryText h4,
 .rs-summary-area #rsSummaryText h5,
 .rs-summary-area #rsSummaryText h6 {
-    margin-top: 1em;
-    margin-bottom: 0.5em;
-    font-weight: 600; /* Bolder headings */
+    margin: 1em 0 0.5em 0;
+    font-weight: 600;
+    color: #ffffff;
     line-height: 1.3;
 }
 
-.rs-summary-area #rsSummaryText h1 { font-size: 1.6em; }
-.rs-summary-area #rsSummaryText h2 { font-size: 1.4em; }
-.rs-summary-area #rsSummaryText h3 { font-size: 1.2em; }
-.rs-summary-area #rsSummaryText h4 { font-size: 1.0em; }
-.rs-summary-area #rsSummaryText h5 { font-size: 0.9em; }
-.rs-summary-area #rsSummaryText h6 { font-size: 0.85em; color: #606770; }
-/* End of Markdown styling */
+.rs-summary-area #rsSummaryText h1 {
+    font-size: 1.4em;
+}
 
+.rs-summary-area #rsSummaryText h2 {
+    font-size: 1.25em;
+}
+
+.rs-summary-area #rsSummaryText h3 {
+    font-size: 1.1em;
+}
+
+.rs-summary-area #rsSummaryText h4 {
+    font-size: 1em;
+}
+
+/* User Guidance */
 .rs-user-guidance {
-    font-size: 0.85em; /* Slightly smaller */
-    color: #424242; /* Darker text for better contrast */
-    margin-top: 10px;
-    padding: 8px 12px; /* Adjusted padding */
-    background-color: #fffde7; /* Keep light yellow */
-    border: 1px solid #ffcc80; /* Keep orange-yellow border */
-    border-radius: 6px; /* Consistent radius */
-    display:none; 
+    font-size: 12px;
+    color: #f59e0b;
+    margin: 0;
+    padding: 12px 14px;
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    border-radius: 10px;
+    display: none;
+    line-height: 1.5;
 }
 
-/* Optional: Resize Handle - not currently used but kept for reference */
-/*
-.rs-resize-handle {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 10px;
-    height: 10px;
-    cursor: nwse-resize;
-    background-color: #ddd; 
+/* Scrollbar */
+.rs-content::-webkit-scrollbar,
+.rs-summary-area #rsSummaryText::-webkit-scrollbar {
+    width: 6px;
 }
-*/
+
+.rs-content::-webkit-scrollbar-track,
+.rs-summary-area #rsSummaryText::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 3px;
+}
+
+.rs-content::-webkit-scrollbar-thumb,
+.rs-summary-area #rsSummaryText::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.rs-content::-webkit-scrollbar-thumb:hover,
+.rs-summary-area #rsSummaryText::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+}

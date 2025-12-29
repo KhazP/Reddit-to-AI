@@ -1,15 +1,45 @@
-/* Reset and base styles */
-body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  width: 300px; /* Increased width for new layout */
-  padding: 0;
-  margin: 0;
-  background-color: #f0f2f5; /* Light gray background */
-  color: #1c1e21; /* Default text color */
+/* Reddit to AI - Popup Styles */
+
+:root {
+  --bg-primary: #0d0d0d;
+  --bg-secondary: #1a1a1b;
+  --bg-card: rgba(39, 39, 42, 0.8);
+  --bg-glass: rgba(255, 255, 255, 0.05);
+  --border-color: rgba(255, 255, 255, 0.1);
+  --text-primary: #ffffff;
+  --text-secondary: #a0a0a0;
+  --text-muted: #6b6b6b;
+  --accent: #FF4500;
+  --accent-hover: #ff5722;
+  --accent-glow: rgba(255, 69, 0, 0.3);
+  --success: #10b981;
+  --error: #ef4444;
+  --warning: #f59e0b;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.container {
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  width: 320px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.popup-container {
   padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
 /* Header */
@@ -17,168 +47,385 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
 }
 
 .logo {
-  font-size: 20px; /* Increased font size */
-  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-icon {
+  filter: drop-shadow(0 2px 4px var(--accent-glow));
+}
+
+.logo-text {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
 }
 
 .logo-reddit {
-  color: #FF4500; /* Reddit Orange */
+  color: var(--accent);
 }
 
-.logo-aitools {
-  color: #1A1A1B; /* Darker text */
-  margin-left: 2px;
+.logo-to {
+  color: var(--text-muted);
+  margin: 0 2px;
+  font-weight: 400;
 }
 
-.status-container {
+.logo-ai {
+  color: var(--text-primary);
+}
+
+.settings-btn {
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
-  font-size: 12px;
+  justify-content: center;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition);
 }
 
-.status-label {
-  color: #606770; /* Grayish text */
-  margin-right: 4px;
+.settings-btn:hover {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
-.status-indicator {
-  padding: 2px 6px;
-  border-radius: 4px;
+/* Platform Section */
+.platform-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.section-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.platform-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.platform-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 6px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.platform-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.platform-card.selected {
+  border-color: var(--accent);
+  background: linear-gradient(135deg, rgba(255, 69, 0, 0.15) 0%, var(--bg-card) 100%);
+  box-shadow: 0 0 16px var(--accent-glow);
+}
+
+.platform-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.platform-name {
+  font-size: 9px;
   font-weight: 500;
+  color: var(--text-secondary);
 }
 
-.status-indicator.active {
-  background-color: #e7f3ff; /* Light blue */
-  color: #1877f2; /* Blue */
+.platform-card.selected .platform-name {
+  color: var(--text-primary);
 }
 
-.status-indicator.scraping {
-  background-color: #fff0e0; /* Light orange */
-  color: #ff7a00; /* Orange */
+/* Filters Section */
+.filters-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
 }
 
-.status-indicator.idle {
-  background-color: #e0e0e0; /* Light gray */
-  color: #333333; /* Dark gray */
-}
-
-.status-indicator.error {
-  background-color: #ffe0e0; /* Light red */
-  color: #dc3545; /* Red */
-}
-
-/* Controls Section */
-.controls-section {
-  margin-bottom: 16px;
-  background-color: #ffffff;
-  padding: 12px;
-  border-radius: 8px;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-}
-
-.control-group {
-  margin-bottom: 12px;
-}
-.control-group:last-child {
-  margin-bottom: 0;
-}
-
-.checkbox-label {
+.filters-header {
   display: flex;
   align-items: center;
-  font-size: 14px;
-  color: #333;
+  justify-content: space-between;
 }
 
-.checkbox-input {
-  margin-right: 8px;
+.filters-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.more-filters-link {
+  font-size: 11px;
+  color: var(--accent);
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+.more-filters-link:hover {
+  text-decoration: underline;
+}
+
+.filters-row {
+  display: flex;
+  gap: 12px;
+}
+
+.filter-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.filter-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.filter-select {
+  flex: 1;
+  padding: 6px 8px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.filter-select:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.toggle-row.compact {
+  padding: 2px 0;
+  margin-top: 2px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-color);
+}
+
+.toggle-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* Toggle Switch */
+.toggle-switch {
+  position: relative;
+  width: 40px;
+  height: 22px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 22px;
+  transition: var(--transition);
+}
+
+.toggle-slider::before {
+  content: '';
+  position: absolute;
   height: 16px;
   width: 16px;
+  left: 2px;
+  bottom: 2px;
+  background: var(--text-secondary);
+  border-radius: 50%;
+  transition: var(--transition);
 }
 
-/* Status Display Section */
-.status-display-section {
-  margin-bottom: 16px;
-  min-height: 20px;
+.toggle-switch input:checked+.toggle-slider {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.toggle-switch input:checked+.toggle-slider::before {
+  transform: translateX(18px);
+  background: white;
+}
+
+/* Small toggle variant */
+.toggle-switch.small {
+  width: 32px;
+  height: 18px;
+}
+
+.toggle-switch.small .toggle-slider {
+  border-radius: 18px;
+}
+
+.toggle-switch.small .toggle-slider::before {
+  height: 12px;
+  width: 12px;
+  left: 2px;
+  bottom: 2px;
+}
+
+.toggle-switch.small input:checked+.toggle-slider::before {
+  transform: translateX(14px);
+}
+
+/* Status Area */
+.status-area {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+}
+
+.status-icon-svg {
+  flex-shrink: 0;
+}
+
+.status-icon-svg.ready {
+  color: var(--success);
+}
+
+.status-icon-svg.error {
+  color: var(--error);
+}
+
+.status-icon-svg.scraping {
+  color: var(--warning);
+  animation: pulse 1s infinite;
+}
+
+.status-icon-svg.idle {
+  color: var(--text-muted);
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .status-text {
-  font-size: 13px;
-  color: #333;
-  margin-bottom: 5px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  flex: 1;
 }
 
-.progress-bar-container {
-  width: 100%;
-  background-color: #e0e0e0; /* Lighter gray for progress bar background */
-  border-radius: 5px;
-  display: none; /* Initially hidden, shown by JS */
-  overflow: hidden; /* Ensures inner bar respects border radius */
+.status-area.error {
+  border-color: rgba(239, 68, 68, 0.3);
 }
 
-.progress-bar {
-  width: 0%;
-  height: 12px; /* Slightly thicker */
-  background-color: #4CAF50; /* Green for progress */
-  border-radius: 5px;
-  text-align: center;
-  line-height: 12px;
-  color: white;
-  font-size: 9px;
-  transition: width 0.3s ease-in-out;
+.status-area.error .status-text {
+  color: var(--error);
 }
 
-/* Action Buttons Section */
-.action-buttons-section {
+.status-area.scraping {
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+/* Action Button */
+.btn {
   display: flex;
-  flex-direction: column;
-  gap: 10px; /* Space between buttons */
-}
-
-.button {
-  width: 100%;
-  padding: 10px 12px; /* Adjusted padding */
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 20px;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s ease;
-  box-sizing: border-box; /* Ensures padding doesn't add to width */
+  transition: var(--transition);
 }
 
-.button.primary {
-  background-color: #FF4500; /* Reddit Orange */
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+  color: white;
+  box-shadow: 0 4px 16px var(--accent-glow);
+}
+
+.btn-primary:hover {
+  box-shadow: 0 6px 24px var(--accent-glow);
+  transform: translateY(-1px);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, var(--error), #dc2626);
   color: white;
 }
-.button.primary:hover {
-  background-color: #e03d00; /* Darker Reddit Orange */
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
 }
 
-.button.secondary {
-  background-color: #e4e6eb; /* Light gray for secondary button */
-  color: #1c1e21; /* Dark text */
-}
-.button.secondary:hover {
-  background-color: #d8dadf; /* Darker gray */
-}
-
-.button.danger {
-  background-color: #dc3545; /* Red */
-  color: white;
-}
-.button.danger:hover {
-  background-color: #c82333; /* Darker Red */
-}
-
-/* General h1 (if any were left or added) */
-h1 {
-  font-size: 18px; /* Adjusted default h1 if used */
-  margin-top: 0;
-  margin-bottom: 12px;
-  color: #1A1A1B;
+.btn-icon {
+  width: 18px;
+  height: 18px;
 }

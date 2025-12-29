@@ -13,8 +13,40 @@
   "host_permissions": [
     "*://*.reddit.com/*",
     "https://*.redd.it/*",
-    "https://api.openai.com/*",
-    "https://generativelanguage.googleapis.com/*"
+    "https://i.redd.it/*",
+    "https://preview.redd.it/*",
+    "https://external-preview.redd.it/*",
+    "https://gemini.google.com/*",
+    "https://chatgpt.com/*",
+    "https://claude.ai/*",
+    "https://aistudio.google.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://gemini.google.com/*",
+        "https://chatgpt.com/*",
+        "https://claude.ai/*",
+        "https://aistudio.google.com/*"
+      ],
+      "js": [
+        "aiPaster.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "*://*.reddit.com/*",
+        "https://*.redd.it/*"
+      ],
+      "js": [
+        "floatingPanel.js"
+      ],
+      "css": [
+        "floatingPanel.css"
+      ],
+      "run_at": "document_end"
+    }
   ],
   "action": {
     "default_popup": "popup.html",
@@ -32,5 +64,15 @@
     "48": "images/icon48.png",
     "128": "images/icon128.png"
   },
-  "options_page": "options.html"
+  "options_page": "options.html",
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "marked.min.js"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ]
 }

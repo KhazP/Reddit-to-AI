@@ -1,112 +1,418 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-    <title>Reddit to AI Options</title>
-    <link rel="stylesheet" type="text/css" href="options.css"> <!-- Link to new options.css -->
+    <title>Reddit to AI - Settings</title>
+    <meta charset="UTF-8">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="options.css">
 </head>
+
 <body>
-    <div class="container">
+    <div class="options-container">
+        <!-- Header -->
         <header class="header">
-            <div class="logo">
-                <span class="logo-reddit">Reddit</span><span class="logo-aitools"> to AI</span>
+            <div class="header-left">
+                <div class="logo">
+                    <svg class="logo-icon" width="32" height="32" viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="10" fill="#FF4500" />
+                        <circle cx="8" cy="10" r="1.5" fill="white" />
+                        <circle cx="16" cy="10" r="1.5" fill="white" />
+                        <path d="M8 14c0 0 2 2 4 2s4-2 4-2" stroke="white" stroke-width="1.5" stroke-linecap="round" />
+                    </svg>
+                    <div class="logo-text">
+                        <span class="logo-title"><span class="logo-reddit">Reddit</span><span
+                                class="logo-to">to</span><span class="logo-ai">AI</span></span>
+                        <span class="logo-subtitle">Settings</span>
+                    </div>
+                </div>
             </div>
-            <span class="page-title">Options</span>
+            <div class="header-right">
+                <div id="saveStatus" class="save-toast"></div>
+            </div>
         </header>
 
-        <div class="settings-section" id="generalSettings">
-            <h2>General Settings</h2>
-            <div class="form-group">
-                <label for="loadMoreAttempts">Scraping Depth (Iterations): <span id="attemptsValue" class="range-value-display">75</span></label>
-                <input type="range" id="loadMoreAttempts" name="loadMoreAttempts" min="1" max="500" value="75">
-                <p class="description" id="sliderDescription">
-                    Controls how many times the scraper will attempt to load more comments. Higher values can find more comments on long threads but take longer. Each iteration is one "load more" click.
-                </p>
-            </div>
-        </div>
-
-        <div class="settings-section" id="aiSettings" style="display:none;">
-            <h2>AI Settings</h2>
-            <div class="form-group">
-                <label for="aiModelSelect">Select AI Model:</label>
-                <select id="aiModelSelect" name="aiModelSelect">
-                    <!-- Options will be populated by options.js -->
-                </select>
-                <p class="description">
-                    Choose the AI platform to send the scraped data to.
-                    <br><strong>Note:</strong> Gemini does not currently support pasting images. For the best experience, please select AI Studio.
-                </p>
-            </div>
-            <div class="form-group">
-                <label for="defaultPromptTemplate">Default Prompt Template (Use {content} as placeholder for Reddit content):</label>
-                <textarea id="defaultPromptTemplate" name="defaultPromptTemplate" rows="4"></textarea>
-                <p class="description">
-                    The {content} placeholder will be replaced with the scraped Reddit content when sending to the AI.
-                </p>
-            </div>
-        </div>
-
-        <div class="settings-section" id="backgroundSummarizationSettings">
-            <h2>Background Summarization Settings</h2>
-            <div class="form-group">
-                <label for="llmProviderSelect">Select LLM Provider:</label>
-                <select id="llmProviderSelect" name="llmProviderSelect"></select>
-            </div>
-            <div class="form-group">
-                <label for="apiKeyInput">API Key:</label>
-                <input type="password" id="apiKeyInput" name="apiKeyInput" style="width: 300px;">
-            </div>
-            <div class="form-group">
-                <label for="modelNameInput">Model Name (Optional):</label>
-                <input type="text" id="modelNameInput" name="modelNameInput" placeholder="e.g., gpt-3.5-turbo, gemini-1.5-flash-latest" style="width: 300px;">
-                
-                <!-- New elements for dynamic model selection -->
-                <select id="modelNameSelect" style="display:none; margin-top: 5px; width: 300px;"></select>
-                <button type="button" id="fetchModelsBtn" style="margin-left: 5px; margin-top: 5px;">Load Models</button>
-                <small id="fetchModelsStatus" style="margin-left: 10px; display: block; margin-top: 5px;"></small>
-            </div>
-            <div class="form-group">
-                <p><small>API keys are stored using Chrome's storage. Handle them with care and be aware of the risks of storing sensitive data in browser storage. "Load Models" will use your API key to fetch available models from the provider.</small></p>
-            </div>
-        </div>
-
-        <div class="settings-section" id="notificationSettings">
-            <h2>Notification Settings</h2>
-            <div class="form-group">
-                <label for="showNotifications">Show Notifications:</label>
-                <input type="checkbox" id="showNotifications" name="showNotifications">
-                <small>Display status updates as notifications.</small>
-            </div>
-        </div>
-
-        <div class="settings-section" id="advancedSettings">
-            <h2>Advanced Settings</h2>
-            <div class="form-group">
-                <label>Data Storage:</label>
-                <div>
-                    <input type="radio" id="dataStorageDontSave" name="dataStorage" value="dontSave">
-                    <label for="dataStorageDontSave">Don't save scraped content</label>
+        <!-- Main Content - 2 Column Grid -->
+        <main class="main-content">
+            <!-- Left Column -->
+            <div class="column">
+                <!-- AI Assistant Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z" />
+                            <circle cx="12" cy="12" r="3" />
+                        </svg>
+                        <h2 class="card-title">AI Assistant</h2>
+                    </div>
+                    <div class="card-content">
+                        <div class="form-group">
+                            <label class="form-label">Select AI Platform</label>
+                            <div class="platform-grid">
+                                <!-- Gemini -->
+                                <label class="platform-option">
+                                    <input type="radio" name="llmProvider" value="gemini">
+                                    <div class="platform-box">
+                                        <svg class="platform-svg" width="32" height="32" viewBox="0 0 24 24">
+                                            <defs>
+                                                <linearGradient id="geminiGradOpt" x1="0%" y1="0%" x2="100%" y2="100%">
+                                                    <stop offset="0%" style="stop-color:#4285F4" />
+                                                    <stop offset="50%" style="stop-color:#9B72CB" />
+                                                    <stop offset="100%" style="stop-color:#D96570" />
+                                                </linearGradient>
+                                            </defs>
+                                            <path fill="url(#geminiGradOpt)"
+                                                d="M12 2L2 19.5h20L12 2zm0 4l6.5 11.5h-13L12 6z" />
+                                        </svg>
+                                        <span class="platform-text">Gemini</span>
+                                    </div>
+                                </label>
+                                <!-- ChatGPT -->
+                                <label class="platform-option">
+                                    <input type="radio" name="llmProvider" value="chatgpt">
+                                    <div class="platform-box">
+                                        <svg class="platform-svg" width="32" height="32" viewBox="0 0 24 24">
+                                            <path fill="#10A37F"
+                                                d="M22.2 8.3c.5-1.5.3-3.1-.6-4.4-1.4-2-4-2.8-6.3-2-.8-.9-1.9-1.5-3.1-1.8C10-.3 7.7.5 6.3 2.2c-1.1-.2-2.2 0-3.2.6C1.3 4 .5 6.2 1 8.3c-.9.8-1.4 1.9-1.5 3.1-.3 2.2.8 4.4 2.7 5.4-.5 1.5-.3 3.1.6 4.4 1.4 2 4 2.8 6.3 2 .8.9 1.9 1.5 3.1 1.8 2.2.4 4.5-.4 5.9-2.2 1.1.2 2.2 0 3.2-.6 1.8-1.2 2.6-3.4 2.1-5.5.9-.8 1.4-1.9 1.5-3.1.2-2.2-.9-4.4-2.7-5.3z" />
+                                        </svg>
+                                        <span class="platform-text">ChatGPT</span>
+                                    </div>
+                                </label>
+                                <!-- Claude -->
+                                <label class="platform-option">
+                                    <input type="radio" name="llmProvider" value="claude">
+                                    <div class="platform-box">
+                                        <svg class="platform-svg" width="32" height="32" viewBox="0 0 24 24">
+                                            <path fill="#CC785C"
+                                                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
+                                        </svg>
+                                        <span class="platform-text">Claude</span>
+                                    </div>
+                                </label>
+                                <!-- AI Studio -->
+                                <label class="platform-option">
+                                    <input type="radio" name="llmProvider" value="aistudio">
+                                    <div class="platform-box">
+                                        <svg class="platform-svg" width="32" height="32" viewBox="0 0 24 24">
+                                            <path fill="#4285F4" d="M12 2L2 7l10 5 10-5-10-5z" />
+                                            <path fill="#34A853" d="M2 17l10 5 10-5v-2l-10 5-10-5v2z" />
+                                            <path fill="#FBBC05" d="M2 12l10 5 10-5v-2l-10 5-10-5v2z" />
+                                        </svg>
+                                        <span class="platform-text">AI Studio</span>
+                                    </div>
+                                </label>
+                            </div>
+                            <p class="form-hint">Choose where to send scraped content. A new tab will open with content
+                                auto-pasted.</p>
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <input type="radio" id="dataStorageSessionOnly" name="dataStorage" value="sessionOnly">
-                    <label for="dataStorageSessionOnly">Save for current session only</label>
+
+                <!-- Scraping Settings Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <path
+                                d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83" />
+                        </svg>
+                        <h2 class="card-title">Scraping Settings</h2>
+                    </div>
+                    <div class="card-content">
+                        <div class="form-group">
+                            <label class="form-label">Comment Depth Level</label>
+                            <div class="depth-options">
+                                <label class="depth-option">
+                                    <input type="radio" name="scrapeDepth" value="1">
+                                    <div class="depth-box">
+                                        <span class="depth-level">1</span>
+                                        <span class="depth-name">Quick</span>
+                                        <span class="depth-desc">Top-level only</span>
+                                    </div>
+                                </label>
+                                <label class="depth-option">
+                                    <input type="radio" name="scrapeDepth" value="3">
+                                    <div class="depth-box">
+                                        <span class="depth-level">3</span>
+                                        <span class="depth-name">Standard</span>
+                                        <span class="depth-desc">3 reply levels</span>
+                                    </div>
+                                </label>
+                                <label class="depth-option">
+                                    <input type="radio" name="scrapeDepth" value="5" checked>
+                                    <div class="depth-box">
+                                        <span class="depth-level">5</span>
+                                        <span class="depth-name">Deep</span>
+                                        <span class="depth-desc">5 reply levels</span>
+                                    </div>
+                                </label>
+                                <label class="depth-option">
+                                    <input type="radio" name="scrapeDepth" value="999">
+                                    <div class="depth-box">
+                                        <span class="depth-level">∞</span>
+                                        <span class="depth-name">Full</span>
+                                        <span class="depth-desc">All nested replies</span>
+                                    </div>
+                                </label>
+                            </div>
+                            <p class="form-hint">
+                                Controls how deep into reply chains the scraper goes. Higher depth = more context but
+                                larger data.
+                            </p>
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <input type="radio" id="dataStoragePersistent" name="dataStorage" value="persistent" checked>
-                    <label for="dataStoragePersistent">Save persistently (local storage)</label>
+
+                <!-- Content Filters Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                        </svg>
+                        <h2 class="card-title">Content Filters</h2>
+                    </div>
+                    <div class="card-content">
+                        <!-- Min Score -->
+                        <div class="form-group">
+                            <label class="form-label">Minimum Score</label>
+                            <div class="slider-row">
+                                <input type="range" id="filterMinScoreSlider" class="slider" min="0" max="100" value="0"
+                                    step="5">
+                                <input type="number" id="filterMinScoreInput" class="slider-value" min="0" max="500"
+                                    value="0">
+                            </div>
+                            <p class="form-hint">Only include comments with this many upvotes or more. Set to 0 for all
+                                comments.</p>
+                        </div>
+
+                        <!-- Top N Comments -->
+                        <div class="form-group">
+                            <label class="form-label">Limit Comments</label>
+                            <div class="inline-input-row">
+                                <span class="inline-label">Top</span>
+                                <input type="number" id="filterTopN" class="number-input" min="0" max="1000" value="0">
+                                <span class="inline-label">comments (0 = all)</span>
+                            </div>
+                            <p class="form-hint">Limit to top N highest-scored comments. Set to 0 for no limit.</p>
+                        </div>
+
+                        <!-- Author Filter -->
+                        <div class="form-group">
+                            <label class="form-label">Filter by Author</label>
+                            <div class="author-options">
+                                <label class="author-option">
+                                    <input type="radio" name="filterAuthorType" value="all" checked>
+                                    <span class="author-pill">All</span>
+                                </label>
+                                <label class="author-option">
+                                    <input type="radio" name="filterAuthorType" value="op">
+                                    <span class="author-pill">OP Only</span>
+                                </label>
+                                <label class="author-option">
+                                    <input type="radio" name="filterAuthorType" value="flaired">
+                                    <span class="author-pill">Flaired</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Toggles -->
+                        <div class="toggle-group">
+                            <label class="toggle-row">
+                                <div class="toggle-info">
+                                    <span class="toggle-label">Hide bot comments</span>
+                                    <span class="toggle-hint">AutoModerator, RemindMeBot, etc.</span>
+                                </div>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="filterHideBots">
+                                    <span class="toggle-slider"></span>
+                                </div>
+                            </label>
+                            <label class="toggle-row">
+                                <div class="toggle-info">
+                                    <span class="toggle-label">Include removed/deleted</span>
+                                    <span class="toggle-hint">Include [removed] and [deleted] comments</span>
+                                </div>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="includeHidden">
+                                    <span class="toggle-slider"></span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
                 </div>
-                <p class="description">
-                    Choose how scraped content is stored. "Don't save" discards content after sending. "Session only" keeps it until the browser closes. "Persistent" saves it in local storage for future sessions.
-                </p>
+
+                <!-- Notifications Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                        </svg>
+                        <h2 class="card-title">Notifications</h2>
+                    </div>
+                    <div class="card-content">
+                        <label class="toggle-row">
+                            <div class="toggle-info">
+                                <span class="toggle-label">Show notifications</span>
+                                <span class="toggle-hint">Display status updates as browser notifications</span>
+                            </div>
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="showNotifications">
+                                <span class="toggle-slider"></span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
             </div>
-        </div>
 
-        <div class="save-actions">
-            <!-- The save button from RedditAIUI is explicit. Here, saving is implicit on change. -->
-            <!-- We can add an explicit save button if preferred, or just keep the status display. -->
-        </div>
-        <div class="save-status" id="saveStatus"></div>
+            <!-- Right Column -->
+            <div class="column">
+                <!-- Prompt Template Card -->
+                <div class="card card-large">
+                    <div class="card-header">
+                        <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                            <polyline points="14 2 14 8 20 8" />
+                            <line x1="16" y1="13" x2="8" y2="13" />
+                            <line x1="16" y1="17" x2="8" y2="17" />
+                        </svg>
+                        <h2 class="card-title">Prompt Presets</h2>
+                    </div>
+                    <div class="card-content">
+                        <div class="form-group">
+                            <label class="form-label">Select Analysis Type</label>
+                            <div class="preset-selector" id="presetSelector">
+                                <!-- Preset pills rendered by JS -->
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="template-label-row">
+                                <label class="form-label" id="templateLabel">Template Preview</label>
+                                <button type="button" id="resetCustomBtn" class="btn-reset">Reset to default</button>
+                            </div>
+                            <textarea id="defaultPromptTemplate" class="textarea" rows="8"
+                                placeholder="Enter your custom prompt..."></textarea>
+                            <p class="form-hint">Use <code>{content}</code> as a placeholder for the scraped Reddit
+                                data. Select "Custom" to write your own template.</p>
+                        </div>
+                    </div>
+                </div>
 
+                <!-- Data Storage Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <ellipse cx="12" cy="5" rx="9" ry="3" />
+                            <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
+                            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+                        </svg>
+                        <h2 class="card-title">Data Storage</h2>
+                    </div>
+                    <div class="card-content">
+                        <div class="radio-group">
+                            <label class="radio-option">
+                                <input type="radio" id="dataStorageDontSave" name="dataStorage" value="dontSave">
+                                <div class="radio-content">
+                                    <span class="radio-label">Don't save</span>
+                                    <span class="radio-hint">Discard content after sending</span>
+                                </div>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" id="dataStorageSessionOnly" name="dataStorage" value="sessionOnly">
+                                <div class="radio-content">
+                                    <span class="radio-label">Session only</span>
+                                    <span class="radio-hint">Keep until browser closes</span>
+                                </div>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" id="dataStoragePersistent" name="dataStorage" value="persistent"
+                                    checked>
+                                <div class="radio-content">
+                                    <span class="radio-label">Persistent</span>
+                                    <span class="radio-hint">Save in local storage</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scrape History Card -->
+                <div class="card" id="historyCard">
+                    <div class="card-header">
+                        <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                        <h2 class="card-title">Scrape History</h2>
+                        <span id="historyCount" class="history-count">0 items</span>
+                    </div>
+                    <div class="card-content">
+                        <!-- History limit control -->
+                        <div class="form-group">
+                            <div class="inline-input-row">
+                                <span class="inline-label">Keep last</span>
+                                <input type="number" id="historyLimit" class="number-input" min="5" max="50" value="10">
+                                <span class="inline-label">threads</span>
+                            </div>
+                        </div>
+
+                        <!-- History list container -->
+                        <div id="historyList" class="history-list">
+                            <div class="history-empty">
+                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="1.5" opacity="0.4">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <polyline points="12 6 12 12 16 14"></polyline>
+                                </svg>
+                                <span>No scraped threads yet</span>
+                            </div>
+                        </div>
+
+                        <!-- Actions row -->
+                        <div class="history-actions">
+                            <button type="button" id="clearHistoryBtn" class="btn-action btn-danger-outline" disabled>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path
+                                        d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                                    </path>
+                                </svg>
+                                Clear All
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <span class="footer-text">Reddit to AI v0.1.0</span>
+            <span class="footer-text">Settings are saved automatically</span>
+        </footer>
     </div>
+
+    <!-- Hidden elements for backwards compatibility -->
+    <select id="llmProviderSelect" style="display:none;"></select>
+    <input type="hidden" id="loadMoreAttempts" value="75">
+    <input type="hidden" id="apiKeyInput">
+    <input type="hidden" id="modelNameInput">
+    <select id="modelNameSelect" style="display:none;"></select>
+    <select id="aiModelSelect" style="display:none;"></select>
+    <button type="button" id="fetchModelsBtn" style="display:none;"></button>
+    <small id="fetchModelsStatus" style="display:none;"></small>
+    <span id="attemptsValue" style="display:none;">75</span>
+
     <script src="options.js"></script>
 </body>
+
 </html>

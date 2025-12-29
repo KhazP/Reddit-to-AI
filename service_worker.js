@@ -1,343 +1,803 @@
-// Service Worker - Step 6: Reintroducing content script messaging and full callback chain
+const DEFAULT_PROMPT_TEMPLATE = 'Summarize the following Reddit thread:\n\n{content}';
 
-console.log('Service Worker (Step 6): Script loaded.');
-
-// --- Global State Variables ---
-let scrapingState = {
-    isActive: false,
-    message: 'Ready to scrape.',
-    percentage: 0,
-    summary: null,
-    error: null,
-    lastScrapedTabId: null
+const DEFAULT_STATE = {
+  isActive: false,
+  message: 'Ready to scrape.',
+  percentage: 0,
+  summary: null,
+  error: null,
+  lastScrapedTabId: null
 };
-let isScraping = false;
-let scrapingTabId = null;
-let stopRequested = false;
 
-// --- Helper Functions ---
-function broadcastScrapingState() {
-    console.log("Service Worker (Step 6): Broadcasting state:", scrapingState);
-    chrome.runtime.sendMessage({
-        action: "scrapingStateUpdate",
-        data: scrapingState
-    }, (response) => {
-        if (chrome.runtime.lastError) {
-            // console.log('Popup status update error:', chrome.runtime.lastError.message);
-        }
+const DEFAULT_HISTORY_LIMIT = 10;
+
+let scrapingState = { ...DEFAULT_STATE };
+let currentScrape = null;
+
+console.log('Service worker initialised.');
+
+chrome.runtime.onInstalled.addListener(() => {
+  console.log('Reddit to AI installed.');
+});
+
+// =====================
+// History Management
+// =====================
+
+async function getHistoryLimit() {
+  return new Promise(resolve => {
+    chrome.storage.sync.get(['historyLimit'], result => {
+      resolve(result.historyLimit || DEFAULT_HISTORY_LIMIT);
     });
-    // Restore floating panel message sending
-    if (scrapingState.lastScrapedTabId) {
-        chrome.tabs.sendMessage(scrapingState.lastScrapedTabId, {
-            action: "updateFloatingPanel",
-            data: scrapingState
-        }, (response) => {
-            if (chrome.runtime.lastError) {
-                // console.warn('Floating panel update error (normal if panel not ready/tab closed):', scrapingState.lastScrapedTabId, chrome.runtime.lastError.message);
-            }
-        }); // Note: Original erroneous .catch was here, ensure it's not reintroduced.
-    }
-}
-
-function showNotificationIfEnabled(title, message, notificationIdBase = 'redditAI') {
-  chrome.storage.sync.get(['showNotifications'], (result) => {
-    const shouldShow = typeof result.showNotifications === 'boolean' ? result.showNotifications : true;
-    if (shouldShow) {
-      const notificationId = `${notificationIdBase}-${Date.now()}`;
-      chrome.notifications.create(notificationId, {
-        type: 'basic',
-        iconUrl: 'images/icon128.png',
-        title: title,
-        message: message
-      }, (createdId) => {
-        if (chrome.runtime.lastError) {
-          console.warn('Error creating notification:', chrome.runtime.lastError.message, 'ID:', notificationId);
-        }
-      });
-    }
   });
 }
 
-// --- Event Listeners ---
-chrome.runtime.onInstalled.addListener(() => {
-  console.log('Service Worker (Step 6): Extension Installed.');
-});
+async function getHistory() {
+  return new Promise(resolve => {
+    chrome.storage.local.get(['scrapeHistory'], result => {
+      resolve(result.scrapeHistory || []);
+    });
+  });
+}
+
+async function addToHistory(scrapeData) {
+  const history = await getHistory();
+  const limit = await getHistoryLimit();
+
+  // Create history entry with unique ID
+  const historyEntry = {
+    id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    timestamp: Date.now(),
+    post: scrapeData.post,
+    metadata: scrapeData.metadata,
+    comments: scrapeData.comments,
+    rawData: scrapeData
+  };
+
+  // Add to beginning (most recent first)
+  history.unshift(historyEntry);
+
+  // Trim to limit
+  const trimmedHistory = history.slice(0, limit);
+
+  await new Promise(resolve => {
+    chrome.storage.local.set({ scrapeHistory: trimmedHistory }, resolve);
+  });
+
+  console.log(`History: Added entry, now ${trimmedHistory.length} items`);
+  return historyEntry;
+}
+
+async function deleteFromHistory(historyId) {
+  const history = await getHistory();
+  const filtered = history.filter(item => item.id !== historyId);
+
+  await new Promise(resolve => {
+    chrome.storage.local.set({ scrapeHistory: filtered }, resolve);
+  });
+
+  console.log(`History: Deleted ${historyId}, now ${filtered.length} items`);
+  return filtered;
+}
+
+async function clearHistory() {
+  await new Promise(resolve => {
+    chrome.storage.local.set({ scrapeHistory: [] }, resolve);
+  });
+  console.log('History: Cleared all');
+}
+
+async function getHistoryItem(historyId) {
+  const history = await getHistory();
+  return history.find(item => item.id === historyId) || null;
+}
+
+async function resendHistoryItem(historyId, aiProvider) {
+  const item = await getHistoryItem(historyId);
+  if (!item) {
+    throw new Error('History item not found');
+  }
+
+  // Store the data for aiPaster to pick up
+  await chrome.storage.local.set({
+    redditThreadData: {
+      ...item.rawData,
+      timestamp: Date.now()  // Update timestamp for fresh paste
+    }
+  });
+
+  // Open AI tab
+  const aiUrl = getAiUrl(aiProvider);
+  await chrome.tabs.create({ url: aiUrl });
+
+  return { success: true };
+}
+
+// =====================
+// Message Handlers
+// =====================
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  console.log('Service Worker (Step 6): Message received:', request);
-
-  if (request.action === 'scrapeReddit') {
-    console.log('Service Worker (Step 6): scrapeReddit action received.');
-    
-    if (scrapingState.isActive) {
-      sendResponse({ status: 'Error: Scraping already in progress', currentState: scrapingState });
-      return false; 
+  switch (request.action) {
+    case 'scrapeReddit': {
+      handleScrapeRequest(request, sender)
+        .then(result => sendResponse({ status: 'success', ...result, currentState: scrapingState }))
+        .catch(error => {
+          console.error('Scrape failed:', error);
+          setScrapingState({
+            isActive: false,
+            error: error.message,
+            message: `Error: ${error.message}`,
+            percentage: -1
+          });
+          sendResponse({ status: 'error', error: error.message, currentState: scrapingState });
+        });
+      return true;
     }
-    
-    scrapingState.isActive = true;
-    scrapingState.message = 'Querying active tab...';
-    scrapingState.percentage = 5;
-    scrapingState.summary = null;
-    scrapingState.error = null;
-    // lastScrapedTabId will be set after tab query
-    broadcastScrapingState();
-
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (chrome.runtime.lastError) { /* ... simplified error handling ... */ return; }
-      if (tabs.length === 0) { /* ... simplified error handling ... */ return; }
-      
-      const activeTab = tabs[0];
-      scrapingState.lastScrapedTabId = activeTab.id;
-
-      if (!activeTab.url || !activeTab.url.includes('reddit.com')) { /* ... simplified error handling ... */ return; }
-
-      scrapingState.message = 'Injecting scripts...';
-      scrapingState.percentage = 15;
-      broadcastScrapingState();
-
-      (async () => {
-          try {
-              console.log(`Service Worker: Attempting to inject floatingPanel.css into tab ${activeTab.id}`);
-              await chrome.scripting.insertCSS({ target: { tabId: activeTab.id }, files: ['floatingPanel.css'] });
-              console.log(`Service Worker: floatingPanel.css injection attempted for tab ${activeTab.id}.`);
-
-              console.log(`Service Worker: Attempting to inject floatingPanel.js into tab ${activeTab.id}`);
-              const fpResults = await chrome.scripting.executeScript({ target: { tabId: activeTab.id }, files: ['floatingPanel.js'] });
-              console.log(`Service Worker: floatingPanel.js injection attempted for tab ${activeTab.id}. Results:`, JSON.stringify(fpResults || "No results array"));
-              if (fpResults && fpResults[0] && fpResults[0].error) {
-                  console.error(`Service Worker: Error reported in floatingPanel.js injection result for tab ${activeTab.id}:`, fpResults[0].error);
-                  // Potentially set an error state here if this indicates a critical failure
-                  // scrapingState.error = "Failed to inject floating panel UI.";
-                  // broadcastScrapingState();
-              }
-              
-              // This message might now be slightly out of order if fpResults shows an error,
-              // but the primary goal is to see the injection logs.
-              scrapingState.message = 'Panel scripts injection attempted. Injecting main scraper...'; 
-              scrapingState.percentage = 20;
-              broadcastScrapingState();
-
-              await chrome.scripting.executeScript({ target: { tabId: activeTab.id }, files: ['redditScraper.js'] });
-              console.log('Service Worker (Step 6): redditScraper.js injected.');
-
-              // ***** REINTRODUCING THIS ENTIRE BLOCK *****
-              console.log('Service Worker (Step 6): Sending scrape command to content script.');
-              scrapingState.message = 'Scraper injected. Collecting data from page...';
-              scrapingState.percentage = 20; // Percentage might need re-evaluation from original
-              broadcastScrapingState();
-              
-              chrome.tabs.sendMessage(activeTab.id, {
-                action: 'scrapeReddit',
-                includeHidden: request.includeHidden
-              }, async (scrapeResponse) => { // Callback is async
-                if (chrome.runtime.lastError) {
-                  // ... (original error handling for scrapeResponse lastError)
-                  scrapingState.isActive = false;
-                  scrapingState.message = 'Error: Scraping failed on page.';
-                  scrapingState.error = 'Scraping failed on page: ' + chrome.runtime.lastError.message;
-                  broadcastScrapingState();
-                  sendResponse({ status: 'Error: Scraping failed or stopped', currentState: scrapingState });
-                  return;
-                }
-
-                if (scrapeResponse && scrapeResponse.status === 'cancelled') {
-                  // ... (original handling for cancelled status) ...
-                  scrapingState.isActive = false;
-                  scrapingState.message = 'Scraping cancelled by user on page.';
-                  broadcastScrapingState();
-                  sendResponse({ status: 'Scraping cancelled', currentState: scrapingState });
-                  return;
-                }
-
-                if (scrapeResponse && scrapeResponse.data) {
-                  console.log('Service Worker (Step 6): Received scraped data.');
-                  let processedData = scrapeResponse.data;
-                  
-                  // --- BEGIN IMAGE FETCHING AND CONVERSION (FOR MULTIPLE IMAGES) ---
-                  // This is the full image processing logic from the original file
-                  if (processedData.post && processedData.post.imageUrls && Array.isArray(processedData.post.imageUrls) && processedData.post.imageUrls.length > 0) {
-                    scrapingState.message = 'Processing post image(s)...';
-                    scrapingState.percentage = 72; // Original percentage
-                    broadcastScrapingState();
-                    const imageDataUrlsArray = [];
-                    let imageCount = processedData.post.imageUrls.length;
-                    let imagesProcessed = 0;
-                    for (const imageUrl of processedData.post.imageUrls) {
-                      try {
-                        const absoluteImageUrl = new URL(imageUrl, activeTab.url).href;
-                        const response = await fetch(absoluteImageUrl);
-                        if (!response.ok) throw new Error(`Failed to fetch image: ${response.status} ${response.statusText} for ${absoluteImageUrl}`);
-                        const blob = await response.blob();
-                        if (blob.type.startsWith('image/')) {
-                          const reader = new FileReader();
-                          const dataUrlPromise = new Promise((resolve, reject) => {
-                            reader.onloadend = () => resolve(reader.result);
-                            reader.onerror = (error) => reject(new Error(`FileReader error for ${absoluteImageUrl}: ${error}`));
-                            reader.readAsDataURL(blob);
-                          });
-                          imageDataUrlsArray.push(await dataUrlPromise);
-                        } else { /* console.warn(...) */ }
-                      } catch (error) { /* console.error(...) */ }
-                      imagesProcessed++;
-                      scrapingState.message = `Processing image ${imagesProcessed}/${imageCount}...`;
-                      scrapingState.percentage = 72 + Math.floor((imagesProcessed / imageCount) * 3);
-                      broadcastScrapingState();
-                    }
-                    processedData.post.imageDataUrls = imageDataUrlsArray.length > 0 ? imageDataUrlsArray : [];
-                  } else {
-                    processedData.post.imageDataUrls = [];
-                  }
-                  // --- END IMAGE FETCHING AND CONVERSION ---
-                  
-                  scrapingState.message = 'Data collection finished. Storing data...';
-                  scrapingState.percentage = 75; // Original percentage
-                  broadcastScrapingState();
-
-                  // Retrieve ALL relevant settings (this is the full settings retrieval and API call logic)
-                  chrome.storage.sync.get([
-                      'defaultPromptTemplate', 'dataStorageOption', 'selectedLlmProvider', 'apiKey', 'modelName'
-                  ], async (settingsResult) => {
-                    if (chrome.runtime.lastError) { /* ... error handling ... */ return; }
-
-                    const userPromptTemplate = settingsResult.defaultPromptTemplate;
-                    const dataStorageOption = settingsResult.dataStorageOption || 'persistent'; 
-                    const DEFAULT_PROMPT_TEMPLATE = "Scraped Content:\n\n{content}"; // Simplified for brevity
-                    const provider = settingsResult.selectedLlmProvider || 'openai';
-                    const apiKey = settingsResult.apiKey;
-                    const modelName = settingsResult.modelName;
-                    
-                    let textForAI = `Title: ${processedData.post?.title || 'N/A'} ... Comments: ...`; // Simplified for brevity
-                    // ... (original textForAI construction logic) ...
-                    
-                    let finalContentToPaste = textForAI; // Simplified for brevity
-                    // ... (original template application logic) ...
-                    
-                    const processWithApi = async () => { // This is the function containing the suspected try/catch
-                        if (!apiKey) { /* ... error handling ... */ scrapingState.isActive = false; broadcastScrapingState(); return; }
-                        scrapingState.message = 'Preparing summary request...';
-                        scrapingState.percentage = 80; broadcastScrapingState();
-                        let apiUrl = '', headers = {}, body = {}, effectiveModelName = modelName;
-                        
-                        if (provider === 'openai') {
-                            const defaultOpenAiModel = 'gpt-3.5-turbo';
-                            if (!effectiveModelName) effectiveModelName = defaultOpenAiModel;
-                            apiUrl = 'https://api.openai.com/v1/chat/completions';
-                            headers = { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' };
-                            body = JSON.stringify({ model: effectiveModelName, messages: [{ role: 'user', content: finalContentToPaste }] });
-                        } else if (provider === 'gemini') {
-                            const defaultGeminiModel = 'gemini-1.5-flash-latest';
-                            if (!effectiveModelName) effectiveModelName = defaultGeminiModel;
-                            if (!effectiveModelName.startsWith('models/')) effectiveModelName = 'models/' + effectiveModelName;
-                            apiUrl = `https://generativelanguage.googleapis.com/v1beta/${effectiveModelName}:generateContent?key=${apiKey}`;
-                            headers = { 'Content-Type': 'application/json' };
-                            body = JSON.stringify({ contents: [{ parts: [{ text: finalContentToPaste }] }] });
-                        } else {
-                            console.error('Service Worker (Step 6 Corrected): Unknown LLM provider selected:', provider);
-                            scrapingState.isActive = false;
-                            scrapingState.message = `Error: Unknown LLM provider: ${provider}`;
-                            scrapingState.percentage = -1;
-                            scrapingState.error = `Unknown LLM provider: ${provider}`;
-                            broadcastScrapingState();
-                            // showNotificationIfEnabled('Configuration Error', `Unknown LLM provider selected: ${provider}. Check options.`);
-                            // if (dataStorageOption === 'persistent') chrome.storage.local.remove('redditThreadData');
-                            // else if (dataStorageOption === 'sessionOnly') chrome.storage.session.remove('redditThreadData');
-                            return; // Exits processWithApi
-                        }
-                        
-                        console.log(`Service Worker (Step 6 Corrected): Using effective model name: ${effectiveModelName} for provider: ${provider}`);
-                        console.log(`Service Worker (Step 6 Corrected): Fetching API. URL: ${apiUrl}`, `Body: ${typeof body === 'string' ? body.substring(0,100) + '...' : '[body is not a string or is empty]'}`); // Log URL and snippet of body
-                        try { // THIS IS THE TRY BLOCK NEAR ORIGINAL ERROR LINE 647
-                            scrapingState.message = `Sending request to ${provider} API...`;
-                            scrapingState.percentage = 85; broadcastScrapingState();
-                            const response = await fetch(apiUrl, { method: 'POST', headers: headers, body: body });
-                            if (!response.ok) { 
-                                // Simplified original error handling for brevity in this diff
-                                const errorBodyText = await response.text(); // Attempt to get error body
-                                scrapingState.error = `API request failed (${response.status}): ${errorBodyText}`;
-                                console.error(`Service Worker (Step 6 Modified): API request to ${provider} failed with status ${response.status}:`, errorBodyText);
-                                throw new Error(scrapingState.error); 
-                            }
-
-                            const responseText = await response.clone().text(); // Get raw text first
-
-                            let data;
-                            try {
-                                data = await response.json(); // Attempt to parse JSON
-                            } catch (jsonParseError) {
-                                console.error(`Service Worker (Step 6 Modified): Failed to parse API response as JSON. Provider: ${provider}. Raw response text:`, responseText);
-                                // Re-throw the original jsonParseError so it's caught by the outer catch block
-                                throw jsonParseError; 
-                            }
-                            
-                            let summaryText = '';
-                            if (provider === 'openai') { 
-                                summaryText = data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message.content : '[No summary found in OpenAI response]';
-                             } else if (provider === 'gemini') { 
-                                summaryText = data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] ? data.candidates[0].content.parts[0].text : '[No summary found in Gemini response]';
-                                if (!summaryText && data.promptFeedback && data.promptFeedback.blockReason) {
-                                   summaryText = `[Content blocked by Gemini API due to: ${data.promptFeedback.blockReason}]`;
-                                   console.warn("Service Worker (Step 6 Modified): Gemini API blocked content:", data.promptFeedback);
-                                }
-                             }
-                            scrapingState.summary = summaryText;
-                            scrapingState.message = 'Summarization complete!';
-                            scrapingState.percentage = 100;
-                            showNotificationIfEnabled( 
-                                `${provider} Summary Ready`, "Summary details here.", "notification-id"
-                            );
-                        } catch (error) { // THIS IS THE CATCH BLOCK (user reported (e) here)
-                            console.error(`Service Worker (Step 6 Modified): Error during API call to ${provider}:`, error);
-                            scrapingState.message = `Error: ${error.message || 'API call failed.'}`;
-                            if (!scrapingState.error) scrapingState.error = error.message || 'API call failed.';
-                            scrapingState.percentage = -1;
-                        } finally {
-                            scrapingState.isActive = false;
-                            broadcastScrapingState();
-                            // ... (original storage removal logic, ensure it's still here or add back if search block was too short) ...
-                            if (dataStorageOption === 'persistent') { chrome.storage.local.remove('redditThreadData'); } else if (dataStorageOption === 'sessionOnly') { chrome.storage.session.remove('redditThreadData'); }
-                        }
-                    }; // End of processWithApi
-                    
-                    // Determine data storage and proceed with API call
-                    if (dataStorageOption === 'dontSave') { /* ... */ processWithApi(); }
-                    else if (dataStorageOption === 'sessionOnly') { /* ... set session ... */ processWithApi(); }
-                    else { /* ... set local ... */ processWithApi(); }
-                  }); // End of chrome.storage.sync.get callback
-                  sendResponse({ status: 'Scraping and processing complete (simulated for Step 6)', currentState: scrapingState }); // Adjust as needed
-                } else { 
-                  // ... (original handling for no scrapeResponse.data)
-                  scrapingState.isActive = false;
-                  scrapingState.message = 'Error: No data received from scraper.';
-                  broadcastScrapingState();
-                  sendResponse({ status: 'Error: No data from scraper', currentState: scrapingState });
-                }
-              }); // End of chrome.tabs.sendMessage callback
-              // ***** END OF REINTRODUCED BLOCK *****
-
-          } catch (err) { // Catch for script injection errors
-              console.error("Service Worker (Step 6): Error during script injection phase:", err);
-              scrapingState.isActive = false;
-              scrapingState.message = 'Error during script injection: ' + err.message;
-              scrapingState.error = err.message;
-              scrapingState.percentage = -1;
-              broadcastScrapingState();
-              // If sendResponse hasn't been called yet by an earlier error path.
-              // This path might be tricky if the error occurs after sendResponse from scrapeReddit's main body has been implicitly sent due to `return true`.
-              // For now, this catch primarily logs. The main sendResponse for scrapeReddit is handled by its callback.
-          }
-      })(); // End of IIFE for script injection
-
-    }); // End of chrome.tabs.query callback
-
-    return true; // Indicate async response for scrapeReddit
-
-  } else if (request.action === "stopScraping") { /* ... same as Step 5 ... */ sendResponse({}); return false;
-  } else if (request.action === "progressUpdate") { /* ... same as Step 5 ... */ sendResponse({}); return false;
-  } else if (request.action === 'getScrapingState') { /* ... same as Step 5 ... */ sendResponse(scrapingState); return false; 
-  } else if (request.action === 'notifyUser') { /* ... same as Step 5 ... */ sendResponse({}); return false; }
-
-  console.warn("Service Worker (Step 6): Unhandled message action:", request.action);
-  return false; 
+    case 'stopScraping':
+      stopActiveScrape();
+      sendResponse({ status: 'stopping', currentState: scrapingState });
+      return false;
+    case 'progressUpdate':
+      if (request.message) {
+        setScrapingState({ message: request.message });
+      }
+      if (typeof request.percentage === 'number') {
+        setScrapingState({ percentage: request.percentage });
+      }
+      sendResponse({ ok: true });
+      return false;
+    case 'getScrapingState':
+      sendResponse(scrapingState);
+      return false;
+    case 'notifyUser':
+      if (request.title && request.message) {
+        showNotificationIfEnabled(request.title, request.message, request.notificationIdBase);
+      }
+      sendResponse({ ok: true });
+      return false;
+    case 'fetchImage': {
+      // Fetch image from URL and return as base64 (to bypass CORS for content scripts)
+      fetchImageAsBase64(request.url)
+        .then(result => sendResponse(result))
+        .catch(error => {
+          console.error('Image fetch failed:', error);
+          sendResponse({ error: error.message });
+        });
+      return true; // async response
+    }
+    // History management handlers
+    case 'getHistory': {
+      getHistory()
+        .then(history => sendResponse({ history }))
+        .catch(error => sendResponse({ error: error.message }));
+      return true;
+    }
+    case 'deleteHistoryItem': {
+      deleteFromHistory(request.historyId)
+        .then(history => sendResponse({ history }))
+        .catch(error => sendResponse({ error: error.message }));
+      return true;
+    }
+    case 'clearHistory': {
+      clearHistory()
+        .then(() => sendResponse({ success: true }))
+        .catch(error => sendResponse({ error: error.message }));
+      return true;
+    }
+    case 'resendHistoryItem': {
+      resendHistoryItem(request.historyId, request.aiProvider)
+        .then(result => sendResponse(result))
+        .catch(error => sendResponse({ error: error.message }));
+      return true;
+    }
+    case 'getHistoryItem': {
+      getHistoryItem(request.historyId)
+        .then(item => sendResponse({ item }))
+        .catch(error => sendResponse({ error: error.message }));
+      return true;
+    }
+    default:
+      console.warn('Unhandled runtime message:', request);
+      sendResponse({ status: 'ignored' });
+      return false;
+  }
 });
 
-console.log('Service Worker (Step 6): All listeners registered.');
+async function handleScrapeRequest(request, sender) {
+  if (scrapingState.isActive) {
+    throw new Error('Scraping already in progress.');
+  }
+
+  setScrapingState({
+    isActive: true,
+    message: 'Preparing to scrape.',
+    percentage: 5,
+    summary: null,
+    error: null
+  });
+
+  const activeTab = await getScrapeTargetTab(request, sender);
+  const tabUrl = await resolveTabUrl(activeTab);
+  if (!isRedditUrl(tabUrl)) {
+    console.warn('Scrape aborted: tab URL not recognised as Reddit.', {
+      resolvedUrl: tabUrl,
+      originalTabUrl: activeTab?.url,
+      requestTabId: request?.tabId ?? null,
+      senderHasTab: Boolean(sender?.tab?.id)
+    });
+    setScrapingState({
+      isActive: false,
+      message: 'Open a Reddit thread before scraping.',
+      percentage: -1,
+      error: 'Active tab is not a Reddit thread.'
+    });
+    throw new Error('Active tab is not a Reddit thread.');
+  }
+
+  currentScrape = {
+    tabId: activeTab.id,
+    stopRequested: false,
+    storageOption: 'persistent',
+    abortController: null
+  };
+
+  setScrapingState({ lastScrapedTabId: activeTab.id });
+
+  await injectContentScripts(activeTab.id);
+
+  setScrapingState({ message: 'Collecting data from page.', percentage: 20 });
+
+  const scrapeResponse = await requestScrapeFromTab(activeTab.id, request.includeHidden);
+  if (scrapeResponse && scrapeResponse.error) {
+    throw new Error(`Content script error: ${scrapeResponse.error}`);
+  }
+
+  if (!scrapeResponse || !scrapeResponse.data) {
+    throw new Error('Content script returned no data.');
+  }
+
+  if (currentScrape.stopRequested) {
+    throw new Error('Scraping stopped by user.');
+  }
+
+  setScrapingState({ message: 'Preparing scraped data.', percentage: 60 });
+
+  let settings = null;
+  let storageOption = currentScrape.storageOption || 'persistent';
+
+  try {
+    settings = await loadSettings();
+    storageOption = settings.dataStorageOption;
+    currentScrape.storageOption = storageOption;
+
+    // Get the tab URL for enrichment
+    const activeTab = await getTabById(currentScrape.tabId);
+    const tabUrl = getTabUrl(activeTab);
+
+    // Process and enrich the scraped data
+    const processedData = enrichScrapedData(scrapeResponse.data, tabUrl);
+    processedData.timestamp = Date.now();
+
+    // Save data to local storage for aiPaster.js to pick up.
+    // We do this regardless of the user's "persistence" setting because we need to pass data to the new tab.
+    // The persistence setting ("dontSave") will be respected by not keeping it long-term 
+    // (though in this architecture, we overwrite it every time anyway).
+    console.log('Saving scraped data to storage:', {
+      postTitle: processedData.post?.title,
+      commentCount: processedData.metadata?.commentCount,
+      timestamp: processedData.timestamp
+    });
+    await chrome.storage.local.set({
+      redditThreadData: processedData
+    });
+    console.log('Scraped data saved to chrome.storage.local successfully.');
+
+    // Add to history if storage is not explicitly disabled
+    if (storageOption !== 'dontSave') {
+      await addToHistory(processedData);
+    }
+
+
+    // API key check removed for Direct Paste workflow
+
+
+    // --- NEW FLOW: Direct Paste ---
+
+    // We no longer require an API key validation here.
+    // Instead of summarizing internally, we open the target AI tab.
+
+    setScrapingState({ message: 'Opening AI assistant...', percentage: 80 });
+
+    const aiUrl = getAiUrl(settings.selectedLlmProvider); // We reuse this field or use a new one "selectedAiModel"
+
+    await openAiTabAndPaste(aiUrl);
+
+    setScrapingState({
+      isActive: false,
+      percentage: 100,
+      summary: null, // No summary generated internally
+      message: 'Content sent to AI tab.',
+      error: null
+    });
+
+    return { summary: null };
+
+  } finally {
+    // Only clear if "dontSave" was explicitly requested, otherwise we need it for the paste script!
+    if (storageOption === 'dontSave') {
+      await cleanupPersistedData(storageOption);
+    }
+    currentScrape = null;
+  }
+}
+
+function getAiUrl(providerKey) {
+  // Map the new simplified selection to URLs
+  // Using simple defaults for now. 
+  // In options.js, we will populate 'selectedLlmProvider' with these keys.
+  const map = {
+    'gemini': 'https://gemini.google.com/app',
+    'chatgpt': 'https://chatgpt.com/',
+    'claude': 'https://claude.ai/new',
+    'aistudio': 'https://aistudio.google.com/prompts/new_chat'
+  };
+  return map[providerKey] || map['gemini'];
+}
+
+
+async function openAiTabAndPaste(url) {
+  await chrome.tabs.create({ url });
+  // aiPaster.js is now injected via manifest.json content_scripts to ensure it runs reliably
+  // when the page loads, even if it takes a while to be ready.
+}
+
+function stopActiveScrape() {
+  if (!currentScrape) {
+    return;
+  }
+
+  currentScrape.stopRequested = true;
+
+  setScrapingState({ message: 'Stop requested.', percentage: scrapingState.percentage });
+
+  if (currentScrape.abortController) {
+    currentScrape.abortController.abort();
+  }
+
+  if (typeof currentScrape.tabId === 'number') {
+    chrome.tabs.sendMessage(
+      currentScrape.tabId,
+      { action: 'stopScrapingRequested' },
+      () => chrome.runtime.lastError && console.debug('Stop message warning:', chrome.runtime.lastError.message)
+    );
+  }
+}
+
+function setScrapingState(patch) {
+  scrapingState = { ...scrapingState, ...patch };
+  broadcastScrapingState();
+}
+
+function broadcastScrapingState() {
+  chrome.runtime.sendMessage({ action: 'scrapingStateUpdate', data: scrapingState }, () => {
+    if (chrome.runtime.lastError) {
+      // Popup not listening; ignore.
+    }
+  });
+
+  if (scrapingState.lastScrapedTabId != null) {
+    chrome.tabs.sendMessage(
+      scrapingState.lastScrapedTabId,
+      { action: 'updateFloatingPanel', data: scrapingState },
+      () => chrome.runtime.lastError && console.debug('Floating panel update skipped:', chrome.runtime.lastError.message)
+    );
+  }
+}
+
+function showNotificationIfEnabled(title, message, notificationIdBase = 'reddit-to-ai') {
+  chrome.storage.sync.get(['showNotifications'], result => {
+    const shouldShow = typeof result.showNotifications === 'boolean' ? result.showNotifications : true;
+    if (!shouldShow) {
+      return;
+    }
+
+    const notificationId = `${notificationIdBase}-${Date.now()}`;
+    chrome.notifications.create(
+      notificationId,
+      {
+        type: 'basic',
+        iconUrl: 'images/icon128.png',
+        title,
+        message
+      },
+      () => chrome.runtime.lastError && console.debug('Notification skipped:', chrome.runtime.lastError.message)
+    );
+  });
+}
+
+async function getActiveTab() {
+  const tabs = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+  if (!tabs || tabs.length === 0) {
+    throw new Error('No active tab detected.');
+  }
+  return tabs[0];
+}
+
+async function getScrapeTargetTab(request, sender) {
+  if (request?.tabId != null) {
+    try {
+      const tabFromRequest = await getTabById(request.tabId);
+      if (tabFromRequest) {
+        return tabFromRequest;
+      }
+    } catch (error) {
+      console.debug('Failed to resolve tab from request.tabId:', error);
+    }
+  }
+
+  if (sender?.tab && sender.tab.id != null) {
+    return sender.tab;
+  }
+
+  return getActiveTab();
+}
+
+function getTabUrl(tab) {
+  if (!tab) {
+    return '';
+  }
+  return tab.url || tab.pendingUrl || '';
+}
+
+async function resolveTabUrl(tab) {
+  let candidate = getTabUrl(tab);
+  if (isRedditUrl(candidate) || !tab?.id) {
+    return candidate;
+  }
+
+  // Give Chrome a moment to finish navigation if we're still on about:blank or similar.
+  for (let attempt = 0; attempt < 5; attempt++) {
+    await delay(150 + attempt * 100);
+    try {
+      const refreshedTab = await getTabById(tab.id);
+      candidate = getTabUrl(refreshedTab);
+      if (isRedditUrl(candidate)) {
+        return candidate;
+      }
+    } catch (error) {
+      console.debug('Failed to refresh tab URL:', error);
+      break;
+    }
+  }
+
+  if (!isRedditUrl(candidate)) {
+    console.debug('resolveTabUrl: returning non-Reddit URL candidate', candidate || '[empty]');
+  }
+
+  return candidate;
+}
+
+function getTabById(tabId) {
+  return new Promise((resolve, reject) => {
+    chrome.tabs.get(tabId, tab => {
+      if (chrome.runtime.lastError) {
+        reject(new Error(chrome.runtime.lastError.message));
+        return;
+      }
+      resolve(tab);
+    });
+  });
+}
+
+function isRedditUrl(url) {
+  if (!url) {
+    return false;
+  }
+  try {
+    const { hostname } = new URL(url);
+    // Allow reddit.com, www.reddit.com, old.reddit.com, sh.reddit.com, etc.
+    // Also redd.it shortlinks
+    return (
+      hostname === 'reddit.com' ||
+      hostname.endsWith('.reddit.com') ||
+      hostname === 'redd.it' ||
+      hostname.endsWith('.redd.it')
+    );
+  } catch (error) {
+    console.warn('Failed to parse tab URL:', url, error);
+    return false;
+  }
+}
+
+async function injectContentScripts(tabId) {
+  try {
+    await chrome.scripting.insertCSS({ target: { tabId }, files: ['floatingPanel.css'] });
+  } catch (error) {
+    console.debug('Floating panel CSS injection skipped:', error.message);
+  }
+
+  try {
+    await chrome.scripting.executeScript({ target: { tabId }, files: ['floatingPanel.js'] });
+  } catch (error) {
+    console.debug('Floating panel script injection skipped:', error.message);
+  }
+
+  await chrome.scripting.executeScript({ target: { tabId }, files: ['redditScraper.js'] });
+}
+
+async function requestScrapeFromTab(tabId, includeHidden) {
+  const attempt = () =>
+    new Promise((resolve, reject) => {
+      chrome.tabs.sendMessage(
+        tabId,
+        { action: 'scrapeReddit', includeHidden },
+        response => {
+          if (chrome.runtime.lastError) {
+            reject(new Error(chrome.runtime.lastError.message));
+            return;
+          }
+          resolve(response);
+        }
+      );
+    });
+
+  try {
+    return await attempt();
+  } catch (error) {
+    if (/Receiving end does not exist/.test(error.message)) {
+      await delay(250);
+      return attempt();
+    }
+    throw error;
+  }
+}
+
+async function loadSettings() {
+  const defaults = {
+    defaultPromptTemplate: DEFAULT_PROMPT_TEMPLATE,
+    dataStorageOption: 'persistent',
+    selectedLlmProvider: 'openai',
+    apiKey: '',
+    modelName: ''
+  };
+
+  return new Promise(resolve => {
+    chrome.storage.sync.get(
+      ['defaultPromptTemplate', 'dataStorageOption', 'selectedLlmProvider', 'apiKey', 'modelName'],
+      items => resolve({ ...defaults, ...items })
+    );
+  });
+}
+
+function enrichScrapedData(data, url) {
+  const timestamp = new Date().toISOString();
+  return {
+    ...data,
+    post: {
+      title: data.post?.title || '[Unknown title]',
+      author: data.post?.author || '[Unknown author]',
+      subreddit: data.post?.subreddit || inferSubredditFromUrl(url),
+      url: url || data.post?.url || '',
+      content: data.post?.content || '',
+      images: data.post?.images || [],
+      links: data.post?.links || []
+    },
+    metadata: {
+      scrapedAt: timestamp,
+      commentCount: countComments(data.comments),
+      includeHidden: Boolean(data.includeHidden),
+      loadMoreAttempts: data.loadMoreAttempts || 0
+    }
+  };
+}
+
+async function persistScrapedData(option, payload) {
+  if (option === 'dontSave') {
+    return;
+  }
+  const setter =
+    option === 'sessionOnly'
+      ? chrome.storage.session.set.bind(chrome.storage.session)
+      : chrome.storage.local.set.bind(chrome.storage.local);
+
+  await new Promise(resolve => {
+    setter({ redditThreadData: payload }, () => {
+      if (chrome.runtime.lastError) {
+        console.warn('Failed to persist scraped data:', chrome.runtime.lastError.message);
+      }
+      resolve();
+    });
+  });
+}
+
+async function cleanupPersistedData(option) {
+  if (option === 'dontSave') {
+    return;
+  }
+  const remover =
+    option === 'sessionOnly'
+      ? chrome.storage.session.remove.bind(chrome.storage.session)
+      : chrome.storage.local.remove.bind(chrome.storage.local);
+
+  await new Promise(resolve => {
+    remover('redditThreadData', () => {
+      if (chrome.runtime.lastError) {
+        console.warn('Failed to remove stored scrape data:', chrome.runtime.lastError.message);
+      }
+      resolve();
+    });
+  });
+}
+
+function buildPromptText(data, template) {
+  const promptTemplate = template && template.includes('{content}') ? template : DEFAULT_PROMPT_TEMPLATE;
+  const sections = [];
+
+  sections.push(`Thread Title: ${data.post.title}`);
+  sections.push(`Subreddit: ${data.post.subreddit}`);
+  sections.push(`Author: ${data.post.author}`);
+  if (data.post.url) {
+    sections.push(`URL: ${data.post.url}`);
+  }
+  sections.push('');
+  sections.push('Post Content:');
+  sections.push(data.post.content ? truncateText(data.post.content, 2000) : '[No body content detected]');
+
+  if (Array.isArray(data.post.images) && data.post.images.length > 0) {
+    sections.push('');
+    sections.push('Images:');
+    data.post.images.slice(0, 5).forEach((src, index) => {
+      sections.push(`  ${index + 1}. ${src}`);
+    });
+  }
+
+  if (Array.isArray(data.post.links) && data.post.links.length > 0) {
+    sections.push('');
+    sections.push('Links referenced in post:');
+    data.post.links.slice(0, 10).forEach(link => sections.push(`  - ${link}`));
+  }
+
+  const commentBlock = formatCommentsForPrompt(data.comments);
+  if (commentBlock) {
+    sections.push('');
+    sections.push('Representative comments:');
+    sections.push(commentBlock);
+  }
+
+  sections.push('');
+  sections.push(`Scraped at: ${data.metadata.scrapedAt}`);
+  sections.push(`Comments analysed: ${data.metadata.commentCount}`);
+
+  const content = sections.join('\n');
+  return promptTemplate.replace('{content}', content);
+}
+
+// LLM API functions removed in favor of direct paste.
+
+function formatCommentsForPrompt(comments) {
+  if (!Array.isArray(comments) || comments.length === 0) {
+    return '';
+  }
+
+  const queue = comments.map(comment => ({ comment, depth: 0 }));
+  const lines = [];
+  let totalChars = 0;
+  let processed = 0;
+  const maxItems = 50;
+  const maxChars = 8000;
+
+  while (queue.length > 0 && processed < maxItems && totalChars < maxChars) {
+    const { comment, depth } = queue.shift();
+    if (!comment || typeof comment.text !== 'string' || !comment.text.trim()) {
+      continue;
+    }
+
+    const author = comment.author || 'unknown';
+    const score = comment.score != null ? ` (${comment.score})` : '';
+    const indent = '  '.repeat(Math.min(depth, 4));
+    const body = truncateText(comment.text.replace(/\s+/g, ' ').trim(), 200);
+    const line = `${indent}- ${author}${score}: ${body}`;
+    lines.push(line);
+    totalChars += line.length;
+    processed += 1;
+
+    if (Array.isArray(comment.replies) && comment.replies.length > 0) {
+      comment.replies.forEach(reply => queue.push({ comment: reply, depth: depth + 1 }));
+    }
+  }
+
+  return lines.join('\n');
+}
+
+function countComments(comments) {
+  if (!Array.isArray(comments)) {
+    return 0;
+  }
+  let total = 0;
+  const stack = [...comments];
+  while (stack.length > 0) {
+    const next = stack.pop();
+    if (!next) {
+      continue;
+    }
+    total += 1;
+    if (Array.isArray(next.replies) && next.replies.length > 0) {
+      stack.push(...next.replies);
+    }
+  }
+  return total;
+}
+
+function truncateText(text, maxLength) {
+  if (!text || text.length <= maxLength) {
+    return text;
+  }
+  return `${text.slice(0, maxLength - 3)}...`;
+}
+
+function inferSubredditFromUrl(url) {
+  if (!url) {
+    return '[Unknown subreddit]';
+  }
+  try {
+    const { pathname } = new URL(url);
+    const match = pathname.match(/\/r\/([^/]+)/i);
+    return match ? match[1] : '[Unknown subreddit]';
+  } catch {
+    return '[Unknown subreddit]';
+  }
+}
+
+async function safeReadErrorBody(response) {
+  try {
+    const text = await response.text();
+    if (!text) {
+      return 'no additional details';
+    }
+    try {
+      const json = JSON.parse(text);
+      if (json.error?.message) {
+        return json.error.message;
+      }
+      return text.slice(0, 200);
+    } catch {
+      return text.slice(0, 200);
+    }
+  } catch {
+    return 'unable to read error body';
+  }
+}
+
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function fetchImageAsBase64(url) {
+  if (!url) {
+    throw new Error('No URL provided');
+  }
+
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch image: ${response.status}`);
+  }
+
+  const blob = await response.blob();
+  const mimeType = blob.type || 'image/jpeg';
+
+  // Convert blob to base64
+  const buffer = await blob.arrayBuffer();
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  const base64 = btoa(binary);
+
+  return {
+    base64,
+    mimeType,
+    size: blob.size
+  };
+}

@@ -1,86 +1,147 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <title>Reddit to AI</title>
+  <meta charset="UTF-8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" type="text/css" href="popup.css">
 </head>
+
 <body>
-  <div class="container">
+  <div class="popup-container">
+    <!-- Header -->
     <header class="header">
       <div class="logo">
-        <span class="logo-reddit">Reddit</span><span class="logo-aitools"> to AI</span>
+        <svg class="logo-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="10" fill="#FF4500" />
+          <circle cx="8" cy="10" r="1.5" fill="white" />
+          <circle cx="16" cy="10" r="1.5" fill="white" />
+          <path d="M8 14c0 0 2 2 4 2s4-2 4-2" stroke="white" stroke-width="1.5" stroke-linecap="round" />
+        </svg>
+        <span class="logo-text">
+          <span class="logo-reddit">Reddit</span><span class="logo-to">to</span><span class="logo-ai">AI</span>
+        </span>
       </div>
-      <div class="status-container">
-        <span class="status-label">Status:</span>
-        <span id="statusIndicator" class="status-indicator active">Active</span>
-      </div>
+      <button id="optionsBtn" class="settings-btn" title="Settings">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path
+            d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42">
+          </path>
+        </svg>
+      </button>
     </header>
 
-    <div class="controls-section">
-      <!-- Simplified Scraping Controls -->
-      <div class="control-group">
-        <label for="includeHiddenToggle" class="checkbox-label">
-          <input type="checkbox" id="includeHiddenToggle" name="includeHiddenToggle" class="checkbox-input">
-          Include hidden/spam comments
-        </label>
+    <!-- AI Platform Select -->
+    <div class="platform-section">
+      <label class="section-label">Send to</label>
+      <div class="platform-cards" id="platformCards">
+        <!-- Gemini -->
+        <button class="platform-card" data-platform="gemini" title="Google Gemini">
+          <svg class="platform-icon" width="24" height="24" viewBox="0 0 24 24">
+            <defs>
+              <linearGradient id="geminiGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#4285F4" />
+                <stop offset="50%" style="stop-color:#9B72CB" />
+                <stop offset="100%" style="stop-color:#D96570" />
+              </linearGradient>
+            </defs>
+            <path fill="url(#geminiGrad)" d="M12 2L2 19.5h20L12 2zm0 4l6.5 11.5h-13L12 6z" />
+          </svg>
+          <span class="platform-name">Gemini</span>
+        </button>
+        <!-- ChatGPT -->
+        <button class="platform-card" data-platform="chatgpt" title="OpenAI ChatGPT">
+          <svg class="platform-icon" width="24" height="24" viewBox="0 0 24 24">
+            <path fill="#10A37F"
+              d="M22.2 8.3c.5-1.5.3-3.1-.6-4.4-1.4-2-4-2.8-6.3-2-.8-.9-1.9-1.5-3.1-1.8C10-.3 7.7.5 6.3 2.2c-1.1-.2-2.2 0-3.2.6C1.3 4 .5 6.2 1 8.3c-.9.8-1.4 1.9-1.5 3.1-.3 2.2.8 4.4 2.7 5.4-.5 1.5-.3 3.1.6 4.4 1.4 2 4 2.8 6.3 2 .8.9 1.9 1.5 3.1 1.8 2.2.4 4.5-.4 5.9-2.2 1.1.2 2.2 0 3.2-.6 1.8-1.2 2.6-3.4 2.1-5.5.9-.8 1.4-1.9 1.5-3.1.2-2.2-.9-4.4-2.7-5.3zM12 18.5c-3.6 0-6.5-2.9-6.5-6.5S8.4 5.5 12 5.5s6.5 2.9 6.5 6.5-2.9 6.5-6.5 6.5z" />
+          </svg>
+          <span class="platform-name">ChatGPT</span>
+        </button>
+        <!-- Claude -->
+        <button class="platform-card" data-platform="claude" title="Anthropic Claude">
+          <svg class="platform-icon" width="24" height="24" viewBox="0 0 24 24">
+            <path fill="#CC785C"
+              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
+          </svg>
+          <span class="platform-name">Claude</span>
+        </button>
+        <!-- AI Studio -->
+        <button class="platform-card" data-platform="aistudio" title="Google AI Studio">
+          <svg class="platform-icon" width="24" height="24" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M12 2L2 7l10 5 10-5-10-5z" />
+            <path fill="#34A853" d="M2 17l10 5 10-5v-2l-10 5-10-5v2z" />
+            <path fill="#FBBC05" d="M2 12l10 5 10-5v-2l-10 5-10-5v2z" />
+          </svg>
+          <span class="platform-name">AI Studio</span>
+        </button>
       </div>
-      <div class="form-group">
-        <input type="checkbox" id="includeHidden" name="includeHidden">
-        <label for="includeHidden" title="Scrape comments that are hidden by default">Include Collapsed Comments</label>
-      </div>
-      
-      <!-- Placeholder for AI Platform Controls if needed in future -->
-      <!-- <div class="control-group">
-        <h4>AI Platform</h4>
-        <select id="aiPlatformSelect">
-          <option value="gemini">Gemini</option>
-          <option value="chatgpt">ChatGPT</option>
-        </select>
-      </div> -->
     </div>
 
-    <div class="status-display-section">
-      <div id="statusDisplay" class="status-text"></div>
-      <div id="progressBarContainer" class="progress-bar-container">
-        <div id="progressBar" class="progress-bar"></div>
+    <!-- Quick Filters -->
+    <div class="filters-section">
+      <div class="filters-header">
+        <span class="filters-title">Quick Filters</span>
+        <a id="moreFiltersLink" class="more-filters-link" href="#">More →</a>
       </div>
-      <div id="resultsArea" style="margin-top: 12px;">
-          <div id="summaryDisplayPopup" style="display: none;">
-              <h4>Summary:</h4>
-              <pre id="summaryTextPopup" class="popup-text-display"></pre>
+      <div class="filters-row">
+        <div class="filter-item">
+          <label class="filter-label">Min Score</label>
+          <select id="filterMinScore" class="filter-select">
+            <option value="0">Any</option>
+            <option value="5">5+</option>
+            <option value="10">10+</option>
+            <option value="25">25+</option>
+            <option value="50">50+</option>
+            <option value="100">100+</option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label class="filter-label">Hide Bots</label>
+          <div class="toggle-switch small">
+            <input type="checkbox" id="filterHideBots">
+            <span class="toggle-slider"></span>
           </div>
-          <div id="errorDisplayPopup" style="display: none;">
-              <h4>Error:</h4>
-              <pre id="errorTextPopup" class="popup-text-display popup-error-text"></pre>
-          </div>
+        </div>
       </div>
+      <label class="toggle-row compact">
+        <span class="toggle-label">Include removed/deleted</span>
+        <div class="toggle-switch small">
+          <input type="checkbox" id="includeHidden">
+          <span class="toggle-slider"></span>
+        </div>
+      </label>
     </div>
 
-    <div class="action-buttons-section">
-      <button id="scrapeBtn" class="button primary">Scrape and Send</button>
-      <button id="stopScrapeBtn" class="button danger" style="display: none;">Stop Scraping</button>
-      <button id="optionsBtn" class="button secondary">Options</button>
+    <!-- Status Area -->
+    <div id="statusArea" class="status-area">
+      <svg id="statusIcon" class="status-icon-svg ready" width="16" height="16" viewBox="0 0 16 16">
+        <circle cx="8" cy="8" r="6" fill="currentColor" />
+      </svg>
+      <span id="statusDisplay" class="status-text">Navigate to a Reddit thread</span>
     </div>
+
+    <!-- Action Button -->
+    <button id="scrapeBtn" class="btn btn-primary">
+      <svg class="btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2">
+        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+      </svg>
+      <span class="btn-text">Scrape & Send</span>
+    </button>
+
+    <button id="stopScrapeBtn" class="btn btn-danger" style="display: none;">
+      <svg class="btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2">
+        <rect x="6" y="6" width="12" height="12"></rect>
+      </svg>
+      <span class="btn-text">Stop</span>
+    </button>
   </div>
-  <!-- Options view remains hidden and managed by JS if needed, or could be a separate page -->
-  <!-- <div id="optionsView" style="display: none;"></div> -->
-  <style>
-    .popup-text-display {
-        white-space: pre-wrap;
-        word-wrap: break-word;
-        background-color: #f0f0f0;
-        border: 1px solid #ddd;
-        padding: 8px;
-        max-height: 150px; /* Adjust as needed */
-        overflow-y: auto;
-        font-size: 0.9em;
-    }
-    .popup-error-text {
-        background-color: #ffebee; /* Light red background for errors */
-        border-color: #ffcdd2;
-        color: #c62828; /* Darker red text */
-    }
-  </style>
   <script src="popup.js"></script>
 </body>
+
 </html>
