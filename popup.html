@@ -35,33 +35,45 @@
       </button>
     </header>
 
-    <!-- AI Platform Select -->
-    <div class="platform-section">
-      <label class="section-label" data-i18n="popup_header_sendTo">Send to</label>
-      <div class="platform-cards" id="platformCards">
-        <!-- Gemini -->
-        <button class="platform-card" data-platform="gemini" data-i18n-title="platform_gemini_title"
-          title="Google Gemini">
-          <img src="images/gemini-color.svg" alt="Gemini" class="platform-icon" width="24" height="24">
-          <span class="platform-name" data-i18n="platform_gemini_name">Gemini</span>
+    <!-- Prompt Preset Select -->
+    <div class="preset-section">
+      <label class="section-label" data-i18n="popup_header_preset">Prompt Preset</label>
+      <div class="preset-cards" id="presetCards">
+        <!-- Summarize -->
+        <button class="preset-card" data-preset="summarize" data-i18n-title="preset_summarize_desc"
+          title="TL;DR of the thread">
+          <img src="images/summarizelogo.svg" alt="Summarize" class="preset-icon" width="24" height="24">
+          <span class="preset-name" data-i18n="preset_summarize_name">Summary</span>
         </button>
-        <!-- ChatGPT -->
-        <button class="platform-card" data-platform="chatgpt" data-i18n-title="platform_chatgpt_title"
-          title="OpenAI ChatGPT">
-          <img src="images/openai.svg" alt="ChatGPT" class="platform-icon" width="24" height="24">
-          <span class="platform-name" data-i18n="platform_chatgpt_name">ChatGPT</span>
+        <!-- Key Takeaways -->
+        <button class="preset-card" data-preset="takeaways" data-i18n-title="preset_takeaways_desc"
+          title="Key insights">
+          <img src="images/keytakeawayslogo.svg" alt="Takeways" class="preset-icon" width="24" height="24">
+          <span class="preset-name" data-i18n="preset_takeaways_name">Takeaways</span>
         </button>
-        <!-- Claude -->
-        <button class="platform-card" data-platform="claude" data-i18n-title="platform_claude_title"
-          title="Anthropic Claude">
-          <img src="images/claude-color.svg" alt="Claude" class="platform-icon" width="24" height="24">
-          <span class="platform-name" data-i18n="platform_claude_name">Claude</span>
+        <!-- ELI5 -->
+        <button class="preset-card" data-preset="eli5" data-i18n-title="preset_eli5_desc"
+          title="Explain like I'm 5">
+          <img src="images/eli5logo.svg" alt="ELI5" class="preset-icon" width="24" height="24">
+          <span class="preset-name" data-i18n="preset_eli5_name">ELI5</span>
         </button>
-        <!-- AI Studio -->
-        <button class="platform-card" data-platform="aistudio" data-i18n-title="platform_aistudio_title"
-          title="Google AI Studio">
-          <img src="images/aistudio.svg" alt="AI Studio" class="platform-icon" width="24" height="24">
-          <span class="platform-name" data-i18n="platform_aistudio_name">AI Studio</span>
+        <!-- Sentiment -->
+        <button class="preset-card" data-preset="sentiment" data-i18n-title="preset_sentiment_desc"
+          title="Sentiment Analysis">
+          <img src="images/sentimentlogo.svg" alt="Sentiment" class="preset-icon" width="24" height="24">
+          <span class="preset-name" data-i18n="preset_sentiment_name">Sentiment</span>
+        </button>
+        <!-- Debate -->
+        <button class="preset-card" data-preset="debate" data-i18n-title="preset_debate_desc"
+          title="Debate Analysis">
+          <img src="images/debatelogo.svg" alt="Debate" class="preset-icon" width="24" height="24">
+          <span class="preset-name" data-i18n="preset_debate_name">Debate</span>
+        </button>
+        <!-- Custom -->
+        <button class="preset-card" data-preset="custom" data-i18n-title="preset_custom_desc"
+          title="Custom Template">
+          <img src="images/customlogo.svg" alt="Custom" class="preset-icon" width="24" height="24">
+          <span class="preset-name" data-i18n="preset_custom_name">Custom</span>
         </button>
       </div>
     </div>

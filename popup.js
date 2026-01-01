@@ -18,20 +18,84 @@ document.addEventListener('DOMContentLoaded', async () => {
   const statusIcon = document.getElementById('statusIcon');
   const statusArea = document.getElementById('statusArea');
   const optionsBtn = document.getElementById('optionsBtn');
-  const platformCards = document.querySelectorAll('.platform-card');
+  const presetCards = document.querySelectorAll('.preset-card');
 
-  // Current selected platform
-  let selectedPlatform = 'gemini';
+  // Copy of presets logic from options.js to ensure consistent templates
+  function getPromptPresets() {
+    return {
+      summarize: {
+        template: t('template_summarize') || `Provide a concise TL;DR summary of this Reddit thread.
+Focus on: the main topic, key points made, and overall conclusion.
+Keep it brief but comprehensive.
+
+{content}`
+      },
+      debate: {
+        template: t('template_debate') || `Analyze this Reddit thread as a debate.
+Map out:
+1. The different sides/perspectives presented
+2. Key arguments for each position
+3. Points of agreement and disagreement
+4. Which arguments are strongest and why
+
+{content}`
+      },
+      sentiment: {
+        template: t('template_sentiment') || `Perform a sentiment analysis on this Reddit thread.
+Analyze:
+1. Overall sentiment (positive/negative/neutral)
+2. Breakdown by comment - what % are positive, negative, neutral
+3. Most emotionally charged comments
+4. Tone shifts throughout the discussion
+
+{content}`
+      },
+      takeaways: {
+        template: t('template_takeaways') || `Extract the key takeaways from this Reddit thread.
+Provide:
+- Main insights as bullet points
+- Actionable advice mentioned
+- Important facts or statistics shared
+- Common recommendations from multiple users
+
+{content}`
+      },
+      eli5: {
+        template: t('template_eli5') || `Explain this Reddit thread like I'm 5 years old.
+Use simple language, analogies, and examples.
+Avoid jargon and technical terms.
+Make it easy to understand for someone new to this topic.
+
+{content}`
+      },
+      custom: {
+        template: null
+      }
+    };
+  }
+
+  const DEFAULT_CUSTOM_TEMPLATE = `Please analyze the following Reddit thread.
+
+1. Summarize the post content.
+2. Point out what people are saying about it (main opinions, arguments, consensus).
+3. Provide a detailed comment analysis, highlighting key contributors or unique perspectives.
+
+Data:
+
+{content}`;
+
+  // Current selected preset
+  let selectedPreset = 'summarize';
 
   // Load saved settings
   chrome.storage.sync.get([
-    'selectedLlmProvider',
+    'selectedPreset',
     'filterMinScore',
     'filterHideBots',
     'includeHidden'
   ], (result) => {
-    selectedPlatform = result.selectedLlmProvider || 'gemini';
-    updatePlatformSelection(selectedPlatform);
+    selectedPreset = result.selectedPreset || 'summarize';
+    updatePresetSelection(selectedPreset);
 
     // Load filter settings
     if (filterMinScore) {
@@ -45,13 +109,30 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  // Platform card click handlers
-  platformCards.forEach(card => {
+  // Preset card click handlers
+  presetCards.forEach(card => {
     card.addEventListener('click', () => {
-      const platform = card.dataset.platform;
-      selectedPlatform = platform;
-      updatePlatformSelection(platform);
-      chrome.storage.sync.set({ selectedLlmProvider: platform });
+      const presetKey = card.dataset.preset;
+      selectedPreset = presetKey;
+      updatePresetSelection(presetKey);
+
+      // Save selection
+      chrome.storage.sync.set({ selectedPreset: presetKey });
+
+      // Update the effective prompt template for scraping
+      const presets = getPromptPresets();
+      const preset = presets[presetKey];
+
+      if (presetKey === 'custom') {
+        // For custom, we rely on the customPromptTemplate saved in options
+        // But here we need to make sure defaultPromptTemplate is set to it
+        chrome.storage.sync.get(['customPromptTemplate'], (res) => {
+          const custom = res.customPromptTemplate || DEFAULT_CUSTOM_TEMPLATE;
+          chrome.storage.sync.set({ defaultPromptTemplate: custom });
+        });
+      } else {
+        chrome.storage.sync.set({ defaultPromptTemplate: preset.template });
+      }
 
       // Click feedback
       card.style.transform = 'scale(0.95)';
@@ -59,9 +140,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   });
 
-  function updatePlatformSelection(platform) {
-    platformCards.forEach(card => {
-      card.classList.toggle('selected', card.dataset.platform === platform);
+  function updatePresetSelection(presetKey) {
+    presetCards.forEach(card => {
+      card.classList.toggle('selected', card.dataset.preset === presetKey);
     });
   }
 
