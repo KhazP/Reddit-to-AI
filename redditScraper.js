@@ -16,6 +16,7 @@ if (window.__redditToAiScraperInitialized) {
     filterMinScore: 0,
     filterTopN: 0,
     filterAuthorType: 'all',
+    filterAuthorTypes: [],
     filterHideBots: false
   };
 
@@ -42,6 +43,7 @@ if (window.__redditToAiScraperInitialized) {
         'filterMinScore',
         'filterTopN',
         'filterAuthorType',
+        'filterAuthorTypes',
         'filterHideBots',
         'includeHidden'
       ], (result) => {
@@ -49,6 +51,13 @@ if (window.__redditToAiScraperInitialized) {
         SCRAPER_STATE.filterMinScore = result.filterMinScore || 0;
         SCRAPER_STATE.filterTopN = result.filterTopN || 0;
         SCRAPER_STATE.filterAuthorType = result.filterAuthorType || 'all';
+        // Prefer array format; migrate from legacy string if needed
+        if (Array.isArray(result.filterAuthorTypes)) {
+          SCRAPER_STATE.filterAuthorTypes = result.filterAuthorTypes;
+        } else {
+          const legacy = result.filterAuthorType;
+          SCRAPER_STATE.filterAuthorTypes = (legacy === 'op' || legacy === 'flaired') ? [legacy] : [];
+        }
         SCRAPER_STATE.filterHideBots = result.filterHideBots || false;
 
         // includeHidden can come from request (popup) or storage (options)
@@ -176,6 +185,7 @@ if (window.__redditToAiScraperInitialized) {
         minScore: SCRAPER_STATE.filterMinScore,
         topN: SCRAPER_STATE.filterTopN,
         authorType: SCRAPER_STATE.filterAuthorType,
+        authorTypes: SCRAPER_STATE.filterAuthorTypes,
         hideBots: SCRAPER_STATE.filterHideBots
       },
       threadUrl: window.location.href
@@ -210,7 +220,7 @@ if (window.__redditToAiScraperInitialized) {
     throw new Error('Max retries exceeded');
   }
 
-  async function fetchAllMoreComments(moreIds, includeHidden) {
+  async function fetchAllMoreComments(moreIds, includeHidden, depth = 0) {
     const allComments = [];
     const uniqueIds = [...new Set(moreIds)]; // Dedupe
 
@@ -224,11 +234,13 @@ if (window.__redditToAiScraperInitialized) {
 
     for (let i = 0; i < batches.length && !SCRAPER_STATE.stopRequested; i++) {
       const batch = batches[i];
-      const progress = 20 + Math.floor(((i + 1) / batches.length) * 70);
-      sendProgress(chrome.i18n.getMessage('scraper_loading_batch', [(i + 1).toString(), batches.length.toString()]) || `Loading comments batch ${i + 1}/${batches.length}...`, progress);
+      if (depth === 0) {
+        const progress = 20 + Math.floor(((i + 1) / batches.length) * 70);
+        sendProgress(chrome.i18n.getMessage('scraper_loading_batch', [(i + 1).toString(), batches.length.toString()]) || `Loading comments batch ${i + 1}/${batches.length}...`, progress);
+      }
 
       try {
-        const comments = await fetchMoreBatch(batch, includeHidden);
+        const comments = await fetchMoreBatch(batch, includeHidden, depth);
         allComments.push(...comments);
 
         // Rate limit delay between batches
@@ -244,7 +256,7 @@ if (window.__redditToAiScraperInitialized) {
     return allComments;
   }
 
-  async function fetchMoreBatch(ids, includeHidden) {
+  async function fetchMoreBatch(ids, includeHidden, depth) {
     const params = new URLSearchParams({
       api_type: 'json',
       link_id: SCRAPER_STATE.threadId,
@@ -275,7 +287,7 @@ if (window.__redditToAiScraperInitialized) {
 
     // Recursively fetch nested "more" if any (but limit depth to avoid infinite loops)
     if (nestedMoreIds.length > 0 && !SCRAPER_STATE.stopRequested) {
-      const nestedComments = await fetchAllMoreComments(nestedMoreIds, includeHidden);
+      const nestedComments = await fetchAllMoreComments(nestedMoreIds, includeHidden, depth + 1);
       comments.push(...nestedComments);
     }
 
@@ -303,7 +315,7 @@ if (window.__redditToAiScraperInitialized) {
 
   // Apply all filters to comment tree
   function applyFilters(roots) {
-    const { filterMinScore, filterTopN, filterAuthorType, filterHideBots } = SCRAPER_STATE;
+    const { filterMinScore, filterTopN, filterAuthorType, filterAuthorTypes, filterHideBots } = SCRAPER_STATE;
 
     // Flatten tree to array for filtering
     function flattenComments(comments, arr = []) {
@@ -331,12 +343,12 @@ if (window.__redditToAiScraperInitialized) {
         return false;
       }
 
-      // Author type filter
-      if (filterAuthorType === 'op' && !comment.isSubmitter) {
-        return false;
-      }
-      if (filterAuthorType === 'flaired' && !comment.authorFlair) {
-        return false;
+      // Author type filter (stackable OR logic)
+      const authorTypes = SCRAPER_STATE.filterAuthorTypes || [];
+      if (authorTypes.length > 0) {
+        const matchesOp = authorTypes.includes('op') && comment.isSubmitter;
+        const matchesFlaired = authorTypes.includes('flaired') && comment.authorFlair;
+        if (!matchesOp && !matchesFlaired) return false;
       }
 
       return true;

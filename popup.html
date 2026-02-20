@@ -12,27 +12,35 @@
 
 <body>
   <div class="popup-container">
+    <!-- Toast Container (absolutely positioned overlay) -->
+    <div id="toastContainer" class="toast-container"></div>
+
     <!-- Header -->
     <header class="header">
       <div class="logo">
-        <svg class="logo-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <circle cx="12" cy="12" r="10" fill="#FF4500" />
-          <circle cx="8" cy="10" r="1.5" fill="white" />
-          <circle cx="16" cy="10" r="1.5" fill="white" />
-          <path d="M8 14c0 0 2 2 4 2s4-2 4-2" stroke="white" stroke-width="1.5" stroke-linecap="round" />
-        </svg>
+        <img src="images/icon32.png" width="28" height="28" class="logo-icon" alt="Reddit to AI">
         <span class="logo-text">
           <span class="logo-reddit">Reddit</span><span class="logo-to">to</span><span class="logo-ai">AI</span>
         </span>
       </div>
-      <button id="optionsBtn" class="settings-btn" title="Settings">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <div class="header-actions">
+        <button id="feedbackBtn" class="settings-btn" title="Send feedback">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          </svg>
+        </button>
+        <button id="optionsBtn" class="settings-btn" title="Settings">
+        <!-- Feather Icons gear cog -->
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="3"></circle>
           <path
-            d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42">
+            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z">
           </path>
         </svg>
-      </button>
+        </button>
+      </div>
     </header>
 
     <!-- Prompt Preset Select -->
@@ -78,47 +86,99 @@
       </div>
     </div>
 
+    <!-- Quick Prompt -->
+    <div class="quick-prompt-section">
+      <textarea id="quickPrompt" class="quick-prompt-input"
+        placeholder="Type a quick prompt to override preset..." rows="1"></textarea>
+    </div>
+
     <!-- Quick Filters -->
     <div class="filters-section">
       <div class="filters-header">
         <span class="filters-title" data-i18n="popup_filter_title">Quick Filters</span>
-        <a id="moreFiltersLink" class="more-filters-link" href="#" data-i18n="popup_filter_more">More →</a>
+        <button id="expandFiltersBtn" class="expand-filters-btn" aria-expanded="false"
+          title="Toggle advanced filters">
+          <svg class="expand-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </button>
       </div>
-      <div class="filters-row">
-        <div class="filter-item">
-          <label class="filter-label" data-i18n="popup_filter_minScore">Min Score</label>
-          <select id="filterMinScore" class="filter-select">
-            <option value="0" data-i18n="options_author_all">Any</option>
-            <option value="5">5+</option>
-            <option value="10">10+</option>
-            <option value="25">25+</option>
-            <option value="50">50+</option>
-            <option value="100">100+</option>
-          </select>
-        </div>
-        <div class="filter-item">
-          <label class="filter-label" data-i18n="popup_filter_hideBots">Hide Bots</label>
-          <div class="toggle-switch small">
-            <input type="checkbox" id="filterHideBots">
-            <span class="toggle-slider"></span>
+
+      <!-- Main pills row -->
+      <div class="pills-row">
+        <div class="custom-select-wrap" id="minScoreWrap">
+          <button class="filter-select-compact custom-select-btn" id="filterMinScoreBtn"
+            aria-expanded="false" aria-haspopup="listbox">
+            <span id="filterMinScoreLabel">Any score</span>
+            <svg class="custom-select-arrow" width="10" height="6" viewBox="0 0 10 6" fill="none">
+              <path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                stroke-linejoin="round" />
+            </svg>
+          </button>
+          <div class="custom-select-dropdown" id="filterMinScoreDropdown" aria-hidden="true" role="listbox">
+            <button class="custom-select-option selected" data-value="0" role="option">Any score</button>
+            <button class="custom-select-option" data-value="5" role="option">5+ pts</button>
+            <button class="custom-select-option" data-value="10" role="option">10+ pts</button>
+            <button class="custom-select-option" data-value="25" role="option">25+ pts</button>
+            <button class="custom-select-option" data-value="50" role="option">50+ pts</button>
+            <button class="custom-select-option" data-value="100" role="option">100+ pts</button>
           </div>
         </div>
+        <button id="filterHideBotsBtn" class="pill-toggle" data-key="hideBots">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="8" r="4" />
+            <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+          </svg>
+          Hide Bots
+        </button>
+        <button id="filterOpOnlyBtn" class="pill-toggle" data-key="op">OP Only</button>
+        <button id="filterFlairedBtn" class="pill-toggle" data-key="flaired">Flaired</button>
       </div>
-      <label class="toggle-row compact">
-        <span class="toggle-label" data-i18n="popup_filter_includeHidden">Include removed/deleted</span>
-        <div class="toggle-switch small">
-          <input type="checkbox" id="includeHidden">
-          <span class="toggle-slider"></span>
-        </div>
-      </label>
-    </div>
 
-    <!-- Status Area -->
-    <div id="statusArea" class="status-area">
-      <svg id="statusIcon" class="status-icon-svg ready" width="16" height="16" viewBox="0 0 16 16">
-        <circle cx="8" cy="8" r="6" fill="currentColor" />
-      </svg>
-      <span id="statusDisplay" class="status-text" data-i18n="popup_status_navigate">Navigate to a Reddit thread</span>
+      <!-- Collapsible advanced panel -->
+      <div id="advancedFilters" class="advanced-filters" aria-hidden="true">
+        <div class="advanced-filters-inner">
+          <!-- Top N -->
+          <div class="adv-row">
+            <label class="adv-label" for="filterTopN">Top N comments</label>
+            <input type="number" id="filterTopN" class="adv-number-input" min="0" max="1000" placeholder="All">
+          </div>
+
+          <!-- Scrape Depth -->
+          <div class="adv-row adv-row--stacked">
+            <label class="adv-label">Scrape Depth</label>
+            <div class="depth-cards-row">
+              <label class="depth-card-mini">
+                <input type="radio" name="scrapeDepthPopup" value="2">
+                <span>Quick</span>
+              </label>
+              <label class="depth-card-mini">
+                <input type="radio" name="scrapeDepthPopup" value="5">
+                <span>Standard</span>
+              </label>
+              <label class="depth-card-mini">
+                <input type="radio" name="scrapeDepthPopup" value="10">
+                <span>Deep</span>
+              </label>
+              <label class="depth-card-mini">
+                <input type="radio" name="scrapeDepthPopup" value="50" checked>
+                <span>Full</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Include removed/deleted -->
+          <label class="toggle-row compact">
+            <span class="toggle-label" data-i18n="popup_filter_includeHidden">Include removed/deleted</span>
+            <div class="toggle-switch small">
+              <input type="checkbox" id="includeHidden">
+              <span class="toggle-slider"></span>
+            </div>
+          </label>
+        </div>
+      </div>
     </div>
 
     <!-- Action Button -->

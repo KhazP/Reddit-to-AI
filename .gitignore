@@ -16,7 +16,9 @@
 # ===================
 # Documentation (dev only)
 # ===================
-docs/
+docs/DeepResearch.txt
+docs/PRD-MVP.txt
+docs/Tech-Design-MVP.txt
 CLAUDE.md
 NOTES.md
 project.md
