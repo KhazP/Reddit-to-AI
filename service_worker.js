@@ -44,10 +44,13 @@ async function getHistory() {
 async function addToHistory(scrapeData) {
   const history = await getHistory();
   const limit = await getHistoryLimit();
+  const entryId = typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
 
   // Create history entry with unique ID
   const historyEntry = {
-    id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    id: entryId,
     timestamp: Date.now(),
     post: scrapeData.post,
     metadata: scrapeData.metadata,
@@ -566,14 +569,12 @@ async function loadSettings() {
   const defaults = {
     defaultPromptTemplate: DEFAULT_PROMPT_TEMPLATE,
     dataStorageOption: 'persistent',
-    selectedLlmProvider: 'openai',
-    apiKey: '',
-    modelName: ''
+    selectedLlmProvider: 'gemini'
   };
 
   return new Promise(resolve => {
     chrome.storage.sync.get(
-      ['defaultPromptTemplate', 'dataStorageOption', 'selectedLlmProvider', 'apiKey', 'modelName'],
+      ['defaultPromptTemplate', 'dataStorageOption', 'selectedLlmProvider'],
       items => resolve({ ...defaults, ...items })
     );
   });
@@ -601,25 +602,6 @@ function enrichScrapedData(data, url) {
   };
 }
 
-async function persistScrapedData(option, payload) {
-  if (option === 'dontSave') {
-    return;
-  }
-  const setter =
-    option === 'sessionOnly'
-      ? chrome.storage.session.set.bind(chrome.storage.session)
-      : chrome.storage.local.set.bind(chrome.storage.local);
-
-  await new Promise(resolve => {
-    setter({ redditThreadData: payload }, () => {
-      if (chrome.runtime.lastError) {
-        console.warn('Failed to persist scraped data:', chrome.runtime.lastError.message);
-      }
-      resolve();
-    });
-  });
-}
-
 async function cleanupPersistedData(option) {
   if (option === 'dontSave') {
     return;
@@ -637,86 +619,6 @@ async function cleanupPersistedData(option) {
       resolve();
     });
   });
-}
-
-function buildPromptText(data, template) {
-  const promptTemplate = template && template.includes('{content}') ? template : DEFAULT_PROMPT_TEMPLATE;
-  const sections = [];
-
-  sections.push(`Thread Title: ${data.post.title}`);
-  sections.push(`Subreddit: ${data.post.subreddit}`);
-  sections.push(`Author: ${data.post.author}`);
-  if (data.post.url) {
-    sections.push(`URL: ${data.post.url}`);
-  }
-  sections.push('');
-  sections.push('Post Content:');
-  sections.push(data.post.content ? truncateText(data.post.content, 2000) : '[No body content detected]');
-
-  if (Array.isArray(data.post.images) && data.post.images.length > 0) {
-    sections.push('');
-    sections.push('Images:');
-    data.post.images.slice(0, 5).forEach((src, index) => {
-      sections.push(`  ${index + 1}. ${src}`);
-    });
-  }
-
-  if (Array.isArray(data.post.links) && data.post.links.length > 0) {
-    sections.push('');
-    sections.push('Links referenced in post:');
-    data.post.links.slice(0, 10).forEach(link => sections.push(`  - ${link}`));
-  }
-
-  const commentBlock = formatCommentsForPrompt(data.comments);
-  if (commentBlock) {
-    sections.push('');
-    sections.push('Representative comments:');
-    sections.push(commentBlock);
-  }
-
-  sections.push('');
-  sections.push(`Scraped at: ${data.metadata.scrapedAt}`);
-  sections.push(`Comments analysed: ${data.metadata.commentCount}`);
-
-  const content = sections.join('\n');
-  return promptTemplate.replace('{content}', content);
-}
-
-// LLM API functions removed in favor of direct paste.
-
-function formatCommentsForPrompt(comments) {
-  if (!Array.isArray(comments) || comments.length === 0) {
-    return '';
-  }
-
-  const queue = comments.map(comment => ({ comment, depth: 0 }));
-  const lines = [];
-  let totalChars = 0;
-  let processed = 0;
-  const maxItems = 50;
-  const maxChars = 8000;
-
-  while (queue.length > 0 && processed < maxItems && totalChars < maxChars) {
-    const { comment, depth } = queue.shift();
-    if (!comment || typeof comment.text !== 'string' || !comment.text.trim()) {
-      continue;
-    }
-
-    const author = comment.author || 'unknown';
-    const score = comment.score != null ? ` (${comment.score})` : '';
-    const indent = '  '.repeat(Math.min(depth, 4));
-    const body = truncateText(comment.text.replace(/\s+/g, ' ').trim(), 200);
-    const line = `${indent}- ${author}${score}: ${body}`;
-    lines.push(line);
-    totalChars += line.length;
-    processed += 1;
-
-    if (Array.isArray(comment.replies) && comment.replies.length > 0) {
-      comment.replies.forEach(reply => queue.push({ comment: reply, depth: depth + 1 }));
-    }
-  }
-
-  return lines.join('\n');
 }
 
 function countComments(comments) {
@@ -738,13 +640,6 @@ function countComments(comments) {
   return total;
 }
 
-function truncateText(text, maxLength) {
-  if (!text || text.length <= maxLength) {
-    return text;
-  }
-  return `${text.slice(0, maxLength - 3)}...`;
-}
-
 function inferSubredditFromUrl(url) {
   if (!url) {
     return '[Unknown subreddit]';
@@ -755,26 +650,6 @@ function inferSubredditFromUrl(url) {
     return match ? match[1] : '[Unknown subreddit]';
   } catch {
     return '[Unknown subreddit]';
-  }
-}
-
-async function safeReadErrorBody(response) {
-  try {
-    const text = await response.text();
-    if (!text) {
-      return 'no additional details';
-    }
-    try {
-      const json = JSON.parse(text);
-      if (json.error?.message) {
-        return json.error.message;
-      }
-      return text.slice(0, 200);
-    } catch {
-      return text.slice(0, 200);
-    }
-  } catch {
-    return 'unable to read error body';
   }
 }
 

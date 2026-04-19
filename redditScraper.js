@@ -315,7 +315,7 @@ if (window.__redditToAiScraperInitialized) {
 
   // Apply all filters to comment tree
   function applyFilters(roots) {
-    const { filterMinScore, filterTopN, filterAuthorType, filterAuthorTypes, filterHideBots } = SCRAPER_STATE;
+    const { filterMinScore, filterTopN, filterHideBots } = SCRAPER_STATE;
 
     // Flatten tree to array for filtering
     function flattenComments(comments, arr = []) {

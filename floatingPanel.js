@@ -287,7 +287,7 @@
         }
 
         // ── Message listener ───────────────────────────────
-        chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+        chrome.runtime.onMessage.addListener((request) => {
             if (request.action === 'updateFloatingPanel') {
                 updatePanel(request.data);
             }

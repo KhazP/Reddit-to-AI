@@ -1,7 +1,7 @@
 # 🚀 Reddit to AI - Chrome Extension
 
 [![Version](https://img.shields.io/badge/version-1.0.0-blue.svg?style=for-the-badge)](manifest.json)
-[![License](https://img.shields.io/badge/license-apache-green.svg?style=for-the-badge)](LICENSE)
+[![License](https://img.shields.io/badge/license-MPL--2.0-green.svg?style=for-the-badge)](LICENSE)
 [![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-orange.svg?style=for-the-badge)](#contributing)
 
 > **Transform your Reddit browsing into an AI-powered insights engine!**
@@ -15,8 +15,10 @@
 * [✨ Key Features](#-key-features)
 * [Supported Platforms](#supported-platforms)
 * [🚀 Installation](#-installation)
+* [🧰 Software Requirements](#-software-requirements)
 * [🛠️ Usage](#️-usage)
 * [🔧 Configuration](#-configuration)
+* [🧪 Reproducibility & Scope](#-reproducibility--scope)
 * [🌍 Internationalization](#-internationalization)
 * [⚠️ Known Issues & Limitations](#️-known-issues--limitations)
 * [🤝 Contributing](#-contributing)
@@ -82,6 +84,14 @@ The extension currently supports automatic pasting and prompt injection for:
 
 ---
 
+## 🧰 Software Requirements
+
+*   **Browser**: Google Chrome (or Chromium-compatible browser) with Manifest V3 support.
+*   **Runtime**: No backend server required; all extension logic runs locally.
+*   **Development checks**: See [SOFTWARE_REQUIREMENTS.md](SOFTWARE_REQUIREMENTS.md) for a full environment and tooling checklist.
+
+---
+
 ## 🛠️ Usage
 
 1.  **Navigate to Reddit**: Open any Reddit thread you want to analyze.
@@ -108,6 +118,14 @@ Right-click the extension icon and select **Options** to access advanced setting
 *   **Appearance**:
     *   **Language**: Switch the interface language.
     *   **Notifications**: Toggle browser notifications for status updates.
+
+---
+
+## 🧪 Reproducibility & Scope
+
+*   **No training pipeline**: This repository does not train or evaluate machine-learning models.
+*   **No dataset artifacts**: This project scrapes public Reddit thread data at runtime and does not ship training/testing datasets.
+*   **Model links**: External AI platforms (Gemini, ChatGPT, Claude, AI Studio) are destinations for pasted prompts, not bundled models.
 
 ---
 
@@ -147,4 +165,4 @@ Contributions are welcome! If you'd like to add a new language, support a new AI
 
 ## 📄 License
 
-This project is licensed under the **Apache License 2.0**. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the **Mozilla Public License 2.0 (MPL-2.0)**. See the [LICENSE](LICENSE) file for details.

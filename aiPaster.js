@@ -100,7 +100,7 @@ async function attemptPaste(data) {
     const imageUrls = data.post?.images || [];
     if (imageUrls.length > 0) {
         console.log(`Reddit to AI: Pasting ${imageUrls.length} images...`);
-        await pasteImages(inputEl, imageUrls.slice(0, MAX_IMAGES), hostname);
+        await pasteImages(inputEl, imageUrls.slice(0, MAX_IMAGES));
     }
 
     // Mark as pasted
@@ -215,7 +215,7 @@ function insertText(element, text, isContentEditable) {
 
 // ================== IMAGE PASTING ==================
 
-async function pasteImages(inputEl, imageUrls, hostname) {
+async function pasteImages(inputEl, imageUrls) {
     const images = [];
 
     for (let i = 0; i < imageUrls.length; i++) {
