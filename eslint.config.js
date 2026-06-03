@@ -5,6 +5,7 @@ export default [
   {
     ignores: [
       "node_modules/**",
+      "dist-extension/**",
       "marked.min.js",
       "_locales/**",
       "images/**"

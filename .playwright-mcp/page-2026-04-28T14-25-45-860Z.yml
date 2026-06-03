@@ -1,0 +1,110 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - generic [ref=e4]:
+      - img "Reddit to AI" [ref=e5]
+      - generic [ref=e6]: ReddittoAI
+    - generic [ref=e7]:
+      - button "Send feedback" [ref=e8] [cursor=pointer]:
+        - img [ref=e9]
+      - button "Settings" [ref=e11] [cursor=pointer]:
+        - img [ref=e12]
+  - generic [ref=e14]:
+    - generic [ref=e15]: Prompt Preset
+    - generic [ref=e16]:
+      - button "Summarize Zusammenfassen" [ref=e17] [cursor=pointer]:
+        - img "Summarize" [ref=e18]
+        - generic [ref=e19]: Zusammenfassen
+      - button "Takeways Kernaussagen" [ref=e20] [cursor=pointer]:
+        - img "Takeways" [ref=e21]
+        - generic [ref=e22]: Kernaussagen
+      - button "ELI5 ELI5" [ref=e23] [cursor=pointer]:
+        - img "ELI5" [ref=e24]
+        - generic [ref=e25]: ELI5
+      - button "Sentiment Stimmung" [ref=e26] [cursor=pointer]:
+        - img "Sentiment" [ref=e27]
+        - generic [ref=e28]: Stimmung
+      - button "Debate Debatten-Analyse" [ref=e29] [cursor=pointer]:
+        - img "Debate" [ref=e30]
+        - generic [ref=e31]: Debatten-Analyse
+      - button "Custom Eigener Prompt" [ref=e32] [cursor=pointer]:
+        - img "Custom" [ref=e33]
+        - generic [ref=e34]: Eigener Prompt
+  - generic [ref=e35]:
+    - textbox "Type a quick prompt to override preset..." [ref=e36]
+    - generic [ref=e37]:
+      - combobox "Output format" [ref=e38]:
+        - option "Auto format" [selected]
+        - option "Bullets"
+        - option "Table"
+        - option "JSON"
+        - option "Pros / cons"
+        - option "Executive summary"
+      - button "Save quick prompt" [disabled] [ref=e39]
+  - generic [ref=e40]:
+    - generic [ref=e41]:
+      - generic [ref=e42]:
+        - generic [ref=e43]: Mode
+        - combobox "Mode" [ref=e44]:
+          - option "Preview first" [selected]
+          - option "Send directly once"
+      - generic [ref=e45]:
+        - generic [ref=e46]: AI
+        - combobox "AI" [ref=e47]:
+          - option "Gemini" [selected]
+          - option "ChatGPT"
+          - option "Claude"
+          - option "AI Studio"
+    - generic [ref=e48] [cursor=pointer]:
+      - generic [ref=e49]: Don't save this scrape
+      - generic [ref=e50]:
+        - checkbox "Don't save this scrape"
+    - paragraph [ref=e52]: Preview first · balanced · depth 50 · Gemini · hide bots
+  - generic [ref=e53]:
+    - generic [ref=e54]:
+      - generic [ref=e55]: Schnellfilter
+      - button "Toggle advanced filters" [ref=e56] [cursor=pointer]:
+        - img [ref=e57]
+    - generic [ref=e59]:
+      - button "Any score" [ref=e61] [cursor=pointer]:
+        - generic [ref=e62]: Any score
+        - img [ref=e63]
+      - button "Hide Bots" [ref=e65] [cursor=pointer]:
+        - img [ref=e66]
+        - text: Hide Bots
+      - button "OP Only" [ref=e69] [cursor=pointer]
+      - button "Flaired" [ref=e70] [cursor=pointer]
+    - generic [ref=e71]:
+      - generic [ref=e72]: Top N comments
+      - spinbutton [ref=e73]
+    - generic [ref=e74]:
+      - generic [ref=e75]: Scrape Depth
+      - generic [ref=e76]:
+        - generic [ref=e78] [cursor=pointer]: Quick
+        - generic [ref=e80] [cursor=pointer]: Standard
+        - generic [ref=e82] [cursor=pointer]: Deep
+        - generic [ref=e84] [cursor=pointer]: Full
+    - generic [ref=e85]:
+      - generic [ref=e86]: Context Budget
+      - generic [ref=e87]:
+        - generic [ref=e89] [cursor=pointer]: Small
+        - generic [ref=e91] [cursor=pointer]: Balanced
+        - generic [ref=e93] [cursor=pointer]: Full
+        - generic [ref=e95] [cursor=pointer]: Max Q
+    - generic [ref=e96]:
+      - generic [ref=e97]: Trim logic
+      - combobox [ref=e98]
+    - generic [ref=e99]:
+      - generic [ref=e100]: Reddit sort
+      - combobox [ref=e101]
+    - generic [ref=e102]:
+      - generic [ref=e103]: Media
+      - combobox [ref=e104]
+    - generic [ref=e105]:
+      - generic [ref=e106]: Batch / multi-thread URLs
+      - textbox [ref=e107]:
+        - /placeholder: "Optional: paste several Reddit thread URLs, one per line"
+      - paragraph [ref=e108]: No batch URLs
+    - generic [ref=e110] [cursor=pointer]: Gelöschte inkl.
+  - button "Scrape & Preview" [ref=e113] [cursor=pointer]:
+    - img [ref=e114]
+    - generic [ref=e116]: Scrape & Preview

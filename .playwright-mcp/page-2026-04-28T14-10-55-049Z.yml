@@ -1,0 +1,284 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - generic [ref=e5]:
+      - img [ref=e6]
+      - generic [ref=e11]:
+        - generic [ref=e12]: ReddittoAI
+        - generic [ref=e13]: Reddit to AI - Ayarlar
+  - main [ref=e16]:
+    - generic [ref=e17]:
+      - generic [ref=e18]:
+        - generic [ref=e19]:
+          - img [ref=e20]
+          - heading "Yapay Zeka Asistanı" [level=2] [ref=e23]
+        - generic [ref=e25]:
+          - generic [ref=e26]: Yapay Zeka Platformu Seçin
+          - generic [ref=e27]:
+            - generic [ref=e29] [cursor=pointer]:
+              - img "Gemini" [ref=e30]
+              - generic [ref=e31]: Google Gemini
+            - generic [ref=e33] [cursor=pointer]:
+              - img "ChatGPT" [ref=e34]
+              - generic [ref=e35]: OpenAI ChatGPT
+            - generic [ref=e37] [cursor=pointer]:
+              - img "Claude" [ref=e38]
+              - generic [ref=e39]: Anthropic Claude
+            - generic [ref=e41] [cursor=pointer]:
+              - img "AI Studio" [ref=e42]
+              - generic [ref=e43]: Google AI Studio
+          - paragraph [ref=e44]: Kazınan içeriğin nereye gönderileceğini seçin. İçeriğin otomatik olarak yapıştırıldığı yeni bir sekme açılacaktır.
+      - generic [ref=e45]:
+        - generic [ref=e46]:
+          - img [ref=e47]
+          - heading "Send Flow" [level=2] [ref=e49]
+        - generic [ref=e50]:
+          - generic [ref=e51] [cursor=pointer]:
+            - generic [ref=e52]:
+              - generic [ref=e53]: Show prompt preview before sending
+              - generic [ref=e54]: Turn off to scrape and open the AI tab immediately.
+            - generic [ref=e55]:
+              - checkbox "Show prompt preview before sending Turn off to scrape and open the AI tab immediately." [checked]
+          - generic [ref=e57]:
+            - generic [ref=e58]: Default Output Format
+            - combobox "Default Output Format" [ref=e59]:
+              - option "Auto" [selected]
+              - option "Bullets"
+              - option "Table"
+              - option "JSON"
+              - option "Pros / cons"
+              - option "Executive summary"
+      - generic [ref=e60]:
+        - generic [ref=e61]:
+          - img [ref=e62]
+          - heading "Kazıma Ayarları" [level=2] [ref=e64]
+        - generic [ref=e65]:
+          - generic [ref=e66]:
+            - generic [ref=e67]: Yorum Derinlik Seviyesi
+            - generic [ref=e68]:
+              - generic [ref=e70] [cursor=pointer]:
+                - generic [ref=e71]: "1"
+                - generic [ref=e72]: Hızlı
+                - generic [ref=e73]: Sadece üst seviye
+              - generic [ref=e75] [cursor=pointer]:
+                - generic [ref=e76]: "3"
+                - generic [ref=e77]: Standard
+                - generic [ref=e78]: 3 reply levels
+              - generic [ref=e80] [cursor=pointer]:
+                - generic [ref=e81]: "5"
+                - generic [ref=e82]: Deep
+                - generic [ref=e83]: 5 reply levels
+              - generic [ref=e85] [cursor=pointer]:
+                - generic [ref=e86]: ∞
+                - generic [ref=e87]: Tam
+                - generic [ref=e88]: Tüm iç içe cevaplar
+            - paragraph [ref=e89]: Kazıyıcının cevap zincirlerinde ne kadar derine ineceğini kontrol eder. Daha fazla derinlik = daha fazla bağlam ancak daha büyük veri.
+          - generic [ref=e90]:
+            - generic [ref=e91]: Default Context Budget
+            - combobox "Default Context Budget" [ref=e92]:
+              - option "Small"
+              - option "Balanced" [selected]
+              - option "Full"
+              - option "Max Quality"
+            - paragraph [ref=e93]: Sets the starting AI prompt size preset in the preview screen.
+      - generic [ref=e94]:
+        - generic [ref=e95]:
+          - img [ref=e96]
+          - heading "İçerik Filtreleri" [level=2] [ref=e98]
+        - generic [ref=e99]:
+          - generic [ref=e100]:
+            - generic [ref=e101]: Minimum Puan
+            - generic [ref=e102]:
+              - slider [ref=e103] [cursor=pointer]: "0"
+              - spinbutton [ref=e104]: "0"
+            - paragraph [ref=e105]: Sadece bu kadar veya daha fazla oy alan yorumları dahil et. Tüm yorumlar için 0 yapın.
+          - generic [ref=e106]:
+            - generic [ref=e107]: Yorumları Sınırla
+            - generic [ref=e108]:
+              - generic [ref=e109]: En iyi
+              - spinbutton [ref=e110]: "0"
+              - generic [ref=e111]: yorum (0 = hepsi)
+            - paragraph [ref=e112]: En yüksek puanlı N yorumla sınırla. Sınırsız için 0 yapın.
+          - generic [ref=e113]:
+            - generic [ref=e114]: Smart Trim Logic
+            - combobox "Smart Trim Logic" [ref=e115]:
+              - option "Top scored" [selected]
+              - option "Controversial"
+              - option "OP replies"
+              - option "Flaired users"
+              - option "Diverse viewpoints"
+              - option "Newest"
+              - option "Longest helpful comments"
+          - generic [ref=e116]:
+            - generic [ref=e117]: Reddit Comment Sort
+            - combobox "Reddit Comment Sort" [ref=e118]:
+              - option "Best / confidence" [selected]
+              - option "Top"
+              - option "New"
+              - option "Controversial"
+              - option "Old"
+              - option "Q&A"
+              - option "Live"
+          - generic [ref=e119]:
+            - generic [ref=e120]: Media Handling
+            - combobox "Media Handling" [ref=e121]:
+              - option "Attach images + list media links" [selected]
+              - option "List media URLs only"
+              - option "Ignore media"
+          - generic [ref=e122]:
+            - generic [ref=e123]: Yazara Göre Filtrele
+            - generic [ref=e124]:
+              - generic [ref=e126] [cursor=pointer]: Hepsi
+              - generic [ref=e128] [cursor=pointer]: Sadece Konu Sahibi
+              - generic [ref=e130] [cursor=pointer]: Rozetli
+            - paragraph [ref=e131]: OP Only and Flaired can be combined. Selecting All clears author-only filters.
+          - generic [ref=e132]:
+            - generic [ref=e133] [cursor=pointer]:
+              - generic [ref=e134]:
+                - generic [ref=e135]: Bot yorumlarını gizle
+                - generic [ref=e136]: AutoModerator, RemindMeBot, vb.
+              - generic [ref=e137]:
+                - checkbox "Bot yorumlarını gizle AutoModerator, RemindMeBot, vb."
+            - generic [ref=e139] [cursor=pointer]:
+              - generic [ref=e140]:
+                - generic [ref=e141]: Silinenleri Dahil Et
+                - generic [ref=e142]: "[removed] ve [deleted] yorumları dahil et"
+              - generic [ref=e143]:
+                - checkbox "Silinenleri Dahil Et [removed] ve [deleted] yorumları dahil et"
+      - generic [ref=e145]:
+        - generic [ref=e146]:
+          - img [ref=e147]
+          - heading "Bildirimler" [level=2] [ref=e150]
+        - generic [ref=e152] [cursor=pointer]:
+          - generic [ref=e153]:
+            - generic [ref=e154]: Bildirimleri göster
+            - generic [ref=e155]: Durum güncellemelerini tarayıcı bildirimi olarak göster
+          - generic [ref=e156]:
+            - checkbox "Bildirimleri göster Durum güncellemelerini tarayıcı bildirimi olarak göster" [checked]
+      - generic [ref=e158]:
+        - generic [ref=e159]:
+          - img [ref=e160]
+          - heading "Dil" [level=2] [ref=e162]
+        - generic [ref=e164]:
+          - generic [ref=e165]: Arayüz Dili
+          - combobox [ref=e166]:
+            - option "Otomatik (Tarayıcı Varsayılanı)"
+            - option "English"
+            - option "Español"
+            - option "Français"
+            - option "Deutsch"
+            - option "Português"
+            - option "日本語"
+            - option "简体中文"
+            - option "Türkçe" [selected]
+          - paragraph [ref=e167]: Tercih ettiğiniz dili seçin. Değişiklikler eklentinin yeniden yüklenmesini gerektirir.
+    - generic [ref=e168]:
+      - generic [ref=e169]:
+        - generic [ref=e170]:
+          - img [ref=e171]
+          - heading "Prompt Hazır Ayarları" [level=2] [ref=e174]
+        - generic [ref=e175]:
+          - generic [ref=e176]:
+            - generic [ref=e177]: Analiz Türünü Seçin
+            - generic [ref=e178]:
+              - button "📝 Özetle · Başlığın özeti" [ref=e179] [cursor=pointer]:
+                - generic [ref=e180]: 📝
+                - generic [ref=e181]: Özetle
+                - generic [ref=e182]: · Başlığın özeti
+              - button "⚖️ Tartışma Analizi · Farklı görüşleri haritala" [ref=e183] [cursor=pointer]:
+                - generic [ref=e184]: ⚖️
+                - generic [ref=e185]: Tartışma Analizi
+                - generic [ref=e186]: · Farklı görüşleri haritala
+              - button "😊 Duygu Analizi · Olumlu/olumsuz ayrımı" [ref=e187] [cursor=pointer]:
+                - generic [ref=e188]: 😊
+                - generic [ref=e189]: Duygu Analizi
+                - generic [ref=e190]: · Olumlu/olumsuz ayrımı
+              - button "💡 Önemli Noktalar · Önemli çıkarımların listesi" [ref=e191] [cursor=pointer]:
+                - generic [ref=e192]: 💡
+                - generic [ref=e193]: Önemli Noktalar
+                - generic [ref=e194]: · Önemli çıkarımların listesi
+              - button "👶 ELI5 (5 yaşındaymışım gibi anlat) · Çok basitçe açıkla" [ref=e195] [cursor=pointer]:
+                - generic [ref=e196]: 👶
+                - generic [ref=e197]: ELI5 (5 yaşındaymışım gibi anlat)
+                - generic [ref=e198]: · Çok basitçe açıkla
+              - button "✏️ Özel · Kendi şablonunuz" [ref=e199] [cursor=pointer]:
+                - generic [ref=e200]: ✏️
+                - generic [ref=e201]: Özel
+                - generic [ref=e202]: · Kendi şablonunuz
+          - generic [ref=e203]:
+            - generic [ref=e205]: Şablon Önizleme
+            - textbox "Özel promptunuzu girin..." [ref=e206]: "Provide a concise TL;DR summary of this Reddit thread. Focus on: the main topic, key points made, and overall conclusion. Keep it brief but comprehensive. {content}"
+            - paragraph [ref=e207]: Kazınan Reddit verileri için yer tutucu olarak $CONTENT$ kullanın. Kendi şablonunuzu yazmak için 'Özel'i seçin.
+      - generic [ref=e208]:
+        - generic [ref=e209]:
+          - img [ref=e210]
+          - heading "Saved Prompt Presets" [level=2] [ref=e212]
+          - generic [ref=e213]: 0 items
+        - generic [ref=e214]:
+          - generic [ref=e217]: No saved prompt presets yet
+          - generic [ref=e218]:
+            - button "Export presets" [disabled] [ref=e219]
+            - button "Import presets" [ref=e220] [cursor=pointer]
+            - button "Clear presets" [disabled] [ref=e221]
+      - generic [ref=e222]:
+        - generic [ref=e223]:
+          - img [ref=e224]
+          - heading "Veri Depolama" [level=2] [ref=e228]
+        - generic [ref=e229]:
+          - generic [ref=e230]:
+            - generic [ref=e232] [cursor=pointer]:
+              - generic [ref=e233]: Kaydetme
+              - generic [ref=e234]: Gönderdikten sonra içeriği at
+            - generic [ref=e236] [cursor=pointer]:
+              - generic [ref=e237]: Sadece oturum
+              - generic [ref=e238]: Tarayıcı kapanana kadar tut
+            - generic [ref=e240] [cursor=pointer]:
+              - generic [ref=e241]: Kalıcı
+              - generic [ref=e242]: Yerel depolamaya kaydet
+          - generic [ref=e243]:
+            - button "Export settings" [ref=e244] [cursor=pointer]
+            - button "Import settings" [ref=e245] [cursor=pointer]
+      - generic [ref=e246]:
+        - generic [ref=e247]:
+          - img [ref=e248]
+          - heading "Kazıma Geçmişi" [level=2] [ref=e251]
+          - generic [ref=e252]: 0 öğeler
+        - generic [ref=e253]:
+          - generic [ref=e255]:
+            - generic [ref=e256]: Son
+            - spinbutton [ref=e257]: "25"
+            - generic [ref=e258]: başlığı tut
+          - generic "History filters" [ref=e259]:
+            - searchbox "Search title, subreddit, flair, URL..." [ref=e260]
+            - combobox [ref=e261]:
+              - option "All AI platforms" [selected]
+              - option "Gemini"
+              - option "ChatGPT"
+              - option "Claude"
+              - option "AI Studio"
+            - combobox [ref=e262]:
+              - option "All presets" [selected]
+              - option "Summarize"
+              - option "Key Takeaways"
+              - option "ELI5"
+              - option "Sentiment"
+              - option "Debate Analysis"
+              - option "Custom"
+            - combobox [ref=e263]:
+              - option "Any date" [selected]
+              - option "Today"
+              - option "Last 7 days"
+              - option "Last 30 days"
+            - spinbutton [ref=e264]
+          - generic [ref=e265]:
+            - generic [ref=e266]: 0 selected for compare
+            - button "Compare selected" [disabled] [ref=e267]
+          - status [ref=e268]
+          - generic [ref=e270]:
+            - img [ref=e271]
+            - generic [ref=e274]: No scraped threads yet
+          - button "Tümünü Temizle" [disabled] [ref=e276]:
+            - img [ref=e277]
+            - generic [ref=e278]: Tümünü Temizle
+  - contentinfo [ref=e279]:
+    - generic [ref=e280]: Reddit to AI v1.2.1
+    - generic [ref=e281]: Settings are saved automatically

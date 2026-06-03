@@ -1,0 +1,228 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - generic [ref=e5]:
+      - img [ref=e6]
+      - generic [ref=e11]:
+        - generic [ref=e12]: ReddittoAI
+        - generic [ref=e13]: Settings
+  - main [ref=e16]:
+    - generic [ref=e17]:
+      - generic [ref=e18]:
+        - generic [ref=e19]:
+          - img [ref=e20]
+          - heading "AI Assistant" [level=2] [ref=e23]
+        - generic [ref=e25]:
+          - generic [ref=e26]: Select AI Platform
+          - generic [ref=e27]:
+            - generic [ref=e29] [cursor=pointer]:
+              - img "Gemini" [ref=e30]
+              - generic [ref=e31]: Gemini
+            - generic [ref=e33] [cursor=pointer]:
+              - img "ChatGPT" [ref=e34]
+              - generic [ref=e35]: ChatGPT
+            - generic [ref=e37] [cursor=pointer]:
+              - img "Claude" [ref=e38]
+              - generic [ref=e39]: Claude
+            - generic [ref=e41] [cursor=pointer]:
+              - img "AI Studio" [ref=e42]
+              - generic [ref=e43]: AI Studio
+          - paragraph [ref=e44]: Choose where to send scraped content. A new tab will open with content auto-pasted.
+      - generic [ref=e45]:
+        - generic [ref=e46]:
+          - img [ref=e47]
+          - heading "Scraping Settings" [level=2] [ref=e49]
+        - generic [ref=e50]:
+          - generic [ref=e51]:
+            - generic [ref=e52]: Comment Depth Level
+            - generic [ref=e53]:
+              - generic [ref=e54]:
+                - radio "1 Quick Top-level only" [ref=e55]
+                - generic [ref=e56]: 1 Quick Top-level only
+              - generic [ref=e57]:
+                - radio "3 Standard 3 reply levels" [ref=e58]
+                - generic [ref=e59]: 3 Standard 3 reply levels
+              - generic [ref=e60]:
+                - radio "5 Deep 5 reply levels" [checked] [ref=e61]
+                - generic [ref=e62]: 5 Deep 5 reply levels
+              - generic [ref=e63]:
+                - radio "∞ Full All nested replies" [ref=e64]
+                - generic [ref=e65]: ∞ Full All nested replies
+            - paragraph [ref=e66]: Controls how deep into reply chains the scraper goes. Higher depth = more context but larger data.
+          - generic [ref=e67]:
+            - generic [ref=e68]: Default Context Budget
+            - combobox "Default Context Budget" [ref=e69]:
+              - option "Small" [selected]
+              - option "Balanced"
+              - option "Full"
+              - option "Max Quality"
+            - paragraph [ref=e70]: Sets the starting AI prompt size preset in the preview screen.
+      - generic [ref=e71]:
+        - generic [ref=e72]:
+          - img [ref=e73]
+          - heading "Content Filters" [level=2] [ref=e75]
+        - generic [ref=e76]:
+          - generic [ref=e77]:
+            - generic [ref=e78]: Minimum Score
+            - generic [ref=e79]:
+              - slider [ref=e80]: "0"
+              - spinbutton [ref=e81]: "0"
+            - paragraph [ref=e82]: Only include comments with this many upvotes or more. Set to 0 for all comments.
+          - generic [ref=e83]:
+            - generic [ref=e84]: Limit Comments
+            - generic [ref=e85]:
+              - text: Top
+              - spinbutton [ref=e86]: "0"
+              - text: comments (0 = all)
+            - paragraph [ref=e87]: Limit to top N highest-scored comments. Set to 0 for no limit.
+          - generic [ref=e88]:
+            - generic [ref=e89]: Smart Trim Logic
+            - combobox "Smart Trim Logic" [ref=e90]:
+              - option "Top scored" [selected]
+              - option "Controversial"
+              - option "OP replies"
+              - option "Flaired users"
+              - option "Diverse viewpoints"
+              - option "Newest"
+              - option "Longest helpful comments"
+          - generic [ref=e91]:
+            - generic [ref=e92]: Reddit Comment Sort
+            - combobox "Reddit Comment Sort" [ref=e93]:
+              - option "Best / confidence" [selected]
+              - option "Top"
+              - option "New"
+              - option "Controversial"
+              - option "Old"
+              - option "Q&A"
+              - option "Live"
+          - generic [ref=e94]:
+            - generic [ref=e95]: Media Handling
+            - combobox "Media Handling" [ref=e96]:
+              - option "Attach images + list media links" [selected]
+              - option "List media URLs only"
+              - option "Ignore media"
+          - generic [ref=e97]:
+            - generic [ref=e98]: Filter by Author
+            - generic [ref=e99]:
+              - generic [ref=e100]:
+                - checkbox "All" [checked] [ref=e101]
+                - text: All
+              - generic [ref=e102]:
+                - checkbox "OP Only" [ref=e103]
+                - text: OP Only
+              - generic [ref=e104]:
+                - checkbox "Flaired" [ref=e105]
+                - text: Flaired
+            - paragraph [ref=e106]: OP Only and Flaired can be combined. Selecting All clears author-only filters.
+          - generic [ref=e107]:
+            - generic [ref=e108]:
+              - generic [ref=e109]: Hide bot comments AutoModerator, RemindMeBot, etc.
+              - checkbox "Hide bot comments AutoModerator, RemindMeBot, etc." [ref=e111]
+            - generic [ref=e112]:
+              - generic [ref=e113]: Include removed/deleted Include [removed] and [deleted] comments
+              - checkbox "Include removed/deleted Include [removed] and [deleted] comments" [ref=e115]
+      - generic [ref=e116]:
+        - generic [ref=e117]:
+          - img [ref=e118]
+          - heading "Notifications" [level=2] [ref=e121]
+        - generic [ref=e123]:
+          - generic [ref=e124]: Show notifications Display status updates as browser notifications
+          - checkbox "Show notifications Display status updates as browser notifications" [ref=e126]
+      - generic [ref=e127]:
+        - generic [ref=e128]:
+          - img [ref=e129]
+          - heading "Language" [level=2] [ref=e131]
+        - generic [ref=e133]:
+          - generic [ref=e134]: Interface Language
+          - combobox [ref=e135]:
+            - option "Auto (Browser Default)" [selected]
+            - option "English"
+            - option "Español"
+            - option "Français"
+            - option "Deutsch"
+            - option "Português"
+            - option "日本語"
+            - option "简体中文"
+            - option "Türkçe"
+          - paragraph [ref=e136]: Select your preferred language. Changes require reloading the extension.
+    - generic [ref=e137]:
+      - generic [ref=e138]:
+        - generic [ref=e139]:
+          - img [ref=e140]
+          - heading "Prompt Presets" [level=2] [ref=e143]
+        - generic [ref=e144]:
+          - generic [ref=e146]: Select Analysis Type
+          - generic [ref=e147]:
+            - generic [ref=e148]:
+              - text: Template Preview
+              - button "Reset to default" [ref=e149]
+            - textbox [ref=e150]
+            - paragraph [ref=e151]:
+              - text: Use
+              - code [ref=e152]: "{content}"
+              - text: as a placeholder for the scraped Reddit data. Select "Custom" to write your own template.
+      - generic [ref=e153]:
+        - generic [ref=e154]:
+          - img [ref=e155]
+          - heading "Saved Prompt Presets" [level=2] [ref=e157]
+          - generic [ref=e158]: 0 items
+        - generic [ref=e159]:
+          - generic [ref=e161]: No saved prompt presets yet
+          - generic [ref=e162]:
+            - button "Export presets" [disabled] [ref=e163]
+            - button "Clear presets" [disabled] [ref=e164]
+      - generic [ref=e165]:
+        - generic [ref=e166]:
+          - img [ref=e167]
+          - heading "Data Storage" [level=2] [ref=e171]
+        - generic [ref=e173]:
+          - generic [ref=e174]:
+            - radio "Don't save Discard content after sending" [ref=e175]
+            - generic [ref=e176]: Don't save Discard content after sending
+          - generic [ref=e177]:
+            - radio "Session only Keep until browser closes" [ref=e178]
+            - generic [ref=e179]: Session only Keep until browser closes
+          - generic [ref=e180]:
+            - radio "Persistent Save in local storage" [checked] [ref=e181]
+            - generic [ref=e182]: Persistent Save in local storage
+      - generic [ref=e183]:
+        - generic [ref=e184]:
+          - img [ref=e185]
+          - heading "Scrape History" [level=2] [ref=e188]
+          - generic [ref=e189]: 0 items
+        - generic [ref=e190]:
+          - generic [ref=e192]:
+            - text: Keep last
+            - spinbutton [ref=e193]: "10"
+            - text: threads
+          - generic "History filters" [ref=e194]:
+            - searchbox "Search title, subreddit, flair, URL..." [ref=e195]
+            - combobox [ref=e196]:
+              - option "All AI platforms" [selected]
+              - option "Gemini"
+              - option "ChatGPT"
+              - option "Claude"
+              - option "AI Studio"
+            - combobox [ref=e197]:
+              - option "All presets" [selected]
+              - option "Summarize"
+              - option "Key Takeaways"
+              - option "ELI5"
+              - option "Sentiment"
+              - option "Debate Analysis"
+              - option "Custom"
+            - combobox [ref=e198]:
+              - option "Any date" [selected]
+              - option "Today"
+              - option "Last 7 days"
+              - option "Last 30 days"
+            - spinbutton [ref=e199]
+          - generic [ref=e200]:
+            - text: 0 selected for compare
+            - button "Compare selected" [disabled] [ref=e201]
+          - generic [ref=e203]:
+            - img [ref=e204]
+            - text: No scraped threads yet
+          - button "Clear All" [disabled] [ref=e208]:
+            - img [ref=e209]
+            - text: Clear All
+  - contentinfo [ref=e210]: Reddit to AI v1.2.0 Settings are saved automatically

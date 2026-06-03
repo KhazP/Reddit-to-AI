@@ -1,0 +1,284 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - generic [ref=e5]:
+      - img [ref=e6]
+      - generic [ref=e11]:
+        - generic [ref=e12]: ReddittoAI
+        - generic [ref=e13]: Reddit to AI - 设置
+  - main [ref=e16]:
+    - generic [ref=e17]:
+      - generic [ref=e18]:
+        - generic [ref=e19]:
+          - img [ref=e20]
+          - heading "AI 助手" [level=2] [ref=e23]
+        - generic [ref=e25]:
+          - generic [ref=e26]: 选择 AI 平台
+          - generic [ref=e27]:
+            - generic [ref=e29] [cursor=pointer]:
+              - img "Gemini" [ref=e30]
+              - generic [ref=e31]: Google Gemini
+            - generic [ref=e33] [cursor=pointer]:
+              - img "ChatGPT" [ref=e34]
+              - generic [ref=e35]: OpenAI ChatGPT
+            - generic [ref=e37] [cursor=pointer]:
+              - img "Claude" [ref=e38]
+              - generic [ref=e39]: Anthropic Claude
+            - generic [ref=e41] [cursor=pointer]:
+              - img "AI Studio" [ref=e42]
+              - generic [ref=e43]: Google AI Studio
+          - paragraph [ref=e44]: 选择发送提取内容的平台。将打开新标签页并自动粘贴内容。
+      - generic [ref=e45]:
+        - generic [ref=e46]:
+          - img [ref=e47]
+          - heading "Send Flow" [level=2] [ref=e49]
+        - generic [ref=e50]:
+          - generic [ref=e51] [cursor=pointer]:
+            - generic [ref=e52]:
+              - generic [ref=e53]: Show prompt preview before sending
+              - generic [ref=e54]: Turn off to scrape and open the AI tab immediately.
+            - generic [ref=e55]:
+              - checkbox "Show prompt preview before sending Turn off to scrape and open the AI tab immediately." [checked]
+          - generic [ref=e57]:
+            - generic [ref=e58]: Default Output Format
+            - combobox "Default Output Format" [ref=e59]:
+              - option "Auto" [selected]
+              - option "Bullets"
+              - option "Table"
+              - option "JSON"
+              - option "Pros / cons"
+              - option "Executive summary"
+      - generic [ref=e60]:
+        - generic [ref=e61]:
+          - img [ref=e62]
+          - heading "提取设置" [level=2] [ref=e64]
+        - generic [ref=e65]:
+          - generic [ref=e66]:
+            - generic [ref=e67]: 评论嵌套深度
+            - generic [ref=e68]:
+              - generic [ref=e70] [cursor=pointer]:
+                - generic [ref=e71]: "1"
+                - generic [ref=e72]: 快速
+                - generic [ref=e73]: 仅首层评论
+              - generic [ref=e75] [cursor=pointer]:
+                - generic [ref=e76]: "3"
+                - generic [ref=e77]: Standard
+                - generic [ref=e78]: 3 reply levels
+              - generic [ref=e80] [cursor=pointer]:
+                - generic [ref=e81]: "5"
+                - generic [ref=e82]: Deep
+                - generic [ref=e83]: 5 reply levels
+              - generic [ref=e85] [cursor=pointer]:
+                - generic [ref=e86]: ∞
+                - generic [ref=e87]: 完整
+                - generic [ref=e88]: 所有嵌套回复
+            - paragraph [ref=e89]: 控制提取评论回复的深度。深度越大，上下文越丰富，但数据量也越大。
+          - generic [ref=e90]:
+            - generic [ref=e91]: Default Context Budget
+            - combobox "Default Context Budget" [ref=e92]:
+              - option "Small"
+              - option "Balanced" [selected]
+              - option "Full"
+              - option "Max Quality"
+            - paragraph [ref=e93]: Sets the starting AI prompt size preset in the preview screen.
+      - generic [ref=e94]:
+        - generic [ref=e95]:
+          - img [ref=e96]
+          - heading "内容过滤" [level=2] [ref=e98]
+        - generic [ref=e99]:
+          - generic [ref=e100]:
+            - generic [ref=e101]: 最低分数
+            - generic [ref=e102]:
+              - slider [ref=e103] [cursor=pointer]: "0"
+              - spinbutton [ref=e104]: "0"
+            - paragraph [ref=e105]: 仅包含点赞数不低于此数字的评论。设置为 0 则包含所有评论。
+          - generic [ref=e106]:
+            - generic [ref=e107]: 评论数量限制
+            - generic [ref=e108]:
+              - generic [ref=e109]: 前
+              - spinbutton [ref=e110]: "0"
+              - generic [ref=e111]: 条评论 (0 = 全部)
+            - paragraph [ref=e112]: 限制为分数前 N 名的评论。设置为 0 则不限制。
+          - generic [ref=e113]:
+            - generic [ref=e114]: Smart Trim Logic
+            - combobox "Smart Trim Logic" [ref=e115]:
+              - option "Top scored" [selected]
+              - option "Controversial"
+              - option "OP replies"
+              - option "Flaired users"
+              - option "Diverse viewpoints"
+              - option "Newest"
+              - option "Longest helpful comments"
+          - generic [ref=e116]:
+            - generic [ref=e117]: Reddit Comment Sort
+            - combobox "Reddit Comment Sort" [ref=e118]:
+              - option "Best / confidence" [selected]
+              - option "Top"
+              - option "New"
+              - option "Controversial"
+              - option "Old"
+              - option "Q&A"
+              - option "Live"
+          - generic [ref=e119]:
+            - generic [ref=e120]: Media Handling
+            - combobox "Media Handling" [ref=e121]:
+              - option "Attach images + list media links" [selected]
+              - option "List media URLs only"
+              - option "Ignore media"
+          - generic [ref=e122]:
+            - generic [ref=e123]: 按作者过滤
+            - generic [ref=e124]:
+              - generic [ref=e126] [cursor=pointer]: 全部
+              - generic [ref=e128] [cursor=pointer]: 仅楼主
+              - generic [ref=e130] [cursor=pointer]: 有头衔
+            - paragraph [ref=e131]: OP Only and Flaired can be combined. Selecting All clears author-only filters.
+          - generic [ref=e132]:
+            - generic [ref=e133] [cursor=pointer]:
+              - generic [ref=e134]:
+                - generic [ref=e135]: 隐藏机器人评论
+                - generic [ref=e136]: AutoModerator, RemindMeBot 等
+              - generic [ref=e137]:
+                - checkbox "隐藏机器人评论 AutoModerator, RemindMeBot 等"
+            - generic [ref=e139] [cursor=pointer]:
+              - generic [ref=e140]:
+                - generic [ref=e141]: 包含已删除
+                - generic [ref=e142]: 包含 [removed] 和 [deleted] 的评论
+              - generic [ref=e143]:
+                - checkbox "包含已删除 包含 [removed] 和 [deleted] 的评论"
+      - generic [ref=e145]:
+        - generic [ref=e146]:
+          - img [ref=e147]
+          - heading "通知" [level=2] [ref=e150]
+        - generic [ref=e152] [cursor=pointer]:
+          - generic [ref=e153]:
+            - generic [ref=e154]: 显示通知
+            - generic [ref=e155]: 以浏览器通知形式显示状态更新
+          - generic [ref=e156]:
+            - checkbox "显示通知 以浏览器通知形式显示状态更新" [checked]
+      - generic [ref=e158]:
+        - generic [ref=e159]:
+          - img [ref=e160]
+          - heading "语言" [level=2] [ref=e162]
+        - generic [ref=e164]:
+          - generic [ref=e165]: 界面语言
+          - combobox [ref=e166]:
+            - option "自动（浏览器默认）"
+            - option "English"
+            - option "Español"
+            - option "Français"
+            - option "Deutsch"
+            - option "Português"
+            - option "日本語"
+            - option "简体中文" [selected]
+            - option "Türkçe"
+          - paragraph [ref=e167]: 选择您的首选语言。更改需要重新加载扩展程序。
+    - generic [ref=e168]:
+      - generic [ref=e169]:
+        - generic [ref=e170]:
+          - img [ref=e171]
+          - heading "提示词预设" [level=2] [ref=e174]
+        - generic [ref=e175]:
+          - generic [ref=e176]:
+            - generic [ref=e177]: 选择分析类型
+            - generic [ref=e178]:
+              - button "📝 要约总结 · 帖子的简单总结 (TL;DR)" [ref=e179] [cursor=pointer]:
+                - generic [ref=e180]: 📝
+                - generic [ref=e181]: 要约总结
+                - generic [ref=e182]: · 帖子的简单总结 (TL;DR)
+              - button "⚖️ 辩论分析 · 梳理不同的观点" [ref=e183] [cursor=pointer]:
+                - generic [ref=e184]: ⚖️
+                - generic [ref=e185]: 辩论分析
+                - generic [ref=e186]: · 梳理不同的观点
+              - button "😊 情绪分析 · 分析正面/负面情绪" [ref=e187] [cursor=pointer]:
+                - generic [ref=e188]: 😊
+                - generic [ref=e189]: 情绪分析
+                - generic [ref=e190]: · 分析正面/负面情绪
+              - button "💡 核心要点 · 提取关键见解清单" [ref=e191] [cursor=pointer]:
+                - generic [ref=e192]: 💡
+                - generic [ref=e193]: 核心要点
+                - generic [ref=e194]: · 提取关键见解清单
+              - button "👶 通俗易懂 (ELI5) · 用极其简单的话解释" [ref=e195] [cursor=pointer]:
+                - generic [ref=e196]: 👶
+                - generic [ref=e197]: 通俗易懂 (ELI5)
+                - generic [ref=e198]: · 用极其简单的话解释
+              - button "✏️ 自定义 · 定义您自己的模板" [ref=e199] [cursor=pointer]:
+                - generic [ref=e200]: ✏️
+                - generic [ref=e201]: 自定义
+                - generic [ref=e202]: · 定义您自己的模板
+          - generic [ref=e203]:
+            - generic [ref=e205]: 模板预览
+            - textbox "输入您的自定义提示词..." [ref=e206]: "Provide a concise TL;DR summary of this Reddit thread. Focus on: the main topic, key points made, and overall conclusion. Keep it brief but comprehensive. {content}"
+            - paragraph [ref=e207]: 使用 $CONTENT$ 作为提取的 Reddit 数据的占位符。选择“自定义”以编写您自己的模板。
+      - generic [ref=e208]:
+        - generic [ref=e209]:
+          - img [ref=e210]
+          - heading "Saved Prompt Presets" [level=2] [ref=e212]
+          - generic [ref=e213]: 0 items
+        - generic [ref=e214]:
+          - generic [ref=e217]: No saved prompt presets yet
+          - generic [ref=e218]:
+            - button "Export presets" [disabled] [ref=e219]
+            - button "Import presets" [ref=e220] [cursor=pointer]
+            - button "Clear presets" [disabled] [ref=e221]
+      - generic [ref=e222]:
+        - generic [ref=e223]:
+          - img [ref=e224]
+          - heading "数据存储" [level=2] [ref=e228]
+        - generic [ref=e229]:
+          - generic [ref=e230]:
+            - generic [ref=e232] [cursor=pointer]:
+              - generic [ref=e233]: 不保存
+              - generic [ref=e234]: 发送后清除内容
+            - generic [ref=e236] [cursor=pointer]:
+              - generic [ref=e237]: 仅限本次会话
+              - generic [ref=e238]: 保持直到浏览器关闭
+            - generic [ref=e240] [cursor=pointer]:
+              - generic [ref=e241]: 持久化保存
+              - generic [ref=e242]: 保存在本地存储中
+          - generic [ref=e243]:
+            - button "Export settings" [ref=e244] [cursor=pointer]
+            - button "Import settings" [ref=e245] [cursor=pointer]
+      - generic [ref=e246]:
+        - generic [ref=e247]:
+          - img [ref=e248]
+          - heading "提取历史" [level=2] [ref=e251]
+          - generic [ref=e252]: 0 项
+        - generic [ref=e253]:
+          - generic [ref=e255]:
+            - generic [ref=e256]: 保留最近
+            - spinbutton [ref=e257]: "25"
+            - generic [ref=e258]: 个帖子
+          - generic "History filters" [ref=e259]:
+            - searchbox "Search title, subreddit, flair, URL..." [ref=e260]
+            - combobox [ref=e261]:
+              - option "All AI platforms" [selected]
+              - option "Gemini"
+              - option "ChatGPT"
+              - option "Claude"
+              - option "AI Studio"
+            - combobox [ref=e262]:
+              - option "All presets" [selected]
+              - option "Summarize"
+              - option "Key Takeaways"
+              - option "ELI5"
+              - option "Sentiment"
+              - option "Debate Analysis"
+              - option "Custom"
+            - combobox [ref=e263]:
+              - option "Any date" [selected]
+              - option "Today"
+              - option "Last 7 days"
+              - option "Last 30 days"
+            - spinbutton [ref=e264]
+          - generic [ref=e265]:
+            - generic [ref=e266]: 0 selected for compare
+            - button "Compare selected" [disabled] [ref=e267]
+          - status [ref=e268]
+          - generic [ref=e270]:
+            - img [ref=e271]
+            - generic [ref=e274]: No scraped threads yet
+          - button "全部清空" [disabled] [ref=e276]:
+            - img [ref=e277]
+            - generic [ref=e278]: 全部清空
+  - contentinfo [ref=e279]:
+    - generic [ref=e280]: Reddit to AI v1.2.1
+    - generic [ref=e281]: Settings are saved automatically

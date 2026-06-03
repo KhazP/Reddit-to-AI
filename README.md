@@ -1,11 +1,11 @@
 # 🚀 Reddit to AI - Chrome Extension
 
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg?style=for-the-badge)](manifest.json)
+[![Version](https://img.shields.io/badge/version-1.2.1-blue.svg?style=for-the-badge)](manifest.json)
 [![License](https://img.shields.io/badge/license-MPL--2.0-green.svg?style=for-the-badge)](LICENSE)
 [![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-orange.svg?style=for-the-badge)](#contributing)
 
 > **Transform your Reddit browsing into an AI-powered insights engine!**
-> Scrape Reddit threads, filter the noise, and instantly send context to your favorite AI assistant for summarization, debate analysis, or sentiment checks.
+> Scrape Reddit threads, filter the noise, and instantly preview, edit, and send context to your favorite AI assistant for summarization, debate analysis, sentiment checks, or multi-thread comparisons.
 
 ---
 
@@ -28,7 +28,7 @@
 
 ## Overview
 
-**Reddit to AI** is a powerful Chrome extension that Bridges the gap between Reddit discussions and Large Language Models (LLMs). It allows you to scrape comprehensive data from any Reddit thread—including the main post, nested comments, and images—and seamlessly transfer it to an AI chat interface (like ChatGPT or Gemini) with a pre-configured prompt.
+**Reddit to AI** is a powerful Chrome extension that bridges the gap between Reddit discussions and Large Language Models (LLMs). It allows you to scrape comprehensive data from any Reddit thread—including the main post, nested comments, and images—and seamlessly transfer it to an AI chat interface (like ChatGPT or Gemini) with a pre-configured prompt.
 
 Whether you're a researcher analyzing sentiment, a user looking for a "TL;DR", or just someone who wants to understand a complex debate, this tool automates the tedious copy-pasting and formatting process.
 
@@ -36,24 +36,33 @@ Whether you're a researcher analyzing sentiment, a user looking for a "TL;DR", o
 
 ## ✨ Key Features
 
+*   **Prompt Preview Before Sending**:
+    *   Review the final prompt in a dedicated preview screen before opening ChatGPT, Gemini, Claude, or AI Studio.
+    *   Edit, copy, export, send, or save a preview preset.
+    *   Built-in fallback overlay appears if auto-paste fails, with a one-click **Copy Prompt** button.
+*   **Context Budgeter**:
+    *   Visible **AI prompt size** meter with estimated characters, tokens, comment count, image count, and warning level.
+    *   Presets: **Small**, **Balanced**, **Full**, and **Max Quality**.
 *   **Smart Scraping**:
-    *   Extracts title, author, subreddit, post content, and metadata.
-    *   **Recursive Comment Scraping**: Configurable depth (Quick, Standard, Deep, Full) to capture nested replies.
-    *   **Image Support**: Automatically scrapes and attaches up to 10 images from the post to the AI prompt.
-*   **Content Filters**:
-    *   **Hide Bots**: Automatically filter out AutoModerator and other bot comments.
-    *   **Min Score**: Ignore low-quality or downvoted comments.
-    *   **Limit Count**: Cap the number of comments to fit within context windows.
-    *   **Author Filtering**: Focus on the OP (Original Poster) or flaired users.
+    *   Extracts title, author, subreddit, post content, flair, NSFW/spoiler flags, awards, crossposts, polls, source links, images, videos, YouTube links, and gallery media.
+    *   **Recursive Comment Scraping**: Configurable depth to capture nested replies.
+    *   **Stronger morechildren Queue**: Sequential batches capped at 100, retries, failed batch tracking, and a preview-screen resume button.
+*   **Content Filters & Sorting**:
+    *   Hide bots, set a minimum score, include/exclude removed comments, and filter OP or flaired-user comments.
+    *   Smart trim logic: **Top scored**, **Controversial**, **OP replies**, **Flaired users**, **Diverse viewpoints**, **Newest**, or **Longest helpful comments**.
+    *   Reddit sort modes: **Best/confidence**, **Top**, **New**, **Controversial**, **Old**, **Q&A**, and **Live**.
 *   **Prompt Engineering**:
-    *   **Built-in Presets**: One-click templates for Summarization, Debate Analysis, Sentiment Analysis, ELI5 (Explain Like I'm 5), and Key Takeaways.
+    *   **Built-in Presets**: One-click templates for Summarization, Debate Analysis, Sentiment Analysis, ELI5, and Key Takeaways.
     *   **Custom Templates**: Design your own prompts using the `{content}` placeholder.
 *   **History & Management**:
-    *   **Local History**: Keep track of recently scraped threads and re-send them to different AI platforms instantly.
-    *   **JSON Export**: Export scraped thread data for offline analysis.
+    *   Search/filter history by subreddit, title, date range, AI platform, preset, and comment count.
+    *   Favorite, pin, export, re-send, or compare saved threads.
+*   **Batch / Multi-thread Mode**:
+    *   Paste several Reddit thread URLs and scrape them one by one for combined analysis.
 *   **Privacy First**:
     *   **No Remote Server**: All processing happens locally in your browser.
-    *   **Secure Storage**: API keys (optional legacy feature) and settings are stored in `chrome.storage.sync`.
+    *   **Don't Save** mode uses one-time handoff cleanup after paste.
+    *   **Session Only** mode uses session storage when available, so temporary data is cleared with the browser/extension session.
 
 ---
 
@@ -99,10 +108,10 @@ The extension currently supports automatic pasting and prompt injection for:
 3.  **Configure (Optional)**:
     *   Use **Quick Filters** in the popup to hide bots or set a minimum score.
     *   Choose your destination platform (e.g., Gemini, ChatGPT).
-4.  **Scrape & Send**:
-    *   Click **Scrape & Send**.
-    *   The extension will scroll the page to load comments, extract the data, and open a new tab with your chosen AI.
-    *   The prompt and data will be automatically pasted into the chat box.
+4.  **Scrape & Preview**:
+    *   Click **Scrape & Preview**.
+    *   Review the context meter and final prompt.
+    *   Send it to your chosen AI, copy it, edit it, export it, or save the preview settings as a preset.
 
 ---
 
@@ -111,10 +120,15 @@ The extension currently supports automatic pasting and prompt injection for:
 Right-click the extension icon and select **Options** to access advanced settings:
 
 *   **Scraping Settings**:
-    *   **Comment Depth**: Control how deep the scraper goes (Level 0 to Full recursion).
-    *   **Content Filters**: Set strict rules for what comments to include (Score, Author, etc.).
+    *   **Comment Depth**: Control how deep the scraper goes.
+    *   **Context Budget**: Pick the default prompt-size preset.
+    *   **Content Filters**: Set score, author, bot, trim logic, sort mode, and media-handling defaults.
 *   **Prompt Presets**:
     *   Customize the default templates for each analysis type.
+*   **Privacy & Storage**:
+    *   Choose **Don't Save**, **Session Only**, or **Persistent** storage behavior.
+*   **History**:
+    *   Search, filter, favorite, pin, export, re-send, and compare previously scraped threads.
 *   **Appearance**:
     *   **Language**: Switch the interface language.
     *   **Notifications**: Toggle browser notifications for status updates.
@@ -145,9 +159,9 @@ Reddit to AI is ready for the world! The interface is fully localized for:
 
 ## ⚠️ Known Issues & Limitations
 
-*   **Context Window Limits**: Extremely large threads (500+ comments) may exceed the input limit of some AI models. Use the "Limit Comments" or "Min Score" filters to reduce data size.
-*   **DOM Changes**: Reddit frequently updates its UI. If scraping stops working, please open an issue – selectors may need updating.
-*   **Browser Security**: Some browsers may block the automatic paste action. You may need to grant clipboard permissions or use `Ctrl+V` manually if the auto-paste fails.
+*   **Context Window Limits**: Extremely large threads can still exceed some AI model input limits. Use the preview meter, context presets, trim logic, or score filters to reduce prompt size.
+*   **DOM Changes**: Reddit and AI chat sites frequently update their UI. If scraping or auto-paste stops working, selectors may need updating.
+*   **Browser Security**: Some browsers may block automatic paste. The fallback overlay lets you copy the prompt manually.
 
 ---
 
@@ -166,3 +180,10 @@ Contributions are welcome! If you'd like to add a new language, support a new AI
 ## 📄 License
 
 This project is licensed under the **Mozilla Public License 2.0 (MPL-2.0)**. See the [LICENSE](LICENSE) file for details.
+
+## 🧹 Maintenance Notes
+
+*   Version metadata now matches `manifest.json` / `package.json` at **1.2.1**.
+*   `__MACOSX` archive artifacts are ignored/removed from the packaged repo.
+*   The unused `marked.min.js` file was removed.
+*   User-facing status text now says content/prompt sending instead of summary sending.

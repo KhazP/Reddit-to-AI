@@ -55,3 +55,6 @@ build/
 *.bak
 *~
 docs/CODE_CHECKLIST_AUDIT.md
+
+# macOS archive artifacts
+__MACOSX/

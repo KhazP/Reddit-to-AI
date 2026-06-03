@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Reddit to AI - Prompt Preview</title>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" type="text/css" href="preview.css">
+</head>
+
+<body>
+  <main class="preview-shell">
+    <header class="preview-header">
+      <div>
+        <div class="eyebrow">Reddit to AI</div>
+        <h1>Prompt Preview</h1>
+        <p id="threadMeta">Review, trim, edit, copy, export, or send the final prompt.</p>
+      </div>
+      <div class="header-actions">
+        <button id="backBtnTop" class="btn ghost">Back</button>
+        <button id="copyBtn" class="btn secondary">Copy</button>
+        <button id="exportBtn" class="btn secondary">Export</button>
+        <button id="savePresetBtn" class="btn secondary">Save preset</button>
+        <button id="skipNextBtn" class="btn secondary">Send and skip preview next time</button>
+        <button id="sendBtn" class="btn primary">Send to AI</button>
+      </div>
+    </header>
+
+    <section class="summary-card">
+      <div>
+        <span class="eyebrow">Prompt setup</span>
+        <div id="settingsSummary" class="summary-pills"></div>
+      </div>
+      <label class="inline-toggle">
+        <input type="checkbox" id="skipPreviewToggle">
+        <span>Always send directly</span>
+      </label>
+    </section>
+
+    <section class="budget-card" id="budgetCard">
+      <div class="budget-top">
+        <div>
+          <span class="eyebrow">AI prompt size</span>
+          <strong id="warningLabel">Calculating…</strong>
+          <p id="warningMessage">Preparing context budget.</p>
+        </div>
+        <div class="budget-stats">
+          <div><strong id="charCount">0</strong><span>characters</span></div>
+          <div><strong id="tokenCount">0</strong><span>est. tokens</span></div>
+          <div><strong id="commentCount">0</strong><span>comments</span></div>
+          <div><strong id="imageCount">0</strong><span>images</span></div>
+        </div>
+      </div>
+      <div class="meter-track"><div id="meterFill" class="meter-fill"></div></div>
+    </section>
+
+    <section class="controls-grid">
+      <label class="field">
+        <span>Context preset</span>
+        <select id="contextPresetSelect">
+          <option value="small">Small</option>
+          <option value="balanced">Balanced</option>
+          <option value="full">Full</option>
+          <option value="maxQuality">Max Quality</option>
+        </select>
+      </label>
+      <label class="field">
+        <span>Trim strategy</span>
+        <select id="trimStrategySelect">
+          <option value="top">Top scored</option>
+          <option value="controversial">Controversial</option>
+          <option value="op">OP replies</option>
+          <option value="flaired">Flaired users</option>
+          <option value="diverse">Diverse viewpoints</option>
+          <option value="newest">Newest</option>
+          <option value="longest">Longest helpful</option>
+        </select>
+      </label>
+      <label class="field">
+        <span>Media handling</span>
+        <select id="mediaModeSelect">
+          <option value="attach">Attach images + list URLs</option>
+          <option value="urls">List URLs only</option>
+          <option value="ignore">Ignore media</option>
+        </select>
+      </label>
+      <label class="field">
+        <span>AI platform</span>
+        <select id="providerSelect">
+          <option value="gemini">Gemini</option>
+          <option value="chatgpt">ChatGPT</option>
+          <option value="claude">Claude</option>
+          <option value="aistudio">AI Studio</option>
+        </select>
+      </label>
+      <label class="field">
+        <span>Output format</span>
+        <select id="outputFormatSelect">
+          <option value="auto">Auto</option>
+          <option value="bullets">Bullets</option>
+          <option value="table">Table</option>
+          <option value="json">JSON</option>
+          <option value="prosCons">Pros / cons</option>
+          <option value="executive">Executive summary</option>
+        </select>
+      </label>
+    </section>
+
+    <section id="missingCommentsCard" class="notice-card" hidden>
+      <div>
+        <strong>Some morechildren batches failed.</strong>
+        <p id="missingCommentsText">You can try to resume the missing comments before sending.</p>
+      </div>
+      <button id="resumeBtn" class="btn secondary">Resume missing comments</button>
+    </section>
+
+    <section class="editor-card">
+      <div class="editor-toolbar">
+        <strong>Final prompt</strong>
+        <div class="editor-tools">
+          <span id="editHint">You can edit this text before sending.</span>
+          <span id="rebuildNotice" class="rebuild-notice" hidden>Settings changed. Your edited prompt was kept.</span>
+          <button id="applyRebuiltPromptBtn" class="link-btn" type="button" hidden>Apply rebuilt prompt</button>
+          <button id="keepEditsBtn" class="link-btn" type="button" hidden>Keep edits</button>
+          <button id="restorePromptBtn" class="link-btn" type="button" disabled>Restore generated prompt</button>
+        </div>
+      </div>
+      <textarea id="promptTextarea" spellcheck="true"></textarea>
+    </section>
+
+    <section class="footer-card">
+      <span id="statusText">Ready.</span>
+      <div class="footer-actions">
+        <button id="backBtn" class="btn ghost">Back to Reddit tab</button>
+        <button id="copyBtnBottom" class="btn secondary">Copy</button>
+        <button id="sendBtnBottom" class="btn primary">Send</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="i18n.js"></script>
+  <script src="promptBuilder.js"></script>
+  <script src="preview.js"></script>
+</body>
+
+</html>

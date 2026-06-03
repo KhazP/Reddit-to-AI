@@ -1,0 +1,261 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - generic [ref=e5]:
+      - img [ref=e6]
+      - generic [ref=e11]:
+        - generic [ref=e12]: ReddittoAI
+        - generic [ref=e13]: Settings
+  - main [ref=e16]:
+    - generic [ref=e17]:
+      - generic [ref=e18]:
+        - generic [ref=e19]:
+          - img [ref=e20]
+          - heading "AI Assistant" [level=2] [ref=e23]
+        - generic [ref=e25]:
+          - generic [ref=e26]: Select AI Platform
+          - generic [ref=e27]:
+            - generic [ref=e29] [cursor=pointer]:
+              - img "Gemini" [ref=e30]
+              - generic [ref=e31]: Gemini
+            - generic [ref=e33] [cursor=pointer]:
+              - img "ChatGPT" [ref=e34]
+              - generic [ref=e35]: ChatGPT
+            - generic [ref=e37] [cursor=pointer]:
+              - img "Claude" [ref=e38]
+              - generic [ref=e39]: Claude
+            - generic [ref=e41] [cursor=pointer]:
+              - img "AI Studio" [ref=e42]
+              - generic [ref=e43]: AI Studio
+          - paragraph [ref=e44]: Choose where to send scraped content. A new tab will open with content auto-pasted.
+      - generic [ref=e45]:
+        - generic [ref=e46]:
+          - img [ref=e47]
+          - heading "Scraping Settings" [level=2] [ref=e49]
+        - generic [ref=e50]:
+          - generic [ref=e51]:
+            - generic [ref=e52]: Comment Depth Level
+            - generic [ref=e53]:
+              - generic [ref=e55] [cursor=pointer]:
+                - generic [ref=e56]: "1"
+                - generic [ref=e57]: Quick
+                - generic [ref=e58]: Top-level only
+              - generic [ref=e60] [cursor=pointer]:
+                - generic [ref=e61]: "3"
+                - generic [ref=e62]: Standard
+                - generic [ref=e63]: 3 reply levels
+              - generic [ref=e65] [cursor=pointer]:
+                - generic [ref=e66]: "5"
+                - generic [ref=e67]: Deep
+                - generic [ref=e68]: 5 reply levels
+              - generic [ref=e70] [cursor=pointer]:
+                - generic [ref=e71]: ∞
+                - generic [ref=e72]: Full
+                - generic [ref=e73]: All nested replies
+            - paragraph [ref=e74]: Controls how deep into reply chains the scraper goes. Higher depth = more context but larger data.
+          - generic [ref=e75]:
+            - generic [ref=e76]: Default Context Budget
+            - combobox "Default Context Budget" [ref=e77]:
+              - option "Small"
+              - option "Balanced" [selected]
+              - option "Full"
+              - option "Max Quality"
+            - paragraph [ref=e78]: Sets the starting AI prompt size preset in the preview screen.
+      - generic [ref=e79]:
+        - generic [ref=e80]:
+          - img [ref=e81]
+          - heading "Content Filters" [level=2] [ref=e83]
+        - generic [ref=e84]:
+          - generic [ref=e85]:
+            - generic [ref=e86]: Minimum Score
+            - generic [ref=e87]:
+              - slider [ref=e88] [cursor=pointer]: "0"
+              - spinbutton [ref=e89]: "0"
+            - paragraph [ref=e90]: Only include comments with this many upvotes or more. Set to 0 for all comments.
+          - generic [ref=e91]:
+            - generic [ref=e92]: Limit Comments
+            - generic [ref=e93]:
+              - generic [ref=e94]: Top
+              - spinbutton [ref=e95]: "0"
+              - generic [ref=e96]: comments (0 = all)
+            - paragraph [ref=e97]: Limit to top N highest-scored comments. Set to 0 for no limit.
+          - generic [ref=e98]:
+            - generic [ref=e99]: Smart Trim Logic
+            - combobox "Smart Trim Logic" [ref=e100]:
+              - option "Top scored" [selected]
+              - option "Controversial"
+              - option "OP replies"
+              - option "Flaired users"
+              - option "Diverse viewpoints"
+              - option "Newest"
+              - option "Longest helpful comments"
+          - generic [ref=e101]:
+            - generic [ref=e102]: Reddit Comment Sort
+            - combobox "Reddit Comment Sort" [ref=e103]:
+              - option "Best / confidence" [selected]
+              - option "Top"
+              - option "New"
+              - option "Controversial"
+              - option "Old"
+              - option "Q&A"
+              - option "Live"
+          - generic [ref=e104]:
+            - generic [ref=e105]: Media Handling
+            - combobox "Media Handling" [ref=e106]:
+              - option "Attach images + list media links" [selected]
+              - option "List media URLs only"
+              - option "Ignore media"
+          - generic [ref=e107]:
+            - generic [ref=e108]: Filter by Author
+            - generic [ref=e109]:
+              - generic [ref=e111] [cursor=pointer]: All
+              - generic [ref=e113] [cursor=pointer]: OP Only
+              - generic [ref=e115] [cursor=pointer]: Flaired
+            - paragraph [ref=e116]: OP Only and Flaired can be combined. Selecting All clears author-only filters.
+          - generic [ref=e117]:
+            - generic [ref=e118] [cursor=pointer]:
+              - generic [ref=e119]:
+                - generic [ref=e120]: Hide bot comments
+                - generic [ref=e121]: AutoModerator, RemindMeBot, etc.
+              - generic [ref=e122]:
+                - checkbox "Hide bot comments AutoModerator, RemindMeBot, etc."
+            - generic [ref=e124] [cursor=pointer]:
+              - generic [ref=e125]:
+                - generic [ref=e126]: Include removed/deleted
+                - generic [ref=e127]: Include [removed] and [deleted] comments
+              - generic [ref=e128]:
+                - checkbox "Include removed/deleted Include [removed] and [deleted] comments"
+      - generic [ref=e130]:
+        - generic [ref=e131]:
+          - img [ref=e132]
+          - heading "Notifications" [level=2] [ref=e135]
+        - generic [ref=e137] [cursor=pointer]:
+          - generic [ref=e138]:
+            - generic [ref=e139]: Show notifications
+            - generic [ref=e140]: Display status updates as browser notifications
+          - generic [ref=e141]:
+            - checkbox "Show notifications Display status updates as browser notifications" [checked]
+      - generic [ref=e143]:
+        - generic [ref=e144]:
+          - img [ref=e145]
+          - heading "Language" [level=2] [ref=e147]
+        - generic [ref=e149]:
+          - generic [ref=e150]: Interface Language
+          - combobox [ref=e151]:
+            - option "Auto (Browser Default)" [selected]
+            - option "English"
+            - option "Español"
+            - option "Français"
+            - option "Deutsch"
+            - option "Português"
+            - option "日本語"
+            - option "简体中文"
+            - option "Türkçe"
+          - paragraph [ref=e152]: Select your preferred language. Changes require reloading the extension.
+    - generic [ref=e153]:
+      - generic [ref=e154]:
+        - generic [ref=e155]:
+          - img [ref=e156]
+          - heading "Prompt Presets" [level=2] [ref=e159]
+        - generic [ref=e160]:
+          - generic [ref=e161]:
+            - generic [ref=e162]: Select Analysis Type
+            - generic [ref=e163]:
+              - button "📝 Summarize · TL;DR of the thread" [ref=e164] [cursor=pointer]:
+                - generic [ref=e165]: 📝
+                - generic [ref=e166]: Summarize
+                - generic [ref=e167]: · TL;DR of the thread
+              - button "⚖️ Debate Analysis · Map out different sides" [ref=e168] [cursor=pointer]:
+                - generic [ref=e169]: ⚖️
+                - generic [ref=e170]: Debate Analysis
+                - generic [ref=e171]: · Map out different sides
+              - button "😊 Sentiment · Positive/negative breakdown" [ref=e172] [cursor=pointer]:
+                - generic [ref=e173]: 😊
+                - generic [ref=e174]: Sentiment
+                - generic [ref=e175]: · Positive/negative breakdown
+              - button "💡 Key Takeaways · Bullet points of insights" [ref=e176] [cursor=pointer]:
+                - generic [ref=e177]: 💡
+                - generic [ref=e178]: Key Takeaways
+                - generic [ref=e179]: · Bullet points of insights
+              - button "👶 ELI5 · Explain like I'm 5" [ref=e180] [cursor=pointer]:
+                - generic [ref=e181]: 👶
+                - generic [ref=e182]: ELI5
+                - generic [ref=e183]: · Explain like I'm 5
+              - button "✏️ Custom · Your own template" [ref=e184] [cursor=pointer]:
+                - generic [ref=e185]: ✏️
+                - generic [ref=e186]: Custom
+                - generic [ref=e187]: · Your own template
+          - generic [ref=e188]:
+            - generic [ref=e190]: Template Preview
+            - textbox [ref=e191]: "Provide a concise TL;DR summary of this Reddit thread. Focus on: the main topic, key points made, and overall conclusion. Keep it brief but comprehensive. {content}"
+            - paragraph [ref=e192]:
+              - text: Use
+              - code [ref=e193]: "{content}"
+              - text: as a placeholder for the scraped Reddit data. Select "Custom" to write your own template.
+      - generic [ref=e194]:
+        - generic [ref=e195]:
+          - img [ref=e196]
+          - heading "Saved Prompt Presets" [level=2] [ref=e198]
+          - generic [ref=e199]: 0 items
+        - generic [ref=e200]:
+          - generic [ref=e203]: No saved prompt presets yet
+          - generic [ref=e204]:
+            - button "Export presets" [disabled] [ref=e205]
+            - button "Clear presets" [disabled] [ref=e206]
+      - generic [ref=e207]:
+        - generic [ref=e208]:
+          - img [ref=e209]
+          - heading "Data Storage" [level=2] [ref=e213]
+        - generic [ref=e215]:
+          - generic [ref=e217] [cursor=pointer]:
+            - generic [ref=e218]: Don't save
+            - generic [ref=e219]: Discard content after sending
+          - generic [ref=e221] [cursor=pointer]:
+            - generic [ref=e222]: Session only
+            - generic [ref=e223]: Keep until browser closes
+          - generic [ref=e225] [cursor=pointer]:
+            - generic [ref=e226]: Persistent
+            - generic [ref=e227]: Save in local storage
+      - generic [ref=e228]:
+        - generic [ref=e229]:
+          - img [ref=e230]
+          - heading "Scrape History" [level=2] [ref=e233]
+          - generic [ref=e234]: 0 items
+        - generic [ref=e235]:
+          - generic [ref=e237]:
+            - generic [ref=e238]: Keep last
+            - spinbutton [ref=e239]: "10"
+            - generic [ref=e240]: threads
+          - generic "History filters" [ref=e241]:
+            - searchbox "Search title, subreddit, flair, URL..." [ref=e242]
+            - combobox [ref=e243]:
+              - option "All AI platforms" [selected]
+              - option "Gemini"
+              - option "ChatGPT"
+              - option "Claude"
+              - option "AI Studio"
+            - combobox [ref=e244]:
+              - option "All presets" [selected]
+              - option "Summarize"
+              - option "Key Takeaways"
+              - option "ELI5"
+              - option "Sentiment"
+              - option "Debate Analysis"
+              - option "Custom"
+            - combobox [ref=e245]:
+              - option "Any date" [selected]
+              - option "Today"
+              - option "Last 7 days"
+              - option "Last 30 days"
+            - spinbutton [ref=e246]
+          - generic [ref=e247]:
+            - generic [ref=e248]: 0 selected for compare
+            - button "Compare selected" [disabled] [ref=e249]
+          - generic [ref=e251]:
+            - img [ref=e252]
+            - generic [ref=e255]: No scraped threads yet
+          - button "Clear All" [disabled] [ref=e257]:
+            - img [ref=e258]
+            - generic [ref=e259]: Clear All
+  - contentinfo [ref=e260]:
+    - generic [ref=e261]: Reddit to AI v1.2.0
+    - generic [ref=e262]: Settings are saved automatically

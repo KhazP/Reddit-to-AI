@@ -6,7 +6,7 @@ const REQUIRED_FILES = [
   "manifest.json",
   "_locales/en/messages.json"
 ];
-const IGNORE_DIRS = new Set([".git", "node_modules", "images"]);
+const IGNORE_DIRS = new Set([".git", "node_modules", "images", "dist-extension"]);
 
 async function exists(filePath) {
   try {
@@ -53,6 +53,30 @@ function validateLocaleShape(filePath, parsed) {
   return errors;
 }
 
+async function validateLocaleParity(errors) {
+  const localesDir = path.join(ROOT, "_locales");
+  const englishPath = path.join(localesDir, "en", "messages.json");
+  if (!(await exists(englishPath))) return;
+
+  const english = JSON.parse(await fs.readFile(englishPath, "utf8"));
+  const englishKeys = Object.keys(english).sort();
+  const localeNames = await fs.readdir(localesDir);
+  for (const locale of localeNames) {
+    const localePath = path.join(localesDir, locale, "messages.json");
+    if (!(await exists(localePath))) continue;
+    const messages = JSON.parse(await fs.readFile(localePath, "utf8"));
+    const keys = Object.keys(messages).sort();
+    const missing = englishKeys.filter(key => !keys.includes(key));
+    const extra = keys.filter(key => !englishKeys.includes(key));
+    if (missing.length > 0) {
+      errors.push(`_locales/${locale}/messages.json: missing locale keys: ${missing.join(", ")}`);
+    }
+    if (extra.length > 0) {
+      errors.push(`_locales/${locale}/messages.json: unknown locale keys: ${extra.join(", ")}`);
+    }
+  }
+}
+
 async function main() {
   const errors = [];
 
@@ -80,6 +104,8 @@ async function main() {
     }
   }
 
+  await validateLocaleParity(errors);
+
   if (errors.length > 0) {
     console.error("JSON validation failed:\n");
     for (const error of errors) {
@@ -89,6 +115,7 @@ async function main() {
   }
 
   console.log(`JSON validation passed for ${files.length} file(s).`);
+  process.exit(0);
 }
 
 main().catch(error => {

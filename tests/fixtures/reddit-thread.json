@@ -1,0 +1,45 @@
+[
+  {
+    "data": {
+      "children": [
+        {
+          "kind": "t3",
+          "data": {
+            "name": "t3_abc",
+            "title": "Fixture post",
+            "author": "fixture_op",
+            "subreddit": "testing",
+            "selftext": "Fixture body",
+            "permalink": "/r/testing/comments/abc/fixture_post/",
+            "score": 42,
+            "num_comments": 2
+          }
+        }
+      ]
+    }
+  },
+  {
+    "data": {
+      "children": [
+        {
+          "kind": "t1",
+          "data": {
+            "name": "t1_keep",
+            "parent_id": "t3_abc",
+            "author": "commenter",
+            "body": "Visible comment",
+            "score": 10,
+            "created_utc": 1777248000,
+            "replies": ""
+          }
+        },
+        {
+          "kind": "more",
+          "data": {
+            "children": ["more1", "more2"]
+          }
+        }
+      ]
+    }
+  }
+]

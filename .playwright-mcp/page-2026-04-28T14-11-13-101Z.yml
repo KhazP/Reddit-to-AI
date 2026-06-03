@@ -1,0 +1,284 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - generic [ref=e5]:
+      - img [ref=e6]
+      - generic [ref=e11]:
+        - generic [ref=e12]: ReddittoAI
+        - generic [ref=e13]: Reddit to AI - Configuración
+  - main [ref=e16]:
+    - generic [ref=e17]:
+      - generic [ref=e18]:
+        - generic [ref=e19]:
+          - img [ref=e20]
+          - heading "Asistente de IA" [level=2] [ref=e23]
+        - generic [ref=e25]:
+          - generic [ref=e26]: Seleccionar plataforma de IA
+          - generic [ref=e27]:
+            - generic [ref=e29] [cursor=pointer]:
+              - img "Gemini" [ref=e30]
+              - generic [ref=e31]: Google Gemini
+            - generic [ref=e33] [cursor=pointer]:
+              - img "ChatGPT" [ref=e34]
+              - generic [ref=e35]: OpenAI ChatGPT
+            - generic [ref=e37] [cursor=pointer]:
+              - img "Claude" [ref=e38]
+              - generic [ref=e39]: Anthropic Claude
+            - generic [ref=e41] [cursor=pointer]:
+              - img "AI Studio" [ref=e42]
+              - generic [ref=e43]: Google AI Studio
+          - paragraph [ref=e44]: Elige dónde enviar el contenido extraído. Se abrirá una nueva pestaña con el contenido pegado automáticamente.
+      - generic [ref=e45]:
+        - generic [ref=e46]:
+          - img [ref=e47]
+          - heading "Send Flow" [level=2] [ref=e49]
+        - generic [ref=e50]:
+          - generic [ref=e51] [cursor=pointer]:
+            - generic [ref=e52]:
+              - generic [ref=e53]: Show prompt preview before sending
+              - generic [ref=e54]: Turn off to scrape and open the AI tab immediately.
+            - generic [ref=e55]:
+              - checkbox "Show prompt preview before sending Turn off to scrape and open the AI tab immediately." [checked]
+          - generic [ref=e57]:
+            - generic [ref=e58]: Default Output Format
+            - combobox "Default Output Format" [ref=e59]:
+              - option "Auto" [selected]
+              - option "Bullets"
+              - option "Table"
+              - option "JSON"
+              - option "Pros / cons"
+              - option "Executive summary"
+      - generic [ref=e60]:
+        - generic [ref=e61]:
+          - img [ref=e62]
+          - heading "Configuración de extracción" [level=2] [ref=e64]
+        - generic [ref=e65]:
+          - generic [ref=e66]:
+            - generic [ref=e67]: Nivel de profundidad de comentarios
+            - generic [ref=e68]:
+              - generic [ref=e70] [cursor=pointer]:
+                - generic [ref=e71]: "1"
+                - generic [ref=e72]: Rápido
+                - generic [ref=e73]: Solo nivel superior
+              - generic [ref=e75] [cursor=pointer]:
+                - generic [ref=e76]: "3"
+                - generic [ref=e77]: Standard
+                - generic [ref=e78]: 3 reply levels
+              - generic [ref=e80] [cursor=pointer]:
+                - generic [ref=e81]: "5"
+                - generic [ref=e82]: Deep
+                - generic [ref=e83]: 5 reply levels
+              - generic [ref=e85] [cursor=pointer]:
+                - generic [ref=e86]: ∞
+                - generic [ref=e87]: Completo
+                - generic [ref=e88]: Todas las respuestas anidadas
+            - paragraph [ref=e89]: Controla qué tan profundo llega el extractor en las cadenas de respuestas. Mayor profundidad = más contexto pero datos más grandes.
+          - generic [ref=e90]:
+            - generic [ref=e91]: Default Context Budget
+            - combobox "Default Context Budget" [ref=e92]:
+              - option "Small"
+              - option "Balanced" [selected]
+              - option "Full"
+              - option "Max Quality"
+            - paragraph [ref=e93]: Sets the starting AI prompt size preset in the preview screen.
+      - generic [ref=e94]:
+        - generic [ref=e95]:
+          - img [ref=e96]
+          - heading "Filtros de contenido" [level=2] [ref=e98]
+        - generic [ref=e99]:
+          - generic [ref=e100]:
+            - generic [ref=e101]: Puntaje mínimo
+            - generic [ref=e102]:
+              - slider [ref=e103] [cursor=pointer]: "0"
+              - spinbutton [ref=e104]: "0"
+            - paragraph [ref=e105]: Solo incluir comentarios con este número de votos o más. Pon 0 para todos los comentarios.
+          - generic [ref=e106]:
+            - generic [ref=e107]: Limitar comentarios
+            - generic [ref=e108]:
+              - generic [ref=e109]: Top
+              - spinbutton [ref=e110]: "0"
+              - generic [ref=e111]: comentarios (0 = todos)
+            - paragraph [ref=e112]: Limitar al top N de comentarios con mayor puntaje. Pon 0 para sin límite.
+          - generic [ref=e113]:
+            - generic [ref=e114]: Smart Trim Logic
+            - combobox "Smart Trim Logic" [ref=e115]:
+              - option "Top scored" [selected]
+              - option "Controversial"
+              - option "OP replies"
+              - option "Flaired users"
+              - option "Diverse viewpoints"
+              - option "Newest"
+              - option "Longest helpful comments"
+          - generic [ref=e116]:
+            - generic [ref=e117]: Reddit Comment Sort
+            - combobox "Reddit Comment Sort" [ref=e118]:
+              - option "Best / confidence" [selected]
+              - option "Top"
+              - option "New"
+              - option "Controversial"
+              - option "Old"
+              - option "Q&A"
+              - option "Live"
+          - generic [ref=e119]:
+            - generic [ref=e120]: Media Handling
+            - combobox "Media Handling" [ref=e121]:
+              - option "Attach images + list media links" [selected]
+              - option "List media URLs only"
+              - option "Ignore media"
+          - generic [ref=e122]:
+            - generic [ref=e123]: Filtrar por autor
+            - generic [ref=e124]:
+              - generic [ref=e126] [cursor=pointer]: Todos
+              - generic [ref=e128] [cursor=pointer]: Solo OP
+              - generic [ref=e130] [cursor=pointer]: Con flair
+            - paragraph [ref=e131]: OP Only and Flaired can be combined. Selecting All clears author-only filters.
+          - generic [ref=e132]:
+            - generic [ref=e133] [cursor=pointer]:
+              - generic [ref=e134]:
+                - generic [ref=e135]: Ocultar comentarios de bots
+                - generic [ref=e136]: AutoModerator, RemindMeBot, etc.
+              - generic [ref=e137]:
+                - checkbox "Ocultar comentarios de bots AutoModerator, RemindMeBot, etc."
+            - generic [ref=e139] [cursor=pointer]:
+              - generic [ref=e140]:
+                - generic [ref=e141]: Incluir eliminados
+                - generic [ref=e142]: Incluir comentarios [removed] y [deleted]
+              - generic [ref=e143]:
+                - checkbox "Incluir eliminados Incluir comentarios [removed] y [deleted]"
+      - generic [ref=e145]:
+        - generic [ref=e146]:
+          - img [ref=e147]
+          - heading "Notificaciones" [level=2] [ref=e150]
+        - generic [ref=e152] [cursor=pointer]:
+          - generic [ref=e153]:
+            - generic [ref=e154]: Mostrar notificaciones
+            - generic [ref=e155]: Mostrar actualizaciones de estado como notificaciones del navegador
+          - generic [ref=e156]:
+            - checkbox "Mostrar notificaciones Mostrar actualizaciones de estado como notificaciones del navegador" [checked]
+      - generic [ref=e158]:
+        - generic [ref=e159]:
+          - img [ref=e160]
+          - heading "Idioma" [level=2] [ref=e162]
+        - generic [ref=e164]:
+          - generic [ref=e165]: Idioma de la interfaz
+          - combobox [ref=e166]:
+            - option "Automático (predeterminado del navegador)"
+            - option "English"
+            - option "Español" [selected]
+            - option "Français"
+            - option "Deutsch"
+            - option "Português"
+            - option "日本語"
+            - option "简体中文"
+            - option "Türkçe"
+          - paragraph [ref=e167]: Selecciona tu idioma preferido. Los cambios requieren recargar la extensión.
+    - generic [ref=e168]:
+      - generic [ref=e169]:
+        - generic [ref=e170]:
+          - img [ref=e171]
+          - heading "Preajustes de instrucciones" [level=2] [ref=e174]
+        - generic [ref=e175]:
+          - generic [ref=e176]:
+            - generic [ref=e177]: Seleccionar tipo de análisis
+            - generic [ref=e178]:
+              - button "📝 Resumir · Resumen rápido del hilo" [ref=e179] [cursor=pointer]:
+                - generic [ref=e180]: 📝
+                - generic [ref=e181]: Resumir
+                - generic [ref=e182]: · Resumen rápido del hilo
+              - button "⚖️ Análisis de debate · Mapear diferentes posturas" [ref=e183] [cursor=pointer]:
+                - generic [ref=e184]: ⚖️
+                - generic [ref=e185]: Análisis de debate
+                - generic [ref=e186]: · Mapear diferentes posturas
+              - button "😊 Sentimiento · Análisis de actitud" [ref=e187] [cursor=pointer]:
+                - generic [ref=e188]: 😊
+                - generic [ref=e189]: Sentimiento
+                - generic [ref=e190]: · Análisis de actitud
+              - button "💡 Puntos clave · Lista de ideas principales" [ref=e191] [cursor=pointer]:
+                - generic [ref=e192]: 💡
+                - generic [ref=e193]: Puntos clave
+                - generic [ref=e194]: · Lista de ideas principales
+              - button "👶 ELI5 · Explicación muy sencilla" [ref=e195] [cursor=pointer]:
+                - generic [ref=e196]: 👶
+                - generic [ref=e197]: ELI5
+                - generic [ref=e198]: · Explicación muy sencilla
+              - button "✏️ Personalizado · Tu propia plantilla" [ref=e199] [cursor=pointer]:
+                - generic [ref=e200]: ✏️
+                - generic [ref=e201]: Personalizado
+                - generic [ref=e202]: · Tu propia plantilla
+          - generic [ref=e203]:
+            - generic [ref=e205]: Vista previa de la plantilla
+            - textbox "Ingresa tu instrucción personalizada..." [ref=e206]: "Provide a concise TL;DR summary of this Reddit thread. Focus on: the main topic, key points made, and overall conclusion. Keep it brief but comprehensive. {content}"
+            - paragraph [ref=e207]: Usa $CONTENT$ como marcador para los datos de Reddit extraídos. Selecciona 'Personalizado' para escribir tu propia plantilla.
+      - generic [ref=e208]:
+        - generic [ref=e209]:
+          - img [ref=e210]
+          - heading "Saved Prompt Presets" [level=2] [ref=e212]
+          - generic [ref=e213]: 0 items
+        - generic [ref=e214]:
+          - generic [ref=e217]: No saved prompt presets yet
+          - generic [ref=e218]:
+            - button "Export presets" [disabled] [ref=e219]
+            - button "Import presets" [ref=e220] [cursor=pointer]
+            - button "Clear presets" [disabled] [ref=e221]
+      - generic [ref=e222]:
+        - generic [ref=e223]:
+          - img [ref=e224]
+          - heading "Almacenamiento de datos" [level=2] [ref=e228]
+        - generic [ref=e229]:
+          - generic [ref=e230]:
+            - generic [ref=e232] [cursor=pointer]:
+              - generic [ref=e233]: No guardar
+              - generic [ref=e234]: Descartar contenido después de enviar
+            - generic [ref=e236] [cursor=pointer]:
+              - generic [ref=e237]: Solo sesión
+              - generic [ref=e238]: Mantener hasta que se cierre el navegador
+            - generic [ref=e240] [cursor=pointer]:
+              - generic [ref=e241]: Persistente
+              - generic [ref=e242]: Guardar en almacenamiento local
+          - generic [ref=e243]:
+            - button "Export settings" [ref=e244] [cursor=pointer]
+            - button "Import settings" [ref=e245] [cursor=pointer]
+      - generic [ref=e246]:
+        - generic [ref=e247]:
+          - img [ref=e248]
+          - heading "Historial" [level=2] [ref=e251]
+          - generic [ref=e252]: 0 ítems
+        - generic [ref=e253]:
+          - generic [ref=e255]:
+            - generic [ref=e256]: Mantener últimos
+            - spinbutton [ref=e257]: "25"
+            - generic [ref=e258]: hilos
+          - generic "History filters" [ref=e259]:
+            - searchbox "Search title, subreddit, flair, URL..." [ref=e260]
+            - combobox [ref=e261]:
+              - option "All AI platforms" [selected]
+              - option "Gemini"
+              - option "ChatGPT"
+              - option "Claude"
+              - option "AI Studio"
+            - combobox [ref=e262]:
+              - option "All presets" [selected]
+              - option "Summarize"
+              - option "Key Takeaways"
+              - option "ELI5"
+              - option "Sentiment"
+              - option "Debate Analysis"
+              - option "Custom"
+            - combobox [ref=e263]:
+              - option "Any date" [selected]
+              - option "Today"
+              - option "Last 7 days"
+              - option "Last 30 days"
+            - spinbutton [ref=e264]
+          - generic [ref=e265]:
+            - generic [ref=e266]: 0 selected for compare
+            - button "Compare selected" [disabled] [ref=e267]
+          - status [ref=e268]
+          - generic [ref=e270]:
+            - img [ref=e271]
+            - generic [ref=e274]: No scraped threads yet
+          - button "Borrar todo" [disabled] [ref=e276]:
+            - img [ref=e277]
+            - generic [ref=e278]: Borrar todo
+  - contentinfo [ref=e279]:
+    - generic [ref=e280]: Reddit to AI v1.2.1
+    - generic [ref=e281]: Settings are saved automatically

@@ -1,17 +1,21 @@
 {
   "name": "reddit-to-ai",
-  "version": "1.1.1",
+  "version": "1.2.2",
   "private": true,
   "description": "Repository tooling for the Reddit to AI Chrome extension.",
   "type": "module",
   "scripts": {
     "lint": "eslint .",
     "validate:json": "node scripts/validate-json.mjs",
-    "check": "npm run validate:json && npm run lint"
+    "validate:release": "node scripts/validate-release.mjs",
+    "test": "node tests/promptBuilder.test.mjs && node tests/redditFixture.test.mjs && node tests/aiPasterImagePaste.test.mjs && node tests/backgroundScraperReplies.test.mjs && node tests/previewSendFlow.test.mjs && node tests/popupBatchMode.test.mjs && node tests/optionsHistoryStatus.test.mjs && node tests/releaseManifest.test.mjs && node tests/i18nMessages.test.mjs && node tests/noRemoteAssets.test.mjs && node tests/packageExtension.test.mjs",
+    "package:extension": "node scripts/package-extension.mjs",
+    "check": "npm run validate:json && npm run lint && npm test && npm run package:extension && npm run validate:release"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.1",
     "eslint": "^9.25.1",
-    "globals": "^15.15.0"
+    "globals": "^15.15.0",
+    "jszip": "^3.10.1"
   }
 }
