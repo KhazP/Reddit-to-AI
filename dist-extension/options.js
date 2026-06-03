@@ -322,7 +322,8 @@ async function initializeOptions() {
         'mediaMode',
         'outputFormat',
         'showPromptPreview',
-        'selectedLanguage'
+        'selectedLanguage',
+        'customSelectors'
     ], async (result) => {
         console.log("Options: Loaded settings:", result);
 
@@ -428,6 +429,18 @@ async function initializeOptions() {
         // Author type filters
         setAuthorFilterControls(getAuthorTypesFromStorage(result));
 
+        // Populate custom selectors
+        const customSelectors = result.customSelectors || {};
+        const selectorGeminiInput = document.getElementById('selectorGemini');
+        const selectorChatgptInput = document.getElementById('selectorChatgpt');
+        const selectorClaudeInput = document.getElementById('selectorClaude');
+        const selectorAistudioInput = document.getElementById('selectorAistudio');
+
+        if (selectorGeminiInput) selectorGeminiInput.value = customSelectors.gemini?.inputSelector || '';
+        if (selectorChatgptInput) selectorChatgptInput.value = customSelectors.chatgpt?.inputSelector || '';
+        if (selectorClaudeInput) selectorClaudeInput.value = customSelectors.claude?.inputSelector || '';
+        if (selectorAistudioInput) selectorAistudioInput.value = customSelectors.aistudio?.inputSelector || '';
+
         // Language setting
         if (languageSelect) {
             languageSelect.value = savedLanguage;
@@ -435,6 +448,40 @@ async function initializeOptions() {
     });
 
     // Event listeners
+
+    // Custom selector inputs listeners
+    const selectorInputs = [
+        { id: 'selectorGemini', platform: 'gemini' },
+        { id: 'selectorChatgpt', platform: 'chatgpt' },
+        { id: 'selectorClaude', platform: 'claude' },
+        { id: 'selectorAistudio', platform: 'aistudio' }
+    ];
+
+    selectorInputs.forEach(({ id, platform }) => {
+        const input = document.getElementById(id);
+        if (input) {
+            input.addEventListener('change', (e) => {
+                const val = e.target.value.trim();
+                chrome.storage.sync.get(['customSelectors'], (result) => {
+                    const customSelectors = result.customSelectors || {};
+                    if (!customSelectors[platform]) {
+                        customSelectors[platform] = {};
+                    }
+                    customSelectors[platform].inputSelector = val;
+                    const editableDefaults = {
+                        gemini: true,
+                        chatgpt: true,
+                        claude: true,
+                        aistudio: false
+                    };
+                    customSelectors[platform].isContentEditable = editableDefaults[platform];
+
+                    chrome.storage.sync.set({ customSelectors }, showSaveToast);
+                    console.log(`Options: Custom selector for ${platform} updated to:`, val);
+                });
+            });
+        }
+    });
 
     // Depth radio buttons
     depthRadios.forEach(radio => {
@@ -821,7 +868,8 @@ async function initializeOptions() {
             'mediaMode',
             'outputFormat',
             'selectedLanguage',
-            'savedPromptPresets'
+            'savedPromptPresets',
+            'customSelectors'
         ];
         chrome.storage.sync.get(keys, (settings) => {
             downloadJson(`reddit-to-ai-settings-${Date.now()}.json`, {

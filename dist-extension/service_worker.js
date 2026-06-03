@@ -24,6 +24,7 @@ console.log('Service worker initialised.');
 
 chrome.runtime.onInstalled.addListener(() => {
   console.log('Reddit to AI installed.');
+  syncSelectors().catch(err => console.error('Selector sync on installed failed:', err));
 });
 
 // =====================
@@ -1336,11 +1337,62 @@ function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+async function syncSelectors() {
+  try {
+    const url = 'https://raw.githubusercontent.com/KhazP/Reddit-to-AI/main/selectors.json';
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const selectors = await response.json();
+    if (selectors && typeof selectors === 'object') {
+      await new Promise(resolve => {
+        chrome.storage.local.set({
+          syncedSelectors: selectors,
+          lastSelectorSyncTime: Date.now()
+        }, resolve);
+      });
+      console.log('Reddit to AI: Selectors synced successfully.');
+    }
+  } catch (error) {
+    console.error('Reddit to AI: Failed to sync selectors:', error);
+  }
+}
+
+async function checkAndSyncSelectors() {
+  return new Promise((resolve) => {
+    chrome.storage.local.get(['lastSelectorSyncTime'], async (result) => {
+      const lastSelectorSyncTime = result.lastSelectorSyncTime;
+      const now = Date.now();
+      const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+      if (!lastSelectorSyncTime || (now - lastSelectorSyncTime) > ONE_DAY_MS) {
+        await syncSelectors();
+      }
+      resolve();
+    });
+  });
+}
+
+// Call on startup
+if (!globalThis.R2AIServiceWorkerTest) {
+  checkAndSyncSelectors().catch(err => console.error('Selector check failed:', err));
+}
+
+// Set up listeners
+if (chrome.runtime.onStartup) {
+  chrome.runtime.onStartup.addListener(() => {
+    checkAndSyncSelectors().catch(err => console.error('Selector check failed:', err));
+  });
+}
+
 if (globalThis.R2AIServiceWorkerTest) {
   Object.assign(globalThis.R2AIServiceWorkerTest, {
     applyBackgroundFilters,
     mergeAdditionalComments,
     parseBackgroundComments,
-    parseBackgroundCommentNode
+    parseBackgroundCommentNode,
+    syncSelectors,
+    checkAndSyncSelectors
   });
 }
+

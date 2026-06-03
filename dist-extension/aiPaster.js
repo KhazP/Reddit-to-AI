@@ -65,7 +65,7 @@ async function attemptPaste(payload) {
         return;
     }
 
-    const target = getPlatformInputTarget();
+    const target = await getPlatformInputTarget();
     if (!target.inputSelector) {
         await recordPasteFailure(payload, 'This AI platform is not recognized.');
         showPasteFallback(promptText, 'Auto-paste failed — this AI platform is not recognized.', payload);
@@ -148,33 +148,81 @@ async function recordPasteFailure(payload, reason) {
     });
 }
 
-function getPlatformInputTarget() {
+async function getPlatformInputTarget() {
     const hostname = window.location.hostname;
+    let platform = '';
     if (hostname.includes('gemini.google.com')) {
-        return {
+        platform = 'gemini';
+    } else if (hostname.includes('chatgpt.com')) {
+        platform = 'chatgpt';
+    } else if (hostname.includes('claude.ai')) {
+        platform = 'claude';
+    } else if (hostname.includes('aistudio.google.com')) {
+        platform = 'aistudio';
+    }
+
+    if (!platform) {
+        return { inputSelector: '', isContentEditable: false };
+    }
+
+    const defaults = {
+        gemini: {
             inputSelector: 'div.ql-editor[contenteditable="true"], div[contenteditable="true"].ql-editor, div.rich-textarea > div[contenteditable="true"], div[contenteditable="true"]',
             isContentEditable: true
-        };
-    }
-    if (hostname.includes('chatgpt.com')) {
-        return {
+        },
+        chatgpt: {
             inputSelector: '#prompt-textarea, div[contenteditable="true"]#prompt-textarea, textarea',
             isContentEditable: true
-        };
-    }
-    if (hostname.includes('claude.ai')) {
-        return {
+        },
+        claude: {
             inputSelector: 'div[contenteditable="true"], [contenteditable="true"]',
             isContentEditable: true
-        };
-    }
-    if (hostname.includes('aistudio.google.com')) {
-        return {
+        },
+        aistudio: {
             inputSelector: 'textarea, div[contenteditable="true"]',
             isContentEditable: false
-        };
+        }
+    };
+
+    const defaultTarget = defaults[platform];
+
+    let synced = {};
+    if (typeof chrome !== 'undefined' && chrome.storage?.local) {
+        try {
+            const localData = await new Promise(resolve => {
+                chrome.storage.local.get('syncedSelectors', resolve);
+            });
+            synced = localData?.syncedSelectors?.[platform] || {};
+        } catch (e) {
+            console.error('Reddit to AI: Failed to read syncedSelectors', e);
+        }
     }
-    return { inputSelector: '', isContentEditable: false };
+
+    let custom = {};
+    if (typeof chrome !== 'undefined' && chrome.storage?.sync) {
+        try {
+            const syncData = await new Promise(resolve => {
+                chrome.storage.sync.get('customSelectors', resolve);
+            });
+            custom = syncData?.customSelectors?.[platform] || {};
+        } catch (e) {
+            console.error('Reddit to AI: Failed to read customSelectors', e);
+        }
+    }
+
+    const normalizedSynced = typeof synced === 'string' ? { inputSelector: synced } : synced;
+    const normalizedCustom = typeof custom === 'string' ? { inputSelector: custom } : custom;
+
+    const merged = {
+        inputSelector: normalizedCustom.inputSelector || normalizedSynced.inputSelector || defaultTarget.inputSelector,
+        isContentEditable: typeof normalizedCustom.isContentEditable === 'boolean'
+            ? normalizedCustom.isContentEditable
+            : (typeof normalizedSynced.isContentEditable === 'boolean'
+                ? normalizedSynced.isContentEditable
+                : defaultTarget.isContentEditable)
+    };
+
+    return merged;
 }
 
 async function waitForInput(selector) {
@@ -414,6 +462,7 @@ if (globalThis.R2AIAiPasterTest) {
     Object.assign(globalThis.R2AIAiPasterTest, {
         attemptPaste,
         pasteImages,
-        collectImageUrls
+        collectImageUrls,
+        getPlatformInputTarget
     });
 }
