@@ -140,36 +140,59 @@ if (window.__redditToAiScraperInitialized) {
     url.searchParams.set('showmore', 'true');
     url.searchParams.set('sort', SCRAPER_STATE.redditSortMode);
 
-    const response = await fetchWithRetry(url.toString());
-    if (!Array.isArray(response) || response.length < 2) {
-      throw new Error('Invalid Reddit JSON format.');
+    let post;
+    let roots;
+    let count;
+    let fallbackToDom = false;
+
+    try {
+      const response = await fetchWithRetry(url.toString());
+      if (!Array.isArray(response) || response.length < 2) {
+        throw new Error('Invalid Reddit JSON format.');
+      }
+
+      const postData = response[0]?.data?.children?.[0]?.data;
+      const commentsData = response[1]?.data?.children || [];
+      if (!postData) {
+        throw new Error('Reddit JSON did not include post data.');
+      }
+
+      SCRAPER_STATE.threadId = postData.name;
+      SCRAPER_STATE.subreddit = postData.subreddit;
+
+      post = extractPostDetails(postData);
+
+      sendProgress(chrome.i18n.getMessage('scraper_parsing') || 'Parsing initial comments...', 15);
+
+      const moreIds = [];
+      const parsedRes = parseComments(commentsData, includeHidden, SCRAPER_STATE.maxDepth, moreIds);
+      roots = parsedRes.roots;
+      count = parsedRes.count;
+      console.log(`Reddit to AI: Initial parse - ${count} comments, ${moreIds.length} more IDs`);
+
+      if (moreIds.length > 0 && !SCRAPER_STATE.stopRequested) {
+        sendProgress(chrome.i18n.getMessage('scraper_found_more', [count.toString(), moreIds.length.toString()]) || `Found ${count} comments, loading ${moreIds.length} more...`, 20);
+        const moreResult = await fetchAllMoreComments(moreIds, includeHidden, false);
+        const integration = integrateAdditionalComments(roots, moreResult.comments);
+        roots = integration.roots;
+        count += integration.addedCount;
+        SCRAPER_STATE.failedMoreIds = moreResult.failedIds || [];
+        console.log(`Reddit to AI: Added ${integration.addedCount} more comments. Total: ${count}. Failed IDs: ${SCRAPER_STATE.failedMoreIds.length}`);
+      }
+    } catch (error) {
+      console.warn('Reddit JSON API fetch failed, falling back to DOM scraping:', error);
+      fallbackToDom = true;
     }
 
-    const postData = response[0]?.data?.children?.[0]?.data;
-    const commentsData = response[1]?.data?.children || [];
-    if (!postData) {
-      throw new Error('Reddit JSON did not include post data.');
-    }
+    if (fallbackToDom) {
+      sendProgress(chrome.i18n.getMessage('scraper_dom_fallback') || 'API failed. Parsing visible DOM...', 15);
+      const domResult = scrapeFromDOM(includeHidden);
+      post = domResult.post;
+      roots = domResult.comments;
+      count = countNestedReplies(roots);
 
-    SCRAPER_STATE.threadId = postData.name;
-    SCRAPER_STATE.subreddit = postData.subreddit;
-
-    const post = extractPostDetails(postData);
-
-    sendProgress(chrome.i18n.getMessage('scraper_parsing') || 'Parsing initial comments...', 15);
-
-    const moreIds = [];
-    let { roots, count } = parseComments(commentsData, includeHidden, SCRAPER_STATE.maxDepth, moreIds);
-    console.log(`Reddit to AI: Initial parse - ${count} comments, ${moreIds.length} more IDs`);
-
-    if (moreIds.length > 0 && !SCRAPER_STATE.stopRequested) {
-      sendProgress(chrome.i18n.getMessage('scraper_found_more', [count.toString(), moreIds.length.toString()]) || `Found ${count} comments, loading ${moreIds.length} more...`, 20);
-      const moreResult = await fetchAllMoreComments(moreIds, includeHidden, false);
-      const integration = integrateAdditionalComments(roots, moreResult.comments);
-      roots = integration.roots;
-      count += integration.addedCount;
-      SCRAPER_STATE.failedMoreIds = moreResult.failedIds || [];
-      console.log(`Reddit to AI: Added ${integration.addedCount} more comments. Total: ${count}. Failed IDs: ${SCRAPER_STATE.failedMoreIds.length}`);
+      SCRAPER_STATE.threadId = post.permalink || window.location.href;
+      SCRAPER_STATE.subreddit = post.subreddit;
     }
 
     sendProgress(chrome.i18n.getMessage('scraper_applying_filters') || 'Applying filters...', 95);
@@ -202,6 +225,138 @@ if (window.__redditToAiScraperInitialized) {
       },
       threadId: SCRAPER_STATE.threadId,
       threadUrl: window.location.href
+    };
+  }
+
+  function scrapeFromDOM(includeHidden) {
+    const postEl = document.querySelector('shreddit-post');
+    if (!postEl) {
+      throw new Error('Could not find <shreddit-post> element on the page.');
+    }
+
+    const title = postEl.getAttribute('post-title') || '';
+    const author = postEl.getAttribute('author') || '';
+    const subreddit = (postEl.getAttribute('subreddit-prefixed-name') || postEl.getAttribute('subreddit') || '').replace(/^r\//, '');
+
+    let content = '';
+    const contentEl = postEl.querySelector('#-post-rtjson-content') ||
+                      postEl.querySelector('[slot="text-body"]') ||
+                      postEl.querySelector('.text-neutral-content');
+    if (contentEl) {
+      content = contentEl.textContent.trim();
+    } else {
+      const paragraphs = Array.from(postEl.querySelectorAll('p')).filter(p => !p.closest('shreddit-comment'));
+      content = paragraphs.map(p => p.textContent.trim()).join('\n\n');
+    }
+
+    const score = parseInt(postEl.getAttribute('score') || '0', 10);
+    const numComments = parseInt(postEl.getAttribute('comment-count') || '0', 10);
+    const isNsfw = postEl.hasAttribute('over-18') || postEl.getAttribute('over-18') === 'true';
+    const isSpoiler = postEl.hasAttribute('spoiler') || postEl.getAttribute('spoiler') === 'true';
+    const permalink = postEl.getAttribute('permalink') ? `https://www.reddit.com${postEl.getAttribute('permalink')}` : window.location.href;
+
+    const post = {
+      title,
+      author,
+      subreddit,
+      url: window.location.href,
+      content,
+      flair: postEl.getAttribute('flair') || null,
+      isNsfw,
+      isSpoiler,
+      awardCount: 0,
+      score,
+      upvoteRatio: null,
+      numComments,
+      createdUtc: null,
+      permalink,
+      images: [],
+      links: [],
+      videos: [],
+      youtubeVideoUrls: [],
+      sourceUrls: [],
+      gallery: [],
+      poll: null,
+      postHint: null,
+      domain: null,
+      crosspostParentUrl: null,
+      crosspostParentTitle: null
+    };
+
+    const commentEls = Array.from(document.querySelectorAll('shreddit-comment'));
+    const allComments = [];
+
+    for (const el of commentEls) {
+      const id = el.getAttribute('thingid') || el.getAttribute('id') || '';
+      const parentId = el.getAttribute('parentid') || el.getAttribute('parent-id') || '';
+      const cAuthor = el.getAttribute('author') || '';
+      const scoreAttr = el.getAttribute('score');
+      const cScore = scoreAttr != null ? parseInt(scoreAttr, 10) : 0;
+      const depthAttr = el.getAttribute('depth');
+      const depth = depthAttr != null ? parseInt(depthAttr, 10) : 0;
+
+      let text = el.getAttribute('text') || '';
+      if (!text) {
+        const bodyEl = el.querySelector('[slot="comment"]') || el.querySelector('.md') || el.querySelector('.text-neutral-content');
+        if (bodyEl) {
+          text = bodyEl.textContent.trim();
+        } else {
+          const paragraphs = Array.from(el.querySelectorAll('p')).filter(p => p.closest('shreddit-comment') === el);
+          text = paragraphs.map(p => p.textContent.trim()).join('\n\n');
+        }
+      }
+
+      // Filter out deleted/removed comments if includeHidden is false
+      const isRemoved = text === '[removed]' || text === '[deleted]';
+      if (!includeHidden && isRemoved) {
+        continue;
+      }
+
+      allComments.push({
+        id,
+        parentId,
+        author: cAuthor,
+        text,
+        depth,
+        score: cScore,
+        ups: cScore,
+        downs: 0,
+        controversiality: 0,
+        timestamp: null,
+        createdUtc: null,
+        isSubmitter: cAuthor && author && cAuthor === author,
+        authorFlair: el.getAttribute('author-flair-text') || null,
+        authorFlairCss: null,
+        distinguished: null,
+        awardCount: 0,
+        permalink: el.getAttribute('permalink') ? `https://www.reddit.com${el.getAttribute('permalink')}` : null,
+        replies: []
+      });
+    }
+
+    const commentMap = {};
+    for (const comment of allComments) {
+      if (comment.id) {
+        commentMap[comment.id] = comment;
+        const norm = comment.id.replace(/^(t1|t3)_/, '');
+        commentMap[norm] = comment;
+      }
+    }
+
+    const roots = [];
+    for (const comment of allComments) {
+      const parentId = comment.parentId;
+      const parent = parentId ? (commentMap[parentId] || commentMap[parentId.replace(/^(t1|t3)_/, '')]) : null;
+      if (parent && parent.id !== comment.id) {
+        parent.replies.push(comment);
+      } else {
+        roots.push(comment);
+      }
+    }
+
+    return {
+      post,
+      comments: roots
     };
   }
 
@@ -712,5 +867,12 @@ if (window.__redditToAiScraperInitialized) {
     if (status === 404) return 'Reddit could not find this thread. It may be deleted or the URL may be wrong.';
     if (status === 451) return 'Reddit blocked this thread in your region.';
     return `Reddit request failed with HTTP ${status}`;
+  }
+
+  if (typeof globalThis !== 'undefined') {
+    globalThis.scrapeFromDOM = scrapeFromDOM;
+    globalThis.startScrape = startScrape;
+    globalThis.SCRAPER_STATE = SCRAPER_STATE;
+    globalThis.applySettings = applySettings;
   }
 }
