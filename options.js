@@ -128,6 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function initializeOptions() {
     console.log("Options: Initializing...");
+    let customSelectorsCache = {};
 
     // Element references
     const saveStatusDisplay = document.getElementById('saveStatus');
@@ -430,7 +431,8 @@ async function initializeOptions() {
         setAuthorFilterControls(getAuthorTypesFromStorage(result));
 
         // Populate custom selectors
-        const customSelectors = result.customSelectors || {};
+        customSelectorsCache = result.customSelectors || {};
+        const customSelectors = customSelectorsCache;
         const selectorGeminiInput = document.getElementById('selectorGemini');
         const selectorChatgptInput = document.getElementById('selectorChatgpt');
         const selectorClaudeInput = document.getElementById('selectorClaude');
@@ -462,23 +464,20 @@ async function initializeOptions() {
         if (input) {
             input.addEventListener('change', (e) => {
                 const val = e.target.value.trim();
-                chrome.storage.sync.get(['customSelectors'], (result) => {
-                    const customSelectors = result.customSelectors || {};
-                    if (!customSelectors[platform]) {
-                        customSelectors[platform] = {};
-                    }
-                    customSelectors[platform].inputSelector = val;
-                    const editableDefaults = {
-                        gemini: true,
-                        chatgpt: true,
-                        claude: true,
-                        aistudio: false
-                    };
-                    customSelectors[platform].isContentEditable = editableDefaults[platform];
+                if (!customSelectorsCache[platform]) {
+                    customSelectorsCache[platform] = {};
+                }
+                customSelectorsCache[platform].inputSelector = val;
+                const editableDefaults = {
+                    gemini: true,
+                    chatgpt: true,
+                    claude: true,
+                    aistudio: false
+                };
+                customSelectorsCache[platform].isContentEditable = editableDefaults[platform];
 
-                    chrome.storage.sync.set({ customSelectors }, showSaveToast);
-                    console.log(`Options: Custom selector for ${platform} updated to:`, val);
-                });
+                chrome.storage.sync.set({ customSelectors: customSelectorsCache }, showSaveToast);
+                console.log(`Options: Custom selector for ${platform} updated to:`, val);
             });
         }
     });

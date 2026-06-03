@@ -187,26 +187,17 @@ async function getPlatformInputTarget() {
     const defaultTarget = defaults[platform];
 
     let synced = {};
-    if (typeof chrome !== 'undefined' && chrome.storage?.local) {
-        try {
-            const localData = await new Promise(resolve => {
-                chrome.storage.local.get('syncedSelectors', resolve);
-            });
-            synced = localData?.syncedSelectors?.[platform] || {};
-        } catch (e) {
-            console.error('Reddit to AI: Failed to read syncedSelectors', e);
-        }
-    }
-
     let custom = {};
-    if (typeof chrome !== 'undefined' && chrome.storage?.sync) {
+    if (typeof chrome !== 'undefined' && (chrome.storage?.local || chrome.storage?.sync)) {
         try {
-            const syncData = await new Promise(resolve => {
-                chrome.storage.sync.get('customSelectors', resolve);
-            });
+            const [localData, syncData] = await Promise.all([
+                chrome.storage?.local ? new Promise(resolve => chrome.storage.local.get('syncedSelectors', resolve)) : Promise.resolve({}),
+                chrome.storage?.sync ? new Promise(resolve => chrome.storage.sync.get('customSelectors', resolve)) : Promise.resolve({})
+            ]);
+            synced = localData?.syncedSelectors?.[platform] || {};
             custom = syncData?.customSelectors?.[platform] || {};
         } catch (e) {
-            console.error('Reddit to AI: Failed to read customSelectors', e);
+            console.error('Reddit to AI: Failed to read selectors from storage', e);
         }
     }
 
