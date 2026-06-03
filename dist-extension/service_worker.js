@@ -868,11 +868,6 @@ function isRedditUrl(url) {
 }
 
 async function injectContentScripts(tabId) {
-  try {
-    await chrome.scripting.insertCSS({ target: { tabId }, files: ['floatingPanel.css'] });
-  } catch (error) {
-    console.debug('Floating panel CSS injection skipped:', error.message);
-  }
 
   try {
     await chrome.scripting.executeScript({ target: { tabId }, files: ['floatingPanel.js'] });

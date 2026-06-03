@@ -78,19 +78,32 @@
 </div>
 `;
 
-        document.body.insertAdjacentHTML('beforeend', panelHTML);
+        const host = document.createElement('div');
+        host.id = 'reddit-to-ai-host';
+        document.body.appendChild(host);
+
+        const shadow = host.attachShadow({ mode: 'closed' });
+
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = chrome.runtime.getURL('floatingPanel.css');
+        shadow.appendChild(link);
+
+        const template = document.createElement('template');
+        template.innerHTML = panelHTML;
+        shadow.appendChild(template.content.cloneNode(true));
 
         // ── Element references ────────────────────────────
-        const panel = document.getElementById('redditSummarizerPanel');
-        const closeBtn = document.getElementById('rsCloseBtn');
-        const statusMessage = document.getElementById('rsStatusMessage');
-        const progressArea = document.getElementById('rsProgressArea');
-        const progressBar = document.getElementById('rsProgressBar');
-        const userGuidance = document.getElementById('rsUserGuidance');
+        const panel = shadow.getElementById('redditSummarizerPanel');
+        const closeBtn = shadow.getElementById('rsCloseBtn');
+        const statusMessage = shadow.getElementById('rsStatusMessage');
+        const progressArea = shadow.getElementById('rsProgressArea');
+        const progressBar = shadow.getElementById('rsProgressBar');
+        const userGuidance = shadow.getElementById('rsUserGuidance');
         const header = panel?.querySelector('.rs-header');
-        const liveDot = document.getElementById('rsLiveDot');
-        const pctEl = document.getElementById('rsPercentage');
-        const badgeEl = document.getElementById('rsContextBadge');
+        const liveDot = shadow.getElementById('rsLiveDot');
+        const pctEl = shadow.getElementById('rsPercentage');
+        const badgeEl = shadow.getElementById('rsContextBadge');
 
         // ── Phase helpers ──────────────────────────────────
         const PHASES = ['fetch', 'parse', 'load', 'filter'];
@@ -138,7 +151,7 @@
             });
 
             for (let i = 1; i <= 3; i++) {
-                const conn = document.getElementById(`rsConn${i}`);
+                const conn = shadow.getElementById(`rsConn${i}`);
                 if (conn) conn.classList.toggle('filled', i <= committedPhaseIndex);
             }
         }
@@ -153,7 +166,7 @@
                 }
             });
             for (let i = 1; i <= 3; i++) {
-                document.getElementById(`rsConn${i}`)?.classList.remove('filled');
+                shadow.getElementById(`rsConn${i}`)?.classList.remove('filled');
             }
         }
 
