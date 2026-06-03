@@ -134,8 +134,8 @@ function createContext({ imageResponses }) {
         }
       },
       storage: {
-        local: { get: () => {} },
-        sync: { get: () => {} }
+        local: { get(keys, callback) { callback({}); } },
+        sync: { get(keys, callback) { callback({}); } }
       }
     },
     R2AIAiPasterTest: {}

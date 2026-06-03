@@ -1374,12 +1374,16 @@ async function checkAndSyncSelectors() {
 }
 
 // Call on startup
-checkAndSyncSelectors().catch(err => console.error('Selector check failed:', err));
+if (!globalThis.R2AIServiceWorkerTest) {
+  checkAndSyncSelectors().catch(err => console.error('Selector check failed:', err));
+}
 
 // Set up listeners
-chrome.runtime.onStartup.addListener(() => {
-  checkAndSyncSelectors().catch(err => console.error('Selector check failed:', err));
-});
+if (chrome.runtime.onStartup) {
+  chrome.runtime.onStartup.addListener(() => {
+    checkAndSyncSelectors().catch(err => console.error('Selector check failed:', err));
+  });
+}
 
 if (globalThis.R2AIServiceWorkerTest) {
   Object.assign(globalThis.R2AIServiceWorkerTest, {
