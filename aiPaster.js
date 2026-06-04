@@ -159,6 +159,40 @@ async function getPlatformInputTarget() {
         platform = 'claude';
     } else if (hostname.includes('aistudio.google.com')) {
         platform = 'aistudio';
+    } else if (hostname.includes('chat.deepseek.com')) {
+        platform = 'deepseek';
+    } else if (hostname.includes('groq.com')) {
+        platform = 'groq';
+    }
+
+    // Load custom origins and custom/synced selectors
+    let syncedSelectors = {};
+    let customSelectors = {};
+    let customOrigins = [];
+    if (typeof chrome !== 'undefined' && (chrome.storage?.local || chrome.storage?.sync)) {
+        try {
+            const [localData, syncData] = await Promise.all([
+                chrome.storage?.local ? new Promise(resolve => chrome.storage.local.get('syncedSelectors', resolve)) : Promise.resolve({}),
+                chrome.storage?.sync ? new Promise(resolve => chrome.storage.sync.get(['customSelectors', 'customOrigins'], resolve)) : Promise.resolve({})
+            ]);
+            syncedSelectors = localData?.syncedSelectors || {};
+            customSelectors = syncData?.customSelectors || {};
+            customOrigins = syncData?.customOrigins || [];
+        } catch (e) {
+            console.error('Reddit to AI: Failed to read selectors/origins from storage', e);
+        }
+    }
+
+    // If not a static platform, check if the current page location matches any custom origin
+    if (!platform) {
+        const href = window.location.href;
+        const matchesCustom = customOrigins.some(pattern => {
+            const base = pattern.endsWith('/*') ? pattern.slice(0, -2) : (pattern.endsWith('*') ? pattern.slice(0, -1) : pattern);
+            return href.startsWith(base);
+        });
+        if (matchesCustom) {
+            platform = 'custom';
+        }
     }
 
     if (!platform) {
@@ -181,25 +215,24 @@ async function getPlatformInputTarget() {
         aistudio: {
             inputSelector: 'textarea, div[contenteditable="true"]',
             isContentEditable: false
+        },
+        deepseek: {
+            inputSelector: 'textarea, #chat-input, div[contenteditable="true"]',
+            isContentEditable: false
+        },
+        groq: {
+            inputSelector: 'textarea, #chat-input, div[contenteditable="true"]',
+            isContentEditable: false
+        },
+        custom: {
+            inputSelector: 'textarea, div[contenteditable="true"]',
+            isContentEditable: false
         }
     };
 
     const defaultTarget = defaults[platform];
-
-    let synced = {};
-    let custom = {};
-    if (typeof chrome !== 'undefined' && (chrome.storage?.local || chrome.storage?.sync)) {
-        try {
-            const [localData, syncData] = await Promise.all([
-                chrome.storage?.local ? new Promise(resolve => chrome.storage.local.get('syncedSelectors', resolve)) : Promise.resolve({}),
-                chrome.storage?.sync ? new Promise(resolve => chrome.storage.sync.get('customSelectors', resolve)) : Promise.resolve({})
-            ]);
-            synced = localData?.syncedSelectors?.[platform] || {};
-            custom = syncData?.customSelectors?.[platform] || {};
-        } catch (e) {
-            console.error('Reddit to AI: Failed to read selectors from storage', e);
-        }
-    }
+    const synced = syncedSelectors[platform] || {};
+    const custom = customSelectors[platform] || {};
 
     const normalizedSynced = typeof synced === 'string' ? { inputSelector: synced } : synced;
     const normalizedCustom = typeof custom === 'string' ? { inputSelector: custom } : custom;
