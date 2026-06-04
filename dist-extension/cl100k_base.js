@@ -1,13 +1,13 @@
 // Pure JS cl100k-base BPE tokenizer (Tiktoken) implementation
 (function attachTiktoken(global) {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+  const lookup = new Uint8Array(256);
+  for (let i = 0; i < chars.length; i++) {
+    lookup[chars.charCodeAt(i)] = i;
+  }
+
   // Base64 to Uint8Array decoder helper (offline, no external package)
   function base64ToBytes(str) {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-    const lookup = new Uint8Array(256);
-    for (let i = 0; i < chars.length; i++) {
-      lookup[chars.charCodeAt(i)] = i;
-    }
-
     let bufferLength = Math.floor((str.length * 3) / 4);
     if (str.endsWith('==')) {
       bufferLength -= 2;
