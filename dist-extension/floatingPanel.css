@@ -397,6 +397,37 @@
     gap: 10px;
 }
 
+.rs-summary-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.rs-summary-actions {
+    display: flex;
+    gap: 4px;
+}
+
+.rs-action-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    transition: all 0.2s;
+    padding: 0;
+}
+
+.rs-action-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+}
+
 .rs-summary-area h4 {
     margin: 0;
     font-size: 10px;

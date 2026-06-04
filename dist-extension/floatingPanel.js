@@ -77,7 +77,24 @@
 
     <!-- Summary (shown after completion) -->
     <div class="rs-summary-area" id="rsSummaryArea">
-      <h4>Summary</h4>
+      <div class="rs-summary-header">
+        <h4>Summary</h4>
+        <div class="rs-summary-actions">
+          <button id="rsCopySummaryBtn" class="rs-action-btn" title="Copy to clipboard">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+          </button>
+          <button id="rsExportSummaryBtn" class="rs-action-btn" title="Export as Markdown text file">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+          </button>
+        </div>
+      </div>
       <div id="rsSummaryText"></div>
     </div>
 
@@ -114,6 +131,8 @@
         const summaryArea = shadow.getElementById('rsSummaryArea');
         const summaryText = shadow.getElementById('rsSummaryText');
         const localSummaryBtn = shadow.getElementById('rsLocalSummaryBtn');
+        const copySummaryBtn = shadow.getElementById('rsCopySummaryBtn');
+        const exportSummaryBtn = shadow.getElementById('rsExportSummaryBtn');
 
         // ── Phase helpers ──────────────────────────────────
         const PHASES = ['fetch', 'parse', 'load', 'filter'];
@@ -252,6 +271,43 @@
                 e.preventDefault();
                 e.stopPropagation();
                 panel.style.display = 'none';
+            });
+        }
+
+        // ── Copy Summary button ────────────────────────────
+        if (copySummaryBtn && summaryText) {
+            copySummaryBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const textToCopy = summaryText.innerText || summaryText.textContent || '';
+                if (!textToCopy) return;
+                navigator.clipboard.writeText(textToCopy)
+                    .then(() => {
+                        console.log('Summary copied to clipboard!');
+                    })
+                    .catch(err => {
+                        console.error('Failed to copy summary:', err);
+                    });
+            });
+        }
+
+        // ── Export Summary button ──────────────────────────
+        if (exportSummaryBtn && summaryText) {
+            exportSummaryBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const textToExport = summaryText.innerText || summaryText.textContent || '';
+                if (!textToExport) return;
+                
+                const blob = new Blob([textToExport], { type: 'text/markdown;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `reddit-local-summary-${Date.now()}.md`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
             });
         }
 
