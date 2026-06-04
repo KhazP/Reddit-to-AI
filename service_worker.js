@@ -80,7 +80,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       getPreviewData()
         .then(payload => {
           if (!payload?.data) throw new Error('No pending Reddit preview data found.');
-          return loadSettings().then(settings => sendResponse({ data: payload.data, settings: { ...settings, ...payload.settings } }));
+          return loadSettings().then(settings => {
+            const merged = { ...settings, ...payload.settings };
+            const resolved = resolveSubredditSettings(payload.data.post?.subreddit, merged);
+            return sendResponse({ data: payload.data, settings: resolved });
+          });
         })
         .catch(error => sendResponse({ error: error.message }));
       return true;
@@ -494,15 +498,16 @@ async function sendPromptToAi(request) {
 }
 
 async function sendDataDirectlyToAi(data, settings) {
-  const renderedData = R2AIPrompt.applyContextPreset(data, settings.contextPreset || 'balanced', settings);
-  const promptText = R2AIPrompt.buildPromptText(renderedData, settings.defaultPromptTemplate, {
-    ...settings,
+  const resolvedSettings = resolveSubredditSettings(data.post?.subreddit, settings);
+  const renderedData = R2AIPrompt.applyContextPreset(data, resolvedSettings.contextPreset || 'balanced', resolvedSettings);
+  const promptText = R2AIPrompt.buildPromptText(renderedData, resolvedSettings.defaultPromptTemplate, {
+    ...resolvedSettings,
     contextPreset: null
   });
   return sendPromptToAi({
     promptText,
-    aiProvider: settings.selectedLlmProvider,
-    mediaMode: settings.mediaMode,
+    aiProvider: resolvedSettings.selectedLlmProvider,
+    mediaMode: resolvedSettings.mediaMode,
     renderedData,
     directSend: true
   });
@@ -746,6 +751,82 @@ function sortHistory(history) {
   });
 }
 
+const PRESET_TEMPLATES = {
+  summarize: `Provide a concise TL;DR summary of this Reddit thread.
+Focus on: the main topic, key points made, and overall conclusion.
+Keep it brief but comprehensive.
+
+{content}`,
+  debate: `Analyze this Reddit thread as a debate.
+Map out:
+1. The different sides/perspectives presented
+2. Key arguments for each position
+3. Points of agreement and disagreement
+4. Which arguments are strongest and why
+
+{content}`,
+  sentiment: `Perform a sentiment analysis on this Reddit thread.
+Analyze:
+1. Overall sentiment (positive/negative/neutral)
+2. Breakdown by comment - what % are positive, negative, neutral
+3. Most emotionally charged comments
+4. Tone shifts throughout the discussion
+
+{content}`,
+  takeaways: `Extract the key takeaways from this Reddit thread.
+Provide:
+- Main insights as bullet points
+- Actionable advice mentioned
+- Important facts or statistics shared
+- Common recommendations from multiple users
+
+{content}`,
+  eli5: `Explain this Reddit thread like I'm 5 years old.
+Use simple language, analogies, and examples.
+Avoid jargon and technical terms.
+Make it easy to understand for someone new to this topic.
+
+{content}`
+};
+
+function matchSubredditPattern(subreddit, pattern) {
+  if (!subreddit || !pattern) return false;
+  const sub = subreddit.trim().toLowerCase();
+  const pat = pattern.trim().toLowerCase();
+  if (pat === sub) return true;
+  if (pat.includes('*')) {
+    const escaped = pat.replace(/[-\/\\^$+.()|[\]{}?]/g, '\\$&');
+    const regexStr = '^' + escaped.replace(/\*/g, '.*') + '$';
+    try {
+      const regex = new RegExp(regexStr);
+      return regex.test(sub);
+    } catch (e) {
+      console.error('Invalid wildcard pattern:', pat, e);
+      return false;
+    }
+  }
+  return false;
+}
+
+function resolveSubredditSettings(subreddit, settings) {
+  const resolved = { ...settings };
+  if (!subreddit || !Array.isArray(settings?.subredditPromptMappings)) {
+    return resolved;
+  }
+  for (const rule of settings.subredditPromptMappings) {
+    if (matchSubredditPattern(subreddit, rule.pattern)) {
+      const i18nTemplate = typeof chrome !== 'undefined' && chrome.i18n ? chrome.i18n.getMessage(`template_${rule.preset}`) : '';
+      const presetTemplate = i18nTemplate || PRESET_TEMPLATES[rule.preset];
+      if (presetTemplate) {
+        resolved.defaultPromptTemplate = presetTemplate;
+        resolved.selectedPreset = rule.preset;
+        break;
+      }
+    }
+  }
+  return resolved;
+}
+
 // =====================
 // Storage / Settings
 // =====================
@@ -761,7 +842,8 @@ async function loadSettings() {
     mediaMode: 'attach',
     redditSortMode: 'confidence',
     outputFormat: 'auto',
-    showPromptPreview: true
+    showPromptPreview: true,
+    subredditPromptMappings: []
   };
 
   const items = await getStorage(chrome.storage.sync, [
@@ -774,7 +856,8 @@ async function loadSettings() {
     'mediaMode',
     'redditSortMode',
     'outputFormat',
-    'showPromptPreview'
+    'showPromptPreview',
+    'subredditPromptMappings'
   ]);
   return { ...defaults, ...items };
 }
@@ -1637,7 +1720,10 @@ if (globalThis.R2AIServiceWorkerTest) {
     registerCustomOriginScript,
     unregisterCustomOriginScript,
     registerAllCustomOrigins,
-    getAiUrl
+    getAiUrl,
+    matchSubredditPattern,
+    resolveSubredditSettings,
+    PRESET_TEMPLATES
   });
 }
 

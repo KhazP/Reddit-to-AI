@@ -563,6 +563,31 @@
                     </div>
                 </div>
 
+                <!-- Subreddit-Specific Templates Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                        </svg>
+                        <h2 class="card-title">Subreddit-Specific Templates</h2>
+                    </div>
+                    <div class="card-content">
+                        <p class="form-hint" style="margin-bottom: 12px;">Override the default prompt template for specific subreddits (supports wildcards like <code>investing*</code>).</p>
+                        <div class="form-group" style="display: flex; gap: 8px; margin-bottom: 12px; align-items: center;">
+                            <input type="text" id="subredditPatternInput" class="search-input" placeholder="e.g. cscareerquestions or investing*" style="flex: 2; box-sizing: border-box;">
+                            <select id="subredditPresetSelect" class="select-input" style="flex: 1; min-width: 110px;">
+                                <option value="summarize">Summarize</option>
+                                <option value="debate">Debate</option>
+                                <option value="sentiment">Sentiment</option>
+                                <option value="takeaways">Takeaways</option>
+                                <option value="eli5">ELI5</option>
+                            </select>
+                            <button type="button" id="addSubredditRuleBtn" class="btn primary" style="white-space: nowrap;">Add Rule</button>
+                        </div>
+                        <ul id="subredditRulesList" class="custom-origins-list" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px;"></ul>
+                    </div>
+                </div>
+
                 <!-- Custom AI Platforms Card -->
                 <div class="card">
                     <div class="card-header">

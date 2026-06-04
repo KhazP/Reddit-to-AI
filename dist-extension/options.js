@@ -129,6 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
 async function initializeOptions() {
     console.log("Options: Initializing...");
     let customSelectorsCache = {};
+    let subredditRules = [];
 
     // Element references
     const saveStatusDisplay = document.getElementById('saveStatus');
@@ -324,7 +325,8 @@ async function initializeOptions() {
         'outputFormat',
         'showPromptPreview',
         'selectedLanguage',
-        'customSelectors'
+        'customSelectors',
+        'subredditPromptMappings'
     ], async (result) => {
         console.log("Options: Loaded settings:", result);
 
@@ -453,6 +455,10 @@ async function initializeOptions() {
         if (languageSelect) {
             languageSelect.value = savedLanguage;
         }
+
+        // Subreddit rules
+        subredditRules = result.subredditPromptMappings || [];
+        renderSubredditRules(subredditRules);
     });
 
     // Event listeners
@@ -584,6 +590,74 @@ async function initializeOptions() {
                         chrome.runtime.sendMessage({ action: 'unregisterCustomOrigin', origin });
                     });
                 });
+            });
+        });
+    }
+
+    // ==========================================
+    // Subreddit-Specific Prompt Templates
+    // ==========================================
+    const subredditPatternInput = document.getElementById('subredditPatternInput');
+    const subredditPresetSelect = document.getElementById('subredditPresetSelect');
+    const addSubredditRuleBtn = document.getElementById('addSubredditRuleBtn');
+    const subredditRulesList = document.getElementById('subredditRulesList');
+
+    function renderSubredditRules(rules) {
+        if (!subredditRulesList) return;
+        subredditRulesList.innerHTML = '';
+        if (rules.length === 0) {
+            subredditRulesList.innerHTML = '<li class="custom-origin-item"><span class="custom-origin-text">No subreddit-specific rules defined yet.</span></li>';
+            return;
+        }
+        rules.forEach((rule, index) => {
+            const li = document.createElement('li');
+            li.className = 'custom-origin-item';
+            li.innerHTML = `
+                <span class="custom-origin-text"><strong>${escapeHtml(rule.pattern)}</strong> &rarr; ${escapeHtml(presetName(rule.preset))}</span>
+                <button type="button" class="btn-action btn-danger-outline remove-subreddit-rule" data-index="${index}" title="Remove rule" style="padding: 4px 8px; font-size: 11px;">
+                    Remove
+                </button>
+            `;
+            subredditRulesList.appendChild(li);
+        });
+    }
+
+    // Add subreddit-specific template rule
+    if (addSubredditRuleBtn && subredditPatternInput && subredditPresetSelect) {
+        addSubredditRuleBtn.addEventListener('click', () => {
+            const pattern = subredditPatternInput.value.trim().toLowerCase();
+            if (!pattern) return;
+            
+            // Check for duplicate patterns before saving
+            const duplicate = subredditRules.some(r => r.pattern === pattern);
+            if (duplicate) {
+                alert('Rule with this pattern already exists.');
+                return;
+            }
+            
+            const preset = subredditPresetSelect.value;
+            subredditRules.push({ pattern, preset });
+            
+            chrome.storage.sync.set({ subredditPromptMappings: subredditRules }, () => {
+                renderSubredditRules(subredditRules);
+                subredditPatternInput.value = '';
+                showSaveToast();
+            });
+        });
+    }
+
+    // Remove subreddit-specific template rule
+    if (subredditRulesList) {
+        subredditRulesList.addEventListener('click', (e) => {
+            const btn = e.target.closest('.remove-subreddit-rule');
+            if (!btn) return;
+            const index = parseInt(btn.dataset.index, 10);
+            if (isNaN(index)) return;
+            
+            subredditRules.splice(index, 1);
+            chrome.storage.sync.set({ subredditPromptMappings: subredditRules }, () => {
+                renderSubredditRules(subredditRules);
+                showSaveToast();
             });
         });
     }
