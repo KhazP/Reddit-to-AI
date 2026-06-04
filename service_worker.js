@@ -22,6 +22,20 @@ const activePasteHandoffs = new Set();
 
 console.log('Service worker initialised.');
 
+// Auto-resume from storage on wake up
+chrome.storage.local.get('activeBatch', (result) => {
+  if (result && result.activeBatch) {
+    if (scrapingState.isActive) {
+      console.log('Skipping auto-resume: scraping is already active');
+      return;
+    }
+    console.log('Auto-resuming active batch scrape from storage...', result.activeBatch);
+    resumeBatchScrape(result.activeBatch).catch(err => {
+      console.error('Failed to auto-resume batch scrape:', err);
+    });
+  }
+});
+
 chrome.runtime.onInstalled.addListener(() => {
   console.log('Reddit to AI installed.');
   syncSelectors().catch(err => console.error('Selector sync on installed failed:', err));
@@ -201,6 +215,18 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 // Port connection handler for streaming Local AI summaries
 if (chrome.runtime.onConnect) {
   chrome.runtime.onConnect.addListener((port) => {
+    if (port.name === 'keep-alive') {
+      const intervalId = setInterval(() => {
+        try {
+          port.postMessage({ ping: true });
+        } catch {
+          clearInterval(intervalId);
+        }
+      }, 10000);
+      port.onDisconnect.addListener(() => {
+        clearInterval(intervalId);
+      });
+    }
     if (port.name === 'local-ai-summary') {
       port.onMessage.addListener(async (msg) => {
         if (msg.action === 'summarize') {
@@ -334,39 +360,56 @@ async function handleScrapeRequest(request, sender) {
   }
 }
 
-async function handleBatchScrapeRequest(request, _sender) {
-  if (scrapingState.isActive) throw new Error('Scraping already in progress.');
-  const urls = normalizeBatchUrls(request.batchUrls);
-  if (urls.length === 0) throw new Error('No valid Reddit URLs were provided.');
+async function resumeBatchScrape(batch) {
+  if (scrapingState.isActive) {
+    throw new Error('Scraping already in progress.');
+  }
+
+  currentScrape = {
+    tabId: null,
+    stopRequested: false,
+    storageOption: 'persistent',
+    abortController: null
+  };
+
+  const urls = batch.urls;
+  const initialIndex = typeof batch.currentIndex === 'number' ? batch.currentIndex : 0;
 
   setScrapingState({
     isActive: true,
-    message: `Preparing to scrape ${urls.length} threads.`,
-    percentage: 5,
+    message: initialIndex > 0
+      ? `Resuming scraping of ${urls.length} threads (${initialIndex}/${urls.length}).`
+      : `Preparing to scrape ${urls.length} threads.`,
+    percentage: 5 + Math.floor((initialIndex / urls.length) * 85),
     summary: null,
     error: null
   });
 
   const settings = await loadSettings();
-  const effectiveSettings = mergeRequestFiltersIntoSettings(settings, request.filters || {}, request);
-  currentScrape = {
-    tabId: null,
-    stopRequested: false,
-    storageOption: effectiveSettings.dataStorageOption,
-    abortController: null
-  };
+  const effectiveSettings = mergeRequestFiltersIntoSettings(settings, batch.request?.filters || {}, batch.request || {});
+  currentScrape.storageOption = effectiveSettings.dataStorageOption;
 
   try {
-    const batchFilters = { ...(request.filters || {}), includeHidden: request.includeHidden };
-    const threads = [];
-    for (let i = 0; i < urls.length; i++) {
-      if (currentScrape.stopRequested) throw new Error('Batch scraping stopped by user.');
+    const batchFilters = { ...(batch.request?.filters || {}), includeHidden: batch.request?.includeHidden };
+    const threads = batch.threads || [];
+    for (let i = initialIndex; i < urls.length; i++) {
+      if (currentScrape.stopRequested) {
+        await removeStorage(chrome.storage.local, ['activeBatch']);
+        throw new Error('Batch scraping stopped by user.');
+      }
       const percentage = 10 + Math.floor((i / urls.length) * 70);
       setScrapingState({ message: `Scraping thread ${i + 1}/${urls.length}...`, percentage });
       const thread = await scrapeThreadFromUrl(urls[i], effectiveSettings, batchFilters);
       threads.push(thread);
+
+      batch.currentIndex = i + 1;
+      batch.threads = threads;
+      await setStorage(chrome.storage.local, { activeBatch: batch });
+
       await delay(900);
     }
+
+    await removeStorage(chrome.storage.local, ['activeBatch']);
 
     const batchData = {
       isBatch: true,
@@ -389,8 +432,7 @@ async function handleBatchScrapeRequest(request, _sender) {
         preset: effectiveSettings.selectedPreset,
         contextPreset: effectiveSettings.contextPreset,
         trimStrategy: effectiveSettings.trimStrategy,
-        mediaMode: effectiveSettings.mediaMode
-        ,
+        mediaMode: effectiveSettings.mediaMode,
         outputFormat: effectiveSettings.outputFormat,
         deliveryMode: effectiveSettings.showPromptPreview === false ? 'direct' : 'preview',
         pasteStatus: effectiveSettings.showPromptPreview === false ? 'pending' : 'not_started'
@@ -417,9 +459,38 @@ async function handleBatchScrapeRequest(request, _sender) {
       error: null
     });
     return { summary: null, preview: effectiveSettings.showPromptPreview !== false, direct: effectiveSettings.showPromptPreview === false, batch: true };
+  } catch (error) {
+    console.error('Batch scrape failed:', error);
+    setScrapingState({
+      isActive: false,
+      error: error.message,
+      message: `Error: ${error.message}`,
+      percentage: -1
+    });
+    throw error;
   } finally {
     currentScrape = null;
   }
+}
+
+async function handleBatchScrapeRequest(request, _sender) {
+  if (scrapingState.isActive) throw new Error('Scraping already in progress.');
+  const urls = normalizeBatchUrls(request.batchUrls);
+  if (urls.length === 0) throw new Error('No valid Reddit URLs were provided.');
+
+  const activeBatch = {
+    urls,
+    currentIndex: 0,
+    threads: [],
+    filters: request.filters || {},
+    includeHidden: request.includeHidden,
+    localSummarize: request.localSummarize,
+    request: request
+  };
+
+  await setStorage(chrome.storage.local, { activeBatch });
+
+  return resumeBatchScrape(activeBatch);
 }
 
 // =====================
@@ -943,6 +1014,7 @@ function broadcastScrapingState() {
 }
 
 function stopActiveScrape() {
+  removeStorage(chrome.storage.local, ['activeBatch']);
   if (!currentScrape) return;
   currentScrape.stopRequested = true;
   setScrapingState({ message: chrome.i18n.getMessage('sw_status_stop_requested') || 'Stop requested.', percentage: scrapingState.percentage });
@@ -1723,7 +1795,13 @@ if (globalThis.R2AIServiceWorkerTest) {
     getAiUrl,
     matchSubredditPattern,
     resolveSubredditSettings,
-    PRESET_TEMPLATES
+    PRESET_TEMPLATES,
+    resumeBatchScrape,
+    handleBatchScrapeRequest,
+    stopActiveScrape,
+    getScrapingState: () => scrapingState,
+    setScrapingState,
+    getCurrentScrape: () => currentScrape
   });
 }
 

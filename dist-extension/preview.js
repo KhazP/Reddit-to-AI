@@ -16,6 +16,9 @@ let previewState = {
 const els = {};
 
 document.addEventListener('DOMContentLoaded', async () => {
+  if (typeof chrome !== 'undefined' && chrome.runtime && typeof chrome.runtime.connect === 'function') {
+    chrome.runtime.connect({ name: 'keep-alive' });
+  }
   if (typeof initI18n === 'function') {
     await initI18n();
     localizeHtmlPage();

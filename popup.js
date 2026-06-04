@@ -3,6 +3,9 @@
 // Localized helpers provided by i18n.js
 
 document.addEventListener('DOMContentLoaded', async () => {
+  if (typeof chrome !== 'undefined' && chrome.runtime && typeof chrome.runtime.connect === 'function') {
+    chrome.runtime.connect({ name: 'keep-alive' });
+  }
   await initI18n();
   localizeHtmlPage();
 
