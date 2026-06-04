@@ -9,6 +9,21 @@ document.addEventListener('DOMContentLoaded', async () => {
   await initI18n();
   localizeHtmlPage();
 
+  document.querySelectorAll('.tab-trigger').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-trigger').forEach(b => {
+        b.classList.remove('active');
+        b.setAttribute('aria-selected', 'false');
+      });
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+      
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
+      const targetPane = document.getElementById(btn.getAttribute('data-tab'));
+      if (targetPane) targetPane.classList.remove('hidden');
+    });
+  });
+
   // ── Element references ──────────────────────────────────
   const scrapeBtn = document.getElementById('scrapeBtn');
   const stopScrapeBtn = document.getElementById('stopScrapeBtn');
@@ -395,7 +410,7 @@ Data:
   function autoExpandTextarea() {
     if (!quickPromptInput) return;
     quickPromptInput.style.height = 'auto';
-    quickPromptInput.style.height = Math.min(quickPromptInput.scrollHeight, 72) + 'px';
+    quickPromptInput.style.height = (quickPromptInput.scrollHeight) + 'px';
   }
 
   if (quickPromptInput) {
@@ -428,6 +443,14 @@ Data:
         });
         chrome.storage.sync.remove('quickPrompt');
       }
+    });
+  }
+
+  const qPrompt = document.getElementById('quickPrompt');
+  if (qPrompt) {
+    qPrompt.addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = (this.scrollHeight) + 'px';
     });
   }
 
