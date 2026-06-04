@@ -124,6 +124,19 @@ Data:
 document.addEventListener('DOMContentLoaded', () => {
     // initializeOptions is now async and handles localization
     initializeOptions();
+
+    // Wire click event listeners to the .nav-item buttons
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.addEventListener('click', () => {
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            document.querySelectorAll('.settings-pane').forEach(p => p.classList.remove('active'));
+            
+            item.classList.add('active');
+            const targetId = item.getAttribute('data-target');
+            const targetPane = document.getElementById(targetId);
+            if (targetPane) targetPane.classList.add('active');
+        });
+    });
 });
 
 async function initializeOptions() {

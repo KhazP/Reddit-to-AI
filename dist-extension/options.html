@@ -32,10 +32,17 @@
             </div>
         </header>
 
-        <!-- Main Content - 2 Column Grid -->
+        <!-- Main Content - Sidebar Layout -->
         <main class="main-content">
-            <!-- Left Column -->
-            <div class="column">
+            <nav class="sidebar-nav">
+                <button type="button" class="nav-item active" data-target="sectionAi">🌐 AI Assistant</button>
+                <button type="button" class="nav-item" data-target="sectionPresets">📝 Prompt Presets</button>
+                <button type="button" class="nav-item" data-target="sectionScraping">⚙️ Scraping & Filters</button>
+                <button type="button" class="nav-item" data-target="sectionMappings">🔀 Subreddit Mappings</button>
+                <button type="button" class="nav-item" data-target="sectionCustom">🔌 Custom WebUIs</button>
+            </nav>
+
+            <div id="sectionAi" class="settings-pane active">
                 <!-- AI Assistant Card -->
                 <div class="card">
                     <div class="card-header">
@@ -156,7 +163,72 @@
                         </div>
                     </div>
                 </div>
+            </div>
 
+            <div id="sectionPresets" class="settings-pane">
+                <!-- Prompt Template Card -->
+                <div class="card card-large">
+                    <div class="card-header">
+                        <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                            <polyline points="14 2 14 8 20 8" />
+                            <line x1="16" y1="13" x2="8" y2="13" />
+                            <line x1="16" y1="17" x2="8" y2="17" />
+                        </svg>
+                        <h2 class="card-title" data-i18n="options_card_presets_title">Prompt Presets</h2>
+                    </div>
+                    <div class="card-content">
+                        <div class="form-group">
+                            <label class="form-label" data-i18n="options_label_analysis_type">Select Analysis
+                                Type</label>
+                            <div class="preset-selector" id="presetSelector">
+                                <!-- Preset pills rendered by JS -->
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="template-label-row">
+                                <label class="form-label" id="templateLabel"
+                                    data-i18n="options_label_template_preview">Template Preview</label>
+                                <button type="button" id="resetCustomBtn" class="btn-reset"
+                                    data-i18n="options_btn_reset">Reset to default</button>
+                            </div>
+                            <textarea id="defaultPromptTemplate" class="textarea" rows="8"
+                                data-i18n-placeholder="options_placeholder_custom"></textarea>
+                            <p class="form-hint" data-i18n="options_hint_prompt">Use <code>{content}</code> as a
+                                placeholder for the scraped Reddit
+                                data. Select "Custom" to write your own template.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Saved Prompt Presets Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+                        </svg>
+                        <h2 class="card-title">Saved Prompt Presets</h2>
+                        <span id="savedPresetCount" class="history-count">0 items</span>
+                    </div>
+                    <div class="card-content">
+                        <div class="saved-preset-list" id="savedPresetList">
+                            <div class="history-empty">
+                                <span>No saved prompt presets yet</span>
+                            </div>
+                        </div>
+                        <div class="history-actions saved-preset-actions">
+                            <button type="button" id="exportSavedPresetsBtn" class="btn-action btn-export" disabled>Export presets</button>
+                            <button type="button" id="importSavedPresetsBtn" class="btn-action">Import presets</button>
+                            <button type="button" id="clearSavedPresetsBtn" class="btn-action btn-danger-outline" disabled>Clear presets</button>
+                        </div>
+                        <input type="file" id="importSavedPresetsInput" accept="application/json" hidden>
+                    </div>
+                </div>
+            </div>
+
+            <div id="sectionScraping" class="settings-pane">
                 <!-- Scraping Settings Card -->
                 <div class="card">
                     <div class="card-header">
@@ -347,6 +419,52 @@
                     </div>
                 </div>
 
+                <!-- Selector Overrides Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                            <line x1="9" y1="3" x2="9" y2="21" />
+                            <line x1="15" y1="3" x2="15" y2="21" />
+                            <line x1="3" y1="9" x2="21" y2="9" />
+                            <line x1="3" y1="15" x2="21" y2="15" />
+                        </svg>
+                        <h2 class="card-title">Selector Overrides</h2>
+                    </div>
+                    <div class="card-content">
+                        <p class="form-hint" style="margin-bottom: 12px;">Override the target input field CSS selectors for each AI platform if they break.</p>
+                        <div class="form-group">
+                            <label class="form-label" for="selectorGemini">Gemini Selector</label>
+                            <input type="text" id="selectorGemini" class="search-input" placeholder="e.g. div.rich-textarea [contenteditable='true']" style="width: 100%; box-sizing: border-box;">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="selectorChatgpt">ChatGPT Selector</label>
+                            <input type="text" id="selectorChatgpt" class="search-input" placeholder="e.g. #prompt-textarea" style="width: 100%; box-sizing: border-box;">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="selectorClaude">Claude Selector</label>
+                            <input type="text" id="selectorClaude" class="search-input" placeholder="e.g. div[contenteditable='true']" style="width: 100%; box-sizing: border-box;">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="selectorAistudio">AI Studio Selector</label>
+                            <input type="text" id="selectorAistudio" class="search-input" placeholder="e.g. textarea" style="width: 100%; box-sizing: border-box;">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="selectorDeepseek">DeepSeek Selector</label>
+                            <input type="text" id="selectorDeepseek" class="search-input" placeholder="e.g. textarea, div[contenteditable='true']" style="width: 100%; box-sizing: border-box;">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="selectorGroq">Groq Selector</label>
+                            <input type="text" id="selectorGroq" class="search-input" placeholder="e.g. textarea, #chat-input, div[contenteditable='true']" style="width: 100%; box-sizing: border-box;">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="selectorCustom">Custom Platform Selector</label>
+                            <input type="text" id="selectorCustom" class="search-input" placeholder="e.g. textarea, div[contenteditable='true']" style="width: 100%; box-sizing: border-box;">
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Notifications Card -->
                 <div class="card">
                     <div class="card-header">
@@ -406,70 +524,6 @@
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Right Column -->
-            <div class="column">
-                <!-- Prompt Template Card -->
-                <div class="card card-large">
-                    <div class="card-header">
-                        <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                            <polyline points="14 2 14 8 20 8" />
-                            <line x1="16" y1="13" x2="8" y2="13" />
-                            <line x1="16" y1="17" x2="8" y2="17" />
-                        </svg>
-                        <h2 class="card-title" data-i18n="options_card_presets_title">Prompt Presets</h2>
-                    </div>
-                    <div class="card-content">
-                        <div class="form-group">
-                            <label class="form-label" data-i18n="options_label_analysis_type">Select Analysis
-                                Type</label>
-                            <div class="preset-selector" id="presetSelector">
-                                <!-- Preset pills rendered by JS -->
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <div class="template-label-row">
-                                <label class="form-label" id="templateLabel"
-                                    data-i18n="options_label_template_preview">Template Preview</label>
-                                <button type="button" id="resetCustomBtn" class="btn-reset"
-                                    data-i18n="options_btn_reset">Reset to default</button>
-                            </div>
-                            <textarea id="defaultPromptTemplate" class="textarea" rows="8"
-                                data-i18n-placeholder="options_placeholder_custom"></textarea>
-                            <p class="form-hint" data-i18n="options_hint_prompt">Use <code>{content}</code> as a
-                                placeholder for the scraped Reddit
-                                data. Select "Custom" to write your own template.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Data Storage Card -->
-                <div class="card">
-                    <div class="card-header">
-                        <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-                        </svg>
-                        <h2 class="card-title">Saved Prompt Presets</h2>
-                        <span id="savedPresetCount" class="history-count">0 items</span>
-                    </div>
-                    <div class="card-content">
-                        <div class="saved-preset-list" id="savedPresetList">
-                            <div class="history-empty">
-                                <span>No saved prompt presets yet</span>
-                            </div>
-                        </div>
-                        <div class="history-actions saved-preset-actions">
-                            <button type="button" id="exportSavedPresetsBtn" class="btn-action btn-export" disabled>Export presets</button>
-                            <button type="button" id="importSavedPresetsBtn" class="btn-action">Import presets</button>
-                            <button type="button" id="clearSavedPresetsBtn" class="btn-action btn-danger-outline" disabled>Clear presets</button>
-                        </div>
-                        <input type="file" id="importSavedPresetsInput" accept="application/json" hidden>
-                    </div>
-                </div>
 
                 <!-- Data Storage Card -->
                 <div class="card">
@@ -515,98 +569,6 @@
                             <button type="button" id="importSettingsBtn" class="btn-action">Import settings</button>
                         </div>
                         <input type="file" id="importSettingsInput" accept="application/json" hidden>
-                    </div>
-                </div>
-
-                <!-- Selector Overrides Card -->
-                <div class="card">
-                    <div class="card-header">
-                        <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                            <line x1="9" y1="3" x2="9" y2="21" />
-                            <line x1="15" y1="3" x2="15" y2="21" />
-                            <line x1="3" y1="9" x2="21" y2="9" />
-                            <line x1="3" y1="15" x2="21" y2="15" />
-                        </svg>
-                        <h2 class="card-title">Selector Overrides</h2>
-                    </div>
-                    <div class="card-content">
-                        <p class="form-hint" style="margin-bottom: 12px;">Override the target input field CSS selectors for each AI platform if they break.</p>
-                        <div class="form-group">
-                            <label class="form-label" for="selectorGemini">Gemini Selector</label>
-                            <input type="text" id="selectorGemini" class="search-input" placeholder="e.g. div.rich-textarea [contenteditable='true']" style="width: 100%; box-sizing: border-box;">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="selectorChatgpt">ChatGPT Selector</label>
-                            <input type="text" id="selectorChatgpt" class="search-input" placeholder="e.g. #prompt-textarea" style="width: 100%; box-sizing: border-box;">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="selectorClaude">Claude Selector</label>
-                            <input type="text" id="selectorClaude" class="search-input" placeholder="e.g. div[contenteditable='true']" style="width: 100%; box-sizing: border-box;">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="selectorAistudio">AI Studio Selector</label>
-                            <input type="text" id="selectorAistudio" class="search-input" placeholder="e.g. textarea" style="width: 100%; box-sizing: border-box;">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="selectorDeepseek">DeepSeek Selector</label>
-                            <input type="text" id="selectorDeepseek" class="search-input" placeholder="e.g. textarea, div[contenteditable='true']" style="width: 100%; box-sizing: border-box;">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="selectorGroq">Groq Selector</label>
-                            <input type="text" id="selectorGroq" class="search-input" placeholder="e.g. textarea, #chat-input, div[contenteditable='true']" style="width: 100%; box-sizing: border-box;">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="selectorCustom">Custom Platform Selector</label>
-                            <input type="text" id="selectorCustom" class="search-input" placeholder="e.g. textarea, div[contenteditable='true']" style="width: 100%; box-sizing: border-box;">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Subreddit-Specific Templates Card -->
-                <div class="card">
-                    <div class="card-header">
-                        <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-                        </svg>
-                        <h2 class="card-title">Subreddit-Specific Templates</h2>
-                    </div>
-                    <div class="card-content">
-                        <p class="form-hint" style="margin-bottom: 12px;">Override the default prompt template for specific subreddits (supports wildcards like <code>investing*</code>).</p>
-                        <div class="form-group" style="display: flex; gap: 8px; margin-bottom: 12px; align-items: center;">
-                            <input type="text" id="subredditPatternInput" class="search-input" placeholder="e.g. cscareerquestions or investing*" style="flex: 2; box-sizing: border-box;">
-                            <select id="subredditPresetSelect" class="select-input" style="flex: 1; min-width: 110px;">
-                                <option value="summarize">Summarize</option>
-                                <option value="debate">Debate</option>
-                                <option value="sentiment">Sentiment</option>
-                                <option value="takeaways">Takeaways</option>
-                                <option value="eli5">ELI5</option>
-                            </select>
-                            <button type="button" id="addSubredditRuleBtn" class="btn primary" style="white-space: nowrap;">Add Rule</button>
-                        </div>
-                        <ul id="subredditRulesList" class="custom-origins-list" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px;"></ul>
-                    </div>
-                </div>
-
-                <!-- Custom AI Platforms Card -->
-                <div class="card">
-                    <div class="card-header">
-                        <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
-                            <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
-                            <line x1="6" y1="6" x2="6.01" y2="6"></line>
-                            <line x1="6" y1="18" x2="6.01" y2="18"></line>
-                        </svg>
-                        <h2 class="card-title">Custom AI Platforms / Local WebUIs</h2>
-                    </div>
-                    <div class="card-content">
-                        <p class="form-hint" style="margin-bottom: 12px;">Add custom WebUI origins (e.g. <code>http://localhost:3000</code> or <code>http://127.0.0.1:8080</code>) to dynamically request host permission and register content scripts.</p>
-                        <div class="form-group" style="display: flex; gap: 8px; margin-bottom: 12px;">
-                            <input type="text" id="customOriginInput" class="search-input" placeholder="e.g. http://localhost:3000" style="flex: 1; box-sizing: border-box;">
-                            <button type="button" id="addCustomOriginBtn" class="btn-action" style="white-space: nowrap; border-color: var(--accent); color: var(--accent);">Add Platform & Request Permission</button>
-                        </div>
-                        <ul id="customOriginsList" class="custom-origins-list" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px;"></ul>
                     </div>
                 </div>
 
@@ -690,6 +652,56 @@
                                 <span data-i18n="options_btn_clear_all">Clear All</span>
                             </button>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="sectionMappings" class="settings-pane">
+                <!-- Subreddit-Specific Templates Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                        </svg>
+                        <h2 class="card-title">Subreddit-Specific Templates</h2>
+                    </div>
+                    <div class="card-content">
+                        <p class="form-hint" style="margin-bottom: 12px;">Override the default prompt template for specific subreddits (supports wildcards like <code>investing*</code>).</p>
+                        <div class="form-group" style="display: flex; gap: 8px; margin-bottom: 12px; align-items: center;">
+                            <input type="text" id="subredditPatternInput" class="search-input" placeholder="e.g. cscareerquestions or investing*" style="flex: 2; box-sizing: border-box;">
+                            <select id="subredditPresetSelect" class="select-input" style="flex: 1; min-width: 110px;">
+                                <option value="summarize">Summarize</option>
+                                <option value="debate">Debate</option>
+                                <option value="sentiment">Sentiment</option>
+                                <option value="takeaways">Takeaways</option>
+                                <option value="eli5">ELI5</option>
+                            </select>
+                            <button type="button" id="addSubredditRuleBtn" class="btn primary" style="white-space: nowrap;">Add Rule</button>
+                        </div>
+                        <ul id="subredditRulesList" class="custom-origins-list" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px;"></ul>
+                    </div>
+                </div>
+            </div>
+
+            <div id="sectionCustom" class="settings-pane">
+                <!-- Custom AI Platforms / Local WebUIs Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+                            <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+                            <line x1="6" y1="6" x2="6.01" y2="6"></line>
+                            <line x1="6" y1="18" x2="6.01" y2="18"></line>
+                        </svg>
+                        <h2 class="card-title">Custom AI Platforms / Local WebUIs</h2>
+                    </div>
+                    <div class="card-content">
+                        <p class="form-hint" style="margin-bottom: 12px;">Add custom WebUI origins (e.g. <code>http://localhost:3000</code> or <code>http://127.0.0.1:8080</code>) to dynamically request host permission and register content scripts.</p>
+                        <div class="form-group" style="display: flex; gap: 8px; margin-bottom: 12px;">
+                            <input type="text" id="customOriginInput" class="search-input" placeholder="e.g. http://localhost:3000" style="flex: 1; box-sizing: border-box;">
+                            <button type="button" id="addCustomOriginBtn" class="btn-action" style="white-space: nowrap; border-color: var(--accent); color: var(--accent);">Add Platform & Request Permission</button>
+                        </div>
+                        <ul id="customOriginsList" class="custom-origins-list" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px;"></ul>
                     </div>
                 </div>
             </div>
