@@ -31,7 +31,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const optionsBtn = document.getElementById('optionsBtn');
   const feedbackBtn = document.getElementById('feedbackBtn');
   const presetCards = document.querySelectorAll('.preset-card');
-  const localSummaryBtn = document.getElementById('localSummaryBtn');
   const localSummaryResultCard = document.getElementById('localSummaryResultCard');
   const localSummaryText = document.getElementById('localSummaryText');
   const copySummaryBtn = document.getElementById('copySummaryBtn');
@@ -472,7 +471,7 @@ Data:
 
 
   function getProviderLabel(provider) {
-    return ({ gemini: 'Gemini', chatgpt: 'ChatGPT', claude: 'Claude', aistudio: 'AI Studio', deepseek: 'DeepSeek', groq: 'Groq', custom: 'Custom' }[provider]) || 'Gemini';
+    return ({ gemini: 'Gemini', chatgpt: 'ChatGPT', claude: 'Claude', aistudio: 'AI Studio', deepseek: 'DeepSeek', groq: 'Groq', custom: 'Custom', local: 'Local AI' }[provider]) || 'Gemini';
   }
 
   function getCheckedValue(name, fallback) {
@@ -480,9 +479,14 @@ Data:
   }
 
   function updateScrapeModeUi() {
+    const isLocal = popupProviderSelect?.value === 'local';
     const previewEnabled = (sendModeSelect?.value || 'preview') === 'preview';
     const btnText = scrapeBtn?.querySelector('.btn-text');
     if (!btnText) return;
+    if (isLocal) {
+      btnText.textContent = t('popup_btn_local_summary') || 'Summarize Locally';
+      return;
+    }
     if (currentBatchUrlCount > 0) {
       btnText.textContent = previewEnabled
         ? `Scrape ${currentBatchUrlCount} URLs & Preview`
@@ -578,6 +582,7 @@ Data:
     popupProviderSelect.addEventListener('change', (e) => {
       chrome.storage.sync.set({ selectedLlmProvider: e.target.value });
       updateScrapeEstimate();
+      updateScrapeModeUi();
     });
   }
 
@@ -769,7 +774,6 @@ Data:
 
     if (state.isActive) {
       scrapeBtn.style.display = 'none';
-      if (localSummaryBtn) localSummaryBtn.style.display = 'none';
       stopScrapeBtn.style.display = 'flex';
       stopScrapeBtn.disabled = false;
       setExportChipsEnabled(false);
@@ -783,18 +787,20 @@ Data:
     } else {
       scrapeBtn.style.display = 'flex';
       scrapeBtn.disabled = false;
-      if (localSummaryBtn) {
-        localSummaryBtn.style.display = 'flex';
+
+      const localOpt = popupProviderSelect?.querySelector('option[value="local"]');
+      if (localOpt) {
         chrome.runtime.sendMessage({ action: 'checkLocalAiCapability' }, (response) => {
           if (chrome.runtime.lastError || !response || !response.available) {
-            localSummaryBtn.disabled = true;
-            localSummaryBtn.title = t('popup_btn_local_summary_disabled_tooltip') || 'Local AI is disabled. Enable in chrome://flags/#optimization-guide-on-device-model';
+            localOpt.disabled = true;
+            localOpt.text = t('popup_provider_local_disabled') || 'Local AI (Gemini Nano) - Disabled';
           } else {
-            localSummaryBtn.disabled = false;
-            localSummaryBtn.removeAttribute('title');
+            localOpt.disabled = false;
+            localOpt.text = t('popup_provider_local_enabled') || 'Local AI (Gemini Nano)';
           }
         });
       }
+
       stopScrapeBtn.style.display = 'none';
 
       if (state.error) {
@@ -924,6 +930,8 @@ Data:
           outputFormat: outputFormatSelect?.value || 'auto'
         };
 
+        const selectedProvider = popupProviderSelect?.value || 'gemini';
+        const isLocal = selectedProvider === 'local';
         const directSendOnce = (sendModeSelect?.value || 'preview') === 'directOnce';
 
         chrome.storage.sync.set({
@@ -932,9 +940,13 @@ Data:
           redditSortMode: filters.redditSortMode,
           mediaMode: filters.mediaMode,
           outputFormat: filters.outputFormat,
-          selectedLlmProvider: popupProviderSelect?.value || 'gemini',
+          selectedLlmProvider: selectedProvider,
           lastBatchUrls: batchUrlsInput?.value?.trim() || ''
         });
+
+        if (isLocal && localSummaryText) {
+          localSummaryText.textContent = '';
+        }
 
         chrome.runtime.sendMessage({
           action: 'scrapeReddit',
@@ -942,9 +954,10 @@ Data:
           filters,
           batchUrls,
           tabId: currentTab.id,
-          directSendOnce,
-          showPromptPreview: !directSendOnce,
-          selectedLlmProvider: popupProviderSelect?.value || 'gemini',
+          directSendOnce: isLocal ? false : directSendOnce,
+          showPromptPreview: isLocal ? false : !directSendOnce,
+          selectedLlmProvider: selectedProvider,
+          localSummarize: isLocal,
           dataStorageOptionOverride: dontSaveThisScrape?.checked ? 'dontSave' : null
         }, (response) => {
           if (chrome.runtime.lastError) {
@@ -1058,96 +1071,17 @@ Data:
     });
   });
 
-  // ── Local AI Summary button actions ───────────────────
-  if (localSummaryBtn) {
+  // ── Local AI capability check for dropdown option ──────
+  const localOption = popupProviderSelect?.querySelector('option[value="local"]');
+  if (localOption) {
     chrome.runtime.sendMessage({ action: 'checkLocalAiCapability' }, (response) => {
       if (chrome.runtime.lastError || !response || !response.available) {
-        localSummaryBtn.disabled = true;
-        localSummaryBtn.title = t('popup_btn_local_summary_disabled_tooltip') || 'Local AI is disabled. Enable in chrome://flags/#optimization-guide-on-device-model';
+        localOption.disabled = true;
+        localOption.text = t('popup_provider_local_disabled') || 'Local AI (Gemini Nano) - Disabled';
       } else {
-        localSummaryBtn.disabled = false;
-        localSummaryBtn.removeAttribute('title');
+        localOption.disabled = false;
+        localOption.text = t('popup_provider_local_enabled') || 'Local AI (Gemini Nano)';
       }
-    });
-
-    localSummaryBtn.addEventListener('click', () => {
-      dismissAllToasts();
-      localSummaryBtn.disabled = true;
-      scrapeBtn.disabled = true;
-      if (localSummaryResultCard) {
-        localSummaryResultCard.style.display = 'none';
-      }
-      if (localSummaryText) {
-        localSummaryText.textContent = '';
-      }
-
-      showToast('progress', t('popup_status_starting') || 'Starting...', {
-        id: 'scraping-progress',
-        dismiss: false,
-        progress: 0
-      });
-
-      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        const currentTab = tabs[0];
-        if (!currentTab) {
-          dismissAllToasts();
-          showToast('error', (t('error') || 'Error') + ': Could not get current tab', { dismiss: true });
-          localSummaryBtn.disabled = false;
-          scrapeBtn.disabled = false;
-          return;
-        }
-
-        const authorTypes = [];
-        if (filterOpOnlyBtn?.classList.contains('active')) authorTypes.push('op');
-        if (filterFlairedBtn?.classList.contains('active')) authorTypes.push('flaired');
-        const legacyAuthorType = authorTypes.length === 1 ? authorTypes[0] : 'all';
-
-        const batchUrls = parseBatchUrls(batchUrlsInput?.value || '');
-
-        const filters = {
-          minScore: minScoreValue,
-          hideBots: filterHideBotsBtn?.classList.contains('active') || false,
-          includeHidden: includeHidden?.checked || false,
-          authorTypes,
-          authorType: legacyAuthorType,
-          topN: parseInt(filterTopN?.value || '0', 10),
-          scrapeDepth: parseInt(
-            document.querySelector('input[name="scrapeDepthPopup"]:checked')?.value || '5',
-            10
-          ),
-          contextPreset: document.querySelector('input[name="contextPresetPopup"]:checked')?.value || 'balanced',
-          trimStrategy: trimStrategySelect?.value || 'top',
-          redditSortMode: redditSortModeSelect?.value || 'confidence',
-          mediaMode: mediaModeSelect?.value || 'attach',
-          outputFormat: outputFormatSelect?.value || 'auto'
-        };
-
-        chrome.runtime.sendMessage({
-          action: 'scrapeReddit',
-          includeHidden: filters.includeHidden,
-          filters,
-          batchUrls,
-          tabId: currentTab.id,
-          localSummarize: true,
-          selectedLlmProvider: 'local'
-        }, (response) => {
-          if (chrome.runtime.lastError) {
-            dismissAllToasts();
-            showToast('error', chrome.runtime.lastError.message, { dismiss: true });
-            localSummaryBtn.disabled = false;
-            scrapeBtn.disabled = false;
-            return;
-          }
-          if (response?.currentState) {
-            renderPopupState(response.currentState);
-          } else if (response?.error) {
-            dismissAllToasts();
-            showToast('error', response.error, { dismiss: true });
-            localSummaryBtn.disabled = false;
-            scrapeBtn.disabled = false;
-          }
-        });
-      });
     });
   }
 

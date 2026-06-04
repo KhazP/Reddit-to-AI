@@ -510,5 +510,11 @@
     },
     "tooltip_route_tester_input": {
         "message": "Type a subreddit name here to simulate how wildcard rules will route it"
+    },
+    "popup_provider_local_disabled": {
+        "message": "Local AI (Gemini Nano) - Disabled"
+    },
+    "popup_provider_local_enabled": {
+        "message": "Local AI (Gemini Nano)"
     }
 }

@@ -35,7 +35,7 @@ body {
   background: var(--bg-primary);
   background-image: radial-gradient(circle at 50% 0%, rgba(255, 69, 0, 0.05) 0%, transparent 50%);
   color: var(--text-primary);
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.5;
   min-height: auto;
   /* Reserve scrollbar space at all times so layout never shifts */
@@ -62,10 +62,10 @@ body::-webkit-scrollbar-thumb:hover {
 }
 
 .popup-container {
-  padding: 16px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 10px;
   position: relative;
 }
 
@@ -295,7 +295,7 @@ body::-webkit-scrollbar-thumb:hover {
   border: 1px solid var(--border-color);
   border-radius: 20px;
   padding: 2px;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .tab-trigger {
@@ -322,6 +322,14 @@ body::-webkit-scrollbar-thumb:hover {
   border: 1px solid rgba(255, 69, 0, 0.3);
 }
 
+/* Flex container for children with standard spacing to prevent jank/overlap */
+.tab-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+}
+
 .tab-content.hidden {
   display: none !important;
 }
@@ -331,7 +339,7 @@ body::-webkit-scrollbar-thumb:hover {
 .preset-section {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .section-label {
@@ -345,7 +353,7 @@ body::-webkit-scrollbar-thumb:hover {
 .preset-cards {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  gap: 6px;
 }
 
 .preset-card {
@@ -353,13 +361,11 @@ body::-webkit-scrollbar-thumb:hover {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 12px 6px;
+  gap: 4px;
+  padding: 8px 4px;
   background: var(--bg-card);
-  backdrop-filter: blur(var(--blur));
-  -webkit-backdrop-filter: blur(var(--blur));
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   cursor: pointer;
   transition: var(--transition);
   position: relative;
@@ -390,8 +396,8 @@ body::-webkit-scrollbar-thumb:hover {
 }
 
 .preset-icon {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   transition: var(--transition);
   filter: grayscale(0.2);
 }
@@ -472,10 +478,10 @@ body::-webkit-scrollbar-thumb:hover {
 .send-mode-section {
   display: flex;
   flex-direction: column;
-  gap: 9px;
-  padding: 10px;
+  gap: 6px;
+  padding: 8px 10px;
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   background: var(--bg-card);
 }
 
@@ -997,11 +1003,11 @@ body::-webkit-scrollbar-thumb:hover {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding: 14px 20px;
+  gap: 8px;
+  padding: 11px 16px;
   border: none;
-  border-radius: var(--radius-md);
-  font-size: 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: var(--transition);
@@ -1095,36 +1101,12 @@ body::-webkit-scrollbar-thumb:hover {
   color: var(--text-muted);
 }
 
-/* ── Local AI Button ──────────────────────────────────────── */
-.btn-local {
-  background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
-  color: white;
-  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-}
-
-.btn-local:hover:not(:disabled) {
-  background: linear-gradient(135deg, #4338ca 0%, #2563eb 100%);
-  box-shadow: 0 6px 24px rgba(59, 130, 246, 0.35);
-  transform: translateY(-2px);
-}
-
-.btn-local:disabled {
-  background: var(--bg-glass);
-  border: 1px solid var(--border-color);
-  color: var(--text-muted);
-  box-shadow: none;
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
 /* ── Summary Result Card ──────────────────────────────────── */
 .summary-result-card {
-  margin-top: 14px;
-  background: var(--bg-card);
-  backdrop-filter: blur(var(--blur));
-  -webkit-backdrop-filter: blur(var(--blur));
+  margin-top: 0;
+  background: rgba(21, 21, 23, 0.95);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   padding: 16px;
   display: flex;
   flex-direction: column;
@@ -1220,8 +1202,8 @@ body::-webkit-scrollbar-thumb:hover {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  height: 38px;
+  gap: 5px;
+  height: 32px;
   background: var(--bg-glass);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);

@@ -450,6 +450,12 @@
     "popup_btn_local_summary_disabled_tooltip": {
         "message": "Local AI is disabled. Enable in chrome://flags/#optimization-guide-on-device-model"
     },
+    "popup_provider_local_disabled": {
+        "message": "Local AI (Gemini Nano) - Disabled"
+    },
+    "popup_provider_local_enabled": {
+        "message": "Local AI (Gemini Nano)"
+    },
     "popup_budget_initial": {
         "message": "Budget: 0 tokens"
     },
