@@ -446,13 +446,6 @@ Data:
     });
   }
 
-  const qPrompt = document.getElementById('quickPrompt');
-  if (qPrompt) {
-    qPrompt.addEventListener('input', function() {
-      this.style.height = 'auto';
-      this.style.height = (this.scrollHeight) + 'px';
-    });
-  }
 
   function getProviderLabel(provider) {
     return ({ gemini: 'Gemini', chatgpt: 'ChatGPT', claude: 'Claude', aistudio: 'AI Studio', deepseek: 'DeepSeek', groq: 'Groq', custom: 'Custom' }[provider]) || 'Gemini';
