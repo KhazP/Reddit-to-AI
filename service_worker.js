@@ -133,6 +133,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         .catch(error => sendResponse({ error: error.message }));
       return true;
     }
+    case 'getQuickTokenEstimate': {
+      getQuickTokenEstimate(request.tabId, request.url)
+        .then(estimatedData => sendResponse({ estimatedData }))
+        .catch(error => {
+          console.warn('Quick estimate failed:', error);
+          sendResponse({ error: error.message });
+        });
+      return true;
+    }
     case 'focusLastRedditTab': {
       focusLastRedditTab()
         .then(() => sendResponse({ ok: true }))
@@ -1776,6 +1785,98 @@ async function generateLocalSummary(promptText, onChunk) {
       console.debug('Error closing AI session:', e);
     }
   }
+}
+
+// Simple cache for quick estimates
+const quickEstimateCache = new Map();
+
+// Helper to check if URL is a Reddit post
+function isRedditPostUrl(urlStr) {
+  try {
+    const url = new URL(urlStr);
+    if (!/(^|\.)reddit\.com$/i.test(url.hostname) && !/(^|\.)redd\.it$/i.test(url.hostname)) {
+      return false;
+    }
+    return url.pathname.includes('/comments/');
+  } catch {
+    return false;
+  }
+}
+
+// Simple recursive JSON parser for comments
+function parseSimpleJsonComments(children) {
+  const list = [];
+  if (!Array.isArray(children)) return list;
+  for (const child of children) {
+    if (child.kind === 't1') {
+      const data = child.data;
+      if (!data) continue;
+      const item = {
+        author: data.author,
+        body: data.body || '',
+        score: data.score || 0,
+        replies: []
+      };
+      if (data.replies && data.replies.data && Array.isArray(data.replies.data.children)) {
+        item.replies = parseSimpleJsonComments(data.replies.data.children);
+      }
+      list.push(item);
+    }
+  }
+  return list;
+}
+
+// Handle quick estimate
+async function getQuickTokenEstimate(tabId, urlStr) {
+  if (!isRedditPostUrl(urlStr)) {
+    throw new Error('Not a Reddit post URL.');
+  }
+  if (quickEstimateCache.has(urlStr)) {
+    return quickEstimateCache.get(urlStr);
+  }
+
+  // Construct JSON URL
+  const cleanUrl = urlStr.split('?')[0];
+  const jsonUrl = cleanUrl.endsWith('/') ? cleanUrl.slice(0, -1) + '.json' : cleanUrl + '.json';
+
+  const res = await fetch(jsonUrl + '?raw_json=1', {
+    headers: { Accept: 'application/json' }
+  });
+
+  if (!res.ok) {
+    throw new Error(`Failed to fetch JSON: ${res.status}`);
+  }
+
+  const response = await res.json();
+  if (!Array.isArray(response) || response.length < 2) {
+    throw new Error('Invalid Reddit JSON format.');
+  }
+
+  const postData = response[0]?.data?.children?.[0]?.data;
+  const commentsData = response[1]?.data?.children || [];
+  if (!postData) {
+    throw new Error('Reddit JSON did not include post data.');
+  }
+
+  const estimatedData = {
+    post: {
+      title: postData.title,
+      selftext: postData.selftext,
+      author: postData.author,
+      score: postData.score,
+      subreddit: postData.subreddit,
+      permalink: postData.permalink,
+      url: postData.url
+    },
+    comments: parseSimpleJsonComments(commentsData),
+    metadata: {
+      threadId: postData.name,
+      subreddit: postData.subreddit
+    }
+  };
+
+  quickEstimateCache.set(urlStr, estimatedData);
+  return estimatedData;
 }
 
 if (globalThis.R2AIServiceWorkerTest) {

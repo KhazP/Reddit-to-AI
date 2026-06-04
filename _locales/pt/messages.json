@@ -516,5 +516,8 @@
     },
     "popup_provider_local_enabled": {
         "message": "Local AI (Gemini Nano)"
+    },
+    "popup_budget_estimating": {
+        "message": "Estimating budget..."
     }
 }

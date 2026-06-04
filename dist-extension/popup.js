@@ -501,7 +501,29 @@ Data:
     const label = document.getElementById('budgetLabel');
     if (!bar || !label) return;
     
-    const maxTokens = 32000;
+    const provider = popupProviderSelect?.value || 'gemini';
+    let maxTokens = 128000;
+    let safeLimit = 32000;
+    let moderateLimit = 96000;
+
+    if (provider === 'local') {
+      maxTokens = 8000;
+      safeLimit = 2000;
+      moderateLimit = 6000;
+    } else if (provider === 'groq') {
+      maxTokens = 131072;
+      safeLimit = 30000;
+      moderateLimit = 90000;
+    } else if (provider === 'chatgpt') {
+      maxTokens = 272000;
+      safeLimit = 60000;
+      moderateLimit = 180000;
+    } else if (['gemini', 'aistudio', 'claude', 'deepseek'].includes(provider)) {
+      maxTokens = 1048576;
+      safeLimit = 200000;
+      moderateLimit = 700000;
+    }
+
     const percentage = Math.min(100, (tokenCount / maxTokens) * 100);
     bar.style.width = `${percentage}%`;
     
@@ -509,10 +531,10 @@ Data:
     const formattedCount = tokenCount.toLocaleString();
     if (tokenCount === 0) {
       label.innerText = typeof t === 'function' ? t('popup_budget_initial') : 'Budget: 0 tokens';
-    } else if (tokenCount < 8000) {
+    } else if (tokenCount < safeLimit) {
       bar.classList.add('safe');
       label.innerText = typeof t === 'function' ? t('popup_budget_safe', [formattedCount]) : `Budget: ${formattedCount} tokens (Safe)`;
-    } else if (tokenCount < 32000) {
+    } else if (tokenCount < moderateLimit) {
       bar.classList.add('moderate');
       label.innerText = typeof t === 'function' ? t('popup_budget_moderate', [formattedCount]) : `Budget: ${formattedCount} tokens (Moderate)`;
     } else {
@@ -1012,9 +1034,61 @@ Data:
     });
   }
 
-  // ── Export options select ────────────────────────────────
+  function isRedditPostUrl(urlStr) {
+    try {
+      const url = new URL(urlStr);
+      if (!/(^|\.)reddit\.com$/i.test(url.hostname) && !/(^|\.)redd\.it$/i.test(url.hostname)) {
+        return false;
+      }
+      return url.pathname.includes('/comments/');
+    } catch {
+      return false;
+    }
+  }
+
+  // ── Export options select & Initial Token Check ──────────
   function checkExportAvailability() {
-    loadPreviewData(() => updateScrapeEstimate());
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const activeTab = tabs[0];
+      if (activeTab && activeTab.url) {
+        const activeUrl = activeTab.url;
+        loadPreviewData(() => {
+          // Check if cachedPreviewData belongs to the current tab
+          const hasMatchingCache = cachedPreviewData && (
+            cachedPreviewData.post?.permalink === new URL(activeUrl).pathname ||
+            activeUrl.includes(cachedPreviewData.post?.permalink)
+          );
+
+          if (hasMatchingCache) {
+            updateScrapeEstimate();
+          } else {
+            // No matching cache for this tab, check if it's a Reddit post
+            if (isRedditPostUrl(activeUrl)) {
+              // Show estimating message
+              const label = document.getElementById('budgetLabel');
+              if (label) label.innerText = t('popup_budget_estimating') || 'Estimating budget...';
+
+              chrome.runtime.sendMessage({
+                action: 'getQuickTokenEstimate',
+                tabId: activeTab.id,
+                url: activeUrl
+              }, (response) => {
+                if (response && response.estimatedData) {
+                  cachedPreviewData = response.estimatedData;
+                  updateScrapeEstimate();
+                } else {
+                  updateBudgetTracker(0);
+                }
+              });
+            } else {
+              updateBudgetTracker(0);
+            }
+          }
+        });
+      } else {
+        loadPreviewData(() => updateScrapeEstimate());
+      }
+    });
   }
 
   document.querySelectorAll('.popup-export-container .export-chip').forEach(chip => {
