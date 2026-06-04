@@ -530,11 +530,11 @@ async function initializeOptions() {
             let originUrl;
             try {
                 originUrl = new URL(val);
-            } catch (e) {
+            } catch {
                 // Try prepending protocol if raw domain/IP is passed
                 try {
                     originUrl = new URL('http://' + val);
-                } catch (err) {
+                } catch {
                     alert('Invalid URL or Origin');
                     return;
                 }
@@ -574,7 +574,7 @@ async function initializeOptions() {
             if (!btn) return;
             const origin = btn.dataset.origin;
             
-            chrome.permissions.remove({ origins: [origin] }, (removed) => {
+            chrome.permissions.remove({ origins: [origin] }, (_removed) => {
                 chrome.storage.sync.get(['customOrigins'], (res) => {
                     const origins = res.customOrigins || [];
                     const updated = origins.filter(o => o !== origin);

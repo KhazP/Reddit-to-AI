@@ -8,7 +8,7 @@
     "lint": "eslint .",
     "validate:json": "node scripts/validate-json.mjs",
     "validate:release": "node scripts/validate-release.mjs",
-    "test": "node tests/promptBuilder.test.mjs && node tests/redditFixture.test.mjs && node tests/aiPasterImagePaste.test.mjs && node tests/backgroundScraperReplies.test.mjs && node tests/previewSendFlow.test.mjs && node tests/popupBatchMode.test.mjs && node tests/optionsHistoryStatus.test.mjs && node tests/releaseManifest.test.mjs && node tests/i18nMessages.test.mjs && node tests/noRemoteAssets.test.mjs && node tests/packageExtension.test.mjs && node tests/domFallback.test.mjs && node tests/backgroundSelectorSync.test.mjs && node tests/aiPasterSelectorMerge.test.mjs && node tests/interactiveCommentPruning.test.mjs",
+    "test": "node tests/promptBuilder.test.mjs && node tests/redditFixture.test.mjs && node tests/aiPasterImagePaste.test.mjs && node tests/backgroundScraperReplies.test.mjs && node tests/previewSendFlow.test.mjs && node tests/popupBatchMode.test.mjs && node tests/optionsHistoryStatus.test.mjs && node tests/releaseManifest.test.mjs && node tests/i18nMessages.test.mjs && node tests/noRemoteAssets.test.mjs && node tests/packageExtension.test.mjs && node tests/domFallback.test.mjs && node tests/backgroundSelectorSync.test.mjs && node tests/aiPasterSelectorMerge.test.mjs && node tests/interactiveCommentPruning.test.mjs && node tests/serviceWorkerCustomOrigins.test.mjs",
     "package:extension": "node scripts/package-extension.mjs",
     "check": "npm run validate:json && npm run lint && npm test && npm run package:extension && npm run validate:release"
   },

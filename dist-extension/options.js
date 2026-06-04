@@ -437,11 +437,17 @@ async function initializeOptions() {
         const selectorChatgptInput = document.getElementById('selectorChatgpt');
         const selectorClaudeInput = document.getElementById('selectorClaude');
         const selectorAistudioInput = document.getElementById('selectorAistudio');
+        const selectorDeepseekInput = document.getElementById('selectorDeepseek');
+        const selectorGroqInput = document.getElementById('selectorGroq');
+        const selectorCustomInput = document.getElementById('selectorCustom');
 
         if (selectorGeminiInput) selectorGeminiInput.value = customSelectors.gemini?.inputSelector || '';
         if (selectorChatgptInput) selectorChatgptInput.value = customSelectors.chatgpt?.inputSelector || '';
         if (selectorClaudeInput) selectorClaudeInput.value = customSelectors.claude?.inputSelector || '';
         if (selectorAistudioInput) selectorAistudioInput.value = customSelectors.aistudio?.inputSelector || '';
+        if (selectorDeepseekInput) selectorDeepseekInput.value = customSelectors.deepseek?.inputSelector || '';
+        if (selectorGroqInput) selectorGroqInput.value = customSelectors.groq?.inputSelector || '';
+        if (selectorCustomInput) selectorCustomInput.value = customSelectors.custom?.inputSelector || '';
 
         // Language setting
         if (languageSelect) {
@@ -456,7 +462,10 @@ async function initializeOptions() {
         { id: 'selectorGemini', platform: 'gemini' },
         { id: 'selectorChatgpt', platform: 'chatgpt' },
         { id: 'selectorClaude', platform: 'claude' },
-        { id: 'selectorAistudio', platform: 'aistudio' }
+        { id: 'selectorAistudio', platform: 'aistudio' },
+        { id: 'selectorDeepseek', platform: 'deepseek' },
+        { id: 'selectorGroq', platform: 'groq' },
+        { id: 'selectorCustom', platform: 'custom' }
     ];
 
     selectorInputs.forEach(({ id, platform }) => {
@@ -472,7 +481,10 @@ async function initializeOptions() {
                     gemini: true,
                     chatgpt: true,
                     claude: true,
-                    aistudio: false
+                    aistudio: false,
+                    deepseek: false,
+                    groq: false,
+                    custom: false
                 };
                 customSelectorsCache[platform].isContentEditable = editableDefaults[platform];
 
@@ -481,6 +493,100 @@ async function initializeOptions() {
             });
         }
     });
+
+    // Custom origins management logic
+    const customOriginInput = document.getElementById('customOriginInput');
+    const addCustomOriginBtn = document.getElementById('addCustomOriginBtn');
+    const customOriginsList = document.getElementById('customOriginsList');
+
+    function renderCustomOrigins(origins) {
+        if (!customOriginsList) return;
+        customOriginsList.innerHTML = '';
+        origins.forEach(origin => {
+            const li = document.createElement('li');
+            li.className = 'custom-origin-item';
+            li.innerHTML = `
+                <span class="custom-origin-text">${escapeHtml(origin)}</span>
+                <button type="button" class="btn-action btn-danger-outline remove-custom-origin" data-origin="${escapeHtml(origin)}" title="Remove platform and revoke permission" style="padding: 4px 8px; font-size: 11px;">
+                    Remove
+                </button>
+            `;
+            customOriginsList.appendChild(li);
+        });
+    }
+
+    // Load saved custom origins
+    chrome.storage.sync.get(['customOrigins'], (res) => {
+        const origins = res.customOrigins || [];
+        renderCustomOrigins(origins);
+    });
+
+    // Add platform & request permission
+    if (addCustomOriginBtn && customOriginInput) {
+        addCustomOriginBtn.addEventListener('click', () => {
+            const val = customOriginInput.value.trim();
+            if (!val) return;
+            
+            let originUrl;
+            try {
+                originUrl = new URL(val);
+            } catch {
+                // Try prepending protocol if raw domain/IP is passed
+                try {
+                    originUrl = new URL('http://' + val);
+                } catch {
+                    alert('Invalid URL or Origin');
+                    return;
+                }
+            }
+            
+            const originMatch = `${originUrl.protocol}//${originUrl.host}/*`;
+            
+            chrome.permissions.request({ origins: [originMatch] }, (granted) => {
+                if (chrome.runtime.lastError) {
+                    alert('Error requesting permission: ' + chrome.runtime.lastError.message);
+                    return;
+                }
+                if (granted) {
+                    chrome.storage.sync.get(['customOrigins'], (res) => {
+                        const origins = res.customOrigins || [];
+                        if (!origins.includes(originMatch)) {
+                            origins.push(originMatch);
+                            chrome.storage.sync.set({ customOrigins: origins }, () => {
+                                renderCustomOrigins(origins);
+                                customOriginInput.value = '';
+                                showSaveToast();
+                                chrome.runtime.sendMessage({ action: 'registerCustomOrigin', origin: originMatch });
+                            });
+                        }
+                    });
+                } else {
+                    alert('Permission not granted. Custom platform cannot be added without permission.');
+                }
+            });
+        });
+    }
+
+    // Remove custom origin
+    if (customOriginsList) {
+        customOriginsList.addEventListener('click', (e) => {
+            const btn = e.target.closest('.remove-custom-origin');
+            if (!btn) return;
+            const origin = btn.dataset.origin;
+            
+            chrome.permissions.remove({ origins: [origin] }, (_removed) => {
+                chrome.storage.sync.get(['customOrigins'], (res) => {
+                    const origins = res.customOrigins || [];
+                    const updated = origins.filter(o => o !== origin);
+                    chrome.storage.sync.set({ customOrigins: updated }, () => {
+                        renderCustomOrigins(updated);
+                        showSaveToast();
+                        chrome.runtime.sendMessage({ action: 'unregisterCustomOrigin', origin });
+                    });
+                });
+            });
+        });
+    }
 
     // Depth radio buttons
     depthRadios.forEach(radio => {

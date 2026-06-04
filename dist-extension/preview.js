@@ -288,7 +288,7 @@ function updateBudget(promptText, dataForStats) {
 }
 
 function getProviderGuidance(stats, provider) {
-  const names = { gemini: 'Gemini', chatgpt: 'ChatGPT', claude: 'Claude', aistudio: 'AI Studio' };
+  const names = { gemini: 'Gemini', chatgpt: 'ChatGPT', claude: 'Claude', aistudio: 'AI Studio', deepseek: 'DeepSeek', groq: 'Groq', custom: 'Custom' };
   const providerName = names[provider] || 'this AI platform';
   if (stats.warning.key === 'critical') return `${providerName} may reject or truncate this. Use Balanced or Small before sending.`;
   if (stats.warning.key === 'high') return `${providerName} should handle this only on large-context models. Consider trimming comments.`;

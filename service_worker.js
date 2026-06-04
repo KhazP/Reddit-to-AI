@@ -25,6 +25,7 @@ console.log('Service worker initialised.');
 chrome.runtime.onInstalled.addListener(() => {
   console.log('Reddit to AI installed.');
   syncSelectors().catch(err => console.error('Selector sync on installed failed:', err));
+  registerAllCustomOrigins().catch(err => console.error('Failed to register custom origins on installed:', err));
 });
 
 // =====================
@@ -171,6 +172,18 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     case 'generateLocalSummary': {
       generateLocalSummary(request.promptText)
         .then(summary => sendResponse({ status: 'success', summary }))
+        .catch(error => sendResponse({ status: 'error', error: error.message }));
+      return true;
+    }
+    case 'registerCustomOrigin': {
+      registerCustomOriginScript(request.origin)
+        .then(() => sendResponse({ status: 'success' }))
+        .catch(error => sendResponse({ status: 'error', error: error.message }));
+      return true;
+    }
+    case 'unregisterCustomOrigin': {
+      unregisterCustomOriginScript(request.origin)
+        .then(() => sendResponse({ status: 'success' }))
         .catch(error => sendResponse({ status: 'error', error: error.message }));
       return true;
     }
@@ -472,7 +485,7 @@ async function sendPromptToAi(request) {
       await setStorage(chrome.storage.local, { [LEGACY_THREAD_KEY]: pastePayload.data });
     }
 
-    const aiUrl = getAiUrl(pastePayload.aiProvider);
+    const aiUrl = await getAiUrl(pastePayload.aiProvider);
     await chrome.tabs.create({ url: aiUrl });
     return { success: true, pasteId: pastePayload.pasteId };
   } finally {
@@ -985,14 +998,90 @@ function showNotificationIfEnabled(title, message, notificationIdBase = 'reddit-
   });
 }
 
-function getAiUrl(providerKey) {
+async function getAiUrl(providerKey) {
   const map = {
     gemini: 'https://gemini.google.com/app',
     chatgpt: 'https://chatgpt.com/',
     claude: 'https://claude.ai/new',
-    aistudio: 'https://aistudio.google.com/prompts/new_chat'
+    aistudio: 'https://aistudio.google.com/prompts/new_chat',
+    deepseek: 'https://chat.deepseek.com/',
+    groq: 'https://groq.com/'
   };
+  if (providerKey === 'custom') {
+    const res = await new Promise(resolve => {
+      chrome.storage.sync.get(['customOrigins'], (r) => resolve(r.customOrigins || []));
+    });
+    if (res && res.length > 0) {
+      const match = res[0];
+      if (match.endsWith('/*')) {
+        return match.slice(0, -2);
+      }
+      if (match.endsWith('*')) {
+        return match.slice(0, -1);
+      }
+      return match;
+    }
+    return 'http://localhost:3000/';
+  }
   return map[providerKey] || map.gemini;
+}
+
+function getScriptIdForOrigin(originPattern) {
+  return 'ai-paster-' + originPattern.replace(/[^a-zA-Z0-9_-]/g, '-');
+}
+
+async function registerCustomOriginScript(originPattern) {
+  const scriptId = getScriptIdForOrigin(originPattern);
+  try {
+    if (typeof chrome !== 'undefined' && chrome.scripting) {
+      await chrome.scripting.unregisterContentScripts({ ids: [scriptId] }).catch(() => {});
+      await chrome.scripting.registerContentScripts([
+        {
+          id: scriptId,
+          matches: [originPattern],
+          js: ['i18n.js', 'promptBuilder.js', 'aiPaster.js'],
+          runAt: 'document_idle'
+        }
+      ]);
+      console.log(`Registered content script for: ${originPattern} with ID: ${scriptId}`);
+    }
+  } catch (err) {
+    console.error(`Failed to register content script for ${originPattern}:`, err);
+    throw err;
+  }
+}
+
+async function unregisterCustomOriginScript(originPattern) {
+  const scriptId = getScriptIdForOrigin(originPattern);
+  try {
+    if (typeof chrome !== 'undefined' && chrome.scripting) {
+      await chrome.scripting.unregisterContentScripts({ ids: [scriptId] }).catch(() => {});
+      console.log(`Unregistered content script for: ${originPattern} with ID: ${scriptId}`);
+    }
+  } catch (err) {
+    console.error(`Failed to unregister content script for ${originPattern}:`, err);
+    throw err;
+  }
+}
+
+async function registerAllCustomOrigins() {
+  return new Promise(resolve => {
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
+      chrome.storage.sync.get(['customOrigins'], async (result) => {
+        const origins = result.customOrigins || [];
+        for (const origin of origins) {
+          try {
+            await registerCustomOriginScript(origin);
+          } catch (e) {
+            console.error(`Error registering custom origin ${origin} on startup:`, e);
+          }
+        }
+        resolve();
+      });
+    } else {
+      resolve();
+    }
+  });
 }
 
 // =====================
@@ -1440,12 +1529,14 @@ async function checkAndSyncSelectors() {
 // Call on startup
 if (!globalThis.R2AIServiceWorkerTest) {
   checkAndSyncSelectors().catch(err => console.error('Selector check failed:', err));
+  registerAllCustomOrigins().catch(err => console.error('Failed to register custom origins on startup:', err));
 }
 
 // Set up listeners
 if (chrome.runtime.onStartup) {
   chrome.runtime.onStartup.addListener(() => {
     checkAndSyncSelectors().catch(err => console.error('Selector check failed:', err));
+    registerAllCustomOrigins().catch(err => console.error('Failed to register custom origins on startup listener:', err));
   });
 }
 
@@ -1535,7 +1626,12 @@ if (globalThis.R2AIServiceWorkerTest) {
     syncSelectors,
     checkAndSyncSelectors,
     checkLocalAiCapability,
-    generateLocalSummary
+    generateLocalSummary,
+    getScriptIdForOrigin,
+    registerCustomOriginScript,
+    unregisterCustomOriginScript,
+    registerAllCustomOrigins,
+    getAiUrl
   });
 }
 

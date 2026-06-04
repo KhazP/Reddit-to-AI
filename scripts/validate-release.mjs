@@ -122,7 +122,9 @@ async function validateManifest(files) {
     'https://gemini.google.com/*',
     'https://chatgpt.com/*',
     'https://claude.ai/*',
-    'https://aistudio.google.com/*'
+    'https://aistudio.google.com/*',
+    'https://chat.deepseek.com/*',
+    'https://*.groq.com/*'
   ]);
   for (const host of manifest.host_permissions || []) {
     assert(allowedHostPermissions.has(host), `Unexpected host permission: ${host}`);

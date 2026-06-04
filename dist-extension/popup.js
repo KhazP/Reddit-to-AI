@@ -428,7 +428,7 @@ Data:
   }
 
   function getProviderLabel(provider) {
-    return ({ gemini: 'Gemini', chatgpt: 'ChatGPT', claude: 'Claude', aistudio: 'AI Studio' }[provider]) || 'Gemini';
+    return ({ gemini: 'Gemini', chatgpt: 'ChatGPT', claude: 'Claude', aistudio: 'AI Studio', deepseek: 'DeepSeek', groq: 'Groq', custom: 'Custom' }[provider]) || 'Gemini';
   }
 
   function getCheckedValue(name, fallback) {
