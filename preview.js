@@ -24,6 +24,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   bindElements();
   bindEvents();
   loadPreviewData();
+
+  if (globalThis.R2ATiktokenPromise) {
+    globalThis.R2ATiktokenPromise.then(() => {
+      if (els.promptTextarea && (previewState.renderedData || previewState.data)) {
+        updateBudget(els.promptTextarea.value, previewState.renderedData || previewState.data);
+      }
+    });
+  }
 });
 
 function bindElements() {

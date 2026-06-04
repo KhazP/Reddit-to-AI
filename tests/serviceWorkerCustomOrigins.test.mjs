@@ -116,10 +116,11 @@ async function loadServiceWorker(context) {
   const reg = context.getRegisteredScripts();
   assert.equal(reg.length, 1);
   assert.equal(reg[0].matches[0], 'http://localhost:1234/*');
-  assert.equal(reg[0].js.length, 3);
+  assert.equal(reg[0].js.length, 4);
   assert.equal(reg[0].js[0], 'i18n.js');
-  assert.equal(reg[0].js[1], 'promptBuilder.js');
-  assert.equal(reg[0].js[2], 'aiPaster.js');
+  assert.equal(reg[0].js[1], 'cl100k_base.js');
+  assert.equal(reg[0].js[2], 'promptBuilder.js');
+  assert.equal(reg[0].js[3], 'aiPaster.js');
 
   await api.unregisterCustomOriginScript('http://localhost:1234/*');
   const unreg = context.getUnregisteredScripts();

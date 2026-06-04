@@ -407,6 +407,13 @@
   }
 
   function estimateTokens(text) {
+    if (globalThis.R2ATiktoken) {
+      try {
+        return globalThis.R2ATiktoken.encode(text).length;
+      } catch (err) {
+        console.warn('Tiktoken encode error, falling back:', err);
+      }
+    }
     return Math.ceil(String(text || '').length / 4);
   }
 

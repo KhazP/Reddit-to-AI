@@ -38,6 +38,8 @@ const requiredFiles = [
   'preview.js',
   'service_worker.js',
   'promptBuilder.js',
+  'cl100k_base.js',
+  'cl100k_base.json',
   'redditScraper.js',
   'aiPaster.js',
   'i18n.js',

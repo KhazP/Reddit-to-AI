@@ -1,5 +1,5 @@
 /* global importScripts */
-importScripts('promptBuilder.js');
+importScripts('cl100k_base.js', 'promptBuilder.js');
 
 const DEFAULT_PROMPT_TEMPLATE = 'Summarize the following Reddit thread:\n\n{content}';
 const DEFAULT_HISTORY_LIMIT = 10;
@@ -954,6 +954,12 @@ async function injectContentScripts(tabId) {
   }
 
   try {
+    await chrome.scripting.executeScript({ target: { tabId }, files: ['cl100k_base.js'] });
+  } catch (error) {
+    console.debug('cl100k_base helper injection skipped:', error.message);
+  }
+
+  try {
     await chrome.scripting.executeScript({ target: { tabId }, files: ['promptBuilder.js'] });
   } catch (error) {
     console.debug('Prompt helper injection skipped:', error.message);
@@ -1039,7 +1045,7 @@ async function registerCustomOriginScript(originPattern) {
         {
           id: scriptId,
           matches: [originPattern],
-          js: ['i18n.js', 'promptBuilder.js', 'aiPaster.js'],
+          js: ['i18n.js', 'cl100k_base.js', 'promptBuilder.js', 'aiPaster.js'],
           runAt: 'document_idle'
         }
       ]);

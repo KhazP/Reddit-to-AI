@@ -39,6 +39,7 @@
       ],
       "js": [
         "i18n.js",
+        "cl100k_base.js",
         "promptBuilder.js",
         "aiPaster.js"
       ],
@@ -79,7 +80,8 @@
         "images/*.svg",
         "images/*.png",
         "_locales/**/*.json",
-        "floatingPanel.css"
+        "floatingPanel.css",
+        "cl100k_base.json"
       ],
       "matches": [
         "*://*.reddit.com/*",

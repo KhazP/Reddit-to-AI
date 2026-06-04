@@ -1036,4 +1036,10 @@ Data:
       renderPopupState(stateResponse);
     }
   });
+
+  if (globalThis.R2ATiktokenPromise) {
+    globalThis.R2ATiktokenPromise.then(() => {
+      updateScrapeEstimate();
+    });
+  }
 });
