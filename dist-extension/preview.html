@@ -18,7 +18,12 @@
       <div class="header-actions">
         <button id="backBtnTop" class="btn ghost">Back</button>
         <button id="copyBtn" class="btn secondary">Copy</button>
-        <button id="exportBtn" class="btn secondary">Export</button>
+        <select id="exportSelect" class="btn secondary select-export" style="width: auto; height: 38px; display: inline-block; padding: 0 8px; cursor: pointer; vertical-align: middle;">
+          <option value="" disabled selected hidden>Export</option>
+          <option value="markdown">Markdown (.md)</option>
+          <option value="json">JSON (.json)</option>
+          <option value="csv">CSV (.csv)</option>
+        </select>
         <button id="savePresetBtn" class="btn secondary">Save preset</button>
         <button id="skipNextBtn" class="btn secondary">Send and skip preview next time</button>
         <button id="sendBtn" class="btn primary">Send to AI</button>

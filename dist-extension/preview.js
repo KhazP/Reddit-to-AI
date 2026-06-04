@@ -52,7 +52,7 @@ function bindElements() {
   els.promptTextarea = document.getElementById('promptTextarea');
   els.copyBtn = document.getElementById('copyBtn');
   els.copyBtnBottom = document.getElementById('copyBtnBottom');
-  els.exportBtn = document.getElementById('exportBtn');
+  els.exportSelect = document.getElementById('exportSelect');
   els.savePresetBtn = document.getElementById('savePresetBtn');
   els.sendBtn = document.getElementById('sendBtn');
   els.sendBtnBottom = document.getElementById('sendBtnBottom');
@@ -103,7 +103,7 @@ function bindEvents() {
 
   els.copyBtn?.addEventListener('click', copyPrompt);
   els.copyBtnBottom?.addEventListener('click', copyPrompt);
-  els.exportBtn?.addEventListener('click', exportPrompt);
+  els.exportSelect?.addEventListener('change', exportPrompt);
   els.savePresetBtn?.addEventListener('click', saveCurrentPreset);
   els.sendBtn?.addEventListener('click', sendPrompt);
   els.sendBtnBottom?.addEventListener('click', sendPrompt);
@@ -359,21 +359,55 @@ async function copyPrompt() {
 }
 
 function exportPrompt() {
-  const exportData = {
-    exportedAt: new Date().toISOString(),
-    prompt: els.promptTextarea.value,
-    settings: getCurrentBuildOptions(),
-    data: previewState.renderedData || previewState.data
-  };
-  const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement('a');
-  const subreddit = previewState.data?.post?.subreddit || 'multi-thread';
-  anchor.href = url;
-  anchor.download = `reddit-to-ai-preview-${subreddit}-${Date.now()}.json`;
-  anchor.click();
-  URL.revokeObjectURL(url);
-  setStatus('Preview exported as JSON.');
+  const format = els.exportSelect?.value;
+  if (!format) return;
+
+  const data = previewState.renderedData || previewState.data;
+  if (!data) {
+    setStatus('No data available to export.');
+    if (els.exportSelect) els.exportSelect.value = '';
+    return;
+  }
+
+  let content = '';
+  let mimeType = 'text/plain';
+  let ext = 'txt';
+
+  try {
+    if (format === 'markdown') {
+      content = R2AIPrompt.exportToMarkdown(data);
+      mimeType = 'text/markdown;charset=utf-8;';
+      ext = 'md';
+    } else if (format === 'json') {
+      content = R2AIPrompt.exportToJSON(data);
+      mimeType = 'application/json;charset=utf-8;';
+      ext = 'json';
+    } else if (format === 'csv') {
+      content = R2AIPrompt.exportToCSV(data);
+      mimeType = 'text/csv;charset=utf-8;';
+      ext = 'csv';
+    } else {
+      if (els.exportSelect) els.exportSelect.value = '';
+      return;
+    }
+
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    const subreddit = (data.post?.subreddit || 'multi-thread').replace(/[\/\\?%*:|"<>\s]/g, '_');
+    anchor.href = url;
+    anchor.download = `reddit-to-ai-preview-${subreddit}-${Date.now()}.${ext}`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+    URL.revokeObjectURL(url);
+    setStatus(`Preview exported as ${format.toUpperCase()}.`);
+  } catch (err) {
+    console.error('Export failed:', err);
+    setStatus('Export failed.');
+  }
+
+  if (els.exportSelect) els.exportSelect.value = '';
 }
 
 function saveCurrentPreset() {

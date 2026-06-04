@@ -439,6 +439,142 @@
     };
   }
 
+  function exportToJSON(data) {
+    return JSON.stringify(data, null, 2);
+  }
+
+  function escapeCSVCell(val) {
+    if (val === null || val === undefined) return '""';
+    const str = String(val);
+    return '"' + str.replace(/"/g, '""') + '"';
+  }
+
+  function flattenCommentsForCSV(comments, depth = 0, parentId = '') {
+    let rows = [];
+    for (const comment of comments || []) {
+      if (!comment) continue;
+      rows.push({
+        type: 'comment',
+        id: comment.id || '',
+        parentId: comment.parentId || parentId || '',
+        depth: depth,
+        author: comment.author || '',
+        score: comment.score !== undefined ? comment.score : '',
+        isOP: Boolean(comment.isSubmitter),
+        text: comment.text || ''
+      });
+      if (Array.isArray(comment.replies) && comment.replies.length > 0) {
+        rows = rows.concat(flattenCommentsForCSV(comment.replies, depth + 1, comment.id));
+      }
+    }
+    return rows;
+  }
+
+  function exportToCSV(data) {
+    const headers = ['Type', 'ID', 'Parent ID', 'Depth', 'Author', 'Score', 'Is OP', 'Text/Content'];
+    const headerLine = headers.map(escapeCSVCell).join(',');
+    const rows = [];
+
+    const threads = Array.isArray(data?.threads) ? data.threads : [data];
+    for (const thread of threads) {
+      if (!thread) continue;
+      // Post Row
+      let postText = thread.post?.title || '';
+      if (thread.post?.content) {
+        postText = postText ? `${postText}\n\n${thread.post.content}` : thread.post.content;
+      }
+      rows.push([
+        'post',
+        thread.post?.id || '',
+        '',
+        0,
+        thread.post?.author || '',
+        thread.post?.score !== undefined ? thread.post.score : '',
+        true,
+        postText
+      ]);
+
+      // Comment Rows
+      const flat = flattenCommentsForCSV(thread.comments, 0, thread.post?.id || '');
+      for (const item of flat) {
+        rows.push([
+          item.type,
+          item.id,
+          item.parentId,
+          item.depth,
+          item.author,
+          item.score,
+          item.isOP,
+          item.text
+        ]);
+      }
+    }
+
+    const lines = [headerLine].concat(
+      rows.map(row => row.map(escapeCSVCell).join(','))
+    );
+    return lines.join('\n');
+  }
+
+  function renderMarkdownComment(comment, depth) {
+    const indent = '  '.repeat(depth);
+    const author = comment.author || '[deleted]';
+    const scoreStr = typeof comment.score === 'number' ? ` (${comment.score} pts)` : '';
+    const opSuffix = comment.isSubmitter ? ' (OP)' : '';
+    const text = comment.text || '';
+    const textIndent = '  '.repeat(depth + 1);
+    const formattedText = text.split('\n').map(line => textIndent + line).join('\n');
+
+    let result = `${indent}- **u/${author}**${scoreStr}${opSuffix}:\n${formattedText}`;
+
+    if (Array.isArray(comment.replies) && comment.replies.length > 0) {
+      for (const reply of comment.replies) {
+        result += '\n' + renderMarkdownComment(reply, depth + 1);
+      }
+    }
+    return result;
+  }
+
+  function exportToMarkdown(data) {
+    const threads = Array.isArray(data?.threads) ? data.threads : [data];
+    const mdSections = [];
+
+    for (const thread of threads) {
+      if (!thread) continue;
+      const sections = [];
+      const post = thread.post || {};
+      const scrapedAt = thread.metadata?.scrapedAt || data.metadata?.scrapedAt || new Date().toISOString();
+      const commentCount = thread.metadata?.commentCount || thread.commentCount || countComments(thread.comments);
+      const maxDepth = thread.maxDepth || data.maxDepth || 'unknown';
+
+      sections.push(`# ${post.title || '[Unknown title]'}`);
+      sections.push('');
+      sections.push(`- **Subreddit**: r/${post.subreddit || 'unknown'}`);
+      sections.push(`- **Author**: u/${post.author || 'unknown'}`);
+      if (post.url) sections.push(`- **URL**: ${post.url}`);
+      sections.push(`- **Scraped at**: ${scrapedAt}`);
+      sections.push(`- **Total Comments**: ${commentCount}`);
+      sections.push(`- **Max Depth**: ${maxDepth}`);
+      sections.push('');
+      sections.push('## Post Content');
+      sections.push('');
+      sections.push(post.content || '[No body content]');
+      sections.push('');
+      sections.push('## Comments');
+      sections.push('');
+
+      if (Array.isArray(thread.comments) && thread.comments.length > 0) {
+        sections.push(thread.comments.map(c => renderMarkdownComment(c, 0)).join('\n'));
+      } else {
+        sections.push('[No comments]');
+      }
+
+      mdSections.push(sections.join('\n'));
+    }
+
+    return mdSections.join('\n\n---\n\n');
+  }
+
   global.R2AIPrompt = {
     CONTEXT_PRESETS,
     TRIM_STRATEGIES,
@@ -453,6 +589,9 @@
     countImages,
     trimComments,
     trimCommentsToCharBudget,
-    rebuildTreeFromSelected
+    rebuildTreeFromSelected,
+    exportToJSON,
+    exportToCSV,
+    exportToMarkdown
   };
 })(typeof globalThis !== 'undefined' ? globalThis : window);

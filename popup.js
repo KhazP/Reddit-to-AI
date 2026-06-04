@@ -40,6 +40,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const batchUrlsInput = document.getElementById('batchUrls');
   const batchUrlStatus = document.getElementById('batchUrlStatus');
   const toastContainer = document.getElementById('toastContainer');
+  const popupExportSelect = document.getElementById('popupExportSelect');
   let currentBatchUrlCount = 0;
 
   // ── Custom Min Score dropdown ───────────────────────────
@@ -664,6 +665,7 @@ Data:
       if (localSummaryBtn) localSummaryBtn.style.display = 'none';
       stopScrapeBtn.style.display = 'flex';
       stopScrapeBtn.disabled = false;
+      if (popupExportSelect) popupExportSelect.disabled = true;
 
       const pct = state.percentage || 0;
       showToast('progress', state.message || t('popup_status_scraping') || 'Scraping...', {
@@ -702,6 +704,7 @@ Data:
         // Idle - clean UI, no toast
         dismissAllToasts();
       }
+      checkExportAvailability();
     }
 
     if (state.summary !== undefined && state.summary !== null) {
@@ -889,6 +892,76 @@ Data:
     });
   }
 
+  // ── Export options select ────────────────────────────────
+  function checkExportAvailability() {
+    chrome.runtime.sendMessage({ action: 'getPreviewData' }, (response) => {
+      if (chrome.runtime.lastError) {
+        if (popupExportSelect) popupExportSelect.disabled = true;
+        return;
+      }
+      if (popupExportSelect) {
+        popupExportSelect.disabled = !(response && response.data);
+      }
+    });
+  }
+
+  if (popupExportSelect) {
+    popupExportSelect.addEventListener('change', () => {
+      const format = popupExportSelect.value;
+      if (!format) return;
+
+      chrome.runtime.sendMessage({ action: 'getPreviewData' }, (response) => {
+        if (chrome.runtime.lastError || !response || !response.data) {
+          dismissAllToasts();
+          showToast('error', 'No data available to export.', { dismiss: true });
+          popupExportSelect.value = '';
+          return;
+        }
+
+        const data = response.data;
+        let content = '';
+        let mimeType = 'text/plain';
+        let ext = 'txt';
+
+        try {
+          if (format === 'markdown') {
+            content = R2AIPrompt.exportToMarkdown(data);
+            mimeType = 'text/markdown;charset=utf-8;';
+            ext = 'md';
+          } else if (format === 'json') {
+            content = R2AIPrompt.exportToJSON(data);
+            mimeType = 'application/json;charset=utf-8;';
+            ext = 'json';
+          } else if (format === 'csv') {
+            content = R2AIPrompt.exportToCSV(data);
+            mimeType = 'text/csv;charset=utf-8;';
+            ext = 'csv';
+          } else {
+            popupExportSelect.value = '';
+            return;
+          }
+
+          const blob = new Blob([content], { type: mimeType });
+          const url = URL.createObjectURL(blob);
+          const anchor = document.createElement('a');
+          const subreddit = (data.post?.subreddit || 'multi-thread').replace(/[\/\\?%*:|"<>\s]/g, '_');
+          anchor.href = url;
+          anchor.download = `reddit-to-ai-export-${subreddit}-${Date.now()}.${ext}`;
+          document.body.appendChild(anchor);
+          anchor.click();
+          document.body.removeChild(anchor);
+          URL.revokeObjectURL(url);
+          showToast('success', `Exported as ${format.toUpperCase()}!`);
+        } catch (err) {
+          console.error('Export failed:', err);
+          showToast('error', 'Export failed.', { dismiss: true });
+        }
+
+        popupExportSelect.value = '';
+      });
+    });
+  }
+
   // ── Local AI Summary button actions ───────────────────
   if (localSummaryBtn) {
     chrome.runtime.sendMessage({ action: 'checkLocalAiCapability' }, (response) => {
@@ -1020,6 +1093,8 @@ Data:
       localSummaryResultCard.style.display = 'none';
     });
   }
+
+  checkExportAvailability();
 
   // ── Get initial state ──────────────────────────────────
   chrome.runtime.sendMessage({ action: 'getScrapingState' }, (stateResponse) => {
