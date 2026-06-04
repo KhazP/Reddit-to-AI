@@ -1812,7 +1812,9 @@ function parseSimpleJsonComments(children) {
       const data = child.data;
       if (!data) continue;
       const item = {
+        id: data.name,
         author: data.author,
+        text: data.body || '',
         body: data.body || '',
         score: data.score || 0,
         replies: []
@@ -1861,12 +1863,13 @@ async function getQuickTokenEstimate(tabId, urlStr) {
   const estimatedData = {
     post: {
       title: postData.title,
-      selftext: postData.selftext,
+      selftext: postData.selftext || '',
+      content: postData.selftext || '',
       author: postData.author,
       score: postData.score,
       subreddit: postData.subreddit,
-      permalink: postData.permalink,
-      url: postData.url
+      permalink: postData.permalink ? `https://www.reddit.com${postData.permalink}` : urlStr,
+      url: postData.url || urlStr
     },
     comments: parseSimpleJsonComments(commentsData),
     metadata: {
