@@ -445,6 +445,7 @@
     countDataComments,
     countImages,
     trimComments,
-    trimCommentsToCharBudget
+    trimCommentsToCharBudget,
+    rebuildTreeFromSelected
   };
 })(typeof globalThis !== 'undefined' ? globalThis : window);

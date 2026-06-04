@@ -113,6 +113,21 @@
       <button id="resumeBtn" class="btn secondary">Resume missing comments</button>
     </section>
 
+    <section class="comments-tree-card" id="commentsTreeCard">
+      <div class="comments-tree-header">
+        <div>
+          <span class="eyebrow">Interactive Comment Tree</span>
+          <h2>Comment Pruning</h2>
+          <p>Uncheck comments to exclude them from the AI prompt. Unchecking a comment automatically disables all its replies.</p>
+        </div>
+        <div class="comments-tree-actions">
+          <button id="selectAllCommentsBtn" class="btn secondary">Select All</button>
+          <button id="clearAllCommentsBtn" class="btn secondary">Clear All</button>
+        </div>
+      </div>
+      <div id="commentsTreeContainer" class="tree-container"></div>
+    </section>
+
     <section class="editor-card">
       <div class="editor-toolbar">
         <strong>Final prompt</strong>

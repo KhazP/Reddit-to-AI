@@ -251,3 +251,141 @@ select { height: 42px; padding: 0 12px; }
   .controls-grid { grid-template-columns: 1fr; }
   .header-actions { justify-content: flex-start; }
 }
+
+.comments-tree-card {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.comments-tree-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.comments-tree-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.tree-container {
+  max-height: 400px;
+  overflow-y: auto;
+  background: rgba(10, 10, 10, 0.4);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.comment-node {
+  margin-left: 16px;
+  margin-top: 8px;
+  position: relative;
+}
+
+.comment-node:first-child {
+  margin-top: 0;
+}
+
+.comment-node::before {
+  content: "";
+  position: absolute;
+  left: -8px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--border);
+}
+
+.comment-node[open] > .comment-summary::before {
+  transform: rotate(90deg);
+}
+
+.comment-summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  padding: 4px 0;
+  user-select: none;
+}
+
+.comment-summary::-webkit-details-marker {
+  display: none;
+}
+
+.comment-summary::before {
+  content: "▶";
+  font-size: 10px;
+  color: var(--muted);
+  transition: transform 0.15s ease;
+  display: inline-block;
+}
+
+.comment-leaf {
+  margin-left: 16px;
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  padding: 4px 0;
+  position: relative;
+}
+
+.comment-leaf::before {
+  content: "";
+  position: absolute;
+  left: -8px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--border);
+}
+
+.comment-checkbox {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--accent);
+}
+
+.comment-checkbox:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.comment-meta {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.comment-meta .author {
+  color: var(--accent);
+}
+
+.comment-meta .score {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.comment-text-snippet {
+  color: var(--muted);
+  font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 600px;
+}
+
+.comment-checkbox:disabled + .comment-meta,
+.comment-checkbox:disabled ~ .comment-text-snippet {
+  color: var(--dim);
+  text-decoration: line-through;
+}
+
