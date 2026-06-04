@@ -424,6 +424,7 @@ Data:
 
   // ── Quick Prompt ───────────────────────────────────────
   let quickPromptDebounce = null;
+  let budgetEstimateDebounce = null;
 
   function autoExpandTextarea() {
     if (!quickPromptInput) return;
@@ -498,15 +499,18 @@ Data:
     bar.style.width = `${percentage}%`;
     
     bar.className = 'budget-bar-fill';
-    if (tokenCount < 8000) {
+    const formattedCount = tokenCount.toLocaleString();
+    if (tokenCount === 0) {
+      label.innerText = typeof t === 'function' ? t('popup_budget_initial') : 'Budget: 0 tokens';
+    } else if (tokenCount < 8000) {
       bar.classList.add('safe');
-      label.innerText = `Budget: ${tokenCount.toLocaleString()} tokens (Safe)`;
+      label.innerText = typeof t === 'function' ? t('popup_budget_safe', [formattedCount]) : `Budget: ${formattedCount} tokens (Safe)`;
     } else if (tokenCount < 32000) {
       bar.classList.add('moderate');
-      label.innerText = `Budget: ${tokenCount.toLocaleString()} tokens (Moderate)`;
+      label.innerText = typeof t === 'function' ? t('popup_budget_moderate', [formattedCount]) : `Budget: ${formattedCount} tokens (Moderate)`;
     } else {
       bar.classList.add('large');
-      label.innerText = `Budget: ${tokenCount.toLocaleString()} tokens (Large)`;
+      label.innerText = typeof t === 'function' ? t('popup_budget_large', [formattedCount]) : `Budget: ${formattedCount} tokens (Large)`;
     }
   }
 
@@ -524,37 +528,40 @@ Data:
     if (dontSaveThisScrape?.checked) filters.push("don't save");
     scrapeEstimate.textContent = `${mode} · ${context} · depth ${depth} · ${provider}${filters.length ? ` · ${filters.join(', ')}` : ''}`;
 
-    let tokenCount = 0;
-    if (cachedPreviewData) {
-      const isQuickPrompt = quickPromptInput && quickPromptInput.value.trim();
-      let template = '';
-      if (isQuickPrompt) {
-        const val = quickPromptInput.value.trim();
-        template = val.includes('{content}') ? val : val + '\n\n{content}';
-      } else {
-        const presetKey = selectedPreset || 'summarize';
-        if (presetKey === 'custom') {
-          template = cachedCustomPromptTemplate || DEFAULT_CUSTOM_TEMPLATE;
+    clearTimeout(budgetEstimateDebounce);
+    budgetEstimateDebounce = setTimeout(() => {
+      let tokenCount = 0;
+      if (cachedPreviewData) {
+        const isQuickPrompt = quickPromptInput && quickPromptInput.value.trim();
+        let template = '';
+        if (isQuickPrompt) {
+          const val = quickPromptInput.value.trim();
+          template = val.includes('{content}') ? val : val + '\n\n{content}';
         } else {
-          template = getPromptPresets()[presetKey]?.template || '';
+          const presetKey = selectedPreset || 'summarize';
+          if (presetKey === 'custom') {
+            template = cachedCustomPromptTemplate || DEFAULT_CUSTOM_TEMPLATE;
+          } else {
+            template = getPromptPresets()[presetKey]?.template || '';
+          }
+        }
+
+        const options = {
+          contextPreset: getCheckedValue('contextPresetPopup', 'balanced'),
+          trimStrategy: trimStrategySelect?.value || 'top',
+          mediaMode: mediaModeSelect?.value || 'attach',
+          outputFormat: outputFormatSelect?.value || 'auto'
+        };
+
+        try {
+          const promptText = R2AIPrompt.buildPromptText(cachedPreviewData, template, options);
+          tokenCount = R2AIPrompt.estimatePromptStats(promptText, cachedPreviewData).tokens;
+        } catch (err) {
+          console.error('Failed to estimate prompt tokens:', err);
         }
       }
-
-      const options = {
-        contextPreset: getCheckedValue('contextPresetPopup', 'balanced'),
-        trimStrategy: trimStrategySelect?.value || 'top',
-        mediaMode: mediaModeSelect?.value || 'attach',
-        outputFormat: outputFormatSelect?.value || 'auto'
-      };
-
-      try {
-        const promptText = R2AIPrompt.buildPromptText(cachedPreviewData, template, options);
-        tokenCount = R2AIPrompt.estimatePromptStats(promptText, cachedPreviewData).tokens;
-      } catch (err) {
-        console.error('Failed to estimate prompt tokens:', err);
-      }
-    }
-    updateBudgetTracker(tokenCount);
+      updateBudgetTracker(tokenCount);
+    }, 200);
   }
 
   if (sendModeSelect) {

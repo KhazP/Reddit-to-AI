@@ -449,5 +449,32 @@
     },
     "popup_btn_local_summary_disabled_tooltip": {
         "message": "Local AI is disabled. Enable in chrome://flags/#optimization-guide-on-device-model"
+    },
+    "popup_budget_initial": {
+        "message": "Budget: 0 tokens"
+    },
+    "popup_budget_safe": {
+        "message": "Budget: $VAL$ tokens (Safe)",
+        "placeholders": {
+            "val": {
+                "content": "$1"
+            }
+        }
+    },
+    "popup_budget_moderate": {
+        "message": "Budget: $VAL$ tokens (Moderate)",
+        "placeholders": {
+            "val": {
+                "content": "$1"
+            }
+        }
+    },
+    "popup_budget_large": {
+        "message": "Budget: $VAL$ tokens (Large)",
+        "placeholders": {
+            "val": {
+                "content": "$1"
+            }
+        }
     }
 }
