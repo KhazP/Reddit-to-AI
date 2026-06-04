@@ -23,7 +23,9 @@
     "https://gemini.google.com/*",
     "https://chatgpt.com/*",
     "https://claude.ai/*",
-    "https://aistudio.google.com/*"
+    "https://aistudio.google.com/*",
+    "https://chat.deepseek.com/*",
+    "https://*.groq.com/*"
   ],
   "content_scripts": [
     {
@@ -31,7 +33,9 @@
         "https://gemini.google.com/*",
         "https://chatgpt.com/*",
         "https://claude.ai/*",
-        "https://aistudio.google.com/*"
+        "https://aistudio.google.com/*",
+        "https://chat.deepseek.com/*",
+        "https://*.groq.com/*"
       ],
       "js": [
         "i18n.js",
@@ -83,7 +87,9 @@
         "https://gemini.google.com/*",
         "https://chatgpt.com/*",
         "https://claude.ai/*",
-        "https://aistudio.google.com/*"
+        "https://aistudio.google.com/*",
+        "https://chat.deepseek.com/*",
+        "https://*.groq.com/*"
       ]
     }
   ]
