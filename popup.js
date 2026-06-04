@@ -267,6 +267,22 @@ Data:
 {content}`;
 
   let selectedPreset = 'summarize';
+  let cachedPreviewData = null;
+  let cachedCustomPromptTemplate = '';
+
+  function loadPreviewData(callback) {
+    chrome.runtime.sendMessage({ action: 'getPreviewData' }, (response) => {
+      if (chrome.runtime.lastError || !response || !response.data) {
+        cachedPreviewData = null;
+      } else {
+        cachedPreviewData = response.data;
+      }
+      if (popupExportSelect) {
+        popupExportSelect.disabled = !cachedPreviewData;
+      }
+      if (callback) callback();
+    });
+  }
 
   // ── Load saved settings ────────────────────────────────
   chrome.storage.sync.get([
@@ -287,8 +303,10 @@ Data:
     'lastBatchUrls',
     'showPromptPreview',
     'selectedLlmProvider',
-    'outputFormat'
+    'outputFormat',
+    'customPromptTemplate'
   ], (result) => {
+    cachedCustomPromptTemplate = result.customPromptTemplate || DEFAULT_CUSTOM_TEMPLATE;
     selectedPreset = result.selectedPreset || 'summarize';
     updatePresetSelection(selectedPreset);
 
@@ -432,6 +450,7 @@ Data:
             defaultPromptTemplate: template
           });
         }, 400);
+        updateScrapeEstimate();
       } else {
         quickPromptInput.classList.remove('has-content');
         quickPromptInput.style.height = '';
@@ -440,6 +459,7 @@ Data:
           const preset = res.selectedPreset || 'summarize';
           selectedPreset = preset;
           updatePresetSelection(preset);
+          updateScrapeEstimate();
         });
         chrome.storage.sync.remove('quickPrompt');
       }
@@ -468,6 +488,28 @@ Data:
     btnText.textContent = previewEnabled ? 'Scrape & Preview' : 'Scrape & Send Once';
   }
 
+  function updateBudgetTracker(tokenCount) {
+    const bar = document.getElementById('budgetValueBar');
+    const label = document.getElementById('budgetLabel');
+    if (!bar || !label) return;
+    
+    const maxTokens = 32000;
+    const percentage = Math.min(100, (tokenCount / maxTokens) * 100);
+    bar.style.width = `${percentage}%`;
+    
+    bar.className = 'budget-bar-fill';
+    if (tokenCount < 8000) {
+      bar.classList.add('safe');
+      label.innerText = `Budget: ${tokenCount.toLocaleString()} tokens (Safe)`;
+    } else if (tokenCount < 32000) {
+      bar.classList.add('moderate');
+      label.innerText = `Budget: ${tokenCount.toLocaleString()} tokens (Moderate)`;
+    } else {
+      bar.classList.add('large');
+      label.innerText = `Budget: ${tokenCount.toLocaleString()} tokens (Large)`;
+    }
+  }
+
   function updateScrapeEstimate() {
     if (!scrapeEstimate) return;
     const mode = (sendModeSelect?.value || 'preview') === 'preview' ? 'Preview first' : 'Send directly once';
@@ -481,6 +523,38 @@ Data:
     if (filterFlairedBtn?.classList.contains('active')) filters.push('flaired');
     if (dontSaveThisScrape?.checked) filters.push("don't save");
     scrapeEstimate.textContent = `${mode} · ${context} · depth ${depth} · ${provider}${filters.length ? ` · ${filters.join(', ')}` : ''}`;
+
+    let tokenCount = 0;
+    if (cachedPreviewData) {
+      const isQuickPrompt = quickPromptInput && quickPromptInput.value.trim();
+      let template = '';
+      if (isQuickPrompt) {
+        const val = quickPromptInput.value.trim();
+        template = val.includes('{content}') ? val : val + '\n\n{content}';
+      } else {
+        const presetKey = selectedPreset || 'summarize';
+        if (presetKey === 'custom') {
+          template = cachedCustomPromptTemplate || DEFAULT_CUSTOM_TEMPLATE;
+        } else {
+          template = getPromptPresets()[presetKey]?.template || '';
+        }
+      }
+
+      const options = {
+        contextPreset: getCheckedValue('contextPresetPopup', 'balanced'),
+        trimStrategy: trimStrategySelect?.value || 'top',
+        mediaMode: mediaModeSelect?.value || 'attach',
+        outputFormat: outputFormatSelect?.value || 'auto'
+      };
+
+      try {
+        const promptText = R2AIPrompt.buildPromptText(cachedPreviewData, template, options);
+        tokenCount = R2AIPrompt.estimatePromptStats(promptText, cachedPreviewData).tokens;
+      } catch (err) {
+        console.error('Failed to estimate prompt tokens:', err);
+      }
+    }
+    updateBudgetTracker(tokenCount);
   }
 
   if (sendModeSelect) {
@@ -500,6 +574,7 @@ Data:
   if (outputFormatSelect) {
     outputFormatSelect.addEventListener('change', (e) => {
       chrome.storage.sync.set({ outputFormat: e.target.value });
+      updateScrapeEstimate();
     });
   }
 
@@ -607,18 +682,21 @@ Data:
   if (trimStrategySelect) {
     trimStrategySelect.addEventListener('change', (e) => {
       chrome.storage.sync.set({ trimStrategy: e.target.value });
+      updateScrapeEstimate();
     });
   }
 
   if (redditSortModeSelect) {
     redditSortModeSelect.addEventListener('change', (e) => {
       chrome.storage.sync.set({ redditSortMode: e.target.value });
+      updateScrapeEstimate();
     });
   }
 
   if (mediaModeSelect) {
     mediaModeSelect.addEventListener('change', (e) => {
       chrome.storage.sync.set({ mediaMode: e.target.value });
+      updateScrapeEstimate();
     });
   }
 
@@ -913,15 +991,7 @@ Data:
 
   // ── Export options select ────────────────────────────────
   function checkExportAvailability() {
-    chrome.runtime.sendMessage({ action: 'getPreviewData' }, (response) => {
-      if (chrome.runtime.lastError) {
-        if (popupExportSelect) popupExportSelect.disabled = true;
-        return;
-      }
-      if (popupExportSelect) {
-        popupExportSelect.disabled = !(response && response.data);
-      }
-    });
+    loadPreviewData(() => updateScrapeEstimate());
   }
 
   if (popupExportSelect) {

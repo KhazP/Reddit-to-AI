@@ -508,6 +508,40 @@ body::-webkit-scrollbar-thumb:hover {
   line-height: 1.35;
 }
 
+.budget-bar-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 6px;
+}
+.budget-bar-track {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.budget-bar-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 2px;
+  transition: width 0.3s ease, background-color 0.3s ease;
+}
+.budget-bar-fill.safe {
+  background: var(--success);
+}
+.budget-bar-fill.moderate {
+  background: var(--warning);
+}
+.budget-bar-fill.large {
+  background: var(--accent);
+}
+.budget-text {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+
 .field-hint {
   margin: 2px 0 0;
   color: var(--text-muted);
