@@ -86,6 +86,33 @@
                                         <span class="platform-text" data-i18n="platform_aistudio_title">AI Studio</span>
                                     </div>
                                 </label>
+                                <!-- DeepSeek -->
+                                <label class="platform-option">
+                                    <input type="radio" name="llmProvider" value="deepseek">
+                                    <div class="platform-box">
+                                        <img src="images/deepseek.svg" alt="DeepSeek" class="platform-icon" width="36"
+                                            height="36">
+                                        <span class="platform-text">DeepSeek</span>
+                                    </div>
+                                </label>
+                                <!-- Groq -->
+                                <label class="platform-option">
+                                    <input type="radio" name="llmProvider" value="groq">
+                                    <div class="platform-box">
+                                        <img src="images/groq.svg" alt="Groq" class="platform-icon" width="36"
+                                            height="36">
+                                        <span class="platform-text">Groq</span>
+                                    </div>
+                                </label>
+                                <!-- Custom -->
+                                <label class="platform-option">
+                                    <input type="radio" name="llmProvider" value="custom">
+                                    <div class="platform-box">
+                                        <img src="images/custom.svg" alt="Custom" class="platform-icon" width="36"
+                                            height="36">
+                                        <span class="platform-text">Custom UI</span>
+                                    </div>
+                                </label>
                             </div>
                             <p class="form-hint" data-i18n="options_hint_platform">Choose where to send scraped content.
                                 A new tab will open with content
@@ -521,6 +548,39 @@
                             <label class="form-label" for="selectorAistudio">AI Studio Selector</label>
                             <input type="text" id="selectorAistudio" class="search-input" placeholder="e.g. textarea" style="width: 100%; box-sizing: border-box;">
                         </div>
+                        <div class="form-group">
+                            <label class="form-label" for="selectorDeepseek">DeepSeek Selector</label>
+                            <input type="text" id="selectorDeepseek" class="search-input" placeholder="e.g. textarea, div[contenteditable='true']" style="width: 100%; box-sizing: border-box;">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="selectorGroq">Groq Selector</label>
+                            <input type="text" id="selectorGroq" class="search-input" placeholder="e.g. textarea, #chat-input, div[contenteditable='true']" style="width: 100%; box-sizing: border-box;">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="selectorCustom">Custom Platform Selector</label>
+                            <input type="text" id="selectorCustom" class="search-input" placeholder="e.g. textarea, div[contenteditable='true']" style="width: 100%; box-sizing: border-box;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Custom AI Platforms Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+                            <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+                            <line x1="6" y1="6" x2="6.01" y2="6"></line>
+                            <line x1="6" y1="18" x2="6.01" y2="18"></line>
+                        </svg>
+                        <h2 class="card-title">Custom AI Platforms / Local WebUIs</h2>
+                    </div>
+                    <div class="card-content">
+                        <p class="form-hint" style="margin-bottom: 12px;">Add custom WebUI origins (e.g. <code>http://localhost:3000</code> or <code>http://127.0.0.1:8080</code>) to dynamically request host permission and register content scripts.</p>
+                        <div class="form-group" style="display: flex; gap: 8px; margin-bottom: 12px;">
+                            <input type="text" id="customOriginInput" class="search-input" placeholder="e.g. http://localhost:3000" style="flex: 1; box-sizing: border-box;">
+                            <button type="button" id="addCustomOriginBtn" class="btn-action" style="white-space: nowrap; border-color: var(--accent); color: var(--accent);">Add Platform & Request Permission</button>
+                        </div>
+                        <ul id="customOriginsList" class="custom-origins-list" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px;"></ul>
                     </div>
                 </div>
 

@@ -1206,3 +1206,30 @@ body {
     max-width: none;
   }
 }
+
+/* Custom Origins list styling */
+.custom-origins-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.custom-origin-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+}
+
+.custom-origin-text {
+  font-size: 13px;
+  color: var(--text-primary);
+  font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
