@@ -1669,7 +1669,7 @@ async function syncSelectors() {
       console.log('Reddit to AI: Selectors synced successfully.');
     }
   } catch (error) {
-    console.error('Reddit to AI: Failed to sync selectors:', error);
+    console.warn('Reddit to AI: Failed to sync selectors:', error);
   }
 }
 
