@@ -40,3 +40,15 @@ assert.match(prompt, /\[alice/, 'prompt includes comments');
 const stats = R2AIPrompt.estimatePromptStats(prompt, sampleThread);
 assert.equal(stats.comments, 3);
 assert.equal(stats.images, 1);
+
+assert.equal(typeof R2AIPrompt.rebuildTreeFromSelected, 'function', 'rebuildTreeFromSelected should be exposed');
+const testTree = [
+  { id: '1', replies: [{ id: '1.1', replies: [] }] },
+  { id: '2', replies: [] }
+];
+const pruned = R2AIPrompt.rebuildTreeFromSelected(testTree, new Set(['1.1']));
+assert.equal(pruned.length, 1, 'Only root 1 kept because its child is selected');
+assert.equal(pruned[0].id, '1', 'Root 1 kept');
+assert.equal(pruned[0].replies.length, 1, 'Child 1.1 kept');
+assert.equal(pruned[0].replies[0].id, '1.1');
+
