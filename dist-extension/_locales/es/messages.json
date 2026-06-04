@@ -519,5 +519,38 @@
     },
     "popup_budget_estimating": {
         "message": "Estimating budget..."
+    },
+    "prompt_section_post": {
+        "message": "POST CONTENT"
+    },
+    "prompt_no_content": {
+        "message": "No body content"
+    },
+    "prompt_images_attached": {
+        "message": "image(s) attached"
+    },
+    "prompt_section_comments": {
+        "message": "COMMENTS"
+    },
+    "prompt_total_comments": {
+        "message": "Total comments"
+    },
+    "sw_status_preparing": {
+        "message": "Preparing to scrape."
+    },
+    "sw_error_not_reddit": {
+        "message": "Active tab is not a Reddit thread."
+    },
+    "sw_status_collecting": {
+        "message": "Collecting data from page."
+    },
+    "sw_status_processing": {
+        "message": "Preparing scraped data."
+    },
+    "sw_status_stop_requested": {
+        "message": "Stop requested."
+    },
+    "error": {
+        "message": "Error"
     }
 }

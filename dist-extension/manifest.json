@@ -94,7 +94,8 @@
         "https://aistudio.google.com/*",
         "https://chat.deepseek.com/*",
         "https://*.groq.com/*"
-      ]
+      ],
+      "use_dynamic_url": true
     }
   ]
 }

@@ -62,11 +62,23 @@ async function loadLanguage(lang) {
     }
 
     try {
-        const url = chrome.runtime.getURL(`_locales/${lang}/messages.json`);
-        // console.log("i18n: Loading locale from", url);
+        if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage && chrome.runtime.id) {
+            const response = await new Promise((resolve) => {
+                chrome.runtime.sendMessage({ action: 'getLocaleData', lang }, (res) => {
+                    resolve(res);
+                });
+            });
+            if (response && response.success) {
+                localizedMessages = response.data;
+                return;
+            }
+        }
+        // Fallback for tests or other environments where extension message passing is not active
+        const url = typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getURL
+            ? chrome.runtime.getURL(`_locales/${lang}/messages.json`)
+            : `_locales/${lang}/messages.json`;
         const response = await fetch(url);
         localizedMessages = await response.json();
-        // console.log("i18n: Localized messages loaded for", lang);
     } catch (e) {
         console.error("i18n: Failed to load locale", lang, e);
         localizedMessages = null;

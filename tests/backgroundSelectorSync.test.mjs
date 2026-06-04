@@ -12,6 +12,7 @@ function createContext() {
   return {
     console: {
       log() {},
+      debug() {},
       warn() {},
       error() {}
     },

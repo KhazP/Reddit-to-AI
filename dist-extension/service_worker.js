@@ -20,16 +20,16 @@ let scrapingState = { ...DEFAULT_STATE };
 let currentScrape = null;
 const activePasteHandoffs = new Set();
 
-console.log('Service worker initialised.');
+console.debug('Service worker initialised.');
 
 // Auto-resume from storage on wake up
 chrome.storage.local.get('activeBatch', (result) => {
   if (result && result.activeBatch) {
     if (scrapingState.isActive) {
-      console.log('Skipping auto-resume: scraping is already active');
+      console.debug('Skipping auto-resume: scraping is already active');
       return;
     }
-    console.log('Auto-resuming active batch scrape from storage...', result.activeBatch);
+    console.debug('Auto-resuming active batch scrape from storage...', result.activeBatch);
     resumeBatchScrape(result.activeBatch).catch(err => {
       console.error('Failed to auto-resume batch scrape:', err);
     });
@@ -37,7 +37,7 @@ chrome.storage.local.get('activeBatch', (result) => {
 });
 
 chrome.runtime.onInstalled.addListener(() => {
-  console.log('Reddit to AI installed.');
+  console.debug('Reddit to AI installed.');
   syncSelectors().catch(err => console.error('Selector sync on installed failed:', err));
   registerAllCustomOrigins().catch(err => console.error('Failed to register custom origins on installed:', err));
 });
@@ -139,6 +139,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         .catch(error => {
           console.warn('Quick estimate failed:', error);
           sendResponse({ error: error.message });
+        });
+      return true;
+    }
+    case 'getLocaleData': {
+      getLocaleData(request.lang)
+        .then(data => sendResponse({ success: true, data }))
+        .catch(error => {
+          console.error('Failed to read locale data:', error);
+          sendResponse({ success: false, error: error.message });
         });
       return true;
     }
@@ -1213,7 +1222,7 @@ async function registerCustomOriginScript(originPattern) {
           runAt: 'document_idle'
         }
       ]);
-      console.log(`Registered content script for: ${originPattern} with ID: ${scriptId}`);
+      console.debug(`Registered content script for: ${originPattern} with ID: ${scriptId}`);
     }
   } catch (err) {
     console.error(`Failed to register content script for ${originPattern}:`, err);
@@ -1226,7 +1235,7 @@ async function unregisterCustomOriginScript(originPattern) {
   try {
     if (typeof chrome !== 'undefined' && chrome.scripting) {
       await chrome.scripting.unregisterContentScripts({ ids: [scriptId] }).catch(() => {});
-      console.log(`Unregistered content script for: ${originPattern} with ID: ${scriptId}`);
+      console.debug(`Unregistered content script for: ${originPattern} with ID: ${scriptId}`);
     }
   } catch (err) {
     console.error(`Failed to unregister content script for ${originPattern}:`, err);
@@ -1675,7 +1684,7 @@ async function syncSelectors() {
           lastSelectorSyncTime: Date.now()
         }, resolve);
       });
-      console.log('Reddit to AI: Selectors synced successfully.');
+      console.debug('Reddit to AI: Selectors synced successfully.');
     }
   } catch (error) {
     console.warn('Reddit to AI: Failed to sync selectors:', error);
@@ -1881,6 +1890,16 @@ async function getQuickTokenEstimate(tabId, urlStr) {
   quickEstimateCache.set(urlStr, estimatedData);
   return estimatedData;
 }
+
+async function getLocaleData(lang) {
+  const url = chrome.runtime.getURL(`_locales/${lang}/messages.json`);
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to load locale: ${response.status}`);
+  }
+  return await response.json();
+}
+
 
 if (globalThis.R2AIServiceWorkerTest) {
   Object.assign(globalThis.R2AIServiceWorkerTest, {

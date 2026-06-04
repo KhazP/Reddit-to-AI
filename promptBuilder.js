@@ -362,7 +362,7 @@
     sections.push('---');
     sections.push(`${safeTranslate('prompt_scraped_at', 'Scraped at')}: ${data.metadata?.scrapedAt || new Date().toISOString()}`);
     sections.push(`${safeTranslate('prompt_total_comments', 'Total comments')}: ${data.metadata?.commentCount || data.commentCount || countComments(data.comments)}`);
-    sections.push(`${safeTranslate('options_label_depth', 'Depth level')}: ${data.maxDepth || 'unknown'}`);
+    sections.push(`${safeTranslate('prompt_depth', 'Depth level')}: ${data.maxDepth || 'unknown'}`);
     if (data.filtersApplied?.trimStrategy) sections.push(`Trim strategy: ${TRIM_STRATEGIES[data.filtersApplied.trimStrategy] || data.filtersApplied.trimStrategy}`);
     if (data.metadata?.failedMoreIds?.length) sections.push(`Missing morechildren IDs: ${data.metadata.failedMoreIds.length}`);
 
