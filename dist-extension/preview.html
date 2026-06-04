@@ -19,12 +19,17 @@
       <div class="header-actions">
         <button id="backBtnTop" class="btn ghost">Back</button>
         <button id="copyBtn" class="btn secondary">Copy</button>
-        <select id="exportSelect" class="btn secondary select-export" style="width: auto; height: 38px; display: inline-block; padding: 0 8px; cursor: pointer; vertical-align: middle;">
-          <option value="" disabled selected hidden>Export</option>
-          <option value="markdown">Markdown (.md)</option>
-          <option value="json">JSON (.json)</option>
-          <option value="csv">CSV (.csv)</option>
-        </select>
+        <div class="export-chips-row">
+          <button type="button" class="export-chip" data-format="markdown" data-tooltip="tooltip_export_md" id="previewExportMd">
+            <span class="chip-icon">MD</span> Markdown
+          </button>
+          <button type="button" class="export-chip" data-format="json" data-tooltip="tooltip_export_json" id="previewExportJson">
+            <span class="chip-icon">JS</span> JSON
+          </button>
+          <button type="button" class="export-chip" data-format="csv" data-tooltip="tooltip_export_csv" id="previewExportCsv">
+            <span class="chip-icon">CS</span> CSV
+          </button>
+        </div>
         <button id="savePresetBtn" class="btn secondary">Save preset</button>
         <button id="skipNextBtn" class="btn secondary">Send and skip preview next time</button>
         <button id="sendBtn" class="btn primary">Send to AI</button>

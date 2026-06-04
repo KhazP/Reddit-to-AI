@@ -215,6 +215,16 @@ const documentMock = {
   createElement(tagName) {
     return new MockElement(tagName);
   },
+  querySelectorAll(selector) {
+    if (selector === '.export-chip') {
+      return [
+        new MockElement('button', { class: 'export-chip', 'data-format': 'markdown' }),
+        new MockElement('button', { class: 'export-chip', 'data-format': 'json' }),
+        new MockElement('button', { class: 'export-chip', 'data-format': 'csv' })
+      ];
+    }
+    return [];
+  },
   addEventListener(event, listener) {
     if (event === 'DOMContentLoaded') {
       this.domContentLoadedListener = listener;

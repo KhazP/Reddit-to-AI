@@ -1204,7 +1204,49 @@ body::-webkit-scrollbar-thumb:hover {
   border-radius: 2px;
 }
 
+
 .summary-result-content-wrap::-webkit-scrollbar-thumb:hover {
   background: var(--text-muted);
+}
+
+/* Horizontal Export Chips */
+.export-chips-row {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+.export-chip {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 38px;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.export-chip:hover:not(.disabled) {
+  border-color: var(--accent);
+  color: var(--text-primary);
+  box-shadow: 0 0 8px var(--accent-glow);
+  transform: scale(1.02);
+}
+.export-chip.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.chip-icon {
+  font-size: 9px;
+  font-weight: 800;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 2px 4px;
+  border-radius: 4px;
 }
 

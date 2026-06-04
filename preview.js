@@ -55,7 +55,7 @@ function bindElements() {
   els.promptTextarea = document.getElementById('promptTextarea');
   els.copyBtn = document.getElementById('copyBtn');
   els.copyBtnBottom = document.getElementById('copyBtnBottom');
-  els.exportSelect = document.getElementById('exportSelect');
+  els.exportChips = document.querySelectorAll('.export-chip');
   els.savePresetBtn = document.getElementById('savePresetBtn');
   els.sendBtn = document.getElementById('sendBtn');
   els.sendBtnBottom = document.getElementById('sendBtnBottom');
@@ -106,7 +106,12 @@ function bindEvents() {
 
   els.copyBtn?.addEventListener('click', copyPrompt);
   els.copyBtnBottom?.addEventListener('click', copyPrompt);
-  els.exportSelect?.addEventListener('change', exportPrompt);
+  els.exportChips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      const format = chip.getAttribute('data-format');
+      exportPrompt(format);
+    });
+  });
   els.savePresetBtn?.addEventListener('click', saveCurrentPreset);
   els.sendBtn?.addEventListener('click', sendPrompt);
   els.sendBtnBottom?.addEventListener('click', sendPrompt);
@@ -361,14 +366,12 @@ async function copyPrompt() {
   }
 }
 
-function exportPrompt() {
-  const format = els.exportSelect?.value;
+function exportPrompt(format) {
   if (!format) return;
 
   const data = previewState.renderedData || previewState.data;
   if (!data) {
     setStatus('No data available to export.');
-    if (els.exportSelect) els.exportSelect.value = '';
     return;
   }
 
@@ -390,7 +393,6 @@ function exportPrompt() {
       mimeType = 'text/csv;charset=utf-8;';
       ext = 'csv';
     } else {
-      if (els.exportSelect) els.exportSelect.value = '';
       return;
     }
 
@@ -409,8 +411,6 @@ function exportPrompt() {
     console.error('Export failed:', err);
     setStatus('Export failed.');
   }
-
-  if (els.exportSelect) els.exportSelect.value = '';
 }
 
 function saveCurrentPreset() {

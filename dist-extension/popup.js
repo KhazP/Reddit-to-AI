@@ -58,8 +58,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   const batchUrlsInput = document.getElementById('batchUrls');
   const batchUrlStatus = document.getElementById('batchUrlStatus');
   const toastContainer = document.getElementById('toastContainer');
-  const popupExportSelect = document.getElementById('popupExportSelect');
   let currentBatchUrlCount = 0;
+
+  function setExportChipsEnabled(enabled) {
+    document.querySelectorAll('.popup-export-container .export-chip').forEach(chip => {
+      chip.classList.toggle('disabled', !enabled);
+    });
+  }
 
   // ── Custom Min Score dropdown ───────────────────────────
   let minScoreValue = 0;
@@ -277,9 +282,7 @@ Data:
       } else {
         cachedPreviewData = response.data;
       }
-      if (popupExportSelect) {
-        popupExportSelect.disabled = !cachedPreviewData;
-      }
+      setExportChipsEnabled(!!cachedPreviewData);
       if (callback) callback();
     });
   }
@@ -769,7 +772,7 @@ Data:
       if (localSummaryBtn) localSummaryBtn.style.display = 'none';
       stopScrapeBtn.style.display = 'flex';
       stopScrapeBtn.disabled = false;
-      if (popupExportSelect) popupExportSelect.disabled = true;
+      setExportChipsEnabled(false);
 
       const pct = state.percentage || 0;
       showToast('progress', state.message || t('popup_status_scraping') || 'Scraping...', {
@@ -1001,16 +1004,16 @@ Data:
     loadPreviewData(() => updateScrapeEstimate());
   }
 
-  if (popupExportSelect) {
-    popupExportSelect.addEventListener('change', () => {
-      const format = popupExportSelect.value;
+  document.querySelectorAll('.popup-export-container .export-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      if (chip.classList.contains('disabled')) return;
+      const format = chip.getAttribute('data-format');
       if (!format) return;
 
       chrome.runtime.sendMessage({ action: 'getPreviewData' }, (response) => {
         if (chrome.runtime.lastError || !response || !response.data) {
           dismissAllToasts();
           showToast('error', 'No data available to export.', { dismiss: true });
-          popupExportSelect.value = '';
           return;
         }
 
@@ -1033,7 +1036,6 @@ Data:
             mimeType = 'text/csv;charset=utf-8;';
             ext = 'csv';
           } else {
-            popupExportSelect.value = '';
             return;
           }
 
@@ -1052,11 +1054,9 @@ Data:
           console.error('Export failed:', err);
           showToast('error', 'Export failed.', { dismiss: true });
         }
-
-        popupExportSelect.value = '';
       });
     });
-  }
+  });
 
   // ── Local AI Summary button actions ───────────────────
   if (localSummaryBtn) {

@@ -474,5 +474,14 @@
                 "content": "$1"
             }
         }
+    },
+    "tooltip_export_md": {
+        "message": "导出为 Markdown (.md)"
+    },
+    "tooltip_export_json": {
+        "message": "导出为 JSON (.json)"
+    },
+    "tooltip_export_csv": {
+        "message": "导出为 CSV (.csv)"
     }
 }

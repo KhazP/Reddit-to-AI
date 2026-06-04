@@ -474,5 +474,14 @@
                 "content": "$1"
             }
         }
+    },
+    "tooltip_export_md": {
+        "message": "Markdown olarak dışa aktar (.md)"
+    },
+    "tooltip_export_json": {
+        "message": "JSON olarak dışa aktar (.json)"
+    },
+    "tooltip_export_csv": {
+        "message": "CSV olarak dışa aktar (.csv)"
     }
 }

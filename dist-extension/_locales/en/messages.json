@@ -476,5 +476,14 @@
                 "content": "$1"
             }
         }
+    },
+    "tooltip_export_md": {
+        "message": "Export as Markdown (.md)"
+    },
+    "tooltip_export_json": {
+        "message": "Export as JSON (.json)"
+    },
+    "tooltip_export_csv": {
+        "message": "Export as CSV (.csv)"
     }
 }

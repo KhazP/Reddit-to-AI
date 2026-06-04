@@ -173,13 +173,18 @@
       </button>
 
       <!-- Export Select Dropdown -->
-      <div class="popup-export-container" style="margin-top: 10px; display: flex; gap: 8px;">
-        <select id="popupExportSelect" class="btn select-export" style="flex: 1; height: 42px; padding: 0 12px; cursor: pointer; border: 1px solid var(--border-color); border-radius: var(--radius-md); background: var(--bg-glass); color: var(--text-primary); font-weight: 600;" disabled>
-          <option value="" disabled selected hidden>Export Scraped Thread</option>
-          <option value="markdown">Export as Markdown (.md)</option>
-          <option value="json">Export as JSON (.json)</option>
-          <option value="csv">Export as CSV (.csv)</option>
-        </select>
+      <div class="popup-export-container">
+        <div class="export-chips-row">
+          <button type="button" class="export-chip disabled" data-format="markdown" data-tooltip="tooltip_export_md" id="popupExportMd">
+            <span class="chip-icon">MD</span> Markdown
+          </button>
+          <button type="button" class="export-chip disabled" data-format="json" data-tooltip="tooltip_export_json" id="popupExportJson">
+            <span class="chip-icon">JS</span> JSON
+          </button>
+          <button type="button" class="export-chip disabled" data-format="csv" data-tooltip="tooltip_export_csv" id="popupExportCsv">
+            <span class="chip-icon">CS</span> CSV
+          </button>
+        </div>
       </div>
 
       <!-- Local Summary Result Card -->
