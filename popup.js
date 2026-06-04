@@ -13,6 +13,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   const optionsBtn = document.getElementById('optionsBtn');
   const feedbackBtn = document.getElementById('feedbackBtn');
   const presetCards = document.querySelectorAll('.preset-card');
+  const localSummaryBtn = document.getElementById('localSummaryBtn');
+  const localSummaryResultCard = document.getElementById('localSummaryResultCard');
+  const localSummaryText = document.getElementById('localSummaryText');
+  const copySummaryBtn = document.getElementById('copySummaryBtn');
+  const exportSummaryBtn = document.getElementById('exportSummaryBtn');
+  const closeSummaryBtn = document.getElementById('closeSummaryBtn');
   const quickPromptInput = document.getElementById('quickPrompt');
   const saveQuickPromptBtn = document.getElementById('saveQuickPromptBtn');
   const outputFormatSelect = document.getElementById('outputFormat');
@@ -613,12 +619,45 @@ Data:
     });
   }
 
+  function formatLocalSummaryHtml(text) {
+    if (!text) return '';
+    let escaped = text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+    escaped = escaped.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    const lines = escaped.split('\n');
+    let inList = false;
+    const processedLines = lines.map(line => {
+      const trimmed = line.trim();
+      if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+        const content = trimmed.substring(2);
+        if (!inList) {
+          inList = true;
+          return '<ul><li>' + content + '</li>';
+        }
+        return '<li>' + content + '</li>';
+      } else {
+        if (inList) {
+          inList = false;
+          return '</ul>' + line;
+        }
+        return line;
+      }
+    });
+    if (inList) {
+      processedLines.push('</ul>');
+    }
+    return processedLines.join('\n').replace(/\n/g, '<br>');
+  }
+
   // ── Render popup state via toasts ──────────────────────
   function renderPopupState(state) {
     if (!state) return;
 
     if (state.isActive) {
       scrapeBtn.style.display = 'none';
+      if (localSummaryBtn) localSummaryBtn.style.display = 'none';
       stopScrapeBtn.style.display = 'flex';
       stopScrapeBtn.disabled = false;
 
@@ -631,6 +670,18 @@ Data:
     } else {
       scrapeBtn.style.display = 'flex';
       scrapeBtn.disabled = false;
+      if (localSummaryBtn) {
+        localSummaryBtn.style.display = 'flex';
+        chrome.runtime.sendMessage({ action: 'checkLocalAiCapability' }, (response) => {
+          if (chrome.runtime.lastError || !response || !response.available) {
+            localSummaryBtn.disabled = true;
+            localSummaryBtn.title = t('popup_btn_local_summary_disabled_tooltip') || 'Local AI is disabled. Enable in chrome://flags/#optimization-guide-on-device-model';
+          } else {
+            localSummaryBtn.disabled = false;
+            localSummaryBtn.removeAttribute('title');
+          }
+        });
+      }
       stopScrapeBtn.style.display = 'none';
 
       if (state.error) {
@@ -646,6 +697,20 @@ Data:
       } else {
         // Idle - clean UI, no toast
         dismissAllToasts();
+      }
+    }
+
+    if (state.summary !== undefined && state.summary !== null) {
+      if (localSummaryResultCard) {
+        localSummaryResultCard.style.display = 'flex';
+      }
+      if (localSummaryText) {
+        localSummaryText.innerHTML = formatLocalSummaryHtml(state.summary);
+        // Auto scroll to bottom during stream
+        const wrap = localSummaryResultCard.querySelector('.summary-result-content-wrap');
+        if (wrap) {
+          wrap.scrollTop = wrap.scrollHeight;
+        }
       }
     }
   }
@@ -699,6 +764,9 @@ Data:
     scrapeBtn.addEventListener('click', () => {
       dismissAllToasts();
       scrapeBtn.disabled = true;
+      if (localSummaryResultCard) {
+        localSummaryResultCard.style.display = 'none';
+      }
 
       showToast('progress', t('popup_status_starting') || 'Starting...', {
         id: 'scraping-progress',
@@ -817,6 +885,138 @@ Data:
     });
   }
 
+  // ── Local AI Summary button actions ───────────────────
+  if (localSummaryBtn) {
+    chrome.runtime.sendMessage({ action: 'checkLocalAiCapability' }, (response) => {
+      if (chrome.runtime.lastError || !response || !response.available) {
+        localSummaryBtn.disabled = true;
+        localSummaryBtn.title = t('popup_btn_local_summary_disabled_tooltip') || 'Local AI is disabled. Enable in chrome://flags/#optimization-guide-on-device-model';
+      } else {
+        localSummaryBtn.disabled = false;
+        localSummaryBtn.removeAttribute('title');
+      }
+    });
+
+    localSummaryBtn.addEventListener('click', () => {
+      dismissAllToasts();
+      localSummaryBtn.disabled = true;
+      scrapeBtn.disabled = true;
+      if (localSummaryResultCard) {
+        localSummaryResultCard.style.display = 'none';
+      }
+      if (localSummaryText) {
+        localSummaryText.textContent = '';
+      }
+
+      showToast('progress', t('popup_status_starting') || 'Starting...', {
+        id: 'scraping-progress',
+        dismiss: false,
+        progress: 0
+      });
+
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        const currentTab = tabs[0];
+        if (!currentTab) {
+          dismissAllToasts();
+          showToast('error', (t('error') || 'Error') + ': Could not get current tab', { dismiss: true });
+          localSummaryBtn.disabled = false;
+          scrapeBtn.disabled = false;
+          return;
+        }
+
+        const authorTypes = [];
+        if (filterOpOnlyBtn?.classList.contains('active')) authorTypes.push('op');
+        if (filterFlairedBtn?.classList.contains('active')) authorTypes.push('flaired');
+        const legacyAuthorType = authorTypes.length === 1 ? authorTypes[0] : 'all';
+
+        const batchUrls = parseBatchUrls(batchUrlsInput?.value || '');
+
+        const filters = {
+          minScore: minScoreValue,
+          hideBots: filterHideBotsBtn?.classList.contains('active') || false,
+          includeHidden: includeHidden?.checked || false,
+          authorTypes,
+          authorType: legacyAuthorType,
+          topN: parseInt(filterTopN?.value || '0', 10),
+          scrapeDepth: parseInt(
+            document.querySelector('input[name="scrapeDepthPopup"]:checked')?.value || '5',
+            10
+          ),
+          contextPreset: document.querySelector('input[name="contextPresetPopup"]:checked')?.value || 'balanced',
+          trimStrategy: trimStrategySelect?.value || 'top',
+          redditSortMode: redditSortModeSelect?.value || 'confidence',
+          mediaMode: mediaModeSelect?.value || 'attach',
+          outputFormat: outputFormatSelect?.value || 'auto'
+        };
+
+        chrome.runtime.sendMessage({
+          action: 'scrapeReddit',
+          includeHidden: filters.includeHidden,
+          filters,
+          batchUrls,
+          tabId: currentTab.id,
+          localSummarize: true,
+          selectedLlmProvider: 'local'
+        }, (response) => {
+          if (chrome.runtime.lastError) {
+            dismissAllToasts();
+            showToast('error', chrome.runtime.lastError.message, { dismiss: true });
+            localSummaryBtn.disabled = false;
+            scrapeBtn.disabled = false;
+            return;
+          }
+          if (response?.currentState) {
+            renderPopupState(response.currentState);
+          } else if (response?.error) {
+            dismissAllToasts();
+            showToast('error', response.error, { dismiss: true });
+            localSummaryBtn.disabled = false;
+            scrapeBtn.disabled = false;
+          }
+        });
+      });
+    });
+  }
+
+  // ── Clipboard & Export listeners ─────────────────────────
+  if (copySummaryBtn && localSummaryText) {
+    copySummaryBtn.addEventListener('click', () => {
+      const textToCopy = localSummaryText.innerText || localSummaryText.textContent || '';
+      if (!textToCopy) return;
+      navigator.clipboard.writeText(textToCopy)
+        .then(() => {
+          showToast('success', 'Summary copied to clipboard!');
+        })
+        .catch(_err => {
+          showToast('error', 'Failed to copy summary.');
+        });
+    });
+  }
+
+  if (exportSummaryBtn && localSummaryText) {
+    exportSummaryBtn.addEventListener('click', () => {
+      const textToExport = localSummaryText.innerText || localSummaryText.textContent || '';
+      if (!textToExport) return;
+      
+      const blob = new Blob([textToExport], { type: 'text/markdown;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `reddit-local-summary-${Date.now()}.md`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('success', 'Summary exported!');
+    });
+  }
+
+  if (closeSummaryBtn && localSummaryResultCard) {
+    closeSummaryBtn.addEventListener('click', () => {
+      localSummaryResultCard.style.display = 'none';
+    });
+  }
+
   // ── Get initial state ──────────────────────────────────
   chrome.runtime.sendMessage({ action: 'getScrapingState' }, (stateResponse) => {
     if (chrome.runtime.lastError) {
@@ -826,6 +1026,9 @@ Data:
     }
     // Only show toast if actively scraping; idle = clean UI
     if (stateResponse?.isActive) {
+      renderPopupState(stateResponse);
+    } else if (stateResponse?.summary) {
+      // If we have a past local summary, display it!
       renderPopupState(stateResponse);
     }
   });

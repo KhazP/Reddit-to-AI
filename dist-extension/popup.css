@@ -1021,3 +1021,117 @@ body::-webkit-scrollbar-thumb:hover {
 .adv-textarea::placeholder {
   color: var(--text-muted);
 }
+
+/* ── Local AI Button ──────────────────────────────────────── */
+.btn-local {
+  background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+  color: white;
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.btn-local:hover:not(:disabled) {
+  background: linear-gradient(135deg, #4338ca 0%, #2563eb 100%);
+  box-shadow: 0 6px 24px rgba(59, 130, 246, 0.35);
+  transform: translateY(-2px);
+}
+
+.btn-local:disabled {
+  background: var(--bg-glass);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  box-shadow: none;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* ── Summary Result Card ──────────────────────────────────── */
+.summary-result-card {
+  margin-top: 14px;
+  background: var(--bg-card);
+  backdrop-filter: blur(var(--blur));
+  -webkit-backdrop-filter: blur(var(--blur));
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  animation: slideUpFade 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.summary-result-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 8px;
+}
+
+.summary-result-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.summary-result-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.summary-action-btn {
+  background: var(--bg-glass);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  border-radius: 4px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+  padding: 0;
+}
+
+.summary-action-btn:hover {
+  background: var(--bg-glass-hover);
+  color: var(--text-primary);
+  border-color: var(--text-secondary);
+}
+
+.summary-result-content-wrap {
+  max-height: 220px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.summary-result-text {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Custom Scrollbar for summary content */
+.summary-result-content-wrap::-webkit-scrollbar {
+  width: 4px;
+}
+
+.summary-result-content-wrap::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.summary-result-content-wrap::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 2px;
+}
+
+.summary-result-content-wrap::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+

@@ -441,5 +441,11 @@
   },
   "template_eli5": {
     "message": "Explain this Reddit thread like I'm 5 years old.\nUse simple language, analogies, and examples.\nAvoid jargon and technical terms.\nMake it easy to understand for someone new to this topic.\n\n{content}"
+  },
+  "popup_btn_local_summary": {
+    "message": "Yerel Özetle"
+  },
+  "popup_btn_local_summary_disabled_tooltip": {
+    "message": "Yerel yapay zeka devre dışı. chrome://flags/#optimization-guide-on-device-model adresinden etkinleştirin"
   }
 }

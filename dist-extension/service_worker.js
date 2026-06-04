@@ -162,12 +162,48 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         .catch(error => sendResponse({ error: error.message }));
       return true;
     }
+    case 'checkLocalAiCapability': {
+      checkLocalAiCapability()
+        .then(available => sendResponse({ available }))
+        .catch(error => sendResponse({ available: false, error: error.message }));
+      return true;
+    }
+    case 'generateLocalSummary': {
+      generateLocalSummary(request.promptText)
+        .then(summary => sendResponse({ status: 'success', summary }))
+        .catch(error => sendResponse({ status: 'error', error: error.message }));
+      return true;
+    }
     default:
       console.warn('Unhandled runtime message:', request);
       sendResponse({ status: 'ignored' });
       return false;
   }
 });
+
+// Port connection handler for streaming Local AI summaries
+if (chrome.runtime.onConnect) {
+  chrome.runtime.onConnect.addListener((port) => {
+    if (port.name === 'local-ai-summary') {
+      port.onMessage.addListener(async (msg) => {
+        if (msg.action === 'summarize') {
+          try {
+            const summary = await generateLocalSummary(msg.promptText, (chunk) => {
+              try {
+                port.postMessage({ status: 'chunk', text: chunk });
+              } catch (err) {
+                console.debug('Port disconnected during streaming:', err);
+              }
+            });
+            port.postMessage({ status: 'success', text: summary });
+          } catch (error) {
+            port.postMessage({ status: 'error', error: error.message });
+          }
+        }
+      });
+    }
+  });
+}
 
 // =====================
 // Main Scrape Flows
@@ -229,6 +265,34 @@ async function handleScrapeRequest(request, sender) {
     await savePreviewData(processedData, effectiveSettings);
     if (effectiveSettings.dataStorageOption === 'persistent') {
       await addToHistory(processedData, effectiveSettings);
+    }
+
+    if (request.localSummarize) {
+      setScrapingState({ message: 'Generating local summary...', percentage: 90, summary: '' });
+      const renderedData = R2AIPrompt.applyContextPreset(processedData, effectiveSettings.contextPreset || 'balanced', effectiveSettings);
+      const promptText = R2AIPrompt.buildPromptText(renderedData, effectiveSettings.defaultPromptTemplate, {
+        ...effectiveSettings,
+        contextPreset: null
+      });
+
+      const summaryText = await generateLocalSummary(promptText, (chunk) => {
+        setScrapingState({
+          isActive: true,
+          percentage: 90,
+          summary: chunk,
+          message: 'Generating local summary...'
+        });
+      });
+
+      setScrapingState({
+        isActive: false,
+        percentage: 100,
+        summary: summaryText,
+        message: 'Summary complete!',
+        error: null
+      });
+
+      return { summary: summaryText, local: true };
     }
 
     if (effectiveSettings.showPromptPreview === false) {
@@ -1385,6 +1449,83 @@ if (chrome.runtime.onStartup) {
   });
 }
 
+/**
+ * Checks if the browser has built-in Gemini Nano / Local AI capability enabled.
+ */
+async function checkLocalAiCapability() {
+  try {
+    const aiObj = typeof self !== 'undefined' && self.ai ? self.ai : (typeof ai !== 'undefined' ? ai : null);
+    if (!aiObj) return false;
+    
+    if (aiObj.languageModel) {
+      const caps = await aiObj.languageModel.capabilities();
+      return caps && caps.available !== 'no';
+    }
+    if (aiObj.assistant) {
+      const caps = await aiObj.assistant.capabilities();
+      return caps && caps.available !== 'no';
+    }
+  } catch (e) {
+    console.error('Error checking local AI capability:', e);
+  }
+  return false;
+}
+
+/**
+ * Generates summary using Local AI Prompt API with streaming progress callbacks.
+ */
+async function generateLocalSummary(promptText, onChunk) {
+  const aiObj = typeof self !== 'undefined' && self.ai ? self.ai : (typeof ai !== 'undefined' ? ai : null);
+  if (!aiObj) {
+    throw new Error('Chrome Local AI (ai) is not supported in this environment.');
+  }
+
+  let modelApi = aiObj.languageModel;
+  if (!modelApi && aiObj.assistant) {
+    modelApi = aiObj.assistant;
+  }
+
+  if (!modelApi) {
+    throw new Error('Chrome Local AI languageModel/assistant API is not available.');
+  }
+
+  const caps = await modelApi.capabilities();
+  if (!caps || caps.available === 'no') {
+    throw new Error('Chrome Local AI is not available (capabilities returned "no").');
+  }
+
+  const session = await modelApi.create();
+  try {
+    if (typeof session.promptStreaming === 'function') {
+      const stream = session.promptStreaming(promptText);
+      let fullText = '';
+      for await (const chunk of stream) {
+        fullText = chunk;
+        if (typeof onChunk === 'function') {
+          onChunk(fullText);
+        }
+      }
+      return fullText;
+    } else {
+      const result = await session.prompt(promptText);
+      if (typeof onChunk === 'function') {
+        onChunk(result);
+      }
+      return result;
+    }
+  } finally {
+    try {
+      if (typeof session.destroy === 'function') {
+        session.destroy();
+      } else if (typeof session.close === 'function') {
+        session.close();
+      }
+    } catch (e) {
+      console.debug('Error closing AI session:', e);
+    }
+  }
+}
+
 if (globalThis.R2AIServiceWorkerTest) {
   Object.assign(globalThis.R2AIServiceWorkerTest, {
     applyBackgroundFilters,
@@ -1392,7 +1533,9 @@ if (globalThis.R2AIServiceWorkerTest) {
     parseBackgroundComments,
     parseBackgroundCommentNode,
     syncSelectors,
-    checkAndSyncSelectors
+    checkAndSyncSelectors,
+    checkLocalAiCapability,
+    generateLocalSummary
   });
 }
 

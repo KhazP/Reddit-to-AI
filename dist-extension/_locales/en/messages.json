@@ -443,5 +443,11 @@
     },
     "preset_custom_desc": {
         "message": "Your own template"
+    },
+    "popup_btn_local_summary": {
+        "message": "Summarize Locally"
+    },
+    "popup_btn_local_summary_disabled_tooltip": {
+        "message": "Local AI is disabled. Enable in chrome://flags/#optimization-guide-on-device-model"
     }
 }

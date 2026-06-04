@@ -441,5 +441,11 @@
     },
     "preset_custom_desc": {
         "message": "Deine eigene Vorlage"
+    },
+    "popup_btn_local_summary": {
+        "message": "Lokal zusammenfassen"
+    },
+    "popup_btn_local_summary_disabled_tooltip": {
+        "message": "Lokale KI ist deaktiviert. Aktivieren unter chrome://flags/#optimization-guide-on-device-model"
     }
 }

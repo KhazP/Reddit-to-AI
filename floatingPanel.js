@@ -18,12 +18,19 @@
       <div class="rs-live-dot" id="rsLiveDot"></div>
       <span class="rs-title">${t('panel_title') || 'Reddit to AI'}</span>
     </div>
-    <button id="rsCloseBtn" class="rs-close-btn" title="${t('close') || 'Close'}">
-      <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-        <line x1="1" y1="1" x2="9" y2="9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-        <line x1="9" y1="1" x2="1" y2="9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-      </svg>
-    </button>
+    <div style="display: flex; align-items: center;">
+      <button id="rsLocalSummaryBtn" class="rs-local-summary-btn" title="Summarize thread locally">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
+        </svg>
+      </button>
+      <button id="rsCloseBtn" class="rs-close-btn" title="${t('close') || 'Close'}">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+          <line x1="1" y1="1" x2="9" y2="9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="9" y1="1" x2="1" y2="9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
   </div>
 
   <div class="rs-content">
@@ -104,6 +111,9 @@
         const liveDot = shadow.getElementById('rsLiveDot');
         const pctEl = shadow.getElementById('rsPercentage');
         const badgeEl = shadow.getElementById('rsContextBadge');
+        const summaryArea = shadow.getElementById('rsSummaryArea');
+        const summaryText = shadow.getElementById('rsSummaryText');
+        const localSummaryBtn = shadow.getElementById('rsLocalSummaryBtn');
 
         // ── Phase helpers ──────────────────────────────────
         const PHASES = ['fetch', 'parse', 'load', 'filter'];
@@ -170,6 +180,68 @@
             }
         }
 
+        function formatLocalSummaryHtml(text) {
+            if (!text) return '';
+            let escaped = text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+            escaped = escaped.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            const lines = escaped.split('\n');
+            let inList = false;
+            const processedLines = lines.map(line => {
+                const trimmed = line.trim();
+                if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+                    const content = trimmed.substring(2);
+                    if (!inList) {
+                        inList = true;
+                        return '<ul><li>' + content + '</li>';
+                    }
+                    return '<li>' + content + '</li>';
+                } else {
+                    if (inList) {
+                        inList = false;
+                        return '</ul>' + line;
+                    }
+                    return line;
+                }
+            });
+            if (inList) {
+                processedLines.push('</ul>');
+            }
+            return processedLines.join('\n').replace(/\n/g, '<br>');
+        }
+
+        // ── Local Summary button ───────────────────────────
+        if (localSummaryBtn) {
+            chrome.runtime.sendMessage({ action: 'checkLocalAiCapability' }, (response) => {
+                if (chrome.runtime.lastError || !response || !response.available) {
+                    localSummaryBtn.style.display = 'none';
+                } else {
+                    localSummaryBtn.style.display = 'flex';
+                }
+            });
+
+            localSummaryBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                if (summaryArea) summaryArea.style.display = 'none';
+                if (summaryText) summaryText.textContent = '';
+
+                chrome.runtime.sendMessage({
+                    action: 'scrapeReddit',
+                    tabId: null,
+                    localSummarize: true,
+                    filters: {}
+                }, (_response) => {
+                    if (chrome.runtime.lastError) {
+                        console.error('Local summary scrape start error:', chrome.runtime.lastError.message);
+                    }
+                });
+            });
+        }
+
         // ── Close button ───────────────────────────────────
         if (closeBtn && panel) {
             closeBtn.addEventListener('click', (e) => {
@@ -185,7 +257,10 @@
             let offsetX = 0, offsetY = 0;
 
             header.addEventListener('mousedown', (e) => {
-                if (e.target === closeBtn || closeBtn?.contains(e.target)) return;
+                if (
+                    e.target === closeBtn || closeBtn?.contains(e.target) ||
+                    e.target === localSummaryBtn || localSummaryBtn?.contains(e.target)
+                ) return;
                 isDragging = true;
                 offsetX = e.clientX - panel.offsetLeft;
                 offsetY = e.clientY - panel.offsetTop;
@@ -287,6 +362,18 @@
                 } else {
                     userGuidance.style.display = 'none';
                 }
+            }
+
+            // Local Summary Area
+            if (data.summary !== undefined && data.summary !== null) {
+                if (summaryArea) summaryArea.style.display = 'flex';
+                if (summaryText) {
+                    summaryText.innerHTML = formatLocalSummaryHtml(data.summary);
+                    // scroll to bottom
+                    summaryText.scrollTop = summaryText.scrollHeight;
+                }
+            } else {
+                if (summaryArea) summaryArea.style.display = 'none';
             }
 
             // Auto-hide on completion
