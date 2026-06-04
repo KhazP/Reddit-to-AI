@@ -45,6 +45,8 @@ const requiredFiles = [
   'i18n.js',
   'floatingPanel.js',
   'floatingPanel.css',
+  'tooltip.js',
+  'tooltip.css',
   'images/icon16.png',
   'images/icon48.png',
   'images/icon128.png',

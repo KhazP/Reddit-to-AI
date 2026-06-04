@@ -81,6 +81,8 @@
         "images/*.png",
         "_locales/**/*.json",
         "floatingPanel.css",
+        "tooltip.css",
+        "tooltip.js",
         "cl100k_base.json"
       ],
       "matches": [
