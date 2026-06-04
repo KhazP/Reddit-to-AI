@@ -483,5 +483,32 @@
     },
     "tooltip_export_csv": {
         "message": "Als CSV exportieren (.csv)"
+    },
+    "options_card_mappings_title": {
+        "message": "Subreddit-Specific Templates"
+    },
+    "options_mappings_hint": {
+        "message": "Override the default prompt template for specific subreddits (supports wildcards like investing*)."
+    },
+    "options_mappings_placeholder": {
+        "message": "e.g. cscareerquestions or investing*"
+    },
+    "options_mappings_btn_add": {
+        "message": "Add Rule"
+    },
+    "options_mappings_no_rules": {
+        "message": "No subreddit-specific rules defined yet."
+    },
+    "options_card_route_tester_title": {
+        "message": "Subreddit Mapping Tester"
+    },
+    "options_route_tester_hint": {
+        "message": "Test your wildcard patterns against subreddit names to see which template resolves."
+    },
+    "options_placeholder_route_tester": {
+        "message": "e.g. investing or AskReddit"
+    },
+    "tooltip_route_tester_input": {
+        "message": "Type a subreddit name here to simulate how wildcard rules will route it"
     }
 }

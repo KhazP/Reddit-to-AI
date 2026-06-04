@@ -315,6 +315,9 @@ async function initializeOptions() {
             (defaultPromptTemplateTextarea?.value || DEFAULT_CUSTOM_TEMPLATE) :
             preset.template;
         chrome.storage.sync.set({ defaultPromptTemplate: effectiveTemplate });
+        if (typeof updateRouteTester === 'function') {
+            updateRouteTester();
+        }
     }
 
     // Load saved settings
@@ -472,6 +475,9 @@ async function initializeOptions() {
         // Subreddit rules
         subredditRules = result.subredditPromptMappings || [];
         renderSubredditRules(subredditRules);
+        if (typeof updateRouteTester === 'function') {
+            updateRouteTester();
+        }
     });
 
     // Event listeners
@@ -608,18 +614,20 @@ async function initializeOptions() {
     }
 
     // ==========================================
-    // Subreddit-Specific Prompt Templates
+    // Subreddit-Specific Prompt Templates & Tester
     // ==========================================
     const subredditPatternInput = document.getElementById('subredditPatternInput');
     const subredditPresetSelect = document.getElementById('subredditPresetSelect');
     const addSubredditRuleBtn = document.getElementById('addSubredditRuleBtn');
     const subredditRulesList = document.getElementById('subredditRulesList');
+    const routeTesterInput = document.getElementById('routeTesterInput');
+    const routeTesterResult = document.getElementById('routeTesterResult');
 
     function renderSubredditRules(rules) {
         if (!subredditRulesList) return;
         subredditRulesList.innerHTML = '';
         if (rules.length === 0) {
-            subredditRulesList.innerHTML = '<li class="custom-origin-item"><span class="custom-origin-text">No subreddit-specific rules defined yet.</span></li>';
+            subredditRulesList.innerHTML = `<li class="custom-origin-item"><span class="custom-origin-text">${t('options_mappings_no_rules') || 'No subreddit-specific rules defined yet.'}</span></li>`;
             return;
         }
         rules.forEach((rule, index) => {
@@ -633,6 +641,58 @@ async function initializeOptions() {
             `;
             subredditRulesList.appendChild(li);
         });
+    }
+
+    function matchSubredditPattern(subreddit, pattern) {
+        if (!subreddit || !pattern) return false;
+        const sub = subreddit.trim().toLowerCase();
+        const pat = pattern.trim().toLowerCase();
+        if (pat === sub) return true;
+        if (pat.includes('*')) {
+            const escaped = pat.replace(/[-\/\\^$+.()|[\]{}?]/g, '\\$&');
+            const regexStr = '^' + escaped.replace(/\*/g, '.*') + '$';
+            try {
+                const regex = new RegExp(regexStr);
+                return regex.test(sub);
+            } catch (e) {
+                console.error('Invalid wildcard pattern:', pat, e);
+                return false;
+            }
+        }
+        return false;
+    }
+
+    function updateRouteTester() {
+        if (!routeTesterInput || !routeTesterResult) return;
+        const sub = routeTesterInput.value.trim();
+        if (!sub) {
+            routeTesterResult.style.display = 'none';
+            routeTesterResult.innerHTML = '';
+            return;
+        }
+
+        let matchedRule = null;
+        for (const rule of subredditRules) {
+            if (matchSubredditPattern(sub, rule.pattern)) {
+                matchedRule = rule;
+                break;
+            }
+        }
+
+        routeTesterResult.style.display = 'block';
+        if (matchedRule) {
+            routeTesterResult.innerHTML = `
+                <span style="color: var(--success); font-weight: 600;">Match:</span> 
+                Subreddit <code>${escapeHtml(sub)}</code> matches pattern <code>${escapeHtml(matchedRule.pattern)}</code> &rarr; 
+                resolves to preset <strong>${escapeHtml(presetName(matchedRule.preset))}</strong>
+            `;
+        } else {
+            routeTesterResult.innerHTML = `
+                <span style="color: var(--text-secondary); font-weight: 600;">No Match:</span> 
+                Subreddit <code>${escapeHtml(sub)}</code> does not match any rule. 
+                Fallback to default preset <strong>${escapeHtml(presetName(currentPreset || 'summarize'))}</strong>
+            `;
+        }
     }
 
     // Add subreddit-specific template rule
@@ -655,6 +715,7 @@ async function initializeOptions() {
                 renderSubredditRules(subredditRules);
                 subredditPatternInput.value = '';
                 showSaveToast();
+                updateRouteTester();
             });
         });
     }
@@ -671,8 +732,14 @@ async function initializeOptions() {
             chrome.storage.sync.set({ subredditPromptMappings: subredditRules }, () => {
                 renderSubredditRules(subredditRules);
                 showSaveToast();
+                updateRouteTester();
             });
         });
+    }
+
+    // Route tester input event listener
+    if (routeTesterInput) {
+        routeTesterInput.addEventListener('input', updateRouteTester);
     }
 
     // Depth radio buttons
