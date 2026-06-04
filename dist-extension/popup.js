@@ -628,27 +628,31 @@ Data:
     escaped = escaped.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
     const lines = escaped.split('\n');
     let inList = false;
-    const processedLines = lines.map(line => {
+    const htmlParts = [];
+    
+    for (const line of lines) {
       const trimmed = line.trim();
       if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
         const content = trimmed.substring(2);
         if (!inList) {
           inList = true;
-          return '<ul><li>' + content + '</li>';
+          htmlParts.push('<ul>');
         }
-        return '<li>' + content + '</li>';
+        htmlParts.push('<li>' + content + '</li>');
       } else {
         if (inList) {
           inList = false;
-          return '</ul>' + line;
+          htmlParts.push('</ul>');
         }
-        return line;
+        if (trimmed) {
+          htmlParts.push('<p>' + trimmed + '</p>');
+        }
       }
-    });
-    if (inList) {
-      processedLines.push('</ul>');
     }
-    return processedLines.join('\n').replace(/\n/g, '<br>');
+    if (inList) {
+      htmlParts.push('</ul>');
+    }
+    return htmlParts.join('');
   }
 
   // ── Render popup state via toasts ──────────────────────
