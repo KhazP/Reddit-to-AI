@@ -9,7 +9,8 @@ let previewState = {
   pendingGeneratedPrompt: '',
   pendingRenderedData: null,
   pendingBuildOptions: null,
-  sendInFlight: false
+  sendInFlight: false,
+  hasCustomPruning: false
 };
 
 const els = {};
@@ -60,12 +61,16 @@ function bindElements() {
   els.rebuildNotice = document.getElementById('rebuildNotice');
   els.applyRebuiltPromptBtn = document.getElementById('applyRebuiltPromptBtn');
   els.keepEditsBtn = document.getElementById('keepEditsBtn');
+  els.commentsTreeContainer = document.getElementById('commentsTreeContainer');
+  els.selectAllCommentsBtn = document.getElementById('selectAllCommentsBtn');
+  els.clearAllCommentsBtn = document.getElementById('clearAllCommentsBtn');
 }
 
 function bindEvents() {
   [els.contextPresetSelect, els.trimStrategySelect, els.mediaModeSelect, els.outputFormatSelect].forEach(select => {
     select?.addEventListener('change', () => {
       previewState.dirty = false;
+      previewState.hasCustomPruning = false; // Reset on preset/strategy change
       chrome.storage.sync.set({
         contextPreset: els.contextPresetSelect.value,
         trimStrategy: els.trimStrategySelect.value,
@@ -105,6 +110,14 @@ function bindEvents() {
     chrome.storage.sync.set({ showPromptPreview: !els.skipPreviewToggle.checked });
     setStatus(els.skipPreviewToggle.checked ? 'Future scrapes will send directly.' : 'Future scrapes will open preview first.');
   });
+
+  els.selectAllCommentsBtn?.addEventListener('click', () => {
+    toggleAllCheckboxes(true);
+  });
+  els.clearAllCommentsBtn?.addEventListener('click', () => {
+    toggleAllCheckboxes(false);
+  });
+  els.commentsTreeContainer?.addEventListener('change', handleCheckboxChange);
 }
 
 function setStatus(message) {
@@ -134,6 +147,15 @@ function loadPreviewData() {
 
     updateThreadMeta();
     rebuildPrompt();
+    let allComments = [];
+    if (previewState.data.threads) {
+      previewState.data.threads.forEach(t => {
+        allComments = allComments.concat(t.comments || []);
+      });
+    } else {
+      allComments = previewState.data.comments || [];
+    }
+    renderCommentTree(allComments);
     updateMissingCommentsNotice();
     updateSettingsSummary();
     setStatus('Ready. Review or edit the prompt before sending.');
@@ -164,10 +186,25 @@ function getCurrentBuildOptions() {
 
 function buildPromptForOptions(options) {
   if (!previewState.data || !window.R2AIPrompt) return;
-  const renderedData = R2AIPrompt.applyContextPreset(previewState.data, options.contextPreset, options);
+  let renderedData;
+  if (previewState.hasCustomPruning) {
+    renderedData = JSON.parse(JSON.stringify(previewState.data));
+    const selectedIds = new Set(getSelectedCommentIds());
+    if (renderedData.threads) {
+      renderedData.threads = renderedData.threads.map(thread => ({
+        ...thread,
+        comments: R2AIPrompt.rebuildTreeFromSelected(thread.comments, selectedIds)
+      }));
+    } else {
+      renderedData.comments = R2AIPrompt.rebuildTreeFromSelected(renderedData.comments, selectedIds);
+    }
+  } else {
+    renderedData = R2AIPrompt.applyContextPreset(previewState.data, options.contextPreset, options);
+  }
   const prompt = R2AIPrompt.buildPromptText(renderedData, previewState.template, {
     ...options,
-    contextPreset: null
+    contextPreset: null,
+    skipContextPreset: true
   });
   return { renderedData, prompt, options };
 }
@@ -207,6 +244,18 @@ function applyGeneratedPrompt(result) {
   if (els.restorePromptBtn) els.restorePromptBtn.disabled = true;
   updateBudget(prompt, previewState.renderedData);
   updateSettingsSummary();
+
+  if (!previewState.hasCustomPruning) {
+    let allComments = [];
+    if (result.renderedData.threads) {
+      result.renderedData.threads.forEach(t => {
+        allComments = allComments.concat(t.comments || []);
+      });
+    } else {
+      allComments = result.renderedData.comments || [];
+    }
+    renderCommentTree(allComments);
+  }
 }
 
 function applyRebuiltPrompt() {
@@ -430,4 +479,141 @@ function focusRedditTab() {
 
 function formatNumber(value) {
   return new Intl.NumberFormat().format(value || 0);
+}
+
+function escapeHtml(text) {
+  if (!text) return '';
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function getSnippet(text) {
+  const cleanText = text || '';
+  if (cleanText.length <= 100) return escapeHtml(cleanText);
+  return escapeHtml(cleanText.substring(0, 100)) + '...';
+}
+
+function buildCommentTreeHtml(comment, checkedIds) {
+  const hasReplies = Array.isArray(comment.replies) && comment.replies.length > 0;
+  const author = escapeHtml(comment.author || '[deleted]');
+  const score = typeof comment.score === 'number' ? comment.score : 0;
+  const isChecked = checkedIds.has(comment.id);
+  const snippet = getSnippet(comment.text);
+
+  const checkboxHtml = `<input type="checkbox" class="comment-checkbox" data-id="${comment.id}" ${isChecked ? 'checked' : ''}>`;
+  const metaHtml = `<span class="comment-meta"><span class="author">u/${author}</span> <span class="score">(${score} pts)</span></span>`;
+  const textHtml = `<span class="comment-text-snippet">${snippet}</span>`;
+
+  if (hasReplies) {
+    const childrenHtml = comment.replies.map(reply => buildCommentTreeHtml(reply, checkedIds)).join('');
+    return `
+      <details open class="comment-node" data-comment-id="${comment.id}">
+        <summary class="comment-summary">
+          ${checkboxHtml}
+          ${metaHtml}
+          ${textHtml}
+        </summary>
+        ${childrenHtml}
+      </details>
+    `;
+  } else {
+    return `
+      <div class="comment-leaf" data-comment-id="${comment.id}">
+        ${checkboxHtml}
+        ${metaHtml}
+        ${textHtml}
+      </div>
+    `;
+  }
+}
+
+function renderCommentTree(comments) {
+  if (!els.commentsTreeContainer) return;
+  if (!Array.isArray(comments) || comments.length === 0) {
+    els.commentsTreeContainer.innerHTML = '<p style="padding: 8px; color: var(--dim);">No comments available.</p>';
+    return;
+  }
+  const checkedIds = new Set();
+  function gatherIds(list) {
+    for (const comment of list || []) {
+      checkedIds.add(comment.id);
+      gatherIds(comment.replies);
+    }
+  }
+  gatherIds(comments);
+  
+  els.commentsTreeContainer.innerHTML = comments.map(comment => buildCommentTreeHtml(comment, checkedIds)).join('');
+  updateCheckboxPropagation();
+}
+
+function updateCheckboxPropagation() {
+  const container = els.commentsTreeContainer;
+  if (!container) return;
+  const roots = container.children;
+  for (const root of roots) {
+    propagateNode(root, true);
+  }
+}
+
+function propagateNode(element, parentCheckedAndEnabled) {
+  const isLeaf = element.classList.contains('comment-leaf');
+  const isNode = element.classList.contains('comment-node');
+  if (!isLeaf && !isNode) return;
+
+  let checkbox;
+  if (isLeaf) {
+    checkbox = element.querySelector(':scope > .comment-checkbox');
+  } else {
+    checkbox = element.querySelector(':scope > .comment-summary > .comment-checkbox');
+  }
+
+  if (!checkbox) return;
+
+  if (!parentCheckedAndEnabled) {
+    checkbox.disabled = true;
+  } else {
+    checkbox.disabled = false;
+  }
+
+  if (isNode) {
+    const childCheckedAndEnabled = parentCheckedAndEnabled && checkbox.checked;
+    const childNodes = element.querySelectorAll(':scope > .comment-node, :scope > .comment-leaf');
+    for (const child of childNodes) {
+      propagateNode(child, childCheckedAndEnabled);
+    }
+  }
+}
+
+function handleCheckboxChange(e) {
+  if (!e.target.classList.contains('comment-checkbox')) return;
+  previewState.hasCustomPruning = true;
+  updateCheckboxPropagation();
+  rebuildPrompt();
+}
+
+function toggleAllCheckboxes(checked) {
+  const checkboxes = els.commentsTreeContainer?.querySelectorAll('.comment-checkbox');
+  if (!checkboxes) return;
+  for (const cb of checkboxes) {
+    cb.checked = checked;
+  }
+  previewState.hasCustomPruning = true;
+  updateCheckboxPropagation();
+  rebuildPrompt();
+}
+
+function getSelectedCommentIds() {
+  const selectedIds = [];
+  if (!els.commentsTreeContainer) return selectedIds;
+  const checkboxes = els.commentsTreeContainer.querySelectorAll('.comment-checkbox');
+  for (const cb of checkboxes) {
+    if (cb.checked && !cb.disabled) {
+      selectedIds.push(cb.getAttribute('data-id'));
+    }
+  }
+  return selectedIds;
 }
