@@ -201,8 +201,15 @@
         try {
           data = await fs.readFile('./cl100k_base.json', 'utf8');
         } catch {
-          // fallback if run from tests/
-          data = await fs.readFile('../cl100k_base.json', 'utf8');
+          try {
+            data = await fs.readFile('./src/cl100k_base.json', 'utf8');
+          } catch {
+            try {
+              data = await fs.readFile('../src/cl100k_base.json', 'utf8');
+            } catch {
+              data = await fs.readFile('../cl100k_base.json', 'utf8');
+            }
+          }
         }
         const ranks = JSON.parse(data);
         global.R2ATiktoken = new Tiktoken(ranks);

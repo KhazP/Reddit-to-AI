@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
-const options = await readFile(new URL('../options.js', import.meta.url), 'utf8');
-const html = await readFile(new URL('../options.html', import.meta.url), 'utf8');
-const css = await readFile(new URL('../options.css', import.meta.url), 'utf8');
+const options = await readFile(new URL('../src/options.js', import.meta.url), 'utf8');
+const html = await readFile(new URL('../src/options.html', import.meta.url), 'utf8');
+const css = await readFile(new URL('../src/options.css', import.meta.url), 'utf8');
 
 assert.match(html, /id="historyStatus"/, 'options page renders visible history status');
 assert.match(html, /aria-live="polite"/, 'history status is announced politely');

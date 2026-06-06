@@ -292,13 +292,13 @@ const context = {
 context.window = context;
 
 // Load scripts
-const promptBuilderSrc = await readFile(new URL('../promptBuilder.js', import.meta.url), 'utf8');
+const promptBuilderSrc = await readFile(new URL('../src/promptBuilder.js', import.meta.url), 'utf8');
 vm.runInNewContext(promptBuilderSrc, context, { filename: 'promptBuilder.js' });
 
 // Expose R2AIPrompt to VM context
 context.R2AIPrompt = context.globalThis.R2AIPrompt;
 
-const previewSrc = await readFile(new URL('../preview.js', import.meta.url), 'utf8');
+const previewSrc = await readFile(new URL('../src/preview.js', import.meta.url), 'utf8');
 vm.runInNewContext(previewSrc, context, { filename: 'preview.js' });
 
 // Test comment HTML rendering and propagation

@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { collectFiles, outDir, packageExtension, root, verifyZip } from '../scripts/package-extension.mjs';
 
 const script = await readFile(new URL('../scripts/package-extension.mjs', import.meta.url), 'utf8');
-const manifest = JSON.parse(await readFile(new URL('../manifest.json', import.meta.url), 'utf8'));
+const manifest = JSON.parse(await readFile(new URL('../src/manifest.json', import.meta.url), 'utf8'));
 
 assert.match(script, /import JSZip from 'jszip';/, 'package script must use jszip');
 assert.match(script, /Reddit-to-AI-v\$\{version\}-upload\.zip/, 'upload zip name must include manifest version');

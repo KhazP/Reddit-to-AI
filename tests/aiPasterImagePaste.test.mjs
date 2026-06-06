@@ -148,7 +148,7 @@ function createContext({ imageResponses }) {
 }
 
 async function loadAiPaster(testContext) {
-  const source = await readFile(new URL('../aiPaster.js', import.meta.url), 'utf8');
+  const source = await readFile(new URL('../src/aiPaster.js', import.meta.url), 'utf8');
   vm.runInNewContext(source, testContext, { filename: 'aiPaster.js' });
   return testContext.R2AIAiPasterTest;
 }

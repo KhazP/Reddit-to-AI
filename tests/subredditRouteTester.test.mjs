@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
-const optionsHtml = await readFile(new URL('../options.html', import.meta.url), 'utf8');
-const optionsCss = await readFile(new URL('../options.css', import.meta.url), 'utf8');
-const optionsJs = await readFile(new URL('../options.js', import.meta.url), 'utf8');
+const optionsHtml = await readFile(new URL('../src/options.html', import.meta.url), 'utf8');
+const optionsCss = await readFile(new URL('../src/options.css', import.meta.url), 'utf8');
+const optionsJs = await readFile(new URL('../src/options.js', import.meta.url), 'utf8');
 
 // 1. Verify options.html markup
 assert.match(optionsHtml, /id="routeTesterInput"/, 'options.html contains routeTesterInput element');

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import '../cl100k_base.js';
+import '../src/cl100k_base.js';
 
 assert.ok(globalThis.R2ATiktokenPromise, 'R2ATiktokenPromise is present');
 await globalThis.R2ATiktokenPromise;
@@ -16,7 +16,7 @@ const decoded = globalThis.R2ATiktoken.decode(encoded);
 assert.equal(decoded, testStr, 'tokens decode back to original text');
 
 // Import promptBuilder to verify integration
-import '../promptBuilder.js';
+import '../src/promptBuilder.js';
 const { R2AIPrompt } = globalThis;
 assert.ok(R2AIPrompt, 'R2AIPrompt is present');
 

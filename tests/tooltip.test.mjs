@@ -168,7 +168,7 @@ function createContext() {
 }
 
 // Run test
-const source = await readFile(new URL('../tooltip.js', import.meta.url), 'utf8');
+const source = await readFile(new URL('../src/tooltip.js', import.meta.url), 'utf8');
 
 // 1. Basic Tooltip initialization and interaction
 {

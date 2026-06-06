@@ -118,7 +118,7 @@ export async function verifyZip(stageDir = outDir, zipPath) {
 export async function packageExtension() {
   await rm(outDir, { recursive: true, force: true });
   await mkdir(outDir, { recursive: true });
-  await copyTree(root, outDir);
+  await copyTree(join(root, 'src'), outDir);
 
   const version = await getManifestVersion(outDir);
   const zipName = `Reddit-to-AI-v${version}-upload.zip`;

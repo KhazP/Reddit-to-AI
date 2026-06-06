@@ -45,6 +45,7 @@ yarn-error.log
 *.pem
 dist/
 build/
+dist-extension/
 
 # ===================
 # Temporary Files

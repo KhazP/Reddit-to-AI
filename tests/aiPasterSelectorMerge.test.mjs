@@ -30,7 +30,7 @@ function createContext({ hostname, href = '', syncedSelectors = null, customSele
 }
 
 async function loadAiPaster(context) {
-  const source = await readFile(new URL('../aiPaster.js', import.meta.url), 'utf8');
+  const source = await readFile(new URL('../src/aiPaster.js', import.meta.url), 'utf8');
   vm.runInNewContext(source, context, { filename: 'aiPaster.js' });
   return context.R2AIAiPasterTest;
 }

@@ -3,10 +3,10 @@ import path from "node:path";
 
 const ROOT = process.cwd();
 const REQUIRED_FILES = [
-  "manifest.json",
-  "_locales/en/messages.json"
+  "src/manifest.json",
+  "src/_locales/en/messages.json"
 ];
-const IGNORE_DIRS = new Set([".git", "node_modules", "images", "dist-extension"]);
+const IGNORE_DIRS = new Set([".git", "node_modules", "images", "dist-extension", "tests"]);
 
 async function exists(filePath) {
   try {
@@ -54,7 +54,7 @@ function validateLocaleShape(filePath, parsed) {
 }
 
 async function validateLocaleParity(errors) {
-  const localesDir = path.join(ROOT, "_locales");
+  const localesDir = path.join(ROOT, "src", "_locales");
   const englishPath = path.join(localesDir, "en", "messages.json");
   if (!(await exists(englishPath))) return;
 
@@ -69,10 +69,10 @@ async function validateLocaleParity(errors) {
     const missing = englishKeys.filter(key => !keys.includes(key));
     const extra = keys.filter(key => !englishKeys.includes(key));
     if (missing.length > 0) {
-      errors.push(`_locales/${locale}/messages.json: missing locale keys: ${missing.join(", ")}`);
+      errors.push(`src/_locales/${locale}/messages.json: missing locale keys: ${missing.join(", ")}`);
     }
     if (extra.length > 0) {
-      errors.push(`_locales/${locale}/messages.json: unknown locale keys: ${extra.join(", ")}`);
+      errors.push(`src/_locales/${locale}/messages.json: unknown locale keys: ${extra.join(", ")}`);
     }
   }
 }
@@ -96,7 +96,7 @@ async function main() {
       const content = await fs.readFile(filePath, "utf8");
       const parsed = JSON.parse(content);
 
-      if (relativePath.startsWith("_locales/") && relativePath.endsWith("/messages.json")) {
+      if (relativePath.startsWith("src/_locales/") && relativePath.endsWith("/messages.json")) {
         errors.push(...validateLocaleShape(relativePath, parsed));
       }
     } catch (error) {

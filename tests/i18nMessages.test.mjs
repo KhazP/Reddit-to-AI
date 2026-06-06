@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readdir, readFile } from 'node:fs/promises';
 
-const localesDir = new URL('../_locales/', import.meta.url);
+const localesDir = new URL('../src/_locales/', import.meta.url);
 const localeNames = (await readdir(localesDir)).sort();
 assert.ok(localeNames.includes('en'), 'English default locale is required');
 const englishMessages = JSON.parse(await readFile(new URL('en/messages.json', localesDir), 'utf8'));

@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
-const popup = await readFile(new URL('../popup.js', import.meta.url), 'utf8');
-const html = await readFile(new URL('../popup.html', import.meta.url), 'utf8');
+const popup = await readFile(new URL('../src/popup.js', import.meta.url), 'utf8');
+const html = await readFile(new URL('../src/popup.html', import.meta.url), 'utf8');
 
 assert.match(html, /<option value="directOnce">Send directly once<\/option>/, 'popup direct mode is one-shot');
 assert.doesNotMatch(popup, /showPromptPreview:\s*\(sendModeSelect\?\.value \|\| 'preview'\) !== 'direct'/, 'popup must not persist direct send from mode select');

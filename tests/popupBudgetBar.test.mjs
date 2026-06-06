@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
-const popupHtml = await readFile(new URL('../popup.html', import.meta.url), 'utf8');
-const popupCss = await readFile(new URL('../popup.css', import.meta.url), 'utf8');
-const popupJs = await readFile(new URL('../popup.js', import.meta.url), 'utf8');
+const popupHtml = await readFile(new URL('../src/popup.html', import.meta.url), 'utf8');
+const popupCss = await readFile(new URL('../src/popup.css', import.meta.url), 'utf8');
+const popupJs = await readFile(new URL('../src/popup.js', import.meta.url), 'utf8');
 
 // 1. Verify popup.html markup
 assert.match(popupHtml, /class="budget-bar-container"/, 'popup.html contains budget-bar-container');

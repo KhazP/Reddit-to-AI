@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import '../promptBuilder.js';
+import '../src/promptBuilder.js';
 
 const { R2AIPrompt } = globalThis;
 

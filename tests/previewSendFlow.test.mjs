@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
-const preview = await readFile(new URL('../preview.js', import.meta.url), 'utf8');
-const worker = await readFile(new URL('../service_worker.js', import.meta.url), 'utf8');
-const html = await readFile(new URL('../preview.html', import.meta.url), 'utf8');
+const preview = await readFile(new URL('../src/preview.js', import.meta.url), 'utf8');
+const worker = await readFile(new URL('../src/service_worker.js', import.meta.url), 'utf8');
+const html = await readFile(new URL('../src/preview.html', import.meta.url), 'utf8');
 
 assert.match(preview, /pendingGeneratedPrompt/, 'preview tracks a pending rebuilt prompt');
 assert.match(preview, /pendingRenderedData/, 'preview tracks pending rendered data');

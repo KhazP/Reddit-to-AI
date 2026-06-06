@@ -117,7 +117,7 @@ function createContext() {
 
 async function loadServiceWorker(customContext) {
   const context = customContext || createContext();
-  const source = await readFile(new URL('../service_worker.js', import.meta.url), 'utf8');
+  const source = await readFile(new URL('../src/service_worker.js', import.meta.url), 'utf8');
   vm.runInNewContext(source, context, { filename: 'service_worker.js' });
   return context.R2AIServiceWorkerTest;
 }

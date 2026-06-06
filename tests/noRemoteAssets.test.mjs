@@ -13,7 +13,7 @@ const extensionPages = [
 const remotePageAssetPattern = /\b(?:href|src)\s*=\s*["']https?:\/\/|@import\s+url\(["']?https?:\/\//i;
 
 for (const file of extensionPages) {
-  const text = await readFile(new URL(`../${file}`, import.meta.url), 'utf8');
+  const text = await readFile(new URL(`../src/${file}`, import.meta.url), 'utf8');
   assert.doesNotMatch(text, remotePageAssetPattern, `${file} must not load remote page assets`);
   assert.doesNotMatch(text, /fonts\.(?:googleapis|gstatic)\.com/i, `${file} must not load Google Fonts`);
 }
