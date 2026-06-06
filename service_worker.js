@@ -734,10 +734,21 @@ async function addToHistory(scrapeData, settings = {}) {
       contextPreset: settings.contextPreset || scrapeData.metadata?.contextPreset || 'balanced'
     },
     comments: scrapeData.comments,
-    rawData: scrapeData,
+    includeHidden: scrapeData.includeHidden,
+    maxDepth: scrapeData.maxDepth,
+    filtersApplied: scrapeData.filtersApplied,
+    morechildren: scrapeData.morechildren,
+    threadUrl: scrapeData.threadUrl,
     favorite: false,
     pinned: false
   };
+
+  if (scrapeData.threads !== undefined) {
+    historyEntry.threads = scrapeData.threads;
+  }
+  if (scrapeData.isBatch !== undefined) {
+    historyEntry.isBatch = scrapeData.isBatch;
+  }
 
   history.unshift(historyEntry);
   const sorted = sortHistory(history).slice(0, limit);
@@ -775,7 +786,20 @@ async function resendHistoryItem(historyId, aiProvider) {
   const settings = await loadSettings();
   const mergedSettings = { ...settings, selectedLlmProvider: aiProvider || settings.selectedLlmProvider };
   await chrome.storage.sync.set({ selectedLlmProvider: mergedSettings.selectedLlmProvider });
-  await savePreviewData({ ...item.rawData, timestamp: Date.now() }, { ...mergedSettings, dataStorageOption: 'sessionOnly' });
+  const scrapeData = {
+    post: item.post,
+    comments: item.comments,
+    threads: item.threads, // Add this
+    isBatch: item.isBatch, // Add this
+    metadata: item.metadata,
+    includeHidden: item.includeHidden,
+    maxDepth: item.maxDepth,
+    filtersApplied: item.filtersApplied,
+    morechildren: item.morechildren,
+    threadUrl: item.threadUrl,
+    timestamp: Date.now()
+  };
+  await savePreviewData(scrapeData, { ...mergedSettings, dataStorageOption: 'sessionOnly' });
   await openPreviewTab();
   return { success: true };
 }
@@ -1887,6 +1911,10 @@ async function getQuickTokenEstimate(tabId, urlStr) {
     }
   };
 
+  if (quickEstimateCache.size >= 50) {
+    const oldestKey = quickEstimateCache.keys().next().value;
+    quickEstimateCache.delete(oldestKey);
+  }
   quickEstimateCache.set(urlStr, estimatedData);
   return estimatedData;
 }
@@ -1924,7 +1952,12 @@ if (globalThis.R2AIServiceWorkerTest) {
     stopActiveScrape,
     getScrapingState: () => scrapingState,
     setScrapingState,
-    getCurrentScrape: () => currentScrape
+    getCurrentScrape: () => currentScrape,
+    quickEstimateCache,
+    getQuickTokenEstimate,
+    addToHistory,
+    resendHistoryItem,
+    chrome: typeof chrome !== 'undefined' ? chrome : null
   });
 }
 

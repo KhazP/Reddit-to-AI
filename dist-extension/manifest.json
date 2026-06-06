@@ -12,7 +12,8 @@
     "scripting",
     "storage",
     "notifications",
-    "tabs"
+    "tabs",
+    "unlimitedStorage"
   ],
   "host_permissions": [
     "*://*.reddit.com/*",

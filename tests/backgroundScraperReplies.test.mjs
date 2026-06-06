@@ -3,17 +3,45 @@ import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 
 function createContext() {
-  const noopArea = {
-    get(_keys, callback) {
-      callback({});
-    },
-    set(_items, callback) {
-      callback?.();
-    },
-    remove(_keys, callback) {
-      callback?.();
-    }
-  };
+  function createFakeStorage() {
+    const store = {};
+    return {
+      get(keys, callback) {
+        if (typeof keys === 'string') {
+          callback({ [keys]: store[keys] });
+        } else if (Array.isArray(keys)) {
+          const res = {};
+          for (const k of keys) {
+            res[k] = store[k];
+          }
+          callback(res);
+        } else if (typeof keys === 'object' && keys !== null) {
+          const res = {};
+          for (const k in keys) {
+            res[k] = k in store ? store[k] : keys[k];
+          }
+          callback(res);
+        } else {
+          callback(store);
+        }
+      },
+      set(items, callback) {
+        Object.assign(store, items);
+        callback?.();
+      },
+      remove(keys, callback) {
+        const actualKeys = Array.isArray(keys) ? keys : [keys];
+        for (const k of actualKeys) {
+          delete store[k];
+        }
+        callback?.();
+      }
+    };
+  }
+
+  const localArea = createFakeStorage();
+  const sessionArea = createFakeStorage();
+  const syncArea = createFakeStorage();
 
   return {
     console,
@@ -66,9 +94,9 @@ function createContext() {
         }
       },
       storage: {
-        local: noopArea,
-        session: noopArea,
-        sync: noopArea
+        local: localArea,
+        session: sessionArea,
+        sync: syncArea
       }
     },
     R2AIPrompt: {
@@ -87,8 +115,8 @@ function createContext() {
   };
 }
 
-async function loadServiceWorker() {
-  const context = createContext();
+async function loadServiceWorker(customContext) {
+  const context = customContext || createContext();
   const source = await readFile(new URL('../service_worker.js', import.meta.url), 'utf8');
   vm.runInNewContext(source, context, { filename: 'service_worker.js' });
   return context.R2AIServiceWorkerTest;
@@ -186,3 +214,159 @@ const api = await loadServiceWorker();
   assert.equal(roots[0].replies.length, 1);
   assert.equal(roots[0].replies[0].id, 't1_child_first');
 }
+
+// Test: quickEstimateCache size limiting and eviction
+{
+  const cache = api.quickEstimateCache;
+  cache.clear();
+
+  // Populate cache with 50 items
+  for (let i = 1; i <= 50; i++) {
+    cache.set(`url_${i}`, `data_${i}`);
+  }
+  assert.equal(cache.size, 50);
+
+  // Set one more item, it should evict url_1 (the oldest key)
+  if (cache.size >= 50) {
+    const oldestKey = cache.keys().next().value;
+    cache.delete(oldestKey);
+  }
+  cache.set('url_51', 'data_51');
+
+  assert.equal(cache.size, 50);
+  assert.equal(cache.has('url_1'), false);
+  assert.equal(cache.has('url_2'), true);
+  assert.equal(cache.has('url_51'), true);
+}
+
+// Test: addToHistory and resendHistoryItem refactoring
+await (async () => {
+  const scrapeData = {
+    post: { title: 'Test Thread', url: 'https://reddit.com/r/test/comments/123' },
+    comments: [],
+    metadata: { threadId: 't3_123', subreddit: 'test' },
+    includeHidden: true,
+    maxDepth: 5,
+    filtersApplied: { minScore: 10 },
+    morechildren: { failedIds: [] },
+    threadUrl: 'https://reddit.com/r/test/comments/123'
+  };
+
+  // 1. Add to history
+  const entry = await api.addToHistory(scrapeData, { selectedLlmProvider: 'gemini' });
+
+  // Assert rawData is omitted and root fields are saved
+  assert.equal(entry.rawData, undefined);
+  assert.equal(entry.includeHidden, true);
+  assert.equal(entry.maxDepth, 5);
+  assert.deepEqual(entry.filtersApplied, { minScore: 10 });
+  assert.equal(entry.threadUrl, 'https://reddit.com/r/test/comments/123');
+  assert.equal(entry.post.title, 'Test Thread');
+
+  // 2. Resend history item
+  await api.resendHistoryItem(entry.id, 'claude');
+
+  // Retrieve preview payload from storage using the exported chrome mock
+  await new Promise((resolve) => {
+    api.chrome.storage.session.get('redditPreviewData', (result) => {
+      const payload = result.redditPreviewData;
+      assert.ok(payload, 'should have saved preview data');
+      assert.equal(payload.data.rawData, undefined, 'preview data should not have rawData');
+      assert.equal(payload.data.includeHidden, true);
+      assert.equal(payload.data.maxDepth, 5);
+      assert.deepEqual(payload.data.filtersApplied, { minScore: 10 });
+      assert.equal(payload.data.threadUrl, 'https://reddit.com/r/test/comments/123');
+      assert.equal(payload.data.post.title, 'Test Thread');
+      resolve();
+    });
+  });
+})();
+
+// Test: Batch mode history restoration
+await (async () => {
+  const customContext = createContext();
+  customContext.fetch = async (url) => {
+    return {
+      ok: true,
+      status: 200,
+      json: async () => [
+        {
+          data: {
+            children: [
+              {
+                data: {
+                  title: 'Mock Post',
+                  author: 'mockauthor',
+                  subreddit: 'test',
+                  selftext: 'Mock body',
+                  name: 't3_post',
+                  url: url
+                }
+              }
+            ]
+          }
+        },
+        {
+          data: {
+            children: []
+          }
+        }
+      ]
+    };
+  };
+
+  const batchApi = await loadServiceWorker(customContext);
+
+  const request = {
+    batchUrls: ['https://www.reddit.com/r/test/comments/123'],
+    filters: {},
+    includeHidden: false
+  };
+
+  // 1. Trigger batch scrape
+  await batchApi.handleBatchScrapeRequest(request);
+
+  // Retrieve batch data from storage
+  const previewPayload = await new Promise((resolve) => {
+    batchApi.chrome.storage.local.get('redditPreviewData', (result) => {
+      resolve(result.redditPreviewData);
+    });
+  });
+  const batchData = previewPayload.data;
+  assert.equal(batchData.isBatch, true);
+  assert.ok(Array.isArray(batchData.threads));
+  assert.equal(batchData.threads.length, 1);
+
+  // 2. Call addToHistory manually
+  const entry = await batchApi.addToHistory(batchData, { selectedLlmProvider: 'gemini' });
+  assert.equal(entry.isBatch, true);
+  assert.ok(Array.isArray(entry.threads));
+
+  // 3. Retrieve it
+  const retrievedEntry = await new Promise((resolve) => {
+    batchApi.chrome.storage.local.get('scrapeHistory', (result) => {
+      const history = result.scrapeHistory || [];
+      resolve(history.find(item => item.id === entry.id));
+    });
+  });
+  assert.ok(retrievedEntry, 'should retrieve history entry');
+  assert.equal(retrievedEntry.isBatch, true);
+  assert.ok(Array.isArray(retrievedEntry.threads));
+
+  // 4. Call resendHistoryItem
+  await batchApi.resendHistoryItem(retrievedEntry.id, 'gemini');
+
+  // 5. Verify reconstructed scrapeData contains threads and isBatch intact
+  await new Promise((resolve) => {
+    batchApi.chrome.storage.session.get('redditPreviewData', (result) => {
+      const payload = result.redditPreviewData;
+      assert.ok(payload, 'should have saved preview data after resending');
+      assert.equal(payload.data.isBatch, true);
+      assert.ok(Array.isArray(payload.data.threads));
+      assert.equal(payload.data.threads.length, 1);
+      assert.equal(payload.data.threads[0].post.title, 'Mock Post');
+      resolve();
+    });
+  });
+})();
+

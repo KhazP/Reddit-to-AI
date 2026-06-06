@@ -10,6 +10,7 @@ const forbiddenPathParts = new Set([
   '.git',
   '.github',
   '.playwright-mcp',
+  '.agents',
   'node_modules',
   'tests',
   'scripts',
@@ -22,7 +23,8 @@ const forbiddenFiles = new Set([
   '.gitignore',
   'package.json',
   'package-lock.json',
-  'eslint.config.js'
+  'eslint.config.js',
+  'ORIGINAL_REQUEST.md'
 ]);
 
 const requiredFiles = [
@@ -112,7 +114,7 @@ async function validateManifest(files) {
   assert(manifest.default_locale === 'en', 'Manifest default_locale must be en');
   assert(files.includes(`_locales/${manifest.default_locale}/messages.json`), 'Default locale messages file is missing');
 
-  const allowedPermissions = new Set(['activeTab', 'scripting', 'storage', 'notifications', 'tabs']);
+  const allowedPermissions = new Set(['activeTab', 'scripting', 'storage', 'notifications', 'tabs', 'unlimitedStorage']);
   for (const permission of manifest.permissions || []) {
     assert(allowedPermissions.has(permission), `Unexpected manifest permission: ${permission}`);
   }

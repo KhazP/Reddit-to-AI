@@ -16,7 +16,7 @@ for (const permission of ['activeTab', 'scripting', 'storage', 'notifications', 
   assert.ok(manifest.permissions.includes(permission), `expected permission: ${permission}`);
 }
 
-const allowedPermissions = new Set(['activeTab', 'scripting', 'storage', 'notifications', 'tabs']);
+const allowedPermissions = new Set(['activeTab', 'scripting', 'storage', 'notifications', 'tabs', 'unlimitedStorage']);
 for (const permission of manifest.permissions) {
   assert.ok(allowedPermissions.has(permission), `unexpected permission: ${permission}`);
 }

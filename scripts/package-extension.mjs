@@ -10,6 +10,7 @@ export const excludedDirs = new Set([
   '.git',
   '.github',
   '.playwright-mcp',
+  '.agents',
   'node_modules',
   'tests',
   'scripts',
@@ -27,7 +28,8 @@ export const excludedFiles = new Set([
   'UPDATE_NOTES.md',
   'package.json',
   'package-lock.json',
-  'eslint.config.js'
+  'eslint.config.js',
+  'ORIGINAL_REQUEST.md'
 ]);
 
 export function toZipPath(path) {

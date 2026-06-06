@@ -91,8 +91,17 @@ async function loadLanguage(lang) {
  */
 async function initI18n() {
     return new Promise((resolve) => {
+        if (typeof chrome === 'undefined' || !chrome.storage || !chrome.storage.sync) {
+            resolve();
+            return;
+        }
         chrome.storage.sync.get(['selectedLanguage'], async (result) => {
-            const lang = result.selectedLanguage || DEFAULT_LANGUAGE;
+            if (chrome.runtime && chrome.runtime.lastError) {
+                console.warn('i18n: Failed to get settings from storage:', chrome.runtime.lastError.message);
+                resolve();
+                return;
+            }
+            const lang = (result && result.selectedLanguage) || DEFAULT_LANGUAGE;
             await loadLanguage(lang);
             resolve();
         });
