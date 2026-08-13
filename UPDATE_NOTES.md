@@ -1,6 +1,8 @@
 # Reddit to AI v1.2.1 Update Notes
 
-This update expands Reddit to AI from a direct scrape-and-send extension into a preview-first workflow with stronger controls for context size, scraping reliability, privacy, and history management.
+> Historical release notes for v1.2.1. The current release is tracked in `src/manifest.json` and `package.json`; this file is not updated for later versions.
+
+This update expanded Reddit to AI from a direct scrape-and-send extension into a preview-first workflow with stronger controls for context size, scraping reliability, privacy, and history management.
 
 ## Added
 
