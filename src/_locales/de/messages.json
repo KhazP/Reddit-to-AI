@@ -552,5 +552,145 @@
     },
     "error": {
         "message": "Error"
+    },
+    "popup_preset_name_label": {
+        "message": "Voreinstellungsname",
+        "description": "Label for the inline preset-name field in the popup"
+    },
+    "popup_preset_name_placeholder": {
+        "message": "Voreinstellungsname",
+        "description": "Placeholder for the inline preset-name field"
+    },
+    "popup_preset_name_confirm": {
+        "message": "Speichern",
+        "description": "Confirm button for saving a quick prompt as a preset"
+    },
+    "popup_preset_name_cancel": {
+        "message": "Abbrechen",
+        "description": "Cancel button for the inline preset-name field"
+    },
+    "popup_preset_name_default": {
+        "message": "Schnell-Prompt",
+        "description": "Fallback name suggested when saving a quick prompt preset"
+    },
+    "command_scrape_current_thread": {
+        "message": "Aktuellen Reddit-Thread auslesen",
+        "description": "Description for the keyboard shortcut that scrapes the active Reddit thread"
+    },
+    "context_menu_scrape_thread": {
+        "message": "Diesen Thread mit Reddit to AI auslesen",
+        "description": "Right-click menu entry that scrapes a Reddit thread"
+    },
+    "sw_error_custom_origin_missing": {
+        "message": "Es ist kein eigener KI-Ursprung konfiguriert. Füge zuerst einen in den Optionen hinzu.",
+        "description": "Error shown when the custom AI provider is selected without a configured origin"
+    },
+    "preview_api_eyebrow": {
+        "message": "Direkte API"
+    },
+    "preview_api_title": {
+        "message": "Mit eigenem API-Schlüssel senden"
+    },
+    "preview_api_description": {
+        "message": "Sende den Prompt direkt an einen Anbieter und lies die Antwort hier, ohne einen KI-Chat-Tab zu öffnen."
+    },
+    "preview_api_provider_label": {
+        "message": "API-Anbieter"
+    },
+    "preview_api_send": {
+        "message": "Über API senden"
+    },
+    "preview_api_no_key": {
+        "message": "Für diesen Anbieter ist kein API-Schlüssel konfiguriert."
+    },
+    "preview_api_no_key_for": {
+        "message": "Für $1 ist kein API-Schlüssel konfiguriert."
+    },
+    "preview_api_open_options": {
+        "message": "Schlüssel in den Optionen hinzufügen"
+    },
+    "preview_api_loading": {
+        "message": "Warte auf die KI-Antwort…"
+    },
+    "preview_api_retry": {
+        "message": "Erneut versuchen"
+    },
+    "preview_api_retryable": {
+        "message": "Das scheint vorübergehend zu sein – versuche es gleich noch einmal."
+    },
+    "preview_api_copy": {
+        "message": "Antwort kopieren"
+    },
+    "preview_api_copied": {
+        "message": "API-Antwort in die Zwischenablage kopiert."
+    },
+    "preview_api_refused": {
+        "message": "Der Anbieter hat die Beantwortung dieser Anfrage abgelehnt."
+    },
+    "preview_api_empty_response": {
+        "message": "Der Anbieter hat eine leere Antwort zurückgegeben."
+    },
+    "preview_api_empty_prompt": {
+        "message": "Der Prompt ist leer."
+    },
+    "preview_api_truncated": {
+        "message": "am Token-Limit abgeschnitten"
+    },
+    "preview_api_failed": {
+        "message": "Die API-Anfrage ist fehlgeschlagen."
+    },
+    "preview_api_status_sending": {
+        "message": "Sende den Prompt an die API…"
+    },
+    "preview_api_status_done": {
+        "message": "API-Antwort empfangen."
+    },
+    "preview_api_status_failed": {
+        "message": "API-Anfrage fehlgeschlagen."
+    },
+    "options_card_direct_api_title": {
+        "message": "Direkte API"
+    },
+    "options_direct_api_intro": {
+        "message": "Füge deinen eigenen API-Schlüssel hinzu, um Antworten direkt in der Prompt-Vorschau zu erhalten, ohne einen KI-Chat-Tab zu öffnen."
+    },
+    "options_direct_api_warning": {
+        "message": "Schlüssel werden nur lokal auf diesem Gerät gespeichert – sie werden nie mit deinem Google-Konto synchronisiert und nie in einen Einstellungsexport aufgenommen. Anfragen gehen direkt von deinem Browser an den Anbieter, und dieser stellt dir die Kosten in Rechnung."
+    },
+    "options_direct_api_key_label": {
+        "message": "API-Schlüssel"
+    },
+    "options_direct_api_key_placeholder": {
+        "message": "API-Schlüssel einfügen"
+    },
+    "options_direct_api_model_label": {
+        "message": "Modell"
+    },
+    "options_direct_api_model_hint": {
+        "message": "Jede Modell-ID, die dieser Anbieter akzeptiert."
+    },
+    "options_direct_api_show": {
+        "message": "Anzeigen"
+    },
+    "options_direct_api_hide": {
+        "message": "Verbergen"
+    },
+    "options_direct_api_test": {
+        "message": "Schlüssel testen"
+    },
+    "options_direct_api_testing": {
+        "message": "Teste"
+    },
+    "options_direct_api_test_ok": {
+        "message": "Schlüssel funktioniert."
+    },
+    "options_direct_api_test_no_key": {
+        "message": "Gib zuerst einen API-Schlüssel ein."
+    },
+    "options_direct_api_clear": {
+        "message": "Schlüssel entfernen"
+    },
+    "options_direct_api_cleared": {
+        "message": "Schlüssel entfernt."
     }
 }

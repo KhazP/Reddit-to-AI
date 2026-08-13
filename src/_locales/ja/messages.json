@@ -552,5 +552,145 @@
     },
     "error": {
         "message": "Error"
+    },
+    "popup_preset_name_label": {
+        "message": "プリセット名",
+        "description": "Label for the inline preset-name field in the popup"
+    },
+    "popup_preset_name_placeholder": {
+        "message": "プリセット名",
+        "description": "Placeholder for the inline preset-name field"
+    },
+    "popup_preset_name_confirm": {
+        "message": "保存",
+        "description": "Confirm button for saving a quick prompt as a preset"
+    },
+    "popup_preset_name_cancel": {
+        "message": "キャンセル",
+        "description": "Cancel button for the inline preset-name field"
+    },
+    "popup_preset_name_default": {
+        "message": "クイックプロンプト",
+        "description": "Fallback name suggested when saving a quick prompt preset"
+    },
+    "command_scrape_current_thread": {
+        "message": "現在のRedditスレッドを取得",
+        "description": "Description for the keyboard shortcut that scrapes the active Reddit thread"
+    },
+    "context_menu_scrape_thread": {
+        "message": "このスレッドをReddit to AIで取得",
+        "description": "Right-click menu entry that scrapes a Reddit thread"
+    },
+    "sw_error_custom_origin_missing": {
+        "message": "カスタムAIのオリジンが設定されていません。カスタムプロバイダーを使う前にオプションで追加してください。",
+        "description": "Error shown when the custom AI provider is selected without a configured origin"
+    },
+    "preview_api_eyebrow": {
+        "message": "ダイレクトAPI"
+    },
+    "preview_api_title": {
+        "message": "自分のAPIキーで送信"
+    },
+    "preview_api_description": {
+        "message": "AIチャットのタブを開かずに、プロンプトをプロバイダーへ直接送信し、ここで回答を読めます。"
+    },
+    "preview_api_provider_label": {
+        "message": "APIプロバイダー"
+    },
+    "preview_api_send": {
+        "message": "APIで送信"
+    },
+    "preview_api_no_key": {
+        "message": "このプロバイダーのAPIキーが設定されていません。"
+    },
+    "preview_api_no_key_for": {
+        "message": "$1 のAPIキーが設定されていません。"
+    },
+    "preview_api_open_options": {
+        "message": "オプションでキーを追加"
+    },
+    "preview_api_loading": {
+        "message": "AIの応答を待っています…"
+    },
+    "preview_api_retry": {
+        "message": "再試行"
+    },
+    "preview_api_retryable": {
+        "message": "一時的な問題のようです。少し待って再試行してください。"
+    },
+    "preview_api_copy": {
+        "message": "回答をコピー"
+    },
+    "preview_api_copied": {
+        "message": "APIの回答をクリップボードにコピーしました。"
+    },
+    "preview_api_refused": {
+        "message": "プロバイダーはこのリクエストへの回答を拒否しました。"
+    },
+    "preview_api_empty_response": {
+        "message": "プロバイダーから空の応答が返されました。"
+    },
+    "preview_api_empty_prompt": {
+        "message": "プロンプトが空です。"
+    },
+    "preview_api_truncated": {
+        "message": "トークン上限で切り詰められました"
+    },
+    "preview_api_failed": {
+        "message": "APIリクエストが失敗しました。"
+    },
+    "preview_api_status_sending": {
+        "message": "プロンプトをAPIへ送信しています…"
+    },
+    "preview_api_status_done": {
+        "message": "APIの応答を受信しました。"
+    },
+    "preview_api_status_failed": {
+        "message": "APIリクエストが失敗しました。"
+    },
+    "options_card_direct_api_title": {
+        "message": "ダイレクトAPI"
+    },
+    "options_direct_api_intro": {
+        "message": "自分のAPIキーを追加すると、AIチャットのタブを開かずにプロンプトのプレビュー画面で回答を受け取れます。"
+    },
+    "options_direct_api_warning": {
+        "message": "キーはこの端末のローカルにのみ保存されます。Googleアカウントに同期されることも、設定のエクスポートに含まれることもありません。リクエストはブラウザからプロバイダーへ直接送信され、料金はそのプロバイダーから請求されます。"
+    },
+    "options_direct_api_key_label": {
+        "message": "APIキー"
+    },
+    "options_direct_api_key_placeholder": {
+        "message": "APIキーを貼り付け"
+    },
+    "options_direct_api_model_label": {
+        "message": "モデル"
+    },
+    "options_direct_api_model_hint": {
+        "message": "このプロバイダーが受け付ける任意のモデルID。"
+    },
+    "options_direct_api_show": {
+        "message": "表示"
+    },
+    "options_direct_api_hide": {
+        "message": "非表示"
+    },
+    "options_direct_api_test": {
+        "message": "キーをテスト"
+    },
+    "options_direct_api_testing": {
+        "message": "テスト中"
+    },
+    "options_direct_api_test_ok": {
+        "message": "キーは有効です。"
+    },
+    "options_direct_api_test_no_key": {
+        "message": "先にAPIキーを入力してください。"
+    },
+    "options_direct_api_clear": {
+        "message": "キーを削除"
+    },
+    "options_direct_api_cleared": {
+        "message": "キーを削除しました。"
     }
 }

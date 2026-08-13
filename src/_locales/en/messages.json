@@ -554,5 +554,145 @@
     },
     "error": {
         "message": "Error"
+    },
+    "popup_preset_name_label": {
+        "message": "Preset name",
+        "description": "Label for the inline preset-name field in the popup"
+    },
+    "popup_preset_name_placeholder": {
+        "message": "Preset name",
+        "description": "Placeholder for the inline preset-name field"
+    },
+    "popup_preset_name_confirm": {
+        "message": "Save",
+        "description": "Confirm button for saving a quick prompt as a preset"
+    },
+    "popup_preset_name_cancel": {
+        "message": "Cancel",
+        "description": "Cancel button for the inline preset-name field"
+    },
+    "popup_preset_name_default": {
+        "message": "Quick prompt",
+        "description": "Fallback name suggested when saving a quick prompt preset"
+    },
+    "command_scrape_current_thread": {
+        "message": "Scrape the current Reddit thread",
+        "description": "Description for the keyboard shortcut that scrapes the active Reddit thread"
+    },
+    "context_menu_scrape_thread": {
+        "message": "Scrape this thread with Reddit to AI",
+        "description": "Right-click menu entry that scrapes a Reddit thread"
+    },
+    "sw_error_custom_origin_missing": {
+        "message": "No custom AI origin is configured. Add one in Options before using the custom provider.",
+        "description": "Error shown when the custom AI provider is selected without a configured origin"
+    },
+    "preview_api_eyebrow": {
+        "message": "Direct API"
+    },
+    "preview_api_title": {
+        "message": "Send with your own API key"
+    },
+    "preview_api_description": {
+        "message": "Send the prompt straight to a provider and read the answer here, without opening an AI chat tab."
+    },
+    "preview_api_provider_label": {
+        "message": "API provider"
+    },
+    "preview_api_send": {
+        "message": "Send via API"
+    },
+    "preview_api_no_key": {
+        "message": "No API key is configured for this provider."
+    },
+    "preview_api_no_key_for": {
+        "message": "No API key is configured for $1."
+    },
+    "preview_api_open_options": {
+        "message": "Add a key in options"
+    },
+    "preview_api_loading": {
+        "message": "Waiting for the AI response…"
+    },
+    "preview_api_retry": {
+        "message": "Retry"
+    },
+    "preview_api_retryable": {
+        "message": "This looks temporary — try again in a moment."
+    },
+    "preview_api_copy": {
+        "message": "Copy response"
+    },
+    "preview_api_copied": {
+        "message": "API response copied to clipboard."
+    },
+    "preview_api_refused": {
+        "message": "The provider declined to answer this request."
+    },
+    "preview_api_empty_response": {
+        "message": "The provider returned an empty response."
+    },
+    "preview_api_empty_prompt": {
+        "message": "Prompt is empty."
+    },
+    "preview_api_truncated": {
+        "message": "truncated at the token limit"
+    },
+    "preview_api_failed": {
+        "message": "The API request failed."
+    },
+    "preview_api_status_sending": {
+        "message": "Sending the prompt to the API…"
+    },
+    "preview_api_status_done": {
+        "message": "API response received."
+    },
+    "preview_api_status_failed": {
+        "message": "API request failed."
+    },
+    "options_card_direct_api_title": {
+        "message": "Direct API"
+    },
+    "options_direct_api_intro": {
+        "message": "Add your own provider API key to get answers inside the prompt preview page, without opening an AI chat tab."
+    },
+    "options_direct_api_warning": {
+        "message": "Keys are stored locally on this device only — they are never synced to your Google account and never included in a settings export. Requests go directly from your browser to the provider, and you are billed by that provider."
+    },
+    "options_direct_api_key_label": {
+        "message": "API key"
+    },
+    "options_direct_api_key_placeholder": {
+        "message": "Paste your API key"
+    },
+    "options_direct_api_model_label": {
+        "message": "Model"
+    },
+    "options_direct_api_model_hint": {
+        "message": "Any model id this provider accepts."
+    },
+    "options_direct_api_show": {
+        "message": "Show"
+    },
+    "options_direct_api_hide": {
+        "message": "Hide"
+    },
+    "options_direct_api_test": {
+        "message": "Test key"
+    },
+    "options_direct_api_testing": {
+        "message": "Testing"
+    },
+    "options_direct_api_test_ok": {
+        "message": "Key works."
+    },
+    "options_direct_api_test_no_key": {
+        "message": "Enter an API key first."
+    },
+    "options_direct_api_clear": {
+        "message": "Remove key"
+    },
+    "options_direct_api_cleared": {
+        "message": "Key removed."
     }
 }

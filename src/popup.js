@@ -9,18 +9,60 @@ document.addEventListener('DOMContentLoaded', async () => {
   await initI18n();
   localizeHtmlPage();
 
-  document.querySelectorAll('.tab-trigger').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.tab-trigger').forEach(b => {
-        b.classList.remove('active');
-        b.setAttribute('aria-selected', 'false');
-      });
-      document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-      
-      btn.classList.add('active');
-      btn.setAttribute('aria-selected', 'true');
-      const targetPane = document.getElementById(btn.getAttribute('data-tab'));
-      if (targetPane) targetPane.classList.remove('hidden');
+  // ── Tabs ────────────────────────────────────────────────
+  const tabTriggers = Array.from(document.querySelectorAll('.tab-trigger'));
+
+  function activateTab(btn, { focus = false } = {}) {
+    tabTriggers.forEach(b => {
+      const selected = b === btn;
+      b.classList.toggle('active', selected);
+      b.setAttribute('aria-selected', selected ? 'true' : 'false');
+      // Roving tabindex: only the selected tab is a tab stop, so Tab moves past
+      // the tablist rather than through every tab in it.
+      b.tabIndex = selected ? 0 : -1;
+    });
+
+    document.querySelectorAll('.tab-content').forEach(c => {
+      c.classList.add('hidden');
+      // `hidden` alongside the class keeps the pane's children out of the tab
+      // order and out of the accessibility tree.
+      c.hidden = true;
+    });
+
+    const targetPane = document.getElementById(btn.getAttribute('data-tab'));
+    if (targetPane) {
+      targetPane.classList.remove('hidden');
+      targetPane.hidden = false;
+    }
+    if (focus) btn.focus();
+  }
+
+  tabTriggers.forEach((btn, index) => {
+    btn.tabIndex = btn.classList.contains('active') ? 0 : -1;
+    btn.addEventListener('click', () => activateTab(btn));
+
+    btn.addEventListener('keydown', (e) => {
+      let nextIndex = null;
+      switch (e.key) {
+        case 'ArrowRight':
+        case 'ArrowDown':
+          nextIndex = (index + 1) % tabTriggers.length;
+          break;
+        case 'ArrowLeft':
+        case 'ArrowUp':
+          nextIndex = (index - 1 + tabTriggers.length) % tabTriggers.length;
+          break;
+        case 'Home':
+          nextIndex = 0;
+          break;
+        case 'End':
+          nextIndex = tabTriggers.length - 1;
+          break;
+        default:
+          return;
+      }
+      e.preventDefault();
+      activateTab(tabTriggers[nextIndex], { focus: true });
     });
   });
 
@@ -31,11 +73,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const optionsBtn = document.getElementById('optionsBtn');
   const feedbackBtn = document.getElementById('feedbackBtn');
   const presetCards = document.querySelectorAll('.preset-card');
-  const localSummaryResultCard = document.getElementById('localSummaryResultCard');
-  const localSummaryText = document.getElementById('localSummaryText');
-  const copySummaryBtn = document.getElementById('copySummaryBtn');
-  const exportSummaryBtn = document.getElementById('exportSummaryBtn');
-  const closeSummaryBtn = document.getElementById('closeSummaryBtn');
   const quickPromptInput = document.getElementById('quickPrompt');
   const saveQuickPromptBtn = document.getElementById('saveQuickPromptBtn');
   const outputFormatSelect = document.getElementById('outputFormat');
@@ -65,48 +102,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // ── Custom Min Score dropdown ───────────────────────────
+  // ── Min Score select ────────────────────────────────────
+  // Native <select>: the browser supplies keyboard nav, typeahead and screen
+  // reader semantics that the previous button + div listbox never implemented.
   let minScoreValue = 0;
 
-  const minScoreBtn = document.getElementById('filterMinScoreBtn');
-  const minScoreDropdown = document.getElementById('filterMinScoreDropdown');
-  const minScoreLabel = document.getElementById('filterMinScoreLabel');
-  const minScoreOptions = minScoreDropdown?.querySelectorAll('.custom-select-option');
+  const minScoreSelect = document.getElementById('filterMinScore');
 
-  function setMinScore(value, label) {
+  function setMinScore(value, { persist = true } = {}) {
     minScoreValue = value;
-    if (minScoreLabel) minScoreLabel.textContent = label;
-    minScoreOptions?.forEach(opt => {
-      opt.classList.toggle('selected', parseInt(opt.dataset.value, 10) === value);
-    });
-    chrome.storage.sync.set({ filterMinScore: value });
+    if (minScoreSelect) minScoreSelect.value = String(value);
+    if (persist) chrome.storage.sync.set({ filterMinScore: value });
   }
 
-  function closeMinScoreDropdown() {
-    minScoreBtn?.setAttribute('aria-expanded', 'false');
-    minScoreDropdown?.setAttribute('aria-hidden', 'true');
-  }
-
-  if (minScoreBtn && minScoreDropdown) {
-    minScoreBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const expanded = minScoreBtn.getAttribute('aria-expanded') === 'true';
-      minScoreBtn.setAttribute('aria-expanded', expanded ? 'false' : 'true');
-      minScoreDropdown.setAttribute('aria-hidden', expanded ? 'true' : 'false');
-    });
-
-    minScoreOptions?.forEach(opt => {
-      opt.addEventListener('click', () => {
-        setMinScore(parseInt(opt.dataset.value, 10), opt.textContent);
-        closeMinScoreDropdown();
-      });
-    });
-
-    // Close on outside click
-    document.addEventListener('click', (e) => {
-      if (!minScoreBtn.contains(e.target) && !minScoreDropdown.contains(e.target)) {
-        closeMinScoreDropdown();
-      }
+  if (minScoreSelect) {
+    minScoreSelect.addEventListener('change', (e) => {
+      setMinScore(parseInt(e.target.value, 10) || 0);
+      updateScrapeEstimate();
     });
   }
 
@@ -312,11 +324,12 @@ Data:
     selectedPreset = result.selectedPreset || 'summarize';
     updatePresetSelection(selectedPreset);
 
-    // Restore min score custom dropdown
+    // Restore min score
     if (result.filterMinScore) {
       const saved = parseInt(result.filterMinScore, 10);
-      const matchingOpt = minScoreDropdown?.querySelector(`[data-value="${saved}"]`);
-      if (matchingOpt) setMinScore(saved, matchingOpt.textContent);
+      const hasOption = Boolean(minScoreSelect?.querySelector(`option[value="${saved}"]`));
+      // Restoring is not a user edit, so it must not write back to storage.
+      if (hasOption) setMinScore(saved, { persist: false });
     }
 
     // Hide Bots pill
@@ -362,8 +375,7 @@ Data:
 
     // Advanced panel state
     if (result.advancedFiltersExpanded) {
-      expandFiltersBtn?.setAttribute('aria-expanded', 'true');
-      advancedFilters?.setAttribute('aria-hidden', 'false');
+      setAdvancedFiltersExpanded(true);
     }
 
     // Quick prompt - restore if saved
@@ -471,7 +483,7 @@ Data:
 
 
   function getProviderLabel(provider) {
-    return ({ gemini: 'Gemini', chatgpt: 'ChatGPT', claude: 'Claude', aistudio: 'AI Studio', deepseek: 'DeepSeek', groq: 'Groq', custom: 'Custom', local: 'Local AI' }[provider]) || 'Gemini';
+    return ({ gemini: 'Gemini', chatgpt: 'ChatGPT', claude: 'Claude', aistudio: 'AI Studio', deepseek: 'DeepSeek', groq: 'Groq', custom: 'Custom' }[provider]) || 'Gemini';
   }
 
   function getCheckedValue(name, fallback) {
@@ -479,14 +491,9 @@ Data:
   }
 
   function updateScrapeModeUi() {
-    const isLocal = popupProviderSelect?.value === 'local';
     const previewEnabled = (sendModeSelect?.value || 'preview') === 'preview';
     const btnText = scrapeBtn?.querySelector('.btn-text');
     if (!btnText) return;
-    if (isLocal) {
-      btnText.textContent = t('popup_btn_local_summary') || 'Summarize Locally';
-      return;
-    }
     if (currentBatchUrlCount > 0) {
       btnText.textContent = previewEnabled
         ? `Scrape ${currentBatchUrlCount} URLs & Preview`
@@ -499,18 +506,14 @@ Data:
   function updateBudgetTracker(tokenCount) {
     const bar = document.getElementById('budgetValueBar');
     const label = document.getElementById('budgetLabel');
-    if (!bar || !label) return;
+    if (!bar) return;
     
     const provider = popupProviderSelect?.value || 'gemini';
     let maxTokens = 128000;
     let safeLimit = 32000;
     let moderateLimit = 96000;
 
-    if (provider === 'local') {
-      maxTokens = 8000;
-      safeLimit = 2000;
-      moderateLimit = 6000;
-    } else if (provider === 'groq') {
+    if (provider === 'groq') {
       maxTokens = 131072;
       safeLimit = 30000;
       moderateLimit = 90000;
@@ -529,17 +532,32 @@ Data:
     
     bar.className = 'budget-bar-fill';
     const formattedCount = tokenCount.toLocaleString();
+    
+    let budgetText = '';
     if (tokenCount === 0) {
-      label.innerText = typeof t === 'function' ? t('popup_budget_initial') : 'Budget: 0 tokens';
+      budgetText = typeof t === 'function' ? t('popup_budget_initial') : 'Budget: 0 tokens';
     } else if (tokenCount < safeLimit) {
       bar.classList.add('safe');
-      label.innerText = typeof t === 'function' ? t('popup_budget_safe', [formattedCount]) : `Budget: ${formattedCount} tokens (Safe)`;
+      budgetText = typeof t === 'function' ? t('popup_budget_safe', [formattedCount]) : `Budget: ${formattedCount} tokens (Safe)`;
     } else if (tokenCount < moderateLimit) {
       bar.classList.add('moderate');
-      label.innerText = typeof t === 'function' ? t('popup_budget_moderate', [formattedCount]) : `Budget: ${formattedCount} tokens (Moderate)`;
+      budgetText = typeof t === 'function' ? t('popup_budget_moderate', [formattedCount]) : `Budget: ${formattedCount} tokens (Moderate)`;
     } else {
       bar.classList.add('large');
-      label.innerText = typeof t === 'function' ? t('popup_budget_large', [formattedCount]) : `Budget: ${formattedCount} tokens (Large)`;
+      budgetText = typeof t === 'function' ? t('popup_budget_large', [formattedCount]) : `Budget: ${formattedCount} tokens (Large)`;
+    }
+
+    if (label) {
+      label.innerText = budgetText;
+    }
+
+    if (scrapeEstimate) {
+      const baseText = scrapeEstimate.textContent.split(' · Budget:')[0];
+      if (tokenCount > 0) {
+        scrapeEstimate.textContent = `${baseText} · ${budgetText}`;
+      } else {
+        scrapeEstimate.textContent = `${baseText} · Budget: 0 tokens`;
+      }
     }
   }
 
@@ -619,32 +637,71 @@ Data:
     dontSaveThisScrape.addEventListener('change', updateScrapeEstimate);
   }
 
-  if (saveQuickPromptBtn) {
-    saveQuickPromptBtn.addEventListener('click', () => {
-      const raw = quickPromptInput?.value?.trim();
-      if (!raw) return;
-      const name = prompt('Preset name:', raw.slice(0, 42) || 'Quick prompt');
-      if (!name) return;
-      const template = raw.includes('{content}') ? raw : `${raw}\n\n{content}`;
-      const savedPreset = {
-        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-        name,
-        category: 'custom',
-        createdAt: Date.now(),
-        template,
-        contextPreset: getCheckedValue('contextPresetPopup', 'balanced'),
-        trimStrategy: trimStrategySelect?.value || 'top',
-        mediaMode: mediaModeSelect?.value || 'attach',
-        outputFormat: outputFormatSelect?.value || 'auto'
-      };
-      chrome.storage.sync.get(['savedPromptPresets'], (result) => {
-        const presets = Array.isArray(result.savedPromptPresets) ? result.savedPromptPresets : [];
-        chrome.storage.sync.set({ savedPromptPresets: [savedPreset, ...presets].slice(0, 30) }, () => {
-          showToast('success', `Saved preset "${name}".`);
-        });
+  // ── Save quick prompt as preset ────────────────────────
+  // window.prompt() is blocked inside action popups in modern Chrome, so the name
+  // is collected with an inline row that opens in place instead.
+  const presetNameRow = document.getElementById('presetNameRow');
+  const presetNameInput = document.getElementById('presetNameInput');
+  const presetNameConfirmBtn = document.getElementById('presetNameConfirmBtn');
+  const presetNameCancelBtn = document.getElementById('presetNameCancelBtn');
+
+  function closePresetNameRow() {
+    if (!presetNameRow) return;
+    presetNameRow.hidden = true;
+    saveQuickPromptBtn?.focus();
+  }
+
+  function openPresetNameRow() {
+    const raw = quickPromptInput?.value?.trim();
+    if (!raw || !presetNameRow || !presetNameInput) return;
+    presetNameInput.value = raw.slice(0, 42) || (t('popup_preset_name_default') || 'Quick prompt');
+    presetNameRow.hidden = false;
+    presetNameInput.focus();
+    presetNameInput.select?.();
+  }
+
+  function commitPresetName() {
+    const raw = quickPromptInput?.value?.trim();
+    const name = presetNameInput?.value?.trim();
+    if (!raw || !name) return;
+
+    const template = raw.includes('{content}') ? raw : `${raw}\n\n{content}`;
+    const savedPreset = {
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      name,
+      category: 'custom',
+      createdAt: Date.now(),
+      template,
+      contextPreset: getCheckedValue('contextPresetPopup', 'balanced'),
+      trimStrategy: trimStrategySelect?.value || 'top',
+      mediaMode: mediaModeSelect?.value || 'attach',
+      outputFormat: outputFormatSelect?.value || 'auto'
+    };
+    chrome.storage.sync.get(['savedPromptPresets'], (result) => {
+      const presets = Array.isArray(result.savedPromptPresets) ? result.savedPromptPresets : [];
+      chrome.storage.sync.set({ savedPromptPresets: [savedPreset, ...presets].slice(0, 30) }, () => {
+        showToast('success', `Saved preset "${name}".`);
       });
     });
+    closePresetNameRow();
   }
+
+  if (saveQuickPromptBtn) {
+    saveQuickPromptBtn.addEventListener('click', openPresetNameRow);
+  }
+
+  presetNameConfirmBtn?.addEventListener('click', commitPresetName);
+  presetNameCancelBtn?.addEventListener('click', closePresetNameRow);
+
+  presetNameInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      commitPresetName();
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      closePresetNameRow();
+    }
+  });
 
   // ── Filter handlers ────────────────────────────────────
   if (filterHideBotsBtn) {
@@ -685,11 +742,20 @@ Data:
   }
 
   // ── Expand / Collapse advanced filters ─────────────────
+  // The panel animates via grid-template-rows, so `hidden` (display:none) would kill
+  // the transition. `inert` gives the same "not focusable, not announced" guarantee
+  // while leaving the element rendered.
+  function setAdvancedFiltersExpanded(expanded) {
+    expandFiltersBtn?.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+    if (!advancedFilters) return;
+    advancedFilters.setAttribute('aria-hidden', expanded ? 'false' : 'true');
+    advancedFilters.inert = !expanded;
+  }
+
   if (expandFiltersBtn) {
     expandFiltersBtn.addEventListener('click', () => {
       const expanded = expandFiltersBtn.getAttribute('aria-expanded') === 'true';
-      expandFiltersBtn.setAttribute('aria-expanded', expanded ? 'false' : 'true');
-      advancedFilters?.setAttribute('aria-hidden', expanded ? 'true' : 'false');
+      setAdvancedFiltersExpanded(!expanded);
       chrome.storage.sync.set({ advancedFiltersExpanded: !expanded });
     });
   }
@@ -754,42 +820,6 @@ Data:
     });
   }
 
-  function formatLocalSummaryHtml(text) {
-    if (!text) return '';
-    let escaped = text
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
-    escaped = escaped.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    const lines = escaped.split('\n');
-    let inList = false;
-    const htmlParts = [];
-    
-    for (const line of lines) {
-      const trimmed = line.trim();
-      if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
-        const content = trimmed.substring(2);
-        if (!inList) {
-          inList = true;
-          htmlParts.push('<ul>');
-        }
-        htmlParts.push('<li>' + content + '</li>');
-      } else {
-        if (inList) {
-          inList = false;
-          htmlParts.push('</ul>');
-        }
-        if (trimmed) {
-          htmlParts.push('<p>' + trimmed + '</p>');
-        }
-      }
-    }
-    if (inList) {
-      htmlParts.push('</ul>');
-    }
-    return htmlParts.join('');
-  }
-
   // ── Render popup state via toasts ──────────────────────
   function renderPopupState(state) {
     if (!state) return;
@@ -810,29 +840,21 @@ Data:
       scrapeBtn.style.display = 'flex';
       scrapeBtn.disabled = false;
 
-      const localOpt = popupProviderSelect?.querySelector('option[value="local"]');
-      if (localOpt) {
-        chrome.runtime.sendMessage({ action: 'checkLocalAiCapability' }, (response) => {
-          if (chrome.runtime.lastError || !response || !response.available) {
-            localOpt.disabled = true;
-            localOpt.text = t('popup_provider_local_disabled') || 'Local AI (Gemini Nano) - Disabled';
-          } else {
-            localOpt.disabled = false;
-            localOpt.text = t('popup_provider_local_enabled') || 'Local AI (Gemini Nano)';
-          }
-        });
-      }
-
       stopScrapeBtn.style.display = 'none';
+
+      // `status`/`phase` are the structured signal. The message sniffing below is a
+      // last-resort fallback for state objects that predate those fields.
+      const finished = state.status
+        ? state.status === 'complete'
+        : (state.phase === 'complete' ||
+          state.message?.includes('sent') ||
+          state.message?.includes('Content') ||
+          state.message?.includes('complete'));
 
       if (state.error) {
         dismissAllToasts();
         showToast('error', state.error, { dismiss: true });
-      } else if (
-        state.message?.includes('sent') ||
-        state.message?.includes('Content') ||
-        state.message?.includes('complete')
-      ) {
+      } else if (finished) {
         dismissAllToasts();
         showToast('success', t('popup_status_sent') || 'Content ready!');
       } else {
@@ -840,20 +862,6 @@ Data:
         dismissAllToasts();
       }
       checkExportAvailability();
-    }
-
-    if (state.summary !== undefined && state.summary !== null) {
-      if (localSummaryResultCard) {
-        localSummaryResultCard.style.display = 'flex';
-      }
-      if (localSummaryText) {
-        localSummaryText.innerHTML = formatLocalSummaryHtml(state.summary);
-        // Auto scroll to bottom during stream
-        const wrap = localSummaryResultCard.querySelector('.summary-result-content-wrap');
-        if (wrap) {
-          wrap.scrollTop = wrap.scrollHeight;
-        }
-      }
     }
   }
 
@@ -906,9 +914,6 @@ Data:
     scrapeBtn.addEventListener('click', () => {
       dismissAllToasts();
       scrapeBtn.disabled = true;
-      if (localSummaryResultCard) {
-        localSummaryResultCard.style.display = 'none';
-      }
 
       showToast('progress', t('popup_status_starting') || 'Starting...', {
         id: 'scraping-progress',
@@ -953,7 +958,6 @@ Data:
         };
 
         const selectedProvider = popupProviderSelect?.value || 'gemini';
-        const isLocal = selectedProvider === 'local';
         const directSendOnce = (sendModeSelect?.value || 'preview') === 'directOnce';
 
         chrome.storage.sync.set({
@@ -966,20 +970,15 @@ Data:
           lastBatchUrls: batchUrlsInput?.value?.trim() || ''
         });
 
-        if (isLocal && localSummaryText) {
-          localSummaryText.textContent = '';
-        }
-
         chrome.runtime.sendMessage({
           action: 'scrapeReddit',
           includeHidden: filters.includeHidden,
           filters,
           batchUrls,
           tabId: currentTab.id,
-          directSendOnce: isLocal ? false : directSendOnce,
-          showPromptPreview: isLocal ? false : !directSendOnce,
+          directSendOnce: directSendOnce,
+          showPromptPreview: !directSendOnce,
           selectedLlmProvider: selectedProvider,
-          localSummarize: isLocal,
           dataStorageOptionOverride: dontSaveThisScrape?.checked ? 'dontSave' : null
         }, (response) => {
           if (chrome.runtime.lastError) {
@@ -1145,59 +1144,6 @@ Data:
     });
   });
 
-  // ── Local AI capability check for dropdown option ──────
-  const localOption = popupProviderSelect?.querySelector('option[value="local"]');
-  if (localOption) {
-    chrome.runtime.sendMessage({ action: 'checkLocalAiCapability' }, (response) => {
-      if (chrome.runtime.lastError || !response || !response.available) {
-        localOption.disabled = true;
-        localOption.text = t('popup_provider_local_disabled') || 'Local AI (Gemini Nano) - Disabled';
-      } else {
-        localOption.disabled = false;
-        localOption.text = t('popup_provider_local_enabled') || 'Local AI (Gemini Nano)';
-      }
-    });
-  }
-
-  // ── Clipboard & Export listeners ─────────────────────────
-  if (copySummaryBtn && localSummaryText) {
-    copySummaryBtn.addEventListener('click', () => {
-      const textToCopy = localSummaryText.innerText || localSummaryText.textContent || '';
-      if (!textToCopy) return;
-      navigator.clipboard.writeText(textToCopy)
-        .then(() => {
-          showToast('success', 'Summary copied to clipboard!');
-        })
-        .catch(_err => {
-          showToast('error', 'Failed to copy summary.');
-        });
-    });
-  }
-
-  if (exportSummaryBtn && localSummaryText) {
-    exportSummaryBtn.addEventListener('click', () => {
-      const textToExport = localSummaryText.innerText || localSummaryText.textContent || '';
-      if (!textToExport) return;
-      
-      const blob = new Blob([textToExport], { type: 'text/markdown;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `reddit-local-summary-${Date.now()}.md`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      showToast('success', 'Summary exported!');
-    });
-  }
-
-  if (closeSummaryBtn && localSummaryResultCard) {
-    closeSummaryBtn.addEventListener('click', () => {
-      localSummaryResultCard.style.display = 'none';
-    });
-  }
-
   checkExportAvailability();
 
   // ── Get initial state ──────────────────────────────────
@@ -1210,15 +1156,9 @@ Data:
     // Only show toast if actively scraping; idle = clean UI
     if (stateResponse?.isActive) {
       renderPopupState(stateResponse);
-    } else if (stateResponse?.summary) {
-      // If we have a past local summary, display it!
-      renderPopupState(stateResponse);
     }
   });
 
-  if (globalThis.R2ATiktokenPromise) {
-    globalThis.R2ATiktokenPromise.then(() => {
-      updateScrapeEstimate();
-    });
-  }
+  // The popup shows an approximate budget only, so it deliberately does not load
+  // the 1MB tokenizer table; estimatePromptStats falls back to length / 4 here.
 });

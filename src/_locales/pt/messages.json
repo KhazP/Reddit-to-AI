@@ -552,5 +552,145 @@
     },
     "error": {
         "message": "Error"
+    },
+    "popup_preset_name_label": {
+        "message": "Nome da predefinição",
+        "description": "Label for the inline preset-name field in the popup"
+    },
+    "popup_preset_name_placeholder": {
+        "message": "Nome da predefinição",
+        "description": "Placeholder for the inline preset-name field"
+    },
+    "popup_preset_name_confirm": {
+        "message": "Guardar",
+        "description": "Confirm button for saving a quick prompt as a preset"
+    },
+    "popup_preset_name_cancel": {
+        "message": "Cancelar",
+        "description": "Cancel button for the inline preset-name field"
+    },
+    "popup_preset_name_default": {
+        "message": "Prompt rápido",
+        "description": "Fallback name suggested when saving a quick prompt preset"
+    },
+    "command_scrape_current_thread": {
+        "message": "Extrair o tópico do Reddit atual",
+        "description": "Description for the keyboard shortcut that scrapes the active Reddit thread"
+    },
+    "context_menu_scrape_thread": {
+        "message": "Extrair este tópico com o Reddit to AI",
+        "description": "Right-click menu entry that scrapes a Reddit thread"
+    },
+    "sw_error_custom_origin_missing": {
+        "message": "Nenhuma origem de IA personalizada está configurada. Adicione uma nas Opções antes de usar o provedor personalizado.",
+        "description": "Error shown when the custom AI provider is selected without a configured origin"
+    },
+    "preview_api_eyebrow": {
+        "message": "API direta"
+    },
+    "preview_api_title": {
+        "message": "Enviar com sua própria chave de API"
+    },
+    "preview_api_description": {
+        "message": "Envie o prompt diretamente a um provedor e leia a resposta aqui, sem abrir uma aba de chat de IA."
+    },
+    "preview_api_provider_label": {
+        "message": "Provedor de API"
+    },
+    "preview_api_send": {
+        "message": "Enviar via API"
+    },
+    "preview_api_no_key": {
+        "message": "Nenhuma chave de API está configurada para este provedor."
+    },
+    "preview_api_no_key_for": {
+        "message": "Nenhuma chave de API está configurada para $1."
+    },
+    "preview_api_open_options": {
+        "message": "Adicionar uma chave nas opções"
+    },
+    "preview_api_loading": {
+        "message": "Aguardando a resposta da IA…"
+    },
+    "preview_api_retry": {
+        "message": "Tentar novamente"
+    },
+    "preview_api_retryable": {
+        "message": "Parece temporário — tente novamente em instantes."
+    },
+    "preview_api_copy": {
+        "message": "Copiar resposta"
+    },
+    "preview_api_copied": {
+        "message": "Resposta da API copiada para a área de transferência."
+    },
+    "preview_api_refused": {
+        "message": "O provedor recusou-se a responder a esta solicitação."
+    },
+    "preview_api_empty_response": {
+        "message": "O provedor retornou uma resposta vazia."
+    },
+    "preview_api_empty_prompt": {
+        "message": "O prompt está vazio."
+    },
+    "preview_api_truncated": {
+        "message": "truncado no limite de tokens"
+    },
+    "preview_api_failed": {
+        "message": "A solicitação à API falhou."
+    },
+    "preview_api_status_sending": {
+        "message": "Enviando o prompt para a API…"
+    },
+    "preview_api_status_done": {
+        "message": "Resposta da API recebida."
+    },
+    "preview_api_status_failed": {
+        "message": "A solicitação à API falhou."
+    },
+    "options_card_direct_api_title": {
+        "message": "API direta"
+    },
+    "options_direct_api_intro": {
+        "message": "Adicione sua própria chave de API do provedor para obter respostas na página de pré-visualização do prompt, sem abrir uma aba de chat de IA."
+    },
+    "options_direct_api_warning": {
+        "message": "As chaves são armazenadas apenas localmente neste dispositivo — nunca são sincronizadas com sua conta Google nem incluídas em uma exportação de configurações. As solicitações vão diretamente do seu navegador para o provedor, e esse provedor cobra de você."
+    },
+    "options_direct_api_key_label": {
+        "message": "Chave de API"
+    },
+    "options_direct_api_key_placeholder": {
+        "message": "Cole sua chave de API"
+    },
+    "options_direct_api_model_label": {
+        "message": "Modelo"
+    },
+    "options_direct_api_model_hint": {
+        "message": "Qualquer id de modelo que este provedor aceite."
+    },
+    "options_direct_api_show": {
+        "message": "Mostrar"
+    },
+    "options_direct_api_hide": {
+        "message": "Ocultar"
+    },
+    "options_direct_api_test": {
+        "message": "Testar chave"
+    },
+    "options_direct_api_testing": {
+        "message": "Testando"
+    },
+    "options_direct_api_test_ok": {
+        "message": "A chave funciona."
+    },
+    "options_direct_api_test_no_key": {
+        "message": "Insira primeiro uma chave de API."
+    },
+    "options_direct_api_clear": {
+        "message": "Remover chave"
+    },
+    "options_direct_api_cleared": {
+        "message": "Chave removida."
     }
 }
