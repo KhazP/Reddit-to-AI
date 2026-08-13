@@ -30,3 +30,22 @@ for (const copy of [
 assert.match(options, /dropdown\.disabled = true/, 'resend dropdown is disabled while request is in flight');
 assert.match(options, /dropdown\.selectedIndex = 0/, 'resend dropdown resets after completion');
 assert.match(options, /button\.disabled = true/, 'clicked history action buttons are disabled while in flight');
+
+// Settings import hardening: allowlist + type validation, and a full page reload
+// instead of re-running initializeOptions() (which would double-bind listeners).
+assert.match(options, /PORTABLE_SETTING_TYPES\s*=\s*\{/, 'import/export share an explicit settings allowlist');
+assert.match(options, /function matchesExpectedType/, 'imported values are type-checked');
+assert.match(options, /Imported \$\{importedCount\} setting/, 'import reports how many keys were applied');
+assert.match(options, /skipped \$\{skippedCount\} unrecognized/, 'import reports how many keys were skipped');
+assert.match(options, /location\.reload\(\)/, 'options page reloads after import instead of re-initializing');
+
+{
+  const importBody = options.slice(options.indexOf('function importSettings('), options.indexOf('function showPendingImportStatus'));
+  assert.ok(!importBody.includes('initializeOptions()'), 'importSettings must not re-run initializeOptions (double-binds listeners)');
+  assert.ok(!/chrome\.storage\.sync\.set\(settings/.test(importBody), 'importSettings must not write the raw parsed payload');
+}
+
+// preview.js must escape scraped comment ids before interpolating them into HTML.
+const preview = await readFile(new URL('../src/preview.js', import.meta.url), 'utf8');
+assert.ok(!/data-(comment-)?id="\$\{comment\.id\}"/.test(preview), 'comment.id must not be interpolated raw into markup');
+assert.match(preview, /const commentId = escapeHtml\(/, 'comment ids are escaped through escapeHtml');
