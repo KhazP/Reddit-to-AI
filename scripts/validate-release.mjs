@@ -2,9 +2,11 @@ import JSZip from 'jszip';
 import { readdir, readFile, stat } from 'node:fs/promises';
 import { dirname, join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { BACKGROUND_LIBS, GECKO_ID } from './firefox-manifest.mjs';
 
 const root = dirname(fileURLToPath(new URL('../package.json', import.meta.url)));
 const stageDir = join(root, 'dist-extension');
+const firefoxStageDir = join(root, 'dist-extension-firefox');
 
 const forbiddenPathParts = new Set([
   '.git',
@@ -15,6 +17,8 @@ const forbiddenPathParts = new Set([
   'tests',
   'scripts',
   'docs',
+  'dist-extension',
+  'dist-extension-firefox',
   '__MACOSX'
 ]);
 
@@ -40,6 +44,7 @@ const requiredFiles = [
   'preview.js',
   'service_worker.js',
   'promptBuilder.js',
+  'apiProviders.js',
   'cl100k_base.js',
   'cl100k_base.json',
   'redditScraper.js',
@@ -95,18 +100,18 @@ function validatePayloadFileList(files) {
   }
 }
 
-async function validateNoRemotePageAssets(files) {
+async function validateNoRemotePageAssets(files, dir = stageDir) {
   const pageAssetFiles = files.filter(file => /\.(html|css)$/i.test(file));
   const remoteAssetPattern = /\b(?:href|src)\s*=\s*["']https?:\/\/|@import\s+url\(["']?https?:\/\//i;
   for (const file of pageAssetFiles) {
-    const text = await readFile(join(stageDir, file), 'utf8');
+    const text = await readFile(join(dir, file), 'utf8');
     assert(!remoteAssetPattern.test(text), `Remote page asset reference found in ${file}`);
     assert(!/fonts\.(?:googleapis|gstatic)\.com/i.test(text), `Remote Google Fonts reference found in ${file}`);
   }
 }
 
-async function validateManifest(files) {
-  const manifest = await readJson(join(stageDir, 'manifest.json'));
+async function validateManifest(files, dir = stageDir) {
+  const manifest = await readJson(join(dir, 'manifest.json'));
   const packageJson = await readJson(join(root, 'package.json'));
   assert(manifest.manifest_version === 3, 'Manifest must be MV3');
   assert(/^\d+\.\d+\.\d+$/.test(manifest.version || ''), `Invalid manifest version: ${manifest.version || '<missing>'}`);
@@ -114,7 +119,7 @@ async function validateManifest(files) {
   assert(manifest.default_locale === 'en', 'Manifest default_locale must be en');
   assert(files.includes(`_locales/${manifest.default_locale}/messages.json`), 'Default locale messages file is missing');
 
-  const allowedPermissions = new Set(['activeTab', 'scripting', 'storage', 'notifications', 'tabs', 'unlimitedStorage']);
+  const allowedPermissions = new Set(['activeTab', 'scripting', 'storage', 'notifications', 'unlimitedStorage', 'contextMenus']);
   for (const permission of manifest.permissions || []) {
     assert(allowedPermissions.has(permission), `Unexpected manifest permission: ${permission}`);
   }
@@ -130,7 +135,10 @@ async function validateManifest(files) {
     'https://claude.ai/*',
     'https://aistudio.google.com/*',
     'https://chat.deepseek.com/*',
-    'https://*.groq.com/*'
+    'https://*.groq.com/*',
+    'https://api.anthropic.com/*',
+    'https://api.openai.com/*',
+    'https://generativelanguage.googleapis.com/*'
   ]);
   for (const host of manifest.host_permissions || []) {
     assert(allowedHostPermissions.has(host), `Unexpected host permission: ${host}`);
@@ -146,8 +154,8 @@ async function validateManifest(files) {
   return manifest;
 }
 
-async function validateZip(files, version) {
-  const zipName = `Reddit-to-AI-v${version}-upload.zip`;
+async function validateZip(files, version, suffix = 'upload') {
+  const zipName = `Reddit-to-AI-v${version}-${suffix}.zip`;
   const zipPath = join(root, zipName);
   const zip = await JSZip.loadAsync(await readFile(zipPath));
   const zipFiles = Object.values(zip.files)
@@ -155,8 +163,30 @@ async function validateZip(files, version) {
     .map(entry => entry.name)
     .sort();
 
-  assert(JSON.stringify(zipFiles) === JSON.stringify(files), `${zipName} contents do not match dist-extension`);
+  assert(JSON.stringify(zipFiles) === JSON.stringify(files), `${zipName} contents do not match its staged payload`);
   return zipName;
+}
+
+// Firefox ships the same payload with a transformed manifest. Everything the Chrome
+// manifest is checked for still applies; these are the Gecko-specific extras.
+function validateFirefoxManifest(manifest, chromeManifest) {
+  assert(!manifest.background?.service_worker, 'Firefox manifest must not declare background.service_worker');
+  assert(Array.isArray(manifest.background?.scripts), 'Firefox manifest must declare background.scripts');
+  assert(
+    JSON.stringify(manifest.background.scripts) === JSON.stringify([...BACKGROUND_LIBS, 'service_worker.js']),
+    'Firefox background.scripts must load the shared libraries before service_worker.js'
+  );
+  assert(manifest.browser_specific_settings?.gecko?.id === GECKO_ID, `Firefox manifest must declare gecko id ${GECKO_ID}`);
+  assert(
+    /^\d+\.\d+$/.test(manifest.browser_specific_settings.gecko.strict_min_version || ''),
+    'Firefox manifest must declare a gecko strict_min_version'
+  );
+  assert(!('options_page' in manifest), 'Firefox manifest must use options_ui instead of options_page');
+  assert(manifest.options_ui?.page === 'options.html', 'Firefox manifest must point options_ui at options.html');
+  for (const entry of manifest.web_accessible_resources || []) {
+    assert(!('use_dynamic_url' in entry), 'use_dynamic_url is Chrome-only and must be stripped for Firefox');
+  }
+  assert(manifest.version === chromeManifest.version, 'Firefox and Chrome manifests must share a version');
 }
 
 const files = await collectFiles(stageDir);
@@ -165,5 +195,14 @@ await validateNoRemotePageAssets(files);
 const manifest = await validateManifest(files);
 const zipName = await validateZip(files, manifest.version);
 
+const firefoxFiles = await collectFiles(firefoxStageDir);
+validatePayloadFileList(firefoxFiles);
+await validateNoRemotePageAssets(firefoxFiles, firefoxStageDir);
+const firefoxManifest = await validateManifest(firefoxFiles, firefoxStageDir);
+validateFirefoxManifest(firefoxManifest, manifest);
+const firefoxZipName = await validateZip(firefoxFiles, firefoxManifest.version, 'firefox');
+
 console.log(`Release payload valid: ${files.length} files staged in dist-extension`);
 console.log(`Upload archive valid: ${zipName}`);
+console.log(`Firefox payload valid: ${firefoxFiles.length} files staged in dist-extension-firefox`);
+console.log(`Firefox archive valid: ${firefoxZipName}`);

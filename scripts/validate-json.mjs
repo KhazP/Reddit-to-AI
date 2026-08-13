@@ -6,7 +6,7 @@ const REQUIRED_FILES = [
   "src/manifest.json",
   "src/_locales/en/messages.json"
 ];
-const IGNORE_DIRS = new Set([".git", "node_modules", "images", "dist-extension", "tests"]);
+const IGNORE_DIRS = new Set([".git", "node_modules", "images", "dist-extension", "dist-extension-firefox", "tests"]);
 
 async function exists(filePath) {
   try {
