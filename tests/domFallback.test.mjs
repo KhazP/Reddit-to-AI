@@ -236,6 +236,8 @@ function createContext(document, fetchMock) {
   });
 
   const source = await readFile(new URL('../src/redditScraper.js', import.meta.url), 'utf8');
+  const parserSource = await readFile(new URL('../src/redditParser.js', import.meta.url), 'utf8');
+  vm.runInNewContext(parserSource, context, { filename: 'redditParser.js' });
   vm.runInNewContext(source, context, { filename: 'redditScraper.js' });
 
   const result = context.window.scrapeFromDOM(false);
@@ -297,6 +299,8 @@ function createContext(document, fetchMock) {
   });
 
   const source = await readFile(new URL('../src/redditScraper.js', import.meta.url), 'utf8');
+  const parserSource = await readFile(new URL('../src/redditParser.js', import.meta.url), 'utf8');
+  vm.runInNewContext(parserSource, context, { filename: 'redditParser.js' });
   vm.runInNewContext(source, context, { filename: 'redditScraper.js' });
 
   // Simulate applying settings (e.g. setting maxDepth)

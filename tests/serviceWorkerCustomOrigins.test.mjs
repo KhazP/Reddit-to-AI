@@ -75,6 +75,8 @@ function createContext() {
 
 async function loadServiceWorker(context) {
   const source = await readFile(new URL('../src/service_worker.js', import.meta.url), 'utf8');
+  const parserSource = await readFile(new URL('../src/redditParser.js', import.meta.url), 'utf8');
+  vm.runInNewContext(parserSource, context, { filename: 'redditParser.js' });
   vm.runInNewContext(source, context, { filename: 'service_worker.js' });
   return context.R2AIServiceWorkerTest;
 }
@@ -95,8 +97,9 @@ async function loadServiceWorker(context) {
   assert.equal(await api.getAiUrl('deepseek'), 'https://chat.deepseek.com/');
   assert.equal(await api.getAiUrl('groq'), 'https://groq.com/');
 
-  // custom empty storage
-  assert.equal(await api.getAiUrl('custom'), 'http://localhost:3000/');
+  // custom provider without a configured origin must fail loudly instead of
+  // silently opening a hard-coded localhost URL
+  await assert.rejects(() => api.getAiUrl('custom'), /custom AI origin/i);
 
   // custom with storage match ending with /*
   context.getSyncStore().set('customOrigins', ['http://localhost:8080/*']);

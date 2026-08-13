@@ -22,12 +22,9 @@ if (window.__redditToAiScraperInitialized) {
     redditSortMode: 'confidence'
   };
 
-  const KNOWN_BOTS = [
-    'AutoModerator', 'RemindMeBot', 'RepostSleuthBot', 'sneakpeekbot',
-    'TotesMessenger', 'WikiTextBot', 'B0tRank', 'CommonMisspellingBot',
-    'HelperBot_', 'WikiSummarizerBot', 'stabbot', 'SaveVideo', 'SaveThisVideo',
-    'Vredditdownloader', 'gifendore', 'haikusbot', 'nice-scores', 'userleansbot'
-  ];
+  // Shared with the service worker so a tab scrape and a background scrape agree
+  // on comment shape, bot detection, merging and filtering.
+  const Parser = globalThis.R2AIRedditParser;
 
   const RATE_LIMIT = {
     minDelay: 1000,
@@ -38,16 +35,25 @@ if (window.__redditToAiScraperInitialized) {
 
   chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
     if (request.action === 'scrapeReddit') {
+      // A full scrape can take minutes. Holding this response channel open for that
+      // long is fragile in MV3 (the service worker is torn down while it waits), so
+      // the request is only acknowledged here and the result is delivered later as
+      // its own `scrapeComplete` message, correlated by scrapeId.
+      const scrapeId = request.scrapeId || null;
       loadScrapeSettings(request).then(settings => {
         applySettings(settings, request);
-        startScrape(settings.includeHidden)
-          .then(data => sendResponse({ data }))
+        return startScrape(settings.includeHidden)
+          .then(data => reportScrapeComplete(scrapeId, { data }))
           .catch(error => {
             console.error('Reddit to AI scrape error:', error);
-            sendResponse({ error: error.message || String(error) });
+            return reportScrapeComplete(scrapeId, { error: error.message || String(error) });
           });
+      }).catch(error => {
+        console.error('Reddit to AI scrape setup error:', error);
+        reportScrapeComplete(scrapeId, { error: error.message || String(error) });
       });
-      return true;
+      sendResponse({ started: true, scrapeId });
+      return false;
     }
 
     if (request.action === 'resumeMoreChildren') {
@@ -130,15 +136,13 @@ if (window.__redditToAiScraperInitialized) {
     SCRAPER_STATE.collectedMoreIds = new Set();
     SCRAPER_STATE.failedMoreIds = [];
 
-    sendProgress(chrome.i18n.getMessage('scraper_fetching') || 'Fetching thread...', 5);
+    sendProgress(chrome.i18n.getMessage('scraper_fetching') || 'Fetching thread...', 5, 'fetch');
 
-    const url = new URL(window.location.href);
-    url.pathname = url.pathname.replace(/\/$/, '') + '.json';
-    url.searchParams.set('limit', '500');
-    url.searchParams.set('depth', String(Math.min(Math.max(SCRAPER_STATE.maxDepth, 1), 10)));
-    url.searchParams.set('raw_json', '1');
-    url.searchParams.set('showmore', 'true');
-    url.searchParams.set('sort', SCRAPER_STATE.redditSortMode);
+    const jsonUrl = Parser.buildRedditJsonUrl(
+      window.location.href,
+      SCRAPER_STATE.redditSortMode,
+      SCRAPER_STATE.maxDepth
+    );
 
     let post;
     let roots;
@@ -146,7 +150,7 @@ if (window.__redditToAiScraperInitialized) {
     let fallbackToDom = false;
 
     try {
-      const response = await fetchWithRetry(url.toString());
+      const response = await fetchWithRetry(jsonUrl);
       if (!Array.isArray(response) || response.length < 2) {
         throw new Error('Invalid Reddit JSON format.');
       }
@@ -162,7 +166,7 @@ if (window.__redditToAiScraperInitialized) {
 
       post = extractPostDetails(postData);
 
-      sendProgress(chrome.i18n.getMessage('scraper_parsing') || 'Parsing initial comments...', 15);
+      sendProgress(chrome.i18n.getMessage('scraper_parsing') || 'Parsing initial comments...', 15, 'parse');
 
       const moreIds = [];
       const parsedRes = parseComments(commentsData, includeHidden, SCRAPER_STATE.maxDepth, moreIds);
@@ -171,7 +175,7 @@ if (window.__redditToAiScraperInitialized) {
       console.log(`Reddit to AI: Initial parse - ${count} comments, ${moreIds.length} more IDs`);
 
       if (moreIds.length > 0 && !SCRAPER_STATE.stopRequested) {
-        sendProgress(chrome.i18n.getMessage('scraper_found_more', [count.toString(), moreIds.length.toString()]) || `Found ${count} comments, loading ${moreIds.length} more...`, 20);
+        sendProgress(chrome.i18n.getMessage('scraper_found_more', [count.toString(), moreIds.length.toString()]) || `Found ${count} comments, loading ${moreIds.length} more...`, 20, 'expand', { count });
         const moreResult = await fetchAllMoreComments(moreIds, includeHidden, false);
         const integration = integrateAdditionalComments(roots, moreResult.comments);
         roots = integration.roots;
@@ -185,7 +189,7 @@ if (window.__redditToAiScraperInitialized) {
     }
 
     if (fallbackToDom) {
-      sendProgress(chrome.i18n.getMessage('scraper_dom_fallback') || 'API failed. Parsing visible DOM...', 15);
+      sendProgress(chrome.i18n.getMessage('scraper_dom_fallback') || 'API failed. Parsing visible DOM...', 15, 'parse');
       const domResult = scrapeFromDOM(includeHidden);
       post = domResult.post;
       roots = domResult.comments;
@@ -195,11 +199,11 @@ if (window.__redditToAiScraperInitialized) {
       SCRAPER_STATE.subreddit = post.subreddit;
     }
 
-    sendProgress(chrome.i18n.getMessage('scraper_applying_filters') || 'Applying filters...', 95);
+    sendProgress(chrome.i18n.getMessage('scraper_applying_filters') || 'Applying filters...', 95, 'filter');
     const filteredRoots = applyFilters(roots);
     const filteredCount = countNestedReplies(filteredRoots);
 
-    sendProgress(chrome.i18n.getMessage('scraper_complete', [filteredCount.toString()]) || `Complete! ${filteredCount} comments after filtering.`, 100);
+    sendProgress(chrome.i18n.getMessage('scraper_complete', [filteredCount.toString()]) || `Complete! ${filteredCount} comments after filtering.`, 100, 'filter');
 
     return {
       post,
@@ -401,7 +405,7 @@ if (window.__redditToAiScraperInitialized) {
 
       if (!isResume) {
         const progress = 20 + Math.min(70, Math.floor((processedBatches / Math.max(initialBatchCount, processedBatches)) * 70));
-        sendProgress(chrome.i18n.getMessage('scraper_loading_batch', [processedBatches.toString(), Math.max(initialBatchCount, processedBatches).toString()]) || `Loading comments batch ${processedBatches}...`, progress);
+        sendProgress(chrome.i18n.getMessage('scraper_loading_batch', [processedBatches.toString(), Math.max(initialBatchCount, processedBatches).toString()]) || `Loading comments batch ${processedBatches}...`, progress, 'load', { current: processedBatches, total: Math.max(initialBatchCount, processedBatches) });
       }
 
       try {
@@ -485,57 +489,21 @@ if (window.__redditToAiScraperInitialized) {
   }
 
   function integrateAdditionalComments(roots, additionalComments) {
-    const commentMap = buildCommentMap(roots);
-    let addedCount = 0;
-
-    for (const comment of additionalComments) {
-      if (SCRAPER_STATE.stopRequested) break;
-      if (commentMap[comment.id]) continue;
-
-      const parentId = comment.parentId;
-      if (commentMap[parentId]) {
-        commentMap[parentId].replies.push(comment);
-      } else if (parentId === SCRAPER_STATE.threadId) {
-        roots.push(comment);
-      } else {
-        roots.push(comment);
-      }
-      commentMap[comment.id] = comment;
-      addedCount += 1;
-    }
-
-    return { roots, addedCount };
+    return Parser.mergeAdditionalComments(roots, additionalComments, SCRAPER_STATE.threadId, {
+      shouldStop: () => SCRAPER_STATE.stopRequested
+    });
   }
 
   function parseCommentData(data, includeHidden) {
-    if (!data) return null;
-    const isRemoved = data.body === '[removed]' || data.body === '[deleted]';
-    if (!includeHidden && isRemoved) return null;
-
-    return {
-      id: data.name,
-      parentId: data.parent_id,
-      author: data.author,
-      text: data.body || '',
-      depth: data.depth || 0,
-      score: data.score,
-      ups: data.ups,
-      downs: data.downs,
-      controversiality: data.controversiality || 0,
-      timestamp: data.created_utc ? data.created_utc * 1000 : null,
-      createdUtc: data.created_utc || null,
-      isSubmitter: data.is_submitter || false,
-      authorFlair: data.author_flair_text || null,
-      authorFlairCss: data.author_flair_css_class || null,
-      distinguished: data.distinguished || null,
-      awardCount: data.total_awards_received || 0,
-      permalink: data.permalink ? `https://www.reddit.com${data.permalink}` : null,
-      replies: []
-    };
+    return Parser.parseCommentData(data, includeHidden);
   }
 
   function applyFilters(roots) {
-    let result = filterTree(roots || []);
+    let result = Parser.filterComments(roots || [], {
+      minScore: SCRAPER_STATE.filterMinScore,
+      hideBots: SCRAPER_STATE.filterHideBots,
+      authorTypes: SCRAPER_STATE.filterAuthorTypes || []
+    });
 
     const topN = Number(SCRAPER_STATE.filterTopN || 0);
     if (topN > 0) {
@@ -543,41 +511,6 @@ if (window.__redditToAiScraperInitialized) {
     }
 
     return result;
-  }
-
-  function shouldInclude(comment) {
-    if (SCRAPER_STATE.filterMinScore > 0 && (comment.score || 0) < SCRAPER_STATE.filterMinScore) {
-      return false;
-    }
-
-    if (SCRAPER_STATE.filterHideBots && KNOWN_BOTS.some(bot =>
-      comment.author?.toLowerCase() === bot.toLowerCase() ||
-      comment.author?.toLowerCase().endsWith('bot')
-    )) {
-      return false;
-    }
-
-    const authorTypes = SCRAPER_STATE.filterAuthorTypes || [];
-    if (authorTypes.length > 0) {
-      const matchesOp = authorTypes.includes('op') && comment.isSubmitter;
-      const matchesFlaired = authorTypes.includes('flaired') && comment.authorFlair;
-      if (!matchesOp && !matchesFlaired) return false;
-    }
-
-    return true;
-  }
-
-  function filterTree(comments) {
-    const filtered = [];
-    for (const comment of comments) {
-      const filteredComment = { ...comment, replies: filterTree(comment.replies || []) };
-      if (shouldInclude(comment)) {
-        filtered.push(filteredComment);
-      } else if (filteredComment.replies.length > 0) {
-        filtered.push(...filteredComment.replies);
-      }
-    }
-    return filtered;
   }
 
   function limitCommentsByStrategy(comments, limit, strategy) {
@@ -603,18 +536,6 @@ if (window.__redditToAiScraperInitialized) {
       return topIds.has(node.id) || replies.length > 0 ? [{ ...node, replies }] : [];
     });
     return prune(comments);
-  }
-
-  function buildCommentMap(roots) {
-    const map = {};
-    const traverse = comments => {
-      for (const comment of comments || []) {
-        map[comment.id] = comment;
-        traverse(comment.replies || []);
-      }
-    };
-    traverse(roots);
-    return map;
   }
 
   function extractPostDetails(data) {
@@ -742,87 +663,20 @@ if (window.__redditToAiScraperInitialized) {
   }
 
   function parseComments(children, includeHidden, maxDepth, moreIds) {
-    const roots = [];
-    let count = 0;
-
-    for (const child of children || []) {
-      if (child.kind === 'more' && Array.isArray(child.data?.children)) {
-        moreIds.push(...child.data.children);
-        continue;
-      }
-
-      const node = parseCommentNode(child, includeHidden, 0, maxDepth, moreIds);
-      if (node) {
-        roots.push(node);
-        count += 1 + countNestedReplies(node.replies);
-      }
-    }
-
-    return { roots, count };
-  }
-
-  function parseCommentNode(child, includeHidden, currentDepth, maxDepth, moreIds) {
-    if (child.kind === 'more' && Array.isArray(child.data?.children)) {
-      moreIds.push(...child.data.children);
-      return null;
-    }
-    if (child.kind !== 't1') return null;
-
-    let comment = parseCommentData(child.data, includeHidden);
-    if (!comment && child.data?.replies?.data?.children) {
-      comment = {
-        id: child.data.name || `omitted-${Math.random().toString(36).slice(2, 8)}`,
-        parentId: child.data.parent_id,
-        author: '[removed]',
-        text: '[removed parent omitted; replies preserved]',
-        depth: child.data.depth || currentDepth,
-        score: child.data.score || 0,
-        ups: child.data.ups || 0,
-        downs: child.data.downs || 0,
-        controversiality: child.data.controversiality || 0,
-        timestamp: child.data.created_utc ? child.data.created_utc * 1000 : null,
-        createdUtc: child.data.created_utc || null,
-        isSubmitter: Boolean(child.data.is_submitter),
-        authorFlair: child.data.author_flair_text || null,
-        distinguished: child.data.distinguished || null,
-        awardCount: child.data.total_awards_received || 0,
-        permalink: child.data.permalink ? `https://www.reddit.com${child.data.permalink}` : null,
-        replies: [],
-        omittedParent: true
-      };
-    }
-    if (!comment) return null;
-
-    if (currentDepth < maxDepth - 1 && child.data?.replies?.data?.children) {
-      for (const replyChild of child.data.replies.data.children) {
-        const replyNode = parseCommentNode(replyChild, includeHidden, currentDepth + 1, maxDepth, moreIds);
-        if (replyNode) comment.replies.push(replyNode);
-      }
-    } else if (child.data?.replies?.data?.children) {
-      for (const replyChild of child.data.replies.data.children) {
-        if (replyChild.kind === 'more' && Array.isArray(replyChild.data?.children)) {
-          moreIds.push(...replyChild.data.children);
-        }
-      }
-    }
-
-    return comment;
+    return Parser.parseComments(children, {
+      includeHidden,
+      maxDepth,
+      moreIds,
+      placeholderStyle: 'content'
+    });
   }
 
   function countNestedReplies(replies) {
-    let count = 0;
-    for (const reply of replies || []) {
-      count += 1;
-      count += countNestedReplies(reply.replies || []);
-    }
-    return count;
+    return Parser.countComments(replies);
   }
 
   function normalizeSortMode(value) {
-    const sort = String(value || 'confidence').toLowerCase();
-    if (sort === 'best') return 'confidence';
-    const allowed = new Set(['confidence', 'top', 'new', 'controversial', 'old', 'random', 'qa', 'live']);
-    return allowed.has(sort) ? sort : 'confidence';
+    return Parser.normalizeSortMode(value);
   }
 
   function decodeRedditUrl(url) {
@@ -847,16 +701,33 @@ if (window.__redditToAiScraperInitialized) {
   }
 
   function isRedditHostedUrl(url) {
-    return /(?:reddit\.com|redd\.it|redd\.itt|i\.redd\.it|preview\.redd\.it|v\.redd\.it)/i.test(url || '');
+    return /(?:reddit\.com|redd\.it|i\.redd\.it|preview\.redd\.it|v\.redd\.it)/i.test(url || '');
   }
 
   function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-  function sendProgress(message, percentage) {
+  // Delivers the finished scrape (or its failure) on a fresh message. Sending this
+  // also wakes the service worker if it was torn down while the scrape ran.
+  function reportScrapeComplete(scrapeId, payload) {
     try {
-      chrome.runtime.sendMessage({ action: 'progressUpdate', message, percentage });
+      chrome.runtime.sendMessage({ action: 'scrapeComplete', scrapeId, ...payload }, () => {
+        if (chrome.runtime.lastError) {
+          console.warn('Reddit to AI: scrapeComplete delivery failed:', chrome.runtime.lastError.message);
+        }
+      });
+    } catch (error) {
+      console.error('Reddit to AI: could not deliver scrapeComplete:', error);
+    }
+  }
+
+  // `phase` (and `batch`, where a counter exists) travel alongside the human-readable
+  // message so the panel and popup never have to parse localized text to know where
+  // the scrape is. See DEFAULT_STATE in service_worker.js for the phase vocabulary.
+  function sendProgress(message, percentage, phase, batch) {
+    try {
+      chrome.runtime.sendMessage({ action: 'progressUpdate', message, percentage, phase, batch });
     } catch (error) {
       console.debug('Progress update failed:', error);
     }

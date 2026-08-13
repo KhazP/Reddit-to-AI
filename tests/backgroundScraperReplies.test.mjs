@@ -118,6 +118,8 @@ function createContext() {
 async function loadServiceWorker(customContext) {
   const context = customContext || createContext();
   const source = await readFile(new URL('../src/service_worker.js', import.meta.url), 'utf8');
+  const parserSource = await readFile(new URL('../src/redditParser.js', import.meta.url), 'utf8');
+  vm.runInNewContext(parserSource, context, { filename: 'redditParser.js' });
   vm.runInNewContext(source, context, { filename: 'service_worker.js' });
   return context.R2AIServiceWorkerTest;
 }
@@ -185,6 +187,21 @@ const api = await loadServiceWorker();
   assert.equal(filtered.length, 1);
   assert.equal(filtered[0].id, 't1_good_child');
   assert.equal(filtered[0].text, 'High score child');
+}
+
+// Bot filtering must catch real bots without eating human names ending in "bot".
+{
+  const authors = ['AutoModerator', 'sneakpeekbot', 'some_bot', 'some-bot', 'Talbot', 'Abbot', 'Sabotage', 'human'];
+  const filtered = api.applyBackgroundFilters(
+    authors.map((author, i) => ({ id: `t1_${i}`, parentId: 't3_thread', author, text: 'hi', score: 5, replies: [] })),
+    { hideBots: true },
+    {}
+  );
+  assert.deepEqual(
+    filtered.map(comment => comment.author),
+    ['Talbot', 'Abbot', 'Sabotage', 'human'],
+    'only known bots and word-boundary "bot" suffixes are removed'
+  );
 }
 
 {
