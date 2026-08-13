@@ -10,7 +10,11 @@ let previewState = {
   pendingRenderedData: null,
   pendingBuildOptions: null,
   sendInFlight: false,
-  hasCustomPruning: false
+  hasCustomPruning: false,
+  apiStatus: null,
+  apiInFlight: false,
+  apiTimer: null,
+  historyId: null
 };
 
 const els = {};
@@ -27,9 +31,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   bindElements();
   bindEvents();
   loadPreviewData();
+  loadDirectApiStatus();
 
-  if (globalThis.R2ATiktokenPromise) {
-    globalThis.R2ATiktokenPromise.then(() => {
+  // The preview page is where exact token counts matter, so it triggers the lazy
+  // tokenizer load and refreshes the displayed count once the rank table is ready.
+  if (typeof globalThis.R2ATiktokenEnsure === 'function') {
+    globalThis.R2ATiktokenEnsure().then(() => {
       if (els.promptTextarea && (previewState.renderedData || previewState.data)) {
         updateBudget(els.promptTextarea.value, previewState.renderedData || previewState.data);
       }
@@ -72,6 +79,20 @@ function bindElements() {
   els.rebuildNotice = document.getElementById('rebuildNotice');
   els.applyRebuiltPromptBtn = document.getElementById('applyRebuiltPromptBtn');
   els.keepEditsBtn = document.getElementById('keepEditsBtn');
+  els.apiProviderSelect = document.getElementById('apiProviderSelect');
+  els.sendApiBtn = document.getElementById('sendApiBtn');
+  els.apiNotConfigured = document.getElementById('apiNotConfigured');
+  els.apiNotConfiguredText = document.getElementById('apiNotConfiguredText');
+  els.apiOpenOptionsBtn = document.getElementById('apiOpenOptionsBtn');
+  els.apiLoading = document.getElementById('apiLoading');
+  els.apiElapsed = document.getElementById('apiElapsed');
+  els.apiError = document.getElementById('apiError');
+  els.apiErrorMessage = document.getElementById('apiErrorMessage');
+  els.apiRetryBtn = document.getElementById('apiRetryBtn');
+  els.apiResult = document.getElementById('apiResult');
+  els.apiResultMeta = document.getElementById('apiResultMeta');
+  els.apiResponseText = document.getElementById('apiResponseText');
+  els.apiCopyBtn = document.getElementById('apiCopyBtn');
   els.commentsTreeContainer = document.getElementById('commentsTreeContainer');
   els.selectAllCommentsBtn = document.getElementById('selectAllCommentsBtn');
   els.clearAllCommentsBtn = document.getElementById('clearAllCommentsBtn');
@@ -134,6 +155,17 @@ function bindEvents() {
     toggleAllCheckboxes(false);
   });
   els.commentsTreeContainer?.addEventListener('change', handleCheckboxChange);
+
+  els.apiProviderSelect?.addEventListener('change', () => {
+    chrome.storage.local.set({ lastDirectApiProvider: els.apiProviderSelect.value });
+    updateApiAvailability();
+  });
+  els.sendApiBtn?.addEventListener('click', sendPromptViaApi);
+  els.apiRetryBtn?.addEventListener('click', sendPromptViaApi);
+  els.apiCopyBtn?.addEventListener('click', copyApiResponse);
+  els.apiOpenOptionsBtn?.addEventListener('click', () => {
+    chrome.runtime.openOptionsPage();
+  });
 }
 
 function setStatus(message) {
@@ -152,6 +184,7 @@ function loadPreviewData() {
 
     previewState.data = response.data;
     previewState.settings = response.settings || {};
+    previewState.historyId = response.historyId || null;
     previewState.template = previewState.settings.defaultPromptTemplate || 'Please analyze the following Reddit thread.\n\n{content}';
 
     els.contextPresetSelect.value = previewState.settings.contextPreset || 'balanced';
@@ -480,6 +513,183 @@ function sendPrompt() {
   });
 }
 
+// =====================
+// Direct API mode
+// =====================
+//
+// The response is rendered with textContent (never innerHTML): it is model output
+// built from untrusted Reddit text, so it is treated as data, not markup. CSS
+// `white-space: pre-wrap` is what preserves its line breaks and indentation.
+
+function loadDirectApiStatus() {
+  if (!els.apiProviderSelect) return;
+  chrome.runtime.sendMessage({ action: 'getDirectApiStatus' }, (response) => {
+    if (chrome.runtime.lastError || response?.error || !response?.providers) {
+      previewState.apiStatus = null;
+      updateApiAvailability();
+      return;
+    }
+    previewState.apiStatus = response.providers;
+    els.apiProviderSelect.innerHTML = '';
+    Object.values(response.providers).forEach(provider => {
+      const option = document.createElement('option');
+      option.value = provider.id;
+      // Built with textContent so a provider label can never inject markup.
+      option.textContent = provider.configured ? provider.label : `${provider.label} (no key)`;
+      els.apiProviderSelect.appendChild(option);
+    });
+
+    chrome.storage.local.get(['lastDirectApiProvider'], (stored) => {
+      const preferred = stored?.lastDirectApiProvider;
+      // Default to the first provider that actually has a key configured.
+      const firstConfigured = Object.values(response.providers).find(p => p.configured);
+      const chosen = (preferred && response.providers[preferred])
+        ? preferred
+        : (firstConfigured?.id || Object.keys(response.providers)[0]);
+      if (chosen) els.apiProviderSelect.value = chosen;
+      updateApiAvailability();
+    });
+  });
+}
+
+// A key added on the options page must take effect without reloading this tab:
+// the "Add a key in options" link would otherwise lead back to a still-disabled
+// button. An in-flight request is left alone so the refresh cannot re-enable
+// controls mid-send.
+if (typeof chrome !== 'undefined' && chrome.storage?.onChanged) {
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area !== 'local' || !changes.directApiConfig) return;
+    if (previewState.apiInFlight) return;
+    loadDirectApiStatus();
+  });
+}
+
+function getSelectedApiProvider() {
+  const id = els.apiProviderSelect?.value;
+  if (!id || !previewState.apiStatus) return null;
+  return previewState.apiStatus[id] || null;
+}
+
+function updateApiAvailability() {
+  const provider = getSelectedApiProvider();
+  const configured = Boolean(provider?.configured);
+  if (els.sendApiBtn) els.sendApiBtn.disabled = !configured || previewState.apiInFlight;
+  if (els.apiNotConfigured) els.apiNotConfigured.hidden = configured;
+  if (!configured && provider && els.apiNotConfiguredText) {
+    els.apiNotConfiguredText.textContent =
+      t('preview_api_no_key_for', [provider.label]) || `No API key is configured for ${provider.label}.`;
+  }
+}
+
+function setApiInFlight(inFlight) {
+  previewState.apiInFlight = inFlight;
+  if (els.sendApiBtn) els.sendApiBtn.disabled = inFlight || !getSelectedApiProvider()?.configured;
+  if (els.apiRetryBtn) els.apiRetryBtn.disabled = inFlight;
+  if (els.apiProviderSelect) els.apiProviderSelect.disabled = inFlight;
+  if (els.apiLoading) els.apiLoading.hidden = !inFlight;
+
+  if (previewState.apiTimer) {
+    clearInterval(previewState.apiTimer);
+    previewState.apiTimer = null;
+  }
+  if (inFlight) {
+    const startedAt = Date.now();
+    if (els.apiElapsed) els.apiElapsed.textContent = '0s';
+    previewState.apiTimer = setInterval(() => {
+      const seconds = Math.floor((Date.now() - startedAt) / 1000);
+      if (els.apiElapsed) els.apiElapsed.textContent = `${seconds}s`;
+    }, 1000);
+  }
+}
+
+function showApiError(message, retryable) {
+  if (!els.apiError) return;
+  els.apiError.hidden = false;
+  const suffix = retryable
+    ? ` ${t('preview_api_retryable') || 'This looks temporary — try again in a moment.'}`
+    : '';
+  els.apiErrorMessage.textContent = `${message}${suffix}`;
+}
+
+function clearApiError() {
+  if (els.apiError) els.apiError.hidden = true;
+  if (els.apiErrorMessage) els.apiErrorMessage.textContent = '';
+}
+
+function sendPromptViaApi() {
+  if (previewState.apiInFlight) return;
+  const provider = getSelectedApiProvider();
+  if (!provider?.configured) {
+    updateApiAvailability();
+    return;
+  }
+  const promptText = els.promptTextarea?.value.trim() || '';
+  if (!promptText) {
+    showApiError(t('preview_api_empty_prompt') || 'Prompt is empty.', false);
+    return;
+  }
+
+  clearApiError();
+  if (els.apiResult) els.apiResult.hidden = true;
+  setApiInFlight(true);
+  setStatus(t('preview_api_status_sending') || 'Sending the prompt to the API…');
+
+  chrome.runtime.sendMessage({
+    action: 'sendPromptViaApi',
+    apiProvider: provider.id,
+    promptText,
+    historyId: previewState.historyId
+  }, (response) => {
+    setApiInFlight(false);
+    if (chrome.runtime.lastError || response?.error || !response?.response) {
+      const message = response?.error
+        || chrome.runtime.lastError?.message
+        || (t('preview_api_failed') || 'The API request failed.');
+      // A dropped message channel (worker torn down mid-request) is worth retrying.
+      const retryable = response?.retryable === true || Boolean(chrome.runtime.lastError);
+      showApiError(message, retryable);
+      setStatus(t('preview_api_status_failed') || 'API request failed.');
+      return;
+    }
+    renderApiResponse(response.response);
+  });
+}
+
+function renderApiResponse(result) {
+  if (!els.apiResult || !els.apiResponseText) return;
+  els.apiResult.hidden = false;
+
+  if (result.refused) {
+    els.apiResponseText.textContent =
+      t('preview_api_refused') || 'The provider declined to answer this request.';
+  } else if (!result.text) {
+    els.apiResponseText.textContent =
+      t('preview_api_empty_response') || 'The provider returned an empty response.';
+  } else {
+    // textContent, never innerHTML.
+    els.apiResponseText.textContent = result.text;
+  }
+
+  const seconds = Math.round((result.durationMs || 0) / 1000);
+  const parts = [result.model, `${seconds}s`];
+  if (result.truncated) {
+    parts.push(t('preview_api_truncated') || 'truncated at the token limit');
+  }
+  els.apiResultMeta.textContent = parts.filter(Boolean).join(' · ');
+  setStatus(t('preview_api_status_done') || 'API response received.');
+}
+
+async function copyApiResponse() {
+  const text = els.apiResponseText?.textContent || '';
+  if (!text) return;
+  try {
+    await navigator.clipboard.writeText(text);
+    setStatus(t('preview_api_copied') || 'API response copied to clipboard.');
+  } catch (error) {
+    setStatus(`Copy failed. ${error.message || ''}`.trim());
+  }
+}
+
 function setSendInFlight(inFlight) {
   previewState.sendInFlight = inFlight;
   [els.sendBtn, els.sendBtnBottom, els.skipNextBtn].forEach(button => {
@@ -548,15 +758,18 @@ function buildCommentTreeHtml(comment, checkedIds) {
   const score = typeof comment.score === 'number' ? comment.score : 0;
   const isChecked = checkedIds.has(comment.id);
   const snippet = getSnippet(comment.text);
+  // comment.id is scraped from the page, so it is escaped like every other
+  // interpolated value even though Reddit ids are normally plain `t1_xxxxx`.
+  const commentId = escapeHtml(comment.id == null ? '' : String(comment.id));
 
-  const checkboxHtml = `<input type="checkbox" class="comment-checkbox" data-id="${comment.id}" ${isChecked ? 'checked' : ''}>`;
+  const checkboxHtml = `<input type="checkbox" class="comment-checkbox" data-id="${commentId}" ${isChecked ? 'checked' : ''}>`;
   const metaHtml = `<span class="comment-meta"><span class="author">u/${author}</span> <span class="score">(${score} pts)</span></span>`;
   const textHtml = `<span class="comment-text-snippet">${snippet}</span>`;
 
   if (hasReplies) {
     const childrenHtml = comment.replies.map(reply => buildCommentTreeHtml(reply, checkedIds)).join('');
     return `
-      <details open class="comment-node" data-comment-id="${comment.id}">
+      <details open class="comment-node" data-comment-id="${commentId}">
         <summary class="comment-summary">
           ${checkboxHtml}
           ${metaHtml}
@@ -567,7 +780,7 @@ function buildCommentTreeHtml(comment, checkedIds) {
     `;
   } else {
     return `
-      <div class="comment-leaf" data-comment-id="${comment.id}">
+      <div class="comment-leaf" data-comment-id="${commentId}">
         ${checkboxHtml}
         ${metaHtml}
         ${textHtml}

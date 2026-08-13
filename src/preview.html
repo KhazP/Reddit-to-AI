@@ -17,144 +17,197 @@
         <p id="threadMeta">Review, trim, edit, copy, export, or send the final prompt.</p>
       </div>
       <div class="header-actions">
-        <button id="backBtnTop" class="btn ghost">Back</button>
-        <button id="copyBtn" class="btn secondary">Copy</button>
-        <div class="export-chips-row">
-          <button type="button" class="export-chip" data-format="markdown" data-tooltip="tooltip_export_md" id="previewExportMd">
-            <span class="chip-icon">MD</span> Markdown
-          </button>
-          <button type="button" class="export-chip" data-format="json" data-tooltip="tooltip_export_json" id="previewExportJson">
-            <span class="chip-icon">JS</span> JSON
-          </button>
-          <button type="button" class="export-chip" data-format="csv" data-tooltip="tooltip_export_csv" id="previewExportCsv">
-            <span class="chip-icon">CS</span> CSV
-          </button>
+        <div class="action-row action-row-secondary">
+          <button id="backBtnTop" class="btn ghost">Back</button>
+          <button id="copyBtn" class="btn secondary">Copy</button>
+          <button id="savePresetBtn" class="btn secondary">Save preset</button>
+          <div class="export-chips-row">
+            <button type="button" class="export-chip" data-format="markdown" data-tooltip="tooltip_export_md" id="previewExportMd">
+              <span class="chip-icon">MD</span> Markdown
+            </button>
+            <button type="button" class="export-chip" data-format="json" data-tooltip="tooltip_export_json" id="previewExportJson">
+              <span class="chip-icon">JS</span> JSON
+            </button>
+            <button type="button" class="export-chip" data-format="csv" data-tooltip="tooltip_export_csv" id="previewExportCsv">
+              <span class="chip-icon">CS</span> CSV
+            </button>
+          </div>
         </div>
-        <button id="savePresetBtn" class="btn secondary">Save preset</button>
-        <button id="skipNextBtn" class="btn secondary">Send and skip preview next time</button>
-        <button id="sendBtn" class="btn primary">Send to AI</button>
+        <div class="action-row action-row-primary">
+          <button id="skipNextBtn" class="btn tertiary">Send and skip preview next time</button>
+          <button id="sendBtn" class="btn primary">Send to AI</button>
+        </div>
       </div>
     </header>
 
-    <section class="summary-card">
-      <div>
-        <span class="eyebrow">Prompt setup</span>
-        <div id="settingsSummary" class="summary-pills"></div>
-      </div>
-      <label class="inline-toggle">
-        <input type="checkbox" id="skipPreviewToggle">
-        <span>Always send directly</span>
-      </label>
-    </section>
+    <div class="preview-container-layout">
+      <!-- Main Content Workspace (Left Column) -->
+      <div class="preview-main-content">
+        <section id="missingCommentsCard" class="notice-card" hidden>
+          <div>
+            <strong>Some morechildren batches failed.</strong>
+            <p id="missingCommentsText">You can try to resume the missing comments before sending.</p>
+          </div>
+          <button id="resumeBtn" class="btn secondary">Resume missing comments</button>
+        </section>
 
-    <section class="budget-card" id="budgetCard">
-      <div class="budget-top">
-        <div>
-          <span class="eyebrow">AI prompt size</span>
-          <strong id="warningLabel">Calculating…</strong>
-          <p id="warningMessage">Preparing context budget.</p>
-        </div>
-        <div class="budget-stats">
-          <div><strong id="charCount">0</strong><span>characters</span></div>
-          <div><strong id="tokenCount">0</strong><span>est. tokens</span></div>
-          <div><strong id="commentCount">0</strong><span>comments</span></div>
-          <div><strong id="imageCount">0</strong><span>images</span></div>
-        </div>
-      </div>
-      <div class="meter-track"><div id="meterFill" class="meter-fill"></div></div>
-    </section>
+        <section class="comments-tree-card" id="commentsTreeCard">
+          <div class="comments-tree-header">
+            <div>
+              <span class="eyebrow">Interactive Comment Tree</span>
+              <h2>Comment Pruning</h2>
+              <p>Uncheck comments to exclude them from the AI prompt. Unchecking a comment automatically disables all its replies.</p>
+            </div>
+            <div class="comments-tree-actions">
+              <button id="selectAllCommentsBtn" class="btn secondary">Select All</button>
+              <button id="clearAllCommentsBtn" class="btn secondary">Clear All</button>
+            </div>
+          </div>
+          <div id="commentsTreeContainer" class="tree-container"></div>
+        </section>
 
-    <section class="controls-grid">
-      <label class="field">
-        <span>Context preset</span>
-        <select id="contextPresetSelect">
-          <option value="small">Small</option>
-          <option value="balanced">Balanced</option>
-          <option value="full">Full</option>
-          <option value="maxQuality">Max Quality</option>
-        </select>
-      </label>
-      <label class="field">
-        <span>Trim strategy</span>
-        <select id="trimStrategySelect">
-          <option value="top">Top scored</option>
-          <option value="controversial">Controversial</option>
-          <option value="op">OP replies</option>
-          <option value="flaired">Flaired users</option>
-          <option value="diverse">Diverse viewpoints</option>
-          <option value="newest">Newest</option>
-          <option value="longest">Longest helpful</option>
-        </select>
-      </label>
-      <label class="field">
-        <span>Media handling</span>
-        <select id="mediaModeSelect">
-          <option value="attach">Attach images + list URLs</option>
-          <option value="urls">List URLs only</option>
-          <option value="ignore">Ignore media</option>
-        </select>
-      </label>
-      <label class="field">
-        <span>AI platform</span>
-        <select id="providerSelect">
-          <option value="gemini">Gemini</option>
-          <option value="chatgpt">ChatGPT</option>
-          <option value="claude">Claude</option>
-          <option value="aistudio">AI Studio</option>
-          <option value="deepseek">DeepSeek</option>
-          <option value="groq">Groq</option>
-          <option value="custom">Custom</option>
-        </select>
-      </label>
-      <label class="field">
-        <span>Output format</span>
-        <select id="outputFormatSelect">
-          <option value="auto">Auto</option>
-          <option value="bullets">Bullets</option>
-          <option value="table">Table</option>
-          <option value="json">JSON</option>
-          <option value="prosCons">Pros / cons</option>
-          <option value="executive">Executive summary</option>
-        </select>
-      </label>
-    </section>
+        <section class="editor-card">
+          <div class="editor-toolbar">
+            <strong>Final prompt</strong>
+            <div class="editor-tools">
+              <span id="editHint">You can edit this text before sending.</span>
+              <span id="rebuildNotice" class="rebuild-notice" hidden>Settings changed. Your edited prompt was kept.</span>
+              <button id="applyRebuiltPromptBtn" class="link-btn" type="button" hidden>Apply rebuilt prompt</button>
+              <button id="keepEditsBtn" class="link-btn" type="button" hidden>Keep edits</button>
+              <button id="restorePromptBtn" class="link-btn" type="button" disabled>Restore generated prompt</button>
+            </div>
+          </div>
+          <textarea id="promptTextarea" spellcheck="true"></textarea>
+        </section>
 
-    <section id="missingCommentsCard" class="notice-card" hidden>
-      <div>
-        <strong>Some morechildren batches failed.</strong>
-        <p id="missingCommentsText">You can try to resume the missing comments before sending.</p>
-      </div>
-      <button id="resumeBtn" class="btn secondary">Resume missing comments</button>
-    </section>
+        <section class="api-card" id="apiCard">
+          <div class="api-header">
+            <div>
+              <span class="eyebrow" data-i18n="preview_api_eyebrow">Direct API</span>
+              <h2 data-i18n="preview_api_title">Send with your own API key</h2>
+              <p data-i18n="preview_api_description">Send the prompt straight to a provider and read the answer here, without opening an AI chat tab.</p>
+            </div>
+            <div class="api-controls">
+              <label class="field">
+                <span data-i18n="preview_api_provider_label">API provider</span>
+                <select id="apiProviderSelect"></select>
+              </label>
+              <button id="sendApiBtn" class="btn primary" type="button" data-i18n="preview_api_send">Send via API</button>
+            </div>
+          </div>
 
-    <section class="comments-tree-card" id="commentsTreeCard">
-      <div class="comments-tree-header">
-        <div>
-          <span class="eyebrow">Interactive Comment Tree</span>
-          <h2>Comment Pruning</h2>
-          <p>Uncheck comments to exclude them from the AI prompt. Unchecking a comment automatically disables all its replies.</p>
-        </div>
-        <div class="comments-tree-actions">
-          <button id="selectAllCommentsBtn" class="btn secondary">Select All</button>
-          <button id="clearAllCommentsBtn" class="btn secondary">Clear All</button>
-        </div>
-      </div>
-      <div id="commentsTreeContainer" class="tree-container"></div>
-    </section>
+          <p id="apiNotConfigured" class="api-hint" hidden>
+            <span id="apiNotConfiguredText" data-i18n="preview_api_no_key">No API key is configured for this provider.</span>
+            <button id="apiOpenOptionsBtn" class="link-btn" type="button" data-i18n="preview_api_open_options">Add a key in options</button>
+          </p>
 
-    <section class="editor-card">
-      <div class="editor-toolbar">
-        <strong>Final prompt</strong>
-        <div class="editor-tools">
-          <span id="editHint">You can edit this text before sending.</span>
-          <span id="rebuildNotice" class="rebuild-notice" hidden>Settings changed. Your edited prompt was kept.</span>
-          <button id="applyRebuiltPromptBtn" class="link-btn" type="button" hidden>Apply rebuilt prompt</button>
-          <button id="keepEditsBtn" class="link-btn" type="button" hidden>Keep edits</button>
-          <button id="restorePromptBtn" class="link-btn" type="button" disabled>Restore generated prompt</button>
-        </div>
+          <div id="apiLoading" class="api-loading" hidden>
+            <span class="api-spinner" aria-hidden="true"></span>
+            <span data-i18n="preview_api_loading">Waiting for the AI response…</span>
+            <strong id="apiElapsed">0s</strong>
+          </div>
+
+          <div id="apiError" class="api-error" role="alert" hidden>
+            <p id="apiErrorMessage"></p>
+            <button id="apiRetryBtn" class="btn secondary" type="button" data-i18n="preview_api_retry">Retry</button>
+          </div>
+
+          <div id="apiResult" class="api-result" hidden>
+            <div class="api-result-toolbar">
+              <strong id="apiResultMeta"></strong>
+              <button id="apiCopyBtn" class="btn secondary" type="button" data-i18n="preview_api_copy">Copy response</button>
+            </div>
+            <div id="apiResponseText" class="api-response-text" tabindex="0"></div>
+          </div>
+        </section>
       </div>
-      <textarea id="promptTextarea" spellcheck="true"></textarea>
-    </section>
+
+      <!-- Sidebar Controls & Stats (Right Column) -->
+      <aside class="preview-sidebar">
+        <section class="summary-card">
+          <div>
+            <span class="eyebrow">Prompt setup</span>
+            <div id="settingsSummary" class="summary-pills"></div>
+          </div>
+          <label class="inline-toggle">
+            <input type="checkbox" id="skipPreviewToggle">
+            <span>Always send directly</span>
+          </label>
+        </section>
+
+        <section class="budget-card" id="budgetCard">
+          <div class="budget-top">
+            <div>
+              <span class="eyebrow">AI prompt size</span>
+              <strong id="warningLabel">Calculating…</strong>
+              <p id="warningMessage">Preparing context budget.</p>
+            </div>
+            <div class="budget-stats">
+              <div><strong id="charCount">0</strong><span>characters</span></div>
+              <div><strong id="tokenCount">0</strong><span>est. tokens</span></div>
+              <div><strong id="commentCount">0</strong><span>comments</span></div>
+              <div><strong id="imageCount">0</strong><span>images</span></div>
+            </div>
+          </div>
+          <div class="meter-track"><div id="meterFill" class="meter-fill"></div></div>
+        </section>
+
+        <section class="controls-grid">
+          <label class="field">
+            <span>Context preset</span>
+            <select id="contextPresetSelect">
+              <option value="small">Small</option>
+              <option value="balanced">Balanced</option>
+              <option value="full">Full</option>
+              <option value="maxQuality">Max Quality</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Trim strategy</span>
+            <select id="trimStrategySelect">
+              <option value="top">Top scored</option>
+              <option value="controversial">Controversial</option>
+              <option value="op">OP replies</option>
+              <option value="flaired">Flaired users</option>
+              <option value="diverse">Diverse viewpoints</option>
+              <option value="newest">Newest</option>
+              <option value="longest">Longest helpful</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Media handling</span>
+            <select id="mediaModeSelect">
+              <option value="attach">Attach images + list URLs</option>
+              <option value="urls">List URLs only</option>
+              <option value="ignore">Ignore media</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>AI platform</span>
+            <select id="providerSelect">
+              <option value="gemini">Gemini</option>
+              <option value="chatgpt">ChatGPT</option>
+              <option value="claude">Claude</option>
+              <option value="aistudio">AI Studio</option>
+              <option value="deepseek">DeepSeek</option>
+              <option value="groq">Groq</option>
+              <option value="custom">Custom</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Output format</span>
+            <select id="outputFormatSelect">
+              <option value="auto">Auto</option>
+              <option value="bullets">Bullets</option>
+              <option value="table">Table</option>
+              <option value="json">JSON</option>
+              <option value="prosCons">Pros / cons</option>
+              <option value="executive">Executive summary</option>
+            </select>
+          </label>
+        </section>
+      </aside>
+    </div>
 
     <section class="footer-card">
       <span id="statusText">Ready.</span>

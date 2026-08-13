@@ -35,11 +35,66 @@
         <!-- Main Content - Sidebar Layout -->
         <main class="main-content">
             <nav class="sidebar-nav">
-                <button type="button" class="nav-item active" data-target="sectionAi">🌐 AI Assistant</button>
-                <button type="button" class="nav-item" data-target="sectionPresets">📝 Prompt Presets</button>
-                <button type="button" class="nav-item" data-target="sectionScraping">⚙️ Scraping & Filters</button>
-                <button type="button" class="nav-item" data-target="sectionMappings">🔀 Subreddit Mappings</button>
-                <button type="button" class="nav-item" data-target="sectionCustom">🔌 Custom WebUIs</button>
+                <button type="button" class="nav-item active" data-target="sectionAi">
+                    <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        aria-hidden="true">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="2" y1="12" x2="22" y2="12"></line>
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                    </svg>
+                    <span class="nav-label">AI Assistant</span>
+                </button>
+                <button type="button" class="nav-item" data-target="sectionPresets">
+                    <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        aria-hidden="true">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                    </svg>
+                    <span class="nav-label">Prompt Presets</span>
+                </button>
+                <button type="button" class="nav-item" data-target="sectionScraping">
+                    <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        aria-hidden="true">
+                        <line x1="4" y1="21" x2="4" y2="14"></line>
+                        <line x1="4" y1="10" x2="4" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="12"></line>
+                        <line x1="12" y1="8" x2="12" y2="3"></line>
+                        <line x1="20" y1="21" x2="20" y2="16"></line>
+                        <line x1="20" y1="12" x2="20" y2="3"></line>
+                        <line x1="1" y1="14" x2="7" y2="14"></line>
+                        <line x1="9" y1="8" x2="15" y2="8"></line>
+                        <line x1="17" y1="16" x2="23" y2="16"></line>
+                    </svg>
+                    <span class="nav-label">Scraping & Filters</span>
+                </button>
+                <button type="button" class="nav-item" data-target="sectionMappings">
+                    <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        aria-hidden="true">
+                        <polyline points="16 3 21 3 21 8"></polyline>
+                        <line x1="4" y1="20" x2="21" y2="3"></line>
+                        <polyline points="21 16 21 21 16 21"></polyline>
+                        <line x1="15" y1="15" x2="21" y2="21"></line>
+                        <line x1="4" y1="4" x2="9" y2="9"></line>
+                    </svg>
+                    <span class="nav-label">Subreddit Mappings</span>
+                </button>
+                <button type="button" class="nav-item" data-target="sectionCustom">
+                    <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        aria-hidden="true">
+                        <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+                        <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+                        <line x1="6" y1="6" x2="6.01" y2="6"></line>
+                        <line x1="6" y1="18" x2="6.01" y2="18"></line>
+                    </svg>
+                    <span class="nav-label">Custom WebUIs</span>
+                </button>
             </nav>
 
             <div id="sectionAi" class="settings-pane active">
@@ -161,6 +216,33 @@
                                 <option value="executive">Executive summary</option>
                             </select>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Direct API Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <path d="M15 7h3a5 5 0 0 1 0 10h-3"></path>
+                            <path d="M9 17H6A5 5 0 0 1 6 7h3"></path>
+                            <path d="M8 12h8"></path>
+                        </svg>
+                        <h2 class="card-title" data-i18n="options_card_direct_api_title">Direct API</h2>
+                    </div>
+                    <div class="card-content">
+                        <p class="form-hint" data-i18n="options_direct_api_intro">
+                            Add your own provider API key to get answers inside the prompt preview page,
+                            without opening an AI chat tab.
+                        </p>
+                        <p class="api-warning" data-i18n="options_direct_api_warning">
+                            Keys are stored locally on this device only — they are never synced to your
+                            Google account and never included in a settings export. Requests go directly
+                            from your browser to the provider, and you are billed by that provider.
+                        </p>
+
+                        <div class="api-provider-list" id="apiProviderList"></div>
+                        <div class="api-key-status" id="apiKeyStatus" role="status"></div>
                     </div>
                 </div>
             </div>
@@ -433,34 +515,34 @@
                         <h2 class="card-title">Selector Overrides</h2>
                     </div>
                     <div class="card-content">
-                        <p class="form-hint" style="margin-bottom: 12px;">Override the target input field CSS selectors for each AI platform if they break.</p>
+                        <p class="form-hint form-hint-lead">Override the target input field CSS selectors for each AI platform if they break.</p>
                         <div class="form-group">
                             <label class="form-label" for="selectorGemini">Gemini Selector</label>
-                            <input type="text" id="selectorGemini" class="search-input" placeholder="e.g. div.rich-textarea [contenteditable='true']" style="width: 100%; box-sizing: border-box;">
+                            <input type="text" id="selectorGemini" class="search-input" placeholder="e.g. div.rich-textarea [contenteditable='true']">
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="selectorChatgpt">ChatGPT Selector</label>
-                            <input type="text" id="selectorChatgpt" class="search-input" placeholder="e.g. #prompt-textarea" style="width: 100%; box-sizing: border-box;">
+                            <input type="text" id="selectorChatgpt" class="search-input" placeholder="e.g. #prompt-textarea">
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="selectorClaude">Claude Selector</label>
-                            <input type="text" id="selectorClaude" class="search-input" placeholder="e.g. div[contenteditable='true']" style="width: 100%; box-sizing: border-box;">
+                            <input type="text" id="selectorClaude" class="search-input" placeholder="e.g. div[contenteditable='true']">
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="selectorAistudio">AI Studio Selector</label>
-                            <input type="text" id="selectorAistudio" class="search-input" placeholder="e.g. textarea" style="width: 100%; box-sizing: border-box;">
+                            <input type="text" id="selectorAistudio" class="search-input" placeholder="e.g. textarea">
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="selectorDeepseek">DeepSeek Selector</label>
-                            <input type="text" id="selectorDeepseek" class="search-input" placeholder="e.g. textarea, div[contenteditable='true']" style="width: 100%; box-sizing: border-box;">
+                            <input type="text" id="selectorDeepseek" class="search-input" placeholder="e.g. textarea, div[contenteditable='true']">
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="selectorGroq">Groq Selector</label>
-                            <input type="text" id="selectorGroq" class="search-input" placeholder="e.g. textarea, #chat-input, div[contenteditable='true']" style="width: 100%; box-sizing: border-box;">
+                            <input type="text" id="selectorGroq" class="search-input" placeholder="e.g. textarea, #chat-input, div[contenteditable='true']">
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="selectorCustom">Custom Platform Selector</label>
-                            <input type="text" id="selectorCustom" class="search-input" placeholder="e.g. textarea, div[contenteditable='true']" style="width: 100%; box-sizing: border-box;">
+                            <input type="text" id="selectorCustom" class="search-input" placeholder="e.g. textarea, div[contenteditable='true']">
                         </div>
                     </div>
                 </div>
@@ -666,24 +748,24 @@
                         <h2 class="card-title" data-i18n="options_card_mappings_title">Subreddit-Specific Templates</h2>
                     </div>
                     <div class="card-content">
-                        <p class="form-hint" style="margin-bottom: 12px;" data-i18n="options_mappings_hint">Override the default prompt template for specific subreddits (supports wildcards like <code>investing*</code>).</p>
-                        <div class="form-group" style="display: flex; gap: 8px; margin-bottom: 12px; align-items: center;">
-                            <input type="text" id="subredditPatternInput" class="search-input" data-i18n="options_mappings_placeholder" placeholder="e.g. cscareerquestions or investing*" style="flex: 2; box-sizing: border-box;">
-                            <select id="subredditPresetSelect" class="select-input" style="flex: 1; min-width: 110px;">
+                        <p class="form-hint form-hint-lead" data-i18n="options_mappings_hint">Override the default prompt template for specific subreddits (supports wildcards like <code>investing*</code>).</p>
+                        <div class="form-group form-row">
+                            <input type="text" id="subredditPatternInput" class="search-input form-row-grow-2" data-i18n="options_mappings_placeholder" placeholder="e.g. cscareerquestions or investing*">
+                            <select id="subredditPresetSelect" class="select-input form-row-grow">
                                 <option value="summarize">Summarize</option>
                                 <option value="debate">Debate</option>
                                 <option value="sentiment">Sentiment</option>
                                 <option value="takeaways">Takeaways</option>
                                 <option value="eli5">ELI5</option>
                             </select>
-                            <button type="button" id="addSubredditRuleBtn" class="btn primary" data-i18n="options_mappings_btn_add" style="white-space: nowrap;">Add Rule</button>
+                            <button type="button" id="addSubredditRuleBtn" class="btn primary btn-nowrap" data-i18n="options_mappings_btn_add">Add Rule</button>
                         </div>
-                        <ul id="subredditRulesList" class="custom-origins-list" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px;"></ul>
+                        <ul id="subredditRulesList" class="custom-origins-list"></ul>
                     </div>
                 </div>
 
                 <!-- Subreddit Mapping Tester Card -->
-                <div class="card" style="margin-top: 16px;">
+                <div class="card">
                     <div class="card-header">
                         <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <polygon points="5 3 19 12 5 21 5 3" />
@@ -691,11 +773,11 @@
                         <h2 class="card-title" data-i18n="options_card_route_tester_title">Subreddit Mapping Tester</h2>
                     </div>
                     <div class="card-content">
-                        <p class="form-hint" style="margin-bottom: 12px;" data-i18n="options_route_tester_hint">Test your wildcard patterns against subreddit names to see which template resolves.</p>
-                        <div class="form-group" style="display: flex; gap: 8px; margin-bottom: 12px; align-items: center;">
-                            <input type="text" id="routeTesterInput" class="search-input" data-i18n="options_placeholder_route_tester" placeholder="e.g. investing or AskReddit" style="flex: 1; box-sizing: border-box;" data-tooltip="tooltip_route_tester_input">
+                        <p class="form-hint form-hint-lead" data-i18n="options_route_tester_hint">Test your wildcard patterns against subreddit names to see which template resolves.</p>
+                        <div class="form-group form-row">
+                            <input type="text" id="routeTesterInput" class="search-input form-row-grow" data-i18n="options_placeholder_route_tester" placeholder="e.g. investing or AskReddit" data-tooltip="tooltip_route_tester_input">
                         </div>
-                        <div id="routeTesterResult" class="tester-result" style="padding: 12px; border-radius: 8px; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); font-size: 13px; display: none; transition: var(--transition);">
+                        <div id="routeTesterResult" class="tester-result" style="display: none;">
                             <!-- Result will be populated via JS -->
                         </div>
                     </div>
@@ -715,12 +797,12 @@
                         <h2 class="card-title">Custom AI Platforms / Local WebUIs</h2>
                     </div>
                     <div class="card-content">
-                        <p class="form-hint" style="margin-bottom: 12px;">Add custom WebUI origins (e.g. <code>http://localhost:3000</code> or <code>http://127.0.0.1:8080</code>) to dynamically request host permission and register content scripts.</p>
-                        <div class="form-group" style="display: flex; gap: 8px; margin-bottom: 12px;">
-                            <input type="text" id="customOriginInput" class="search-input" placeholder="e.g. http://localhost:3000" style="flex: 1; box-sizing: border-box;">
-                            <button type="button" id="addCustomOriginBtn" class="btn-action" style="white-space: nowrap; border-color: var(--accent); color: var(--accent);">Add Platform & Request Permission</button>
+                        <p class="form-hint form-hint-lead">Add custom WebUI origins (e.g. <code>http://localhost:3000</code> or <code>http://127.0.0.1:8080</code>) to dynamically request host permission and register content scripts.</p>
+                        <div class="form-group form-row">
+                            <input type="text" id="customOriginInput" class="search-input form-row-grow" placeholder="e.g. http://localhost:3000">
+                            <button type="button" id="addCustomOriginBtn" class="btn-action btn-accent-outline btn-nowrap">Add Platform & Request Permission</button>
                         </div>
-                        <ul id="customOriginsList" class="custom-origins-list" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px;"></ul>
+                        <ul id="customOriginsList" class="custom-origins-list"></ul>
                     </div>
                 </div>
             </div>
@@ -728,7 +810,7 @@
 
         <!-- Footer -->
         <footer class="footer">
-            <span class="footer-text" data-i18n="footer_version_text">Reddit to AI v1.2.1</span>
+            <span class="footer-text" data-i18n="footer_version_text">Reddit to AI v1.3.0</span>
             <span class="footer-text" data-i18n="options_footer_saved">Settings are saved automatically</span>
         </footer>
     </div>
@@ -746,6 +828,7 @@
 
     <script src="i18n.js"></script>
     <script src="tooltip.js"></script>
+    <script src="apiProviders.js"></script>
     <script src="options.js"></script>
 </body>
 

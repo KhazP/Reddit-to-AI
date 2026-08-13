@@ -1106,30 +1106,45 @@ async function initializeOptions() {
         reader.readAsText(file);
     }
 
+    // Single source of truth for which settings travel through export/import, and
+    // what shape each one is allowed to have. Import rejects anything that is not
+    // listed here, so a hand-edited or hostile settings file cannot inject keys the
+    // rest of the extension never validates.
+    const PORTABLE_SETTING_TYPES = {
+        scrapeDepth: 'number',
+        showNotifications: 'boolean',
+        showPromptPreview: 'boolean',
+        customPromptTemplate: 'string',
+        selectedPreset: 'string',
+        dataStorageOption: 'string',
+        selectedLlmProvider: 'string',
+        filterMinScore: 'number',
+        filterTopN: 'number',
+        filterAuthorType: 'string',
+        filterAuthorTypes: 'array',
+        filterHideBots: 'boolean',
+        includeHidden: 'boolean',
+        contextPreset: 'string',
+        trimStrategy: 'string',
+        redditSortMode: 'string',
+        mediaMode: 'string',
+        outputFormat: 'string',
+        selectedLanguage: 'string',
+        savedPromptPresets: 'array',
+        customSelectors: 'object'
+    };
+
+    const IMPORT_STATUS_KEY = 'pendingImportStatus';
+
+    function matchesExpectedType(value, expectedType) {
+        if (expectedType === 'array') return Array.isArray(value);
+        if (expectedType === 'object') return typeof value === 'object' && value !== null && !Array.isArray(value);
+        if (expectedType === 'number') return typeof value === 'number' && Number.isFinite(value);
+        return typeof value === expectedType;
+    }
+
     function exportSettings() {
-        const keys = [
-            'scrapeDepth',
-            'showNotifications',
-            'showPromptPreview',
-            'customPromptTemplate',
-            'selectedPreset',
-            'dataStorageOption',
-            'selectedLlmProvider',
-            'filterMinScore',
-            'filterTopN',
-            'filterAuthorType',
-            'filterAuthorTypes',
-            'filterHideBots',
-            'includeHidden',
-            'contextPreset',
-            'trimStrategy',
-            'redditSortMode',
-            'mediaMode',
-            'outputFormat',
-            'selectedLanguage',
-            'savedPromptPresets',
-            'customSelectors'
-        ];
+        const keys = Object.keys(PORTABLE_SETTING_TYPES);
         chrome.storage.sync.get(keys, (settings) => {
             downloadJson(`reddit-to-ai-settings-${Date.now()}.json`, {
                 exportedAt: new Date().toISOString(),
@@ -1144,9 +1159,53 @@ async function initializeOptions() {
             alert('Imported file does not contain settings.');
             return;
         }
-        chrome.storage.sync.set(settings, () => {
+        const accepted = {};
+        let importedCount = 0;
+        let skippedCount = 0;
+        for (const [key, value] of Object.entries(settings)) {
+            const expectedType = PORTABLE_SETTING_TYPES[key];
+            // Unknown keys and wrong-typed values are dropped silently: an import
+            // file is untrusted input, not a way to write arbitrary storage keys.
+            if (!expectedType || !matchesExpectedType(value, expectedType)) {
+                skippedCount++;
+                continue;
+            }
+            accepted[key] = value;
+            importedCount++;
+        }
+
+        if (importedCount === 0) {
+            alert('Imported file does not contain any recognized settings.');
+            return;
+        }
+
+        chrome.storage.sync.set(accepted, () => {
+            if (chrome.runtime.lastError) {
+                alert(`Could not import settings: ${chrome.runtime.lastError.message}`);
+                return;
+            }
+            // Re-running the initializer here would re-attach every listener on top
+            // of the existing ones (double-save / double-delete). Reloading the page is
+            // the only way to rebuild the whole options UI from the new values with
+            // exactly one set of listeners bound.
+            const status = `Imported ${importedCount} setting${importedCount === 1 ? '' : 's'}` +
+                (skippedCount > 0 ? `, skipped ${skippedCount} unrecognized.` : '.');
+            chrome.storage.local.set({ [IMPORT_STATUS_KEY]: status }, () => {
+                void chrome.runtime.lastError;
+                location.reload();
+            });
+        });
+    }
+
+    // Surfaces the message stored just before the post-import reload, then clears it
+    // so a later manual reload does not repeat a stale status.
+    function showPendingImportStatus() {
+        chrome.storage.local.get([IMPORT_STATUS_KEY], (result) => {
+            const status = result?.[IMPORT_STATUS_KEY];
+            if (!status) return;
+            chrome.storage.local.remove([IMPORT_STATUS_KEY], () => void chrome.runtime.lastError);
+            setHistoryStatus(status, 'success');
             showSaveToast();
-            initializeOptions();
         });
     }
 
@@ -1533,6 +1592,8 @@ async function initializeOptions() {
         });
     }
 
+    showPendingImportStatus();
+
     if (clearSavedPresetsBtn) {
         clearSavedPresetsBtn.addEventListener('click', () => {
             if (confirm('Clear all saved prompt presets? This cannot be undone.')) {
@@ -1560,6 +1621,184 @@ async function initializeOptions() {
             }
         });
     }
+
+    // =====================
+    // Direct API keys
+    // =====================
+    //
+    // Keys are read from and written to chrome.storage.local exclusively. They are
+    // deliberately absent from PORTABLE_SETTING_TYPES, so exportSettings (which only
+    // walks that allowlist against chrome.storage.sync) can never emit them, and
+    // importSettings drops the key if a crafted import file contains one.
+
+    const apiProviderList = document.getElementById('apiProviderList');
+    const apiKeyStatus = document.getElementById('apiKeyStatus');
+    const DIRECT_API_CONFIG_KEY = 'directApiConfig';
+
+    function setApiKeyStatus(message, type = '') {
+        if (!apiKeyStatus) return;
+        apiKeyStatus.textContent = message;
+        apiKeyStatus.classList.toggle('error', type === 'error');
+        apiKeyStatus.classList.toggle('success', type === 'success');
+    }
+
+    function saveDirectApiConfig(provider, patch) {
+        chrome.storage.local.get([DIRECT_API_CONFIG_KEY], (result) => {
+            const config = (result && typeof result[DIRECT_API_CONFIG_KEY] === 'object' && result[DIRECT_API_CONFIG_KEY])
+                ? result[DIRECT_API_CONFIG_KEY]
+                : {};
+            const next = { ...config, [provider]: { ...(config[provider] || {}), ...patch } };
+            chrome.storage.local.set({ [DIRECT_API_CONFIG_KEY]: next }, () => {
+                if (chrome.runtime.lastError) {
+                    setApiKeyStatus(`Could not save: ${chrome.runtime.lastError.message}`, 'error');
+                    return;
+                }
+                showSaveToast();
+            });
+        });
+    }
+
+    function buildApiProviderRow(definition, stored) {
+        const row = document.createElement('div');
+        row.className = 'api-provider-row';
+
+        const heading = document.createElement('h3');
+        heading.className = 'api-provider-name';
+        heading.textContent = definition.label;
+        row.appendChild(heading);
+
+        // --- API key field (password type, with a show/hide toggle) ---
+        const keyGroup = document.createElement('div');
+        keyGroup.className = 'form-group';
+        const keyLabel = document.createElement('label');
+        keyLabel.className = 'form-label';
+        keyLabel.setAttribute('for', `apiKey_${definition.id}`);
+        keyLabel.textContent = t('options_direct_api_key_label') || 'API key';
+        keyGroup.appendChild(keyLabel);
+
+        const keyRow = document.createElement('div');
+        keyRow.className = 'api-key-row';
+        const keyInput = document.createElement('input');
+        keyInput.type = 'password';
+        keyInput.id = `apiKey_${definition.id}`;
+        keyInput.className = 'search-input';
+        keyInput.autocomplete = 'off';
+        keyInput.spellcheck = false;
+        keyInput.placeholder = t('options_direct_api_key_placeholder') || 'Paste your API key';
+        keyInput.value = stored.apiKey || '';
+        keyRow.appendChild(keyInput);
+
+        const revealBtn = document.createElement('button');
+        revealBtn.type = 'button';
+        revealBtn.className = 'btn-action';
+        revealBtn.textContent = t('options_direct_api_show') || 'Show';
+        revealBtn.addEventListener('click', () => {
+            const hidden = keyInput.type === 'password';
+            keyInput.type = hidden ? 'text' : 'password';
+            revealBtn.textContent = hidden
+                ? (t('options_direct_api_hide') || 'Hide')
+                : (t('options_direct_api_show') || 'Show');
+        });
+        keyRow.appendChild(revealBtn);
+        keyGroup.appendChild(keyRow);
+        row.appendChild(keyGroup);
+
+        // --- Model field: free text, prefilled with the current default ---
+        const modelGroup = document.createElement('div');
+        modelGroup.className = 'form-group';
+        const modelLabel = document.createElement('label');
+        modelLabel.className = 'form-label';
+        modelLabel.setAttribute('for', `apiModel_${definition.id}`);
+        modelLabel.textContent = t('options_direct_api_model_label') || 'Model';
+        modelGroup.appendChild(modelLabel);
+
+        const modelInput = document.createElement('input');
+        modelInput.type = 'text';
+        modelInput.id = `apiModel_${definition.id}`;
+        modelInput.className = 'search-input';
+        modelInput.spellcheck = false;
+        modelInput.placeholder = definition.defaultModel;
+        modelInput.value = stored.model || definition.defaultModel;
+        modelGroup.appendChild(modelInput);
+
+        const modelHint = document.createElement('span');
+        modelHint.className = 'form-hint';
+        // Free text rather than a <select> so a newly released model id works without
+        // waiting for an extension update.
+        modelHint.textContent = `${t('options_direct_api_model_hint') || 'Any model id this provider accepts.'} ${definition.suggestedModels.join(', ')}`;
+        modelGroup.appendChild(modelHint);
+        row.appendChild(modelGroup);
+
+        // --- Test button ---
+        const actions = document.createElement('div');
+        actions.className = 'api-provider-actions';
+        const testBtn = document.createElement('button');
+        testBtn.type = 'button';
+        testBtn.className = 'btn-action';
+        testBtn.textContent = t('options_direct_api_test') || 'Test key';
+        testBtn.addEventListener('click', () => {
+            const apiKey = keyInput.value.trim();
+            if (!apiKey) {
+                setApiKeyStatus(t('options_direct_api_test_no_key') || 'Enter an API key first.', 'error');
+                return;
+            }
+            testBtn.disabled = true;
+            setApiKeyStatus(`${t('options_direct_api_testing') || 'Testing'} ${definition.label}…`);
+            chrome.runtime.sendMessage({
+                action: 'testDirectApiKey',
+                apiProvider: definition.id,
+                apiKey,
+                model: modelInput.value.trim()
+            }, (response) => {
+                testBtn.disabled = false;
+                if (chrome.runtime.lastError || response?.error || !response?.success) {
+                    const message = response?.error || chrome.runtime.lastError?.message || 'Unknown error';
+                    setApiKeyStatus(`${definition.label}: ${message}`, 'error');
+                    return;
+                }
+                setApiKeyStatus(
+                    `${definition.label}: ${t('options_direct_api_test_ok') || 'Key works.'} (${response.model})`,
+                    'success'
+                );
+            });
+        });
+        actions.appendChild(testBtn);
+
+        const clearBtn = document.createElement('button');
+        clearBtn.type = 'button';
+        clearBtn.className = 'btn-action btn-danger-outline';
+        clearBtn.textContent = t('options_direct_api_clear') || 'Remove key';
+        clearBtn.addEventListener('click', () => {
+            keyInput.value = '';
+            saveDirectApiConfig(definition.id, { apiKey: '' });
+            setApiKeyStatus(`${definition.label}: ${t('options_direct_api_cleared') || 'Key removed.'}`, 'success');
+        });
+        actions.appendChild(clearBtn);
+        row.appendChild(actions);
+
+        // Persist on blur rather than on every keystroke, so a partially pasted key
+        // is not written repeatedly.
+        keyInput.addEventListener('change', () => saveDirectApiConfig(definition.id, { apiKey: keyInput.value.trim() }));
+        modelInput.addEventListener('change', () => saveDirectApiConfig(definition.id, { model: modelInput.value.trim() }));
+
+        return row;
+    }
+
+    function renderDirectApiSection() {
+        if (!apiProviderList || typeof R2AIApiProviders === 'undefined') return;
+        chrome.storage.local.get([DIRECT_API_CONFIG_KEY], (result) => {
+            const config = (result && typeof result[DIRECT_API_CONFIG_KEY] === 'object' && result[DIRECT_API_CONFIG_KEY])
+                ? result[DIRECT_API_CONFIG_KEY]
+                : {};
+            apiProviderList.innerHTML = '';
+            R2AIApiProviders.PROVIDER_IDS.forEach(id => {
+                const definition = R2AIApiProviders.PROVIDERS[id];
+                apiProviderList.appendChild(buildApiProviderRow(definition, config[id] || {}));
+            });
+        });
+    }
+
+    renderDirectApiSection();
 
     // Initial history load
     loadHistory();
