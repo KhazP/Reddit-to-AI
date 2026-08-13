@@ -552,5 +552,145 @@
     },
     "error": {
         "message": "Error"
+    },
+    "popup_preset_name_label": {
+        "message": "预设名称",
+        "description": "Label for the inline preset-name field in the popup"
+    },
+    "popup_preset_name_placeholder": {
+        "message": "预设名称",
+        "description": "Placeholder for the inline preset-name field"
+    },
+    "popup_preset_name_confirm": {
+        "message": "保存",
+        "description": "Confirm button for saving a quick prompt as a preset"
+    },
+    "popup_preset_name_cancel": {
+        "message": "取消",
+        "description": "Cancel button for the inline preset-name field"
+    },
+    "popup_preset_name_default": {
+        "message": "快速提示词",
+        "description": "Fallback name suggested when saving a quick prompt preset"
+    },
+    "command_scrape_current_thread": {
+        "message": "抓取当前 Reddit 帖子",
+        "description": "Description for the keyboard shortcut that scrapes the active Reddit thread"
+    },
+    "context_menu_scrape_thread": {
+        "message": "使用 Reddit to AI 抓取此帖子",
+        "description": "Right-click menu entry that scrapes a Reddit thread"
+    },
+    "sw_error_custom_origin_missing": {
+        "message": "尚未配置自定义 AI 来源。请先在选项中添加后再使用自定义提供商。",
+        "description": "Error shown when the custom AI provider is selected without a configured origin"
+    },
+    "preview_api_eyebrow": {
+        "message": "直接 API"
+    },
+    "preview_api_title": {
+        "message": "使用你自己的 API 密钥发送"
+    },
+    "preview_api_description": {
+        "message": "将提示词直接发送给服务商并在此处阅读回复，无需打开 AI 聊天标签页。"
+    },
+    "preview_api_provider_label": {
+        "message": "API 服务商"
+    },
+    "preview_api_send": {
+        "message": "通过 API 发送"
+    },
+    "preview_api_no_key": {
+        "message": "尚未为此服务商配置 API 密钥。"
+    },
+    "preview_api_no_key_for": {
+        "message": "尚未为 $1 配置 API 密钥。"
+    },
+    "preview_api_open_options": {
+        "message": "在选项中添加密钥"
+    },
+    "preview_api_loading": {
+        "message": "正在等待 AI 回复…"
+    },
+    "preview_api_retry": {
+        "message": "重试"
+    },
+    "preview_api_retryable": {
+        "message": "这看起来是暂时问题，请稍后重试。"
+    },
+    "preview_api_copy": {
+        "message": "复制回复"
+    },
+    "preview_api_copied": {
+        "message": "已将 API 回复复制到剪贴板。"
+    },
+    "preview_api_refused": {
+        "message": "服务商拒绝回答此请求。"
+    },
+    "preview_api_empty_response": {
+        "message": "服务商返回了空回复。"
+    },
+    "preview_api_empty_prompt": {
+        "message": "提示词为空。"
+    },
+    "preview_api_truncated": {
+        "message": "已在令牌上限处截断"
+    },
+    "preview_api_failed": {
+        "message": "API 请求失败。"
+    },
+    "preview_api_status_sending": {
+        "message": "正在将提示词发送到 API…"
+    },
+    "preview_api_status_done": {
+        "message": "已收到 API 回复。"
+    },
+    "preview_api_status_failed": {
+        "message": "API 请求失败。"
+    },
+    "options_card_direct_api_title": {
+        "message": "直接 API"
+    },
+    "options_direct_api_intro": {
+        "message": "添加你自己的服务商 API 密钥，即可在提示词预览页面中获得回复，无需打开 AI 聊天标签页。"
+    },
+    "options_direct_api_warning": {
+        "message": "密钥仅存储在本设备本地——绝不会同步到你的 Google 账户，也不会包含在设置导出中。请求由你的浏览器直接发送至服务商，费用由该服务商向你收取。"
+    },
+    "options_direct_api_key_label": {
+        "message": "API 密钥"
+    },
+    "options_direct_api_key_placeholder": {
+        "message": "粘贴你的 API 密钥"
+    },
+    "options_direct_api_model_label": {
+        "message": "模型"
+    },
+    "options_direct_api_model_hint": {
+        "message": "此服务商接受的任意模型 ID。"
+    },
+    "options_direct_api_show": {
+        "message": "显示"
+    },
+    "options_direct_api_hide": {
+        "message": "隐藏"
+    },
+    "options_direct_api_test": {
+        "message": "测试密钥"
+    },
+    "options_direct_api_testing": {
+        "message": "正在测试"
+    },
+    "options_direct_api_test_ok": {
+        "message": "密钥可用。"
+    },
+    "options_direct_api_test_no_key": {
+        "message": "请先输入 API 密钥。"
+    },
+    "options_direct_api_clear": {
+        "message": "移除密钥"
+    },
+    "options_direct_api_cleared": {
+        "message": "密钥已移除。"
     }
 }

@@ -2,9 +2,11 @@ import JSZip from 'jszip';
 import { cp, mkdir, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { dirname, join, relative, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { toFirefoxManifest } from './firefox-manifest.mjs';
 
 export const root = dirname(fileURLToPath(new URL('../package.json', import.meta.url)));
 export const outDir = join(root, 'dist-extension');
+export const firefoxOutDir = join(root, 'dist-extension-firefox');
 
 export const excludedDirs = new Set([
   '.git',
@@ -15,6 +17,7 @@ export const excludedDirs = new Set([
   'tests',
   'scripts',
   'dist-extension',
+  'dist-extension-firefox',
   '__MACOSX',
   'docs'
 ]);
@@ -115,6 +118,20 @@ export async function verifyZip(stageDir = outDir, zipPath) {
   return actualFiles;
 }
 
+// The Firefox payload is byte-identical to the Chrome one except for manifest.json,
+// which is regenerated from the Chrome manifest by the transform in
+// scripts/firefox-manifest.mjs.
+export async function stageFirefox(stageDir = firefoxOutDir) {
+  await rm(stageDir, { recursive: true, force: true });
+  await mkdir(stageDir, { recursive: true });
+  await copyTree(join(root, 'src'), stageDir);
+
+  const chromeManifest = JSON.parse(await readFile(join(root, 'src', 'manifest.json'), 'utf8'));
+  const firefoxManifest = toFirefoxManifest(chromeManifest);
+  await writeFile(join(stageDir, 'manifest.json'), `${JSON.stringify(firefoxManifest, null, 2)}\n`, 'utf8');
+  return stageDir;
+}
+
 export async function packageExtension() {
   await rm(outDir, { recursive: true, force: true });
   await mkdir(outDir, { recursive: true });
@@ -127,10 +144,20 @@ export async function packageExtension() {
   const files = await createZip(outDir, zipPath);
   await verifyZip(outDir, zipPath);
 
+  await stageFirefox(firefoxOutDir);
+  const firefoxZipName = `Reddit-to-AI-v${version}-firefox.zip`;
+  const firefoxZipPath = join(root, firefoxZipName);
+  await rm(firefoxZipPath, { force: true });
+  const firefoxFiles = await createZip(firefoxOutDir, firefoxZipPath);
+  await verifyZip(firefoxOutDir, firefoxZipPath);
+
   console.log(`Extension package staged at ${outDir}`);
   console.log(`Upload archive created at ${zipPath}`);
   console.log(`Verified ${files.length} files in ${zipName}`);
-  return { outDir, zipPath, files };
+  console.log(`Firefox package staged at ${firefoxOutDir}`);
+  console.log(`Firefox archive created at ${firefoxZipPath}`);
+  console.log(`Verified ${firefoxFiles.length} files in ${firefoxZipName}`);
+  return { outDir, zipPath, files, firefoxOutDir, firefoxZipPath, firefoxFiles };
 }
 
 const isCli = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;

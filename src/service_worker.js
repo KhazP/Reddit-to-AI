@@ -1,16 +1,37 @@
 /* global importScripts */
-importScripts('cl100k_base.js', 'promptBuilder.js');
+// Chrome runs this file as an MV3 service worker, where `importScripts` pulls in the
+// shared libraries. Firefox runs it as an MV3 background event page, where
+// `importScripts` does not exist - there the same four files are listed ahead of this
+// one in `background.scripts`, so the globals are already present and the call is
+// skipped. Keep both lists in the same order (see scripts/firefox-manifest.mjs).
+if (typeof importScripts === 'function') {
+  importScripts('cl100k_base.js', 'redditParser.js', 'promptBuilder.js', 'apiProviders.js');
+}
 
 const DEFAULT_PROMPT_TEMPLATE = 'Summarize the following Reddit thread:\n\n{content}';
 const DEFAULT_HISTORY_LIMIT = 10;
 const PREVIEW_STORAGE_KEY = 'redditPreviewData';
 const PASTE_STORAGE_KEY = 'redditPendingPaste';
 const LEGACY_THREAD_KEY = 'redditThreadData';
+const SCRAPING_STATE_KEY = 'redditScrapingState';
+const SCRAPE_CONTEXT_KEY = 'redditActiveScrape';
+// API keys live in chrome.storage.local only - never in storage.sync, which would
+// replicate them through Google's servers.
+const DIRECT_API_CONFIG_KEY = 'directApiConfig';
 
+// `phase`, `status` and `batch` are the machine-readable half of the state. The UI
+// keys off them so it never has to pattern-match the localized `message` text.
+// phase: 'idle' | 'prepare' | 'fetch' | 'parse' | 'load' | 'expand' | 'media'
+//        | 'filter' | 'build' | 'complete' | 'error'
+// status: 'idle' | 'running' | 'complete' | 'error'
+// batch: null | { current, total }
 const DEFAULT_STATE = {
   isActive: false,
   message: chrome.i18n.getMessage('panel_status_ready') || 'Ready to scrape.',
   percentage: 0,
+  phase: 'idle',
+  status: 'idle',
+  batch: null,
   summary: null,
   error: null,
   lastScrapedTabId: null
@@ -22,31 +43,192 @@ const activePasteHandoffs = new Set();
 
 console.debug('Service worker initialised.');
 
-// Auto-resume from storage on wake up
-chrome.storage.local.get('activeBatch', (result) => {
-  if (result && result.activeBatch) {
-    if (scrapingState.isActive) {
-      console.debug('Skipping auto-resume: scraping is already active');
+// An MV3 service worker is torn down between events, so a scrape that outlives the
+// worker has to be reconstructed from storage.session on the next wake-up. Every
+// message is gated on `ready` so no handler can observe half-restored state, and so
+// the activeBatch auto-resume decision is made exactly once, before any message
+// (in particular a fresh `scrapeReddit`) can race it.
+//
+// Deliberately callback-chained rather than promise-chained: when the storage
+// callbacks are synchronous the whole restore completes in this same tick, which is
+// what keeps a woken worker from briefly looking idle.
+const ready = new Promise(resolve => {
+  restoreScrapingState(() => {
+    autoResumeBatch(resolve);
+  });
+});
+
+function restoreScrapingState(done) {
+  if (!chrome.storage.session) {
+    done();
+    return;
+  }
+  chrome.storage.session.get([SCRAPING_STATE_KEY, SCRAPE_CONTEXT_KEY], (result) => {
+    if (chrome.runtime.lastError) {
+      console.debug('Scraping state restore skipped:', chrome.runtime.lastError.message);
+      done();
       return;
     }
-    console.debug('Auto-resuming active batch scrape from storage...', result.activeBatch);
-    resumeBatchScrape(result.activeBatch).catch(err => {
-      console.error('Failed to auto-resume batch scrape:', err);
-    });
-  }
-});
+    const stored = result?.[SCRAPING_STATE_KEY];
+    if (stored) {
+      // A scrape only counts as still running if its handoff context survived too;
+      // otherwise the previous worker died past the point of no return and the flag
+      // would wedge the UI (and block the batch auto-resume below) forever.
+      scrapingState = { ...DEFAULT_STATE, ...stored, isActive: Boolean(result?.[SCRAPE_CONTEXT_KEY]) };
+    }
+    done();
+  });
+}
+
+function autoResumeBatch(done) {
+  chrome.storage.local.get('activeBatch', (result) => {
+    if (result && result.activeBatch && !scrapingState.isActive) {
+      console.debug('Auto-resuming active batch scrape from storage...', result.activeBatch);
+      resumeBatchScrape(result.activeBatch).catch(err => {
+        console.error('Failed to auto-resume batch scrape:', err);
+      });
+    }
+    done();
+  });
+}
 
 chrome.runtime.onInstalled.addListener(() => {
   console.debug('Reddit to AI installed.');
   syncSelectors().catch(err => console.error('Selector sync on installed failed:', err));
   registerAllCustomOrigins().catch(err => console.error('Failed to register custom origins on installed:', err));
+  registerContextMenus();
 });
+
+// =====================
+// Context menu / keyboard shortcut entry points
+// =====================
+
+const CONTEXT_MENU_PAGE_ID = 'r2ai-scrape-page';
+const CONTEXT_MENU_LINK_ID = 'r2ai-scrape-link';
+// Thread pages only: the scraper needs a /comments/ permalink, so subreddit
+// listings and profiles are deliberately excluded.
+const THREAD_URL_PATTERNS = [
+  '*://*.reddit.com/r/*/comments/*',
+  '*://*.reddit.com/comments/*',
+  '*://*.reddit.com/user/*/comments/*',
+  'https://*.redd.it/*'
+];
+
+function contextMenuTitle() {
+  return chrome.i18n.getMessage('context_menu_scrape_thread') || 'Scrape this thread with Reddit to AI';
+}
+
+function registerContextMenus() {
+  if (!chrome.contextMenus?.create) return;
+  // onInstalled also fires on update, so clear first to avoid duplicate-id errors.
+  chrome.contextMenus.removeAll(() => {
+    if (chrome.runtime.lastError) console.debug('Context menu reset skipped:', chrome.runtime.lastError.message);
+    chrome.contextMenus.create({
+      id: CONTEXT_MENU_PAGE_ID,
+      title: contextMenuTitle(),
+      contexts: ['page', 'selection'],
+      documentUrlPatterns: THREAD_URL_PATTERNS
+    }, () => chrome.runtime.lastError && console.debug('Page context menu skipped:', chrome.runtime.lastError.message));
+    chrome.contextMenus.create({
+      id: CONTEXT_MENU_LINK_ID,
+      title: contextMenuTitle(),
+      contexts: ['link'],
+      // targetUrlPatterns matches the link href, so a thread link works from any page.
+      targetUrlPatterns: THREAD_URL_PATTERNS
+    }, () => chrome.runtime.lastError && console.debug('Link context menu skipped:', chrome.runtime.lastError.message));
+  });
+}
+
+if (chrome.contextMenus?.onClicked) {
+  chrome.contextMenus.onClicked.addListener((info, tab) => {
+    ready
+      .then(() => {
+        if (info.menuItemId === CONTEXT_MENU_LINK_ID && info.linkUrl) {
+          return scrapeThreadInNewTab(info.linkUrl);
+        }
+        if (info.menuItemId === CONTEXT_MENU_PAGE_ID) {
+          return handleScrapeRequest({ tabId: tab?.id }, null);
+        }
+        return undefined;
+      })
+      .catch(error => notifyEntryPointFailure(error));
+  });
+}
+
+if (chrome.commands?.onCommand) {
+  chrome.commands.onCommand.addListener((command) => {
+    if (command !== 'scrape-current-thread') return;
+    // No tabId: handleScrapeRequest falls back to the active tab, exactly like the
+    // popup's scrape with stored settings and no per-scrape filter overrides.
+    ready
+      .then(() => handleScrapeRequest({}, null))
+      .catch(error => notifyEntryPointFailure(error));
+  });
+}
+
+function notifyEntryPointFailure(error) {
+  console.error('Reddit to AI: scrape entry point failed:', error);
+  showNotificationIfEnabled(
+    chrome.i18n.getMessage('extName') || 'Reddit to AI',
+    error?.message || (chrome.i18n.getMessage('sw_error_not_reddit') || 'Active tab is not a Reddit thread.')
+  );
+}
+
+// Opens a thread link in a background tab, waits for it to finish loading, then runs
+// the normal tab scrape against it. Batch mode cannot be reused here: it fetches the
+// Reddit JSON API instead of scraping a rendered page.
+async function scrapeThreadInNewTab(url) {
+  if (!isRedditUrl(url)) throw new Error('Active tab is not a Reddit thread.');
+  // Checked before opening the tab so a busy worker does not leave a stray tab behind.
+  if (scrapingState.isActive) throw new Error('Scraping already in progress.');
+  const tab = await chrome.tabs.create({ url, active: false });
+  await waitForTabLoad(tab.id);
+  return handleScrapeRequest({ tabId: tab.id }, null);
+}
+
+function waitForTabLoad(tabId, timeoutMs = 30000) {
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    const finish = (error) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      chrome.tabs.onUpdated.removeListener(onUpdated);
+      if (error) reject(error);
+      else resolve();
+    };
+    const onUpdated = (updatedTabId, changeInfo) => {
+      if (updatedTabId === tabId && changeInfo.status === 'complete') finish();
+    };
+    const timer = setTimeout(() => finish(new Error('Timed out waiting for the Reddit tab to load.')), timeoutMs);
+    chrome.tabs.onUpdated.addListener(onUpdated);
+    // The tab may already have finished loading before the listener was attached.
+    chrome.tabs.get(tabId, tab => {
+      if (chrome.runtime.lastError) {
+        finish(new Error(chrome.runtime.lastError.message));
+        return;
+      }
+      if (tab?.status === 'complete') finish();
+    });
+  });
+}
 
 // =====================
 // Message Handlers
 // =====================
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  // Every branch answers after `ready`, so the listener always claims the async
+  // response channel.
+  ready.then(() => handleRuntimeMessage(request, sender, sendResponse))
+    .catch(error => {
+      console.error('Message handling failed:', error);
+      sendResponse({ status: 'error', error: error.message });
+    });
+  return true;
+});
+
+function handleRuntimeMessage(request, sender, sendResponse) {
   switch (request.action) {
     case 'scrapeReddit': {
       const handler = Array.isArray(request.batchUrls) && request.batchUrls.length > 0
@@ -60,35 +242,61 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             isActive: false,
             error: error.message,
             message: `Error: ${error.message}`,
-            percentage: -1
+            percentage: -1,
+            phase: 'error',
+            status: 'error',
+            batch: null
           });
           sendResponse({ status: 'error', error: error.message, currentState: scrapingState });
         });
-      return true;
+      return;
+    }
+    case 'scrapeComplete': {
+      // Final payload from the content script, delivered as its own message so the
+      // original request/response pair does not have to stay open for the whole
+      // scrape. May arrive at a worker that was restarted mid-scrape.
+      finishTabScrape(request.scrapeId, { data: request.data, error: request.error })
+        .then(() => sendResponse({ ok: true }))
+        .catch(error => {
+          console.error('Failed to finish scrape:', error);
+          sendResponse({ ok: false, error: error.message });
+        });
+      return;
     }
     case 'stopScraping':
-      stopActiveScrape();
-      sendResponse({ status: 'stopping', currentState: scrapingState });
-      return false;
-    case 'progressUpdate':
-      if (request.message) setScrapingState({ message: request.message });
-      if (typeof request.percentage === 'number') setScrapingState({ percentage: request.percentage });
+      stopActiveScrape()
+        .catch(error => console.warn('Reddit to AI: Stop cleanup failed:', error))
+        .then(() => sendResponse({ status: 'stopping', currentState: scrapingState }));
+      return;
+    case 'progressUpdate': {
+      const patch = {};
+      if (request.message) patch.message = request.message;
+      if (typeof request.percentage === 'number') patch.percentage = request.percentage;
+      if (request.phase) {
+        patch.phase = request.phase;
+        patch.status = 'running';
+        // `batch` is re-derived on every phase-carrying update so a stale batch
+        // counter cannot survive past the phase that produced it.
+        patch.batch = request.batch || null;
+      }
+      if (Object.keys(patch).length > 0) setScrapingState(patch);
       sendResponse({ ok: true });
-      return false;
+      return;
+    }
     case 'getScrapingState':
       sendResponse(scrapingState);
-      return false;
+      return;
     case 'notifyUser':
       if (request.title && request.message) {
         showNotificationIfEnabled(request.title, request.message, request.notificationIdBase);
       }
       sendResponse({ ok: true });
-      return false;
+      return;
     case 'fetchImage': {
       fetchImageAsBase64(request.url)
         .then(result => sendResponse(result))
         .catch(error => sendResponse({ error: error.message }));
-      return true;
+      return;
     }
     case 'getPreviewData': {
       getPreviewData()
@@ -97,41 +305,65 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           return loadSettings().then(settings => {
             const merged = { ...settings, ...payload.settings };
             const resolved = resolveSubredditSettings(payload.data.post?.subreddit, merged);
-            return sendResponse({ data: payload.data, settings: resolved });
+            return sendResponse({ data: payload.data, settings: resolved, historyId: payload.historyId || null });
           });
         })
         .catch(error => sendResponse({ error: error.message }));
-      return true;
+      return;
     }
     case 'sendPromptToAi': {
       sendPromptToAi(request)
         .then(result => sendResponse(result))
         .catch(error => sendResponse({ error: error.message }));
-      return true;
+      return;
+    }
+    case 'sendPromptViaApi': {
+      sendPromptViaApi(request)
+        .then(result => sendResponse(result))
+        .catch(error => sendResponse({
+          error: error.message,
+          retryable: error.retryable === true
+        }));
+      return;
+    }
+    case 'getDirectApiStatus': {
+      getDirectApiStatus()
+        .then(status => sendResponse(status))
+        .catch(error => sendResponse({ error: error.message }));
+      return;
+    }
+    case 'testDirectApiKey': {
+      testDirectApiKey(request)
+        .then(result => sendResponse(result))
+        .catch(error => sendResponse({
+          error: error.message,
+          retryable: error.retryable === true
+        }));
+      return;
     }
     case 'getPendingPasteData': {
       getPendingPasteData()
         .then(payload => sendResponse({ payload }))
         .catch(error => sendResponse({ error: error.message }));
-      return true;
+      return;
     }
     case 'markPendingPasteConsumed': {
       markPendingPasteConsumed(request.pasteId)
         .then(() => sendResponse({ ok: true }))
         .catch(error => sendResponse({ error: error.message }));
-      return true;
+      return;
     }
     case 'recordPasteFailure': {
       recordPasteFailure(request)
         .then(() => sendResponse({ ok: true }))
         .catch(error => sendResponse({ error: error.message }));
-      return true;
+      return;
     }
     case 'resumeMissingComments': {
       resumeMissingComments()
         .then(result => sendResponse(result))
         .catch(error => sendResponse({ error: error.message }));
-      return true;
+      return;
     }
     case 'getQuickTokenEstimate': {
       getQuickTokenEstimate(request.tabId, request.url)
@@ -140,7 +372,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           console.warn('Quick estimate failed:', error);
           sendResponse({ error: error.message });
         });
-      return true;
+      return;
     }
     case 'getLocaleData': {
       getLocaleData(request.lang)
@@ -149,86 +381,73 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           console.error('Failed to read locale data:', error);
           sendResponse({ success: false, error: error.message });
         });
-      return true;
+      return;
     }
     case 'focusLastRedditTab': {
       focusLastRedditTab()
         .then(() => sendResponse({ ok: true }))
         .catch(error => sendResponse({ error: error.message }));
-      return true;
+      return;
     }
     case 'getHistory': {
       getHistory()
         .then(history => sendResponse({ history }))
         .catch(error => sendResponse({ error: error.message }));
-      return true;
+      return;
     }
     case 'deleteHistoryItem': {
       deleteFromHistory(request.historyId)
         .then(history => sendResponse({ history }))
         .catch(error => sendResponse({ error: error.message }));
-      return true;
+      return;
     }
     case 'clearHistory': {
       clearHistory()
         .then(() => sendResponse({ success: true }))
         .catch(error => sendResponse({ error: error.message }));
-      return true;
+      return;
     }
     case 'resendHistoryItem': {
       resendHistoryItem(request.historyId, request.aiProvider)
         .then(result => sendResponse(result))
         .catch(error => sendResponse({ error: error.message }));
-      return true;
+      return;
     }
     case 'getHistoryItem': {
       getHistoryItem(request.historyId)
         .then(item => sendResponse({ item }))
         .catch(error => sendResponse({ error: error.message }));
-      return true;
+      return;
     }
     case 'updateHistoryItem': {
       updateHistoryItem(request.historyId, request.patch || {})
         .then(history => sendResponse({ history }))
         .catch(error => sendResponse({ error: error.message }));
-      return true;
+      return;
     }
     case 'compareHistoryItems': {
       compareHistoryItems(request.historyIds || [])
         .then(result => sendResponse(result))
         .catch(error => sendResponse({ error: error.message }));
-      return true;
-    }
-    case 'checkLocalAiCapability': {
-      checkLocalAiCapability()
-        .then(available => sendResponse({ available }))
-        .catch(error => sendResponse({ available: false, error: error.message }));
-      return true;
-    }
-    case 'generateLocalSummary': {
-      generateLocalSummary(request.promptText)
-        .then(summary => sendResponse({ status: 'success', summary }))
-        .catch(error => sendResponse({ status: 'error', error: error.message }));
-      return true;
+      return;
     }
     case 'registerCustomOrigin': {
       registerCustomOriginScript(request.origin)
         .then(() => sendResponse({ status: 'success' }))
         .catch(error => sendResponse({ status: 'error', error: error.message }));
-      return true;
+      return;
     }
     case 'unregisterCustomOrigin': {
       unregisterCustomOriginScript(request.origin)
         .then(() => sendResponse({ status: 'success' }))
         .catch(error => sendResponse({ status: 'error', error: error.message }));
-      return true;
+      return;
     }
     default:
       console.warn('Unhandled runtime message:', request);
       sendResponse({ status: 'ignored' });
-      return false;
   }
-});
+}
 
 // Port connection handler for streaming Local AI summaries
 if (chrome.runtime.onConnect) {
@@ -245,24 +464,6 @@ if (chrome.runtime.onConnect) {
         clearInterval(intervalId);
       });
     }
-    if (port.name === 'local-ai-summary') {
-      port.onMessage.addListener(async (msg) => {
-        if (msg.action === 'summarize') {
-          try {
-            const summary = await generateLocalSummary(msg.promptText, (chunk) => {
-              try {
-                port.postMessage({ status: 'chunk', text: chunk });
-              } catch (err) {
-                console.debug('Port disconnected during streaming:', err);
-              }
-            });
-            port.postMessage({ status: 'success', text: summary });
-          } catch (error) {
-            port.postMessage({ status: 'error', error: error.message });
-          }
-        }
-      });
-    }
   });
 }
 
@@ -277,6 +478,9 @@ async function handleScrapeRequest(request, sender) {
     isActive: true,
     message: chrome.i18n.getMessage('sw_status_preparing') || 'Preparing to scrape.',
     percentage: 5,
+    phase: 'prepare',
+    status: 'running',
+    batch: null,
     summary: null,
     error: null
   });
@@ -288,12 +492,17 @@ async function handleScrapeRequest(request, sender) {
       isActive: false,
       message: chrome.i18n.getMessage('popup_status_navigate') || 'Open a Reddit thread before scraping.',
       percentage: -1,
+      phase: 'error',
+      status: 'error',
+      batch: null,
       error: chrome.i18n.getMessage('sw_error_not_reddit') || 'Active tab is not a Reddit thread.'
     });
     throw new Error('Active tab is not a Reddit thread.');
   }
 
+  const scrapeId = createId();
   currentScrape = {
+    scrapeId,
     tabId: activeTab.id,
     stopRequested: false,
     storageOption: 'persistent',
@@ -303,78 +512,133 @@ async function handleScrapeRequest(request, sender) {
   setScrapingState({ lastScrapedTabId: activeTab.id });
 
   try {
-    await injectContentScripts(activeTab.id);
-    setScrapingState({ message: chrome.i18n.getMessage('sw_status_collecting') || 'Collecting data from page.', percentage: 20 });
-
-    const scrapeResponse = await requestScrapeFromTab(activeTab.id, request.includeHidden, request.filters || {});
-    if (scrapeResponse?.error) throw new Error(`Content script error: ${scrapeResponse.error}`);
-    if (!scrapeResponse?.data) throw new Error('Content script returned no data.');
-    if (currentScrape.stopRequested) throw new Error('Scraping stopped by user.');
-
-    setScrapingState({ message: chrome.i18n.getMessage('sw_status_processing') || 'Preparing scraped data.', percentage: 65 });
-
+    // Settings are resolved up front rather than after the scrape so the whole
+    // handoff context can be persisted before the tab starts working. A worker that
+    // is restarted mid-scrape then has everything it needs to finish the pipeline.
     const settings = await loadSettings();
     const effectiveSettings = mergeRequestFiltersIntoSettings(settings, request.filters || {}, request);
     currentScrape.storageOption = effectiveSettings.dataStorageOption;
-    const refreshedTab = await getTabById(currentScrape.tabId);
-    const processedData = enrichScrapedData(scrapeResponse.data, getTabUrl(refreshedTab), {
-      redditTabId: activeTab.id,
+
+    const context = {
+      scrapeId,
+      tabId: activeTab.id,
+      settings: effectiveSettings,
+      startedAt: Date.now()
+    };
+    await setStorage(chrome.storage.session, { [SCRAPE_CONTEXT_KEY]: context });
+
+    await injectContentScripts(activeTab.id);
+    setScrapingState({ message: chrome.i18n.getMessage('sw_status_collecting') || 'Collecting data from page.', percentage: 20, phase: 'fetch', status: 'running' });
+
+    const ack = await requestScrapeFromTab(activeTab.id, request.includeHidden, request.filters || {}, scrapeId);
+    if (ack?.error) throw new Error(`Content script error: ${ack.error}`);
+
+    // A content script left over from a previous extension version still replies
+    // with the finished payload instead of acknowledging the start.
+    if (ack?.data) {
+      finishTabScrape(scrapeId, { data: ack.data }).catch(error => {
+        console.error('Legacy scrape handoff failed:', error);
+      });
+    } else if (!ack?.started) {
+      throw new Error('Content script did not acknowledge the scrape request.');
+    }
+
+    // Resolves as soon as the tab has started. The result arrives later as its own
+    // `scrapeComplete` message, so the popup follows progress through scraping
+    // state updates rather than through this response.
+    return { started: true, scrapeId, preview: effectiveSettings.showPromptPreview !== false, direct: effectiveSettings.showPromptPreview === false };
+  } catch (error) {
+    await clearScrapeContext();
+    currentScrape = null;
+    throw error;
+  }
+}
+
+async function getActiveScrapeContext(scrapeId) {
+  const stored = await getStorage(chrome.storage.session, SCRAPE_CONTEXT_KEY);
+  const context = stored?.[SCRAPE_CONTEXT_KEY] || null;
+  if (!context) return null;
+  if (scrapeId && context.scrapeId && context.scrapeId !== scrapeId) return null;
+  return context;
+}
+
+async function clearScrapeContext() {
+  await removeStorage(chrome.storage.session, [SCRAPE_CONTEXT_KEY])
+    .catch(error => console.warn('Reddit to AI: Failed to clear scrape context:', error));
+}
+
+// Second half of a single-thread scrape: everything that used to run inline once
+// `chrome.tabs.sendMessage` finally called back. Driven by the `scrapeComplete`
+// message so it also runs correctly on a worker that started after the scrape did.
+async function finishTabScrape(scrapeId, { data, error } = {}) {
+  const context = await getActiveScrapeContext(scrapeId);
+  if (!context) {
+    console.debug('Ignoring scrapeComplete for an unknown or superseded scrape:', scrapeId);
+    return { ignored: true };
+  }
+
+  const stopRequested = Boolean(currentScrape?.stopRequested);
+  try {
+    if (error) throw new Error(`Content script error: ${error}`);
+    if (!data) throw new Error('Content script returned no data.');
+    if (stopRequested) throw new Error('Scraping stopped by user.');
+
+    setScrapingState({ message: chrome.i18n.getMessage('sw_status_processing') || 'Preparing scraped data.', percentage: 65, phase: 'build', status: 'running', batch: null });
+
+    const effectiveSettings = context.settings || await loadSettings();
+    const refreshedTab = await getTabById(context.tabId).catch(() => null);
+    const processedData = enrichScrapedData(data, getTabUrl(refreshedTab), {
+      redditTabId: context.tabId,
       settings: effectiveSettings
     });
     processedData.timestamp = Date.now();
 
-    await savePreviewData(processedData, effectiveSettings);
+    let historyEntry = null;
     if (effectiveSettings.dataStorageOption === 'persistent') {
-      await addToHistory(processedData, effectiveSettings);
+      historyEntry = await addToHistory(processedData, effectiveSettings);
     }
-
-    if (request.localSummarize) {
-      setScrapingState({ message: 'Generating local summary...', percentage: 90, summary: '' });
-      const renderedData = R2AIPrompt.applyContextPreset(processedData, effectiveSettings.contextPreset || 'balanced', effectiveSettings);
-      const promptText = R2AIPrompt.buildPromptText(renderedData, effectiveSettings.defaultPromptTemplate, {
-        ...effectiveSettings,
-        contextPreset: null
-      });
-
-      const summaryText = await generateLocalSummary(promptText, (chunk) => {
-        setScrapingState({
-          isActive: true,
-          percentage: 90,
-          summary: chunk,
-          message: 'Generating local summary...'
-        });
-      });
-
-      setScrapingState({
-        isActive: false,
-        percentage: 100,
-        summary: summaryText,
-        message: 'Summary complete!',
-        error: null
-      });
-
-      return { summary: summaryText, local: true };
-    }
+    await savePreviewData(processedData, effectiveSettings, { historyId: historyEntry?.id || null });
 
     if (effectiveSettings.showPromptPreview === false) {
-      setScrapingState({ message: 'Opening AI tab...', percentage: 86 });
+      setScrapingState({ message: 'Opening AI tab...', percentage: 86, phase: 'build', status: 'running' });
       await sendDataDirectlyToAi(processedData, effectiveSettings);
     } else {
-      setScrapingState({ message: 'Opening prompt preview...', percentage: 86 });
+      setScrapingState({ message: 'Opening prompt preview...', percentage: 86, phase: 'build', status: 'running' });
       await openPreviewTab();
     }
 
     setScrapingState({
       isActive: false,
       percentage: 100,
+      phase: 'complete',
+      status: 'complete',
+      batch: null,
       summary: null,
       message: effectiveSettings.showPromptPreview === false ? 'Content sent directly to AI.' : 'Content ready for prompt preview.',
       error: null
     });
 
-    return { summary: null, preview: effectiveSettings.showPromptPreview !== false, direct: effectiveSettings.showPromptPreview === false };
+    showNotificationIfEnabled(
+      chrome.i18n.getMessage('extName') || 'Reddit to AI',
+      effectiveSettings.showPromptPreview === false ? 'Content sent directly to AI.' : 'Content ready for prompt preview.'
+    );
+
+    return { success: true };
+  } catch (finishError) {
+    console.error('Scrape failed:', finishError);
+    setScrapingState({
+      isActive: false,
+      error: finishError.message,
+      message: `Error: ${finishError.message}`,
+      percentage: -1,
+      phase: 'error',
+      status: 'error',
+      batch: null
+    });
+    throw finishError;
   } finally {
-    currentScrape = null;
+    await clearScrapeContext();
+    if (currentScrape?.scrapeId === context.scrapeId) currentScrape = null;
   }
 }
 
@@ -399,6 +663,9 @@ async function resumeBatchScrape(batch) {
       ? `Resuming scraping of ${urls.length} threads (${initialIndex}/${urls.length}).`
       : `Preparing to scrape ${urls.length} threads.`,
     percentage: 5 + Math.floor((initialIndex / urls.length) * 85),
+    phase: 'prepare',
+    status: 'running',
+    batch: { current: initialIndex, total: urls.length },
     summary: null,
     error: null
   });
@@ -416,7 +683,13 @@ async function resumeBatchScrape(batch) {
         throw new Error('Batch scraping stopped by user.');
       }
       const percentage = 10 + Math.floor((i / urls.length) * 70);
-      setScrapingState({ message: `Scraping thread ${i + 1}/${urls.length}...`, percentage });
+      setScrapingState({
+        message: `Scraping thread ${i + 1}/${urls.length}...`,
+        percentage,
+        phase: 'load',
+        status: 'running',
+        batch: { current: i + 1, total: urls.length }
+      });
       const thread = await scrapeThreadFromUrl(urls[i], effectiveSettings, batchFilters);
       threads.push(thread);
 
@@ -458,21 +731,25 @@ async function resumeBatchScrape(batch) {
       timestamp: Date.now()
     };
 
-    await savePreviewData(batchData, effectiveSettings);
+    let batchHistoryEntry = null;
     if (effectiveSettings.dataStorageOption === 'persistent') {
-      await addToHistory(batchData, effectiveSettings);
+      batchHistoryEntry = await addToHistory(batchData, effectiveSettings);
     }
+    await savePreviewData(batchData, effectiveSettings, { historyId: batchHistoryEntry?.id || null });
 
     if (effectiveSettings.showPromptPreview === false) {
-      setScrapingState({ message: 'Opening AI tab...', percentage: 90 });
+      setScrapingState({ message: 'Opening AI tab...', percentage: 90, phase: 'build', status: 'running', batch: null });
       await sendDataDirectlyToAi(batchData, effectiveSettings);
     } else {
-      setScrapingState({ message: 'Opening prompt preview...', percentage: 90 });
+      setScrapingState({ message: 'Opening prompt preview...', percentage: 90, phase: 'build', status: 'running', batch: null });
       await openPreviewTab();
     }
     setScrapingState({
       isActive: false,
       percentage: 100,
+      phase: 'complete',
+      status: 'complete',
+      batch: null,
       message: effectiveSettings.showPromptPreview === false ? 'Batch sent directly to AI.' : 'Batch ready for prompt preview.',
       error: null
     });
@@ -483,7 +760,10 @@ async function resumeBatchScrape(batch) {
       isActive: false,
       error: error.message,
       message: `Error: ${error.message}`,
-      percentage: -1
+      percentage: -1,
+      phase: 'error',
+      status: 'error',
+      batch: null
     });
     throw error;
   } finally {
@@ -502,7 +782,6 @@ async function handleBatchScrapeRequest(request, _sender) {
     threads: [],
     filters: request.filters || {},
     includeHidden: request.includeHidden,
-    localSummarize: request.localSummarize,
     request: request
   };
 
@@ -515,10 +794,13 @@ async function handleBatchScrapeRequest(request, _sender) {
 // Preview / Paste Handoff
 // =====================
 
-async function savePreviewData(data, settings) {
+async function savePreviewData(data, settings, extra = {}) {
   const payload = {
     data,
     settings,
+    // `historyId` lets the preview page's direct-API response be written back onto
+    // the matching history entry; it is null whenever history saving is off.
+    historyId: extra.historyId || null,
     timestamp: Date.now(),
     handoffId: createId(),
     storageOption: settings.dataStorageOption,
@@ -526,12 +808,23 @@ async function savePreviewData(data, settings) {
   };
   const area = getStorageArea(settings.dataStorageOption);
   const otherArea = getOtherStorageArea(settings.dataStorageOption);
-  await setStorage(area, { [PREVIEW_STORAGE_KEY]: payload });
-  if (otherArea !== area) {
-    await removeStorage(otherArea, [PREVIEW_STORAGE_KEY, PASTE_STORAGE_KEY, LEGACY_THREAD_KEY]);
+  let effectiveArea = area;
+  try {
+    await setStorage(area, { [PREVIEW_STORAGE_KEY]: payload });
+  } catch (error) {
+    // Session storage has a small quota; fall back to local rather than losing the handoff.
+    if (area === chrome.storage.local) throw error;
+    console.warn('Reddit to AI: Preview payload write failed, falling back to local storage:', error);
+    effectiveArea = chrome.storage.local;
+    await setStorage(chrome.storage.local, { [PREVIEW_STORAGE_KEY]: payload });
+  }
+  if (otherArea && otherArea !== effectiveArea) {
+    await removeStorage(otherArea, [PREVIEW_STORAGE_KEY, PASTE_STORAGE_KEY, LEGACY_THREAD_KEY])
+      .catch(error => console.warn('Reddit to AI: Failed to clear stale storage area:', error));
   }
   if (settings.dataStorageOption === 'persistent') {
-    await setStorage(chrome.storage.local, { [LEGACY_THREAD_KEY]: data });
+    await setStorage(chrome.storage.local, { [LEGACY_THREAD_KEY]: data })
+      .catch(error => console.warn('Reddit to AI: Failed to persist legacy thread copy:', error));
   }
   return payload;
 }
@@ -682,27 +975,7 @@ function mergeCommentsIntoData(data, comments) {
 }
 
 function mergeAdditionalComments(roots, additionalComments, threadId) {
-  const commentMap = buildCommentMap(roots);
-  const rootIds = new Set((roots || []).map(comment => comment?.id).filter(Boolean));
-  let addedCount = 0;
-  for (const comment of additionalComments || []) {
-    if (!comment || commentMap[comment.id]) continue;
-    comment.replies = Array.isArray(comment.replies) ? comment.replies : [];
-    if (commentMap[comment.parentId]) {
-      commentMap[comment.parentId].replies.push(comment);
-    } else if (comment.parentId === threadId) {
-      roots.push(comment);
-      rootIds.add(comment.id);
-    } else {
-      roots.push(comment);
-      rootIds.add(comment.id);
-    }
-    commentMap[comment.id] = comment;
-    indexCommentTree(comment, commentMap);
-    reparentRootChildren(comment, roots, rootIds, commentMap);
-    addedCount += 1;
-  }
-  return { roots, addedCount };
+  return R2AIRedditParser.mergeAdditionalComments(roots, additionalComments, threadId);
 }
 
 // =====================
@@ -784,8 +1057,11 @@ async function resendHistoryItem(historyId, aiProvider) {
   const item = await getHistoryItem(historyId);
   if (!item) throw new Error('History item not found');
   const settings = await loadSettings();
+  // The provider ride-alongs in the preview payload only. Persisting it here used to
+  // silently rewrite the user's default provider every time they resent a history
+  // item; preview.js reads `settings.selectedLlmProvider` off this payload and sends
+  // its own `aiProvider` back, so the override applies without touching storage.sync.
   const mergedSettings = { ...settings, selectedLlmProvider: aiProvider || settings.selectedLlmProvider };
-  await chrome.storage.sync.set({ selectedLlmProvider: mergedSettings.selectedLlmProvider });
   const scrapeData = {
     post: item.post,
     comments: item.comments,
@@ -799,7 +1075,7 @@ async function resendHistoryItem(historyId, aiProvider) {
     threadUrl: item.threadUrl,
     timestamp: Date.now()
   };
-  await savePreviewData(scrapeData, { ...mergedSettings, dataStorageOption: 'sessionOnly' });
+  await savePreviewData(scrapeData, { ...mergedSettings, dataStorageOption: 'sessionOnly' }, { historyId: item.id });
   await openPreviewTab();
   return { success: true };
 }
@@ -941,6 +1217,181 @@ function resolveSubredditSettings(subreddit, settings) {
 }
 
 // =====================
+// Direct API mode
+// =====================
+//
+// Keys are read from chrome.storage.local and never from chrome.storage.sync: sync
+// replicates through Google's servers and has a small per-item quota. They are held
+// only for the lifetime of a single request, are placed exclusively in request
+// headers, and are never logged, never written into the preview/paste payloads and
+// never included in the settings export (which only walks a sync-key allowlist).
+
+async function getDirectApiConfig() {
+  const result = await getStorage(chrome.storage.local, DIRECT_API_CONFIG_KEY);
+  const stored = result?.[DIRECT_API_CONFIG_KEY];
+  return stored && typeof stored === 'object' ? stored : {};
+}
+
+async function getDirectApiProviderConfig(provider) {
+  const config = await getDirectApiConfig();
+  const entry = config[provider];
+  return {
+    apiKey: typeof entry?.apiKey === 'string' ? entry.apiKey : '',
+    model: typeof entry?.model === 'string' ? entry.model : ''
+  };
+}
+
+// Reports which providers are usable without ever handing a key back to a page.
+async function getDirectApiStatus() {
+  const config = await getDirectApiConfig();
+  const providers = {};
+  for (const provider of R2AIApiProviders.PROVIDER_IDS) {
+    const entry = config[provider];
+    const definition = R2AIApiProviders.PROVIDERS[provider];
+    providers[provider] = {
+      id: provider,
+      label: definition.label,
+      configured: Boolean(typeof entry?.apiKey === 'string' && entry.apiKey.trim()),
+      model: R2AIApiProviders.resolveModel(provider, entry?.model),
+      defaultModel: definition.defaultModel,
+      suggestedModels: definition.suggestedModels
+    };
+  }
+  return { providers };
+}
+
+/**
+ * Performs one provider call. Returns `{ ok: true, payload }` on HTTP 2xx or
+ * `{ ok: false, status, payload }` otherwise, so the caller decides how to map it.
+ * Network faults and the abort timeout are surfaced as thrown errors.
+ */
+async function performApiFetch(request, timeoutMs) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs || R2AIApiProviders.REQUEST_TIMEOUT_MS);
+  let response;
+  try {
+    response = await fetch(request.url, {
+      method: request.method,
+      headers: request.headers,
+      body: JSON.stringify(request.body),
+      signal: controller.signal
+    });
+  } catch (error) {
+    if (error?.name === 'AbortError') {
+      throw new Error('The AI provider did not respond in time. Try again or use a smaller prompt.');
+    }
+    // Deliberately does not echo the request: the headers hold the API key.
+    throw new Error(`Could not reach the AI provider: ${error?.message || 'network error'}`);
+  } finally {
+    clearTimeout(timer);
+  }
+
+  let payload = null;
+  try {
+    payload = await response.json();
+  } catch {
+    payload = null;
+  }
+  return { ok: response.ok, status: response.status, payload };
+}
+
+/**
+ * Sends `promptText` to the configured provider and returns the assistant's reply.
+ * Runs entirely inside the originating message's promise chain so the pending fetch
+ * keeps the service worker alive for the full timeout window.
+ */
+async function callDirectApi(provider, promptText, options = {}) {
+  if (!R2AIApiProviders.isSupportedProvider(provider)) {
+    throw new Error(`Unknown direct API provider: ${provider}`);
+  }
+  const stored = await getDirectApiProviderConfig(provider);
+  const apiKey = options.apiKey || stored.apiKey;
+  if (!apiKey) {
+    throw new Error(`No API key is configured for ${R2AIApiProviders.PROVIDERS[provider].label}. Add one in the extension options.`);
+  }
+  const model = options.model || stored.model;
+  const maxTokens = options.maxTokens;
+
+  const startedAt = Date.now();
+  let request = R2AIApiProviders.buildRequest(provider, { apiKey, model, promptText, maxTokens });
+  let result = await performApiFetch(request, options.timeoutMs);
+
+  // Older OpenAI models reject `max_completion_tokens`; retry once with `max_tokens`.
+  if (!result.ok && R2AIApiProviders.isMaxTokensParamError(provider, result.status, result.payload)) {
+    request = R2AIApiProviders.buildRequest(provider, {
+      apiKey,
+      model,
+      promptText,
+      maxTokens,
+      legacyMaxTokens: true
+    });
+    result = await performApiFetch(request, options.timeoutMs);
+  }
+
+  if (!result.ok) {
+    const mapped = R2AIApiProviders.mapError(provider, result.status, result.payload);
+    const error = new Error(mapped.message);
+    error.retryable = mapped.retryable;
+    error.status = mapped.status;
+    error.providerErrorType = mapped.type;
+    throw error;
+  }
+
+  const parsed = R2AIApiProviders.parseResponse(provider, result.payload);
+  return {
+    provider,
+    model: R2AIApiProviders.resolveModel(provider, model),
+    text: parsed.text,
+    refused: parsed.refused,
+    truncated: parsed.truncated,
+    stopReason: parsed.stopReason,
+    durationMs: Date.now() - startedAt,
+    receivedAt: Date.now()
+  };
+}
+
+async function sendPromptViaApi(request) {
+  const provider = request.apiProvider;
+  const promptText = String(request.promptText || '');
+  const result = await callDirectApi(provider, promptText);
+
+  // Persist alongside the history entry when history saving is on. A failure here
+  // must not lose the response the user is waiting on, so it is logged and ignored.
+  const historyId = request.historyId || (await getPreviewData())?.historyId || null;
+  if (historyId) {
+    try {
+      await updateHistoryItem(historyId, {
+        apiResponse: {
+          provider: result.provider,
+          model: result.model,
+          text: result.text,
+          refused: result.refused,
+          truncated: result.truncated,
+          receivedAt: result.receivedAt
+        }
+      });
+    } catch (error) {
+      console.warn('Reddit to AI: Could not attach the API response to history:', error.message);
+    }
+  }
+
+  return { success: true, response: result };
+}
+
+// Minimal round-trip used by the options page "Test key" buttons. The key comes from
+// the options form so a user can verify it before saving.
+async function testDirectApiKey(request) {
+  const provider = request.apiProvider;
+  const result = await callDirectApi(provider, 'Say OK', {
+    apiKey: request.apiKey,
+    model: request.model,
+    maxTokens: 16,
+    timeoutMs: 30000
+  });
+  return { success: true, model: result.model, text: result.text };
+}
+
+// =====================
 // Storage / Settings
 // =====================
 
@@ -1000,33 +1451,51 @@ function getOtherStorageArea(option) {
   return option === 'persistent' ? (chrome.storage.session || null) : chrome.storage.local;
 }
 
+function getStorageError() {
+  const lastError = chrome.runtime?.lastError;
+  if (!lastError) return null;
+  return new Error(lastError.message || 'chrome.storage operation failed.');
+}
+
 function getStorage(area, keys) {
-  return new Promise(resolve => {
+  return new Promise((resolve, reject) => {
     if (!area) {
       resolve({});
       return;
     }
-    area.get(keys, result => resolve(result || {}));
+    area.get(keys, result => {
+      const error = getStorageError();
+      if (error) reject(error);
+      else resolve(result || {});
+    });
   });
 }
 
 function setStorage(area, items) {
-  return new Promise(resolve => {
+  return new Promise((resolve, reject) => {
     if (!area) {
       resolve();
       return;
     }
-    area.set(items, () => resolve());
+    area.set(items, () => {
+      const error = getStorageError();
+      if (error) reject(error);
+      else resolve();
+    });
   });
 }
 
 function removeStorage(area, keys) {
-  return new Promise(resolve => {
+  return new Promise((resolve, reject) => {
     if (!area) {
       resolve();
       return;
     }
-    area.remove(keys, () => resolve());
+    area.remove(keys, () => {
+      const error = getStorageError();
+      if (error) reject(error);
+      else resolve();
+    });
   });
 }
 
@@ -1036,7 +1505,17 @@ function removeStorage(area, keys) {
 
 function setScrapingState(patch) {
   scrapingState = { ...scrapingState, ...patch };
+  persistScrapingState();
   broadcastScrapingState();
+}
+
+// The state object is a handful of scalars, so mirroring it into storage.session on
+// every change is cheap and lets a woken worker answer `getScrapingState` correctly.
+// Fire and forget: a failed mirror must never break the scrape itself.
+function persistScrapingState() {
+  if (!chrome.storage.session) return;
+  setStorage(chrome.storage.session, { [SCRAPING_STATE_KEY]: scrapingState })
+    .catch(error => console.debug('Scraping state persist skipped:', error.message));
 }
 
 function broadcastScrapingState() {
@@ -1055,8 +1534,11 @@ function broadcastScrapingState() {
   }
 }
 
-function stopActiveScrape() {
-  removeStorage(chrome.storage.local, ['activeBatch']);
+async function stopActiveScrape() {
+  // Awaited so a stop cannot lose a race with the auto-resume on the next wake-up.
+  await removeStorage(chrome.storage.local, ['activeBatch'])
+    .catch(error => console.warn('Reddit to AI: Failed to clear activeBatch:', error));
+  await clearScrapeContext();
   if (!currentScrape) return;
   currentScrape.stopRequested = true;
   setScrapingState({ message: chrome.i18n.getMessage('sw_status_stop_requested') || 'Stop requested.', percentage: scrapingState.percentage });
@@ -1070,10 +1552,25 @@ function stopActiveScrape() {
   }
 }
 
+// Tab URLs are only readable where the extension has a permission for them: a
+// Reddit tab is covered by host_permissions, and the tab that was active when the
+// user clicked the action is covered by activeTab. The broad `tabs` permission is
+// deliberately not requested, so when the active tab's URL comes back empty we
+// retry with a Reddit-scoped match pattern instead of assuming we may read it.
+const REDDIT_TAB_MATCHES = ['*://*.reddit.com/*', 'https://*.redd.it/*'];
+
 async function getActiveTab() {
   const tabs = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
-  if (!tabs || tabs.length === 0) throw new Error('No active tab detected.');
-  return tabs[0];
+  const activeTab = tabs && tabs[0];
+  if (activeTab && getTabUrl(activeTab)) return activeTab;
+
+  const redditTabs = await chrome.tabs
+    .query({ active: true, lastFocusedWindow: true, url: REDDIT_TAB_MATCHES })
+    .catch(() => []);
+  if (redditTabs && redditTabs[0]) return redditTabs[0];
+
+  if (activeTab) return activeTab;
+  throw new Error('No active tab detected.');
 }
 
 async function getScrapeTargetTab(request, sender) {
@@ -1150,28 +1647,28 @@ async function injectContentScripts(tabId) {
     console.debug('Floating panel script injection skipped:', error.message);
   }
 
-  try {
-    await chrome.scripting.executeScript({ target: { tabId }, files: ['cl100k_base.js'] });
-  } catch (error) {
-    console.debug('cl100k_base helper injection skipped:', error.message);
-  }
-
+  // cl100k_base.js is intentionally not injected here: nothing on a Reddit tab asks
+  // for exact token counts, and promptBuilder falls back to a length / 4 estimate.
   try {
     await chrome.scripting.executeScript({ target: { tabId }, files: ['promptBuilder.js'] });
   } catch (error) {
     console.debug('Prompt helper injection skipped:', error.message);
   }
 
+  // redditScraper.js parses through R2AIRedditParser, so this injection is not
+  // optional; let a failure surface instead of scraping with a missing dependency.
+  await chrome.scripting.executeScript({ target: { tabId }, files: ['redditParser.js'] });
   await chrome.scripting.executeScript({ target: { tabId }, files: ['redditScraper.js'] });
 }
 
-async function requestScrapeFromTab(tabId, includeHidden, filters) {
+async function requestScrapeFromTab(tabId, includeHidden, filters, scrapeId) {
+  const message = { action: 'scrapeReddit', includeHidden, filters, scrapeId };
   try {
-    return await sendMessageToTab(tabId, { action: 'scrapeReddit', includeHidden, filters });
+    return await sendMessageToTab(tabId, message);
   } catch (error) {
     if (/Receiving end does not exist/.test(error.message)) {
       await delay(250);
-      return sendMessageToTab(tabId, { action: 'scrapeReddit', includeHidden, filters });
+      return sendMessageToTab(tabId, message);
     }
     throw error;
   }
@@ -1190,6 +1687,7 @@ function sendMessageToTab(tabId, message) {
 }
 
 function showNotificationIfEnabled(title, message, notificationIdBase = 'reddit-to-ai') {
+  if (!chrome.notifications?.create) return;
   chrome.storage.sync.get(['showNotifications'], result => {
     const shouldShow = typeof result.showNotifications === 'boolean' ? result.showNotifications : true;
     if (!shouldShow) return;
@@ -1224,7 +1722,12 @@ async function getAiUrl(providerKey) {
       }
       return match;
     }
-    return 'http://localhost:3000/';
+    // No custom origin configured: opening a hard-coded localhost URL silently sent
+    // users to a page that almost never exists. Surface the misconfiguration instead.
+    const message = chrome.i18n.getMessage('sw_error_custom_origin_missing')
+      || 'No custom AI origin is configured. Add one in Options before using the custom provider.';
+    showNotificationIfEnabled(chrome.i18n.getMessage('extName') || 'Reddit to AI', message);
+    throw new Error(message);
   }
   return map[providerKey] || map.gemini;
 }
@@ -1348,51 +1851,7 @@ function inferThreadId(data) {
 
 function countComments(comments) {
   if (globalThis.R2AIPrompt?.countComments) return R2AIPrompt.countComments(comments);
-  if (!Array.isArray(comments)) return 0;
-  let total = 0;
-  const stack = [...comments];
-  while (stack.length > 0) {
-    const next = stack.pop();
-    if (!next) continue;
-    total += 1;
-    if (Array.isArray(next.replies)) stack.push(...next.replies);
-  }
-  return total;
-}
-
-function buildCommentMap(roots) {
-  const map = {};
-  const traverse = comments => {
-    for (const comment of comments || []) {
-      if (comment?.id) map[comment.id] = comment;
-      traverse(comment.replies || []);
-    }
-  };
-  traverse(roots);
-  return map;
-}
-
-function indexCommentTree(comment, map) {
-  if (!comment?.id) return;
-  map[comment.id] = comment;
-  for (const reply of comment.replies || []) {
-    indexCommentTree(reply, map);
-  }
-}
-
-function reparentRootChildren(parent, roots, rootIds, commentMap) {
-  if (!parent?.id) return;
-  for (let i = roots.length - 1; i >= 0; i--) {
-    const candidate = roots[i];
-    if (!candidate || candidate.id === parent.id || candidate.parentId !== parent.id) continue;
-    roots.splice(i, 1);
-    rootIds.delete(candidate.id);
-    if (!parent.replies.some(reply => reply.id === candidate.id)) {
-      parent.replies.unshift(candidate);
-    }
-  }
-  rootIds.delete(parent.id);
-  indexCommentTree(parent, commentMap);
+  return R2AIRedditParser.countComments(comments);
 }
 
 function inferSubredditFromUrl(url) {
@@ -1454,14 +1913,7 @@ async function scrapeThreadFromUrl(url, settings, filters) {
 }
 
 function buildRedditJsonUrl(inputUrl, sortMode, depth) {
-  const url = new URL(inputUrl);
-  url.pathname = url.pathname.replace(/\/$/, '') + '.json';
-  url.searchParams.set('limit', '500');
-  url.searchParams.set('depth', String(Math.min(Math.max(depth, 1), 10)));
-  url.searchParams.set('raw_json', '1');
-  url.searchParams.set('showmore', 'true');
-  url.searchParams.set('sort', sortMode || 'confidence');
-  return url.toString();
+  return R2AIRedditParser.buildRedditJsonUrl(inputUrl, sortMode, depth);
 }
 
 async function fetchJsonWithRetry(url, retries = 3) {
@@ -1537,96 +1989,32 @@ function enqueueMoreIds(ids, queue, seenIds) {
 }
 
 function parseBackgroundComments(children, includeHidden, maxDepth, moreIds) {
-  const roots = [];
-  for (const child of children || []) {
-    const node = parseBackgroundCommentNode(child, includeHidden, 0, maxDepth, moreIds);
-    if (node) roots.push(node);
-  }
-  return roots;
+  return R2AIRedditParser.parseComments(children, {
+    includeHidden,
+    maxDepth,
+    moreIds,
+    placeholderStyle: 'background'
+  }).roots;
 }
 
 function parseBackgroundCommentNode(child, includeHidden, depth, maxDepth, moreIds) {
-  if (child.kind === 'more' && Array.isArray(child.data?.children)) {
-    moreIds.push(...child.data.children);
-    return null;
-  }
-  if (child.kind !== 't1') return null;
-  const replies = [];
-  const replyChildren = child.data?.replies?.data?.children;
-  if (depth < maxDepth - 1 && replyChildren) {
-    for (const reply of replyChildren) {
-      const parsed = parseBackgroundCommentNode(reply, includeHidden, depth + 1, maxDepth, moreIds);
-      if (parsed) replies.push(parsed);
-    }
-  }
-
-  const comment = parseBackgroundCommentData(child.data, includeHidden, replies);
-  if (!comment) return replies.length > 0 ? createOmittedParentPlaceholder(child.data, replies) : null;
-  comment.replies = replies;
-  return comment;
+  return R2AIRedditParser.parseCommentNode(
+    child,
+    { includeHidden, maxDepth, moreIds, placeholderStyle: 'background' },
+    depth
+  );
 }
 
 function parseBackgroundCommentData(data, includeHidden, replies = []) {
-  const isRemoved = data?.body === '[removed]' || data?.body === '[deleted]';
-  if (!includeHidden && isRemoved) return null;
-  return {
-    id: data.name,
-    parentId: data.parent_id,
-    author: data.author,
-    text: data.body || '',
-    score: data.score,
-    controversiality: data.controversiality || 0,
-    timestamp: data.created_utc ? data.created_utc * 1000 : null,
-    isSubmitter: data.is_submitter || false,
-    authorFlair: data.author_flair_text || null,
-    distinguished: data.distinguished || null,
-    awardCount: data.total_awards_received || 0,
-    permalink: data.permalink ? `https://www.reddit.com${data.permalink}` : null,
-    replies
-  };
-}
-
-function createOmittedParentPlaceholder(data, replies) {
-  return {
-    id: data.name,
-    parentId: data.parent_id,
-    author: '[omitted]',
-    text: '[removed/deleted parent omitted]',
-    score: data.score || 0,
-    controversiality: data.controversiality || 0,
-    timestamp: data.created_utc ? data.created_utc * 1000 : null,
-    isSubmitter: false,
-    authorFlair: null,
-    distinguished: null,
-    awardCount: data.total_awards_received || 0,
-    permalink: data.permalink ? `https://www.reddit.com${data.permalink}` : null,
-    isOmittedParent: true,
-    replies
-  };
+  return R2AIRedditParser.parseCommentData(data, includeHidden, replies);
 }
 
 function applyBackgroundFilters(comments, filters, settings) {
-  const minScore = filters.minScore || 0;
-  const hideBots = Boolean(filters.hideBots);
-  const authorTypes = Array.isArray(filters.authorTypes) ? filters.authorTypes : [];
-  const shouldInclude = comment => {
-    if (comment.isOmittedParent) return true;
-    if (minScore > 0 && (comment.score || 0) < minScore) return false;
-    if (hideBots && String(comment.author || '').toLowerCase().endsWith('bot')) return false;
-    if (authorTypes.length > 0) {
-      const matchesOp = authorTypes.includes('op') && comment.isSubmitter;
-      const matchesFlaired = authorTypes.includes('flaired') && comment.authorFlair;
-      if (!matchesOp && !matchesFlaired) return false;
-    }
-    return true;
-  };
-  const filterTree = nodes => (nodes || []).flatMap(node => {
-    const replies = filterTree(node.replies || []);
-    if (node.isOmittedParent && replies.length === 0) return [];
-    if (!shouldInclude(node)) return replies;
-    return [{ ...node, replies }];
+  let result = R2AIRedditParser.filterComments(comments, {
+    minScore: filters.minScore || 0,
+    hideBots: Boolean(filters.hideBots),
+    authorTypes: Array.isArray(filters.authorTypes) ? filters.authorTypes : []
   });
-  let result = filterTree(comments);
   const topN = filters.topN || 0;
   if (topN > 0 && globalThis.R2AIPrompt?.trimComments) {
     result = R2AIPrompt.trimComments(result, topN, filters.trimStrategy || settings.trimStrategy || 'top');
@@ -1693,6 +2081,37 @@ function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+const KNOWN_SELECTOR_PLATFORMS = ['gemini', 'chatgpt', 'claude', 'aistudio', 'deepseek', 'groq', 'custom'];
+const SELECTOR_STRING_FIELDS = ['inputSelector'];
+const SELECTOR_BOOLEAN_FIELDS = ['isContentEditable'];
+
+// Accepts only known platform keys with string selectors / boolean flags.
+// Anything else (unknown platforms, non-string selectors, metadata such as `version`) is skipped.
+function sanitizeSyncedSelectors(raw) {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+  const clean = {};
+  for (const platform of KNOWN_SELECTOR_PLATFORMS) {
+    const value = raw[platform];
+    if (value === undefined || value === null) continue;
+
+    if (typeof value === 'string') {
+      if (value.trim()) clean[platform] = value;
+      continue;
+    }
+    if (typeof value !== 'object' || Array.isArray(value)) continue;
+
+    const entry = {};
+    for (const field of SELECTOR_STRING_FIELDS) {
+      if (typeof value[field] === 'string' && value[field].trim()) entry[field] = value[field];
+    }
+    for (const field of SELECTOR_BOOLEAN_FIELDS) {
+      if (typeof value[field] === 'boolean') entry[field] = value[field];
+    }
+    if (Object.keys(entry).length > 0) clean[platform] = entry;
+  }
+  return Object.keys(clean).length > 0 ? clean : null;
+}
+
 async function syncSelectors() {
   try {
     const url = 'https://raw.githubusercontent.com/KhazP/Reddit-to-AI/main/selectors.json';
@@ -1700,8 +2119,11 @@ async function syncSelectors() {
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    const selectors = await response.json();
-    if (selectors && typeof selectors === 'object') {
+    const raw = await response.json();
+    const selectors = sanitizeSyncedSelectors(raw);
+    if (!selectors) {
+      console.warn('Reddit to AI: Remote selectors payload had no usable entries; skipping.');
+    } else {
       await new Promise(resolve => {
         chrome.storage.local.set({
           syncedSelectors: selectors,
@@ -1743,84 +2165,12 @@ if (chrome.runtime.onStartup) {
   });
 }
 
-/**
- * Checks if the browser has built-in Gemini Nano / Local AI capability enabled.
- */
-async function checkLocalAiCapability() {
-  try {
-    const aiObj = typeof self !== 'undefined' && self.ai ? self.ai : (typeof ai !== 'undefined' ? ai : null);
-    if (!aiObj) return false;
-    
-    if (aiObj.languageModel) {
-      const caps = await aiObj.languageModel.capabilities();
-      return caps && caps.available !== 'no';
-    }
-    if (aiObj.assistant) {
-      const caps = await aiObj.assistant.capabilities();
-      return caps && caps.available !== 'no';
-    }
-  } catch (e) {
-    console.error('Error checking local AI capability:', e);
-  }
-  return false;
-}
 
-/**
- * Generates summary using Local AI Prompt API with streaming progress callbacks.
- */
-async function generateLocalSummary(promptText, onChunk) {
-  const aiObj = typeof self !== 'undefined' && self.ai ? self.ai : (typeof ai !== 'undefined' ? ai : null);
-  if (!aiObj) {
-    throw new Error('Chrome Local AI (ai) is not supported in this environment.');
-  }
 
-  let modelApi = aiObj.languageModel;
-  if (!modelApi && aiObj.assistant) {
-    modelApi = aiObj.assistant;
-  }
-
-  if (!modelApi) {
-    throw new Error('Chrome Local AI languageModel/assistant API is not available.');
-  }
-
-  const caps = await modelApi.capabilities();
-  if (!caps || caps.available === 'no') {
-    throw new Error('Chrome Local AI is not available (capabilities returned "no").');
-  }
-
-  const session = await modelApi.create();
-  try {
-    if (typeof session.promptStreaming === 'function') {
-      const stream = session.promptStreaming(promptText);
-      let fullText = '';
-      for await (const chunk of stream) {
-        fullText = chunk;
-        if (typeof onChunk === 'function') {
-          onChunk(fullText);
-        }
-      }
-      return fullText;
-    } else {
-      const result = await session.prompt(promptText);
-      if (typeof onChunk === 'function') {
-        onChunk(result);
-      }
-      return result;
-    }
-  } finally {
-    try {
-      if (typeof session.destroy === 'function') {
-        session.destroy();
-      } else if (typeof session.close === 'function') {
-        session.close();
-      }
-    } catch (e) {
-      console.debug('Error closing AI session:', e);
-    }
-  }
-}
-
-// Simple cache for quick estimates
+// Simple cache for quick estimates. Entries are `{ data, timestamp }` and expire
+// after QUICK_ESTIMATE_TTL_MS so a thread that keeps growing is not estimated from
+// a stale snapshot for the whole life of the worker.
+const QUICK_ESTIMATE_TTL_MS = 5 * 60 * 1000;
 const quickEstimateCache = new Map();
 
 // Helper to check if URL is a Reddit post
@@ -1866,8 +2216,12 @@ async function getQuickTokenEstimate(tabId, urlStr) {
   if (!isRedditPostUrl(urlStr)) {
     throw new Error('Not a Reddit post URL.');
   }
-  if (quickEstimateCache.has(urlStr)) {
-    return quickEstimateCache.get(urlStr);
+  const cached = quickEstimateCache.get(urlStr);
+  if (cached) {
+    if (Date.now() - (cached.timestamp || 0) < QUICK_ESTIMATE_TTL_MS) {
+      return cached.data;
+    }
+    quickEstimateCache.delete(urlStr);
   }
 
   // Construct JSON URL
@@ -1915,7 +2269,7 @@ async function getQuickTokenEstimate(tabId, urlStr) {
     const oldestKey = quickEstimateCache.keys().next().value;
     quickEstimateCache.delete(oldestKey);
   }
-  quickEstimateCache.set(urlStr, estimatedData);
+  quickEstimateCache.set(urlStr, { data: estimatedData, timestamp: Date.now() });
   return estimatedData;
 }
 
@@ -1936,9 +2290,8 @@ if (globalThis.R2AIServiceWorkerTest) {
     parseBackgroundComments,
     parseBackgroundCommentNode,
     syncSelectors,
+    sanitizeSyncedSelectors,
     checkAndSyncSelectors,
-    checkLocalAiCapability,
-    generateLocalSummary,
     getScriptIdForOrigin,
     registerCustomOriginScript,
     unregisterCustomOriginScript,
@@ -1949,6 +2302,13 @@ if (globalThis.R2AIServiceWorkerTest) {
     PRESET_TEMPLATES,
     resumeBatchScrape,
     handleBatchScrapeRequest,
+    handleScrapeRequest,
+    handleRuntimeMessage,
+    finishTabScrape,
+    getActiveScrapeContext,
+    ready,
+    SCRAPE_CONTEXT_KEY,
+    SCRAPING_STATE_KEY,
     stopActiveScrape,
     getScrapingState: () => scrapingState,
     setScrapingState,
@@ -1957,6 +2317,18 @@ if (globalThis.R2AIServiceWorkerTest) {
     getQuickTokenEstimate,
     addToHistory,
     resendHistoryItem,
+    updateHistoryItem,
+    getHistory,
+    getDirectApiConfig,
+    getDirectApiStatus,
+    callDirectApi,
+    sendPromptViaApi,
+    testDirectApiKey,
+    DIRECT_API_CONFIG_KEY,
+    getStorage,
+    setStorage,
+    removeStorage,
+    savePreviewData,
     chrome: typeof chrome !== 'undefined' ? chrome : null
   });
 }

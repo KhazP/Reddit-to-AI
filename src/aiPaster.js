@@ -3,7 +3,8 @@ console.log('Reddit to AI: aiPaster.js loaded.');
 
 const MAX_IMAGES = 10;
 const IMAGE_PASTE_DELAY = 500;
-const INPUT_RETRY_LIMIT = 7;
+const INPUT_WAIT_TIMEOUT = 20000;
+const INPUT_POLL_INTERVAL = 400;
 
 if (!globalThis.R2AIAiPasterTest) {
     setTimeout(initPaster, 1500);
@@ -72,17 +73,15 @@ async function attemptPaste(payload) {
         return;
     }
 
-    const loginProblem = detectLoginRequired();
-    if (loginProblem) {
-        await recordPasteFailure(payload, loginProblem);
-        showPasteFallback(promptText, loginProblem, payload);
-        return;
-    }
-
+    // The composer search runs first. Login detection is heuristic and false-positives
+    // on signed-in pages (a footer "sign in" link, an /auth/ path), so it is only
+    // consulted afterwards, to explain why no composer ever showed up.
     const inputEl = await waitForInput(target.inputSelector);
     if (!inputEl) {
-        await recordPasteFailure(payload, 'Input box was not found. You may need to sign in or start a new chat.');
-        showPasteFallback(promptText, 'Auto-paste failed — click Copy Prompt.', payload);
+        const loginProblem = detectLoginRequired();
+        const reason = loginProblem || 'Input box was not found. You may need to start a new chat.';
+        await recordPasteFailure(payload, reason);
+        showPasteFallback(promptText, reason, payload);
         return;
     }
 
@@ -249,13 +248,143 @@ async function getPlatformInputTarget() {
     return merged;
 }
 
-async function waitForInput(selector) {
-    for (let attempt = 0; attempt < INPUT_RETRY_LIMIT; attempt++) {
-        const inputEl = document.querySelector(selector);
-        if (inputEl) return inputEl;
-        await delay(900 + attempt * 200);
+// Composer hints that appear in aria-label / placeholder text across the AI chat
+// UIs we target. A match is strong evidence the element is the prompt box rather
+// than some other editable on the page (a rename field, a search box, ...).
+const COMPOSER_HINTS = ['prompt', 'message', 'chat', 'ask', 'send a', 'talk to', 'reply'];
+
+function collectCandidates(selector) {
+    if (typeof document.querySelectorAll === 'function') {
+        return Array.from(document.querySelectorAll(selector) || []);
     }
-    return null;
+    const single = document.querySelector(selector);
+    return single ? [single] : [];
+}
+
+// Visibility is best-effort: an element only counts as hidden when the DOM
+// actually tells us so. When neither layout API is available we assume visible,
+// because treating "unknown" as hidden would reject every viable candidate.
+function isVisibleCandidate(el) {
+    if (!el) return false;
+    if (el.hidden === true) return false;
+    if ('offsetParent' in el && el.offsetParent === null) {
+        // position:fixed elements legitimately report a null offsetParent, so only
+        // trust this signal when there is no measurable box either.
+        const rect = typeof el.getBoundingClientRect === 'function' ? el.getBoundingClientRect() : null;
+        if (!rect || (!rect.width && !rect.height)) return false;
+    }
+    if (typeof el.getBoundingClientRect === 'function') {
+        const rect = el.getBoundingClientRect();
+        if (rect && rect.width === 0 && rect.height === 0) return false;
+    }
+    return true;
+}
+
+function describeCandidate(el) {
+    const parts = [
+        el.getAttribute?.('aria-label'),
+        el.getAttribute?.('placeholder'),
+        el.getAttribute?.('aria-placeholder'),
+        el.getAttribute?.('data-placeholder'),
+        el.getAttribute?.('name'),
+        el.getAttribute?.('id')
+    ];
+    return parts.filter(Boolean).join(' ').toLowerCase();
+}
+
+// Higher is better. The weights are ordered so an explicitly-labelled composer
+// always beats a bare contenteditable, and a large box near the bottom of the
+// viewport beats a small one tucked away in a corner.
+function scoreCandidate(el) {
+    let score = 0;
+
+    if (el.getAttribute?.('role') === 'textbox') score += 4;
+
+    const description = describeCandidate(el);
+    if (COMPOSER_HINTS.some(hint => description.includes(hint))) score += 4;
+
+    const tagName = String(el.tagName || '').toUpperCase();
+    if (tagName === 'TEXTAREA') score += 3;
+
+    const className = typeof el.className === 'string' ? el.className.toLowerCase() : '';
+    if (className.includes('prosemirror') || className.includes('ql-editor')) score += 3;
+
+    if (el.getAttribute?.('contenteditable') === 'true' || el.isContentEditable === true) score += 1;
+
+    const rect = typeof el.getBoundingClientRect === 'function' ? el.getBoundingClientRect() : null;
+    if (rect && (rect.width || rect.height)) {
+        const area = (rect.width || 0) * (rect.height || 0);
+        // Saturates around a typical composer footprint (~600x120).
+        score += Math.min(3, area / 24000);
+
+        const viewportHeight = (typeof window !== 'undefined' && window.innerHeight) || 0;
+        if (viewportHeight) {
+            // Composers live near the bottom of the page; the closer the better.
+            const distanceFromBottom = Math.max(0, viewportHeight - (rect.bottom || 0));
+            score += Math.min(3, 3 * (1 - Math.min(1, distanceFromBottom / viewportHeight)));
+        }
+    }
+
+    return score;
+}
+
+function pickBestCandidate(selector) {
+    const candidates = collectCandidates(selector).filter(isVisibleCandidate);
+    if (candidates.length === 0) return null;
+    if (candidates.length === 1) return candidates[0];
+
+    let best = null;
+    let bestScore = -Infinity;
+    for (const candidate of candidates) {
+        const score = scoreCandidate(candidate);
+        if (score > bestScore) {
+            best = candidate;
+            bestScore = score;
+        }
+    }
+    return best;
+}
+
+// Resolves as soon as a viable composer exists rather than after a fixed number of
+// sleeps, so a fast page is not penalised and a slow one still gets the full budget.
+function waitForInput(selector, timeoutMs = INPUT_WAIT_TIMEOUT) {
+    const immediate = pickBestCandidate(selector);
+    if (immediate) return Promise.resolve(immediate);
+
+    return new Promise(resolve => {
+        let settled = false;
+        let observer = null;
+        let pollTimer = null;
+        let timeoutTimer = null;
+
+        const finish = (result) => {
+            if (settled) return;
+            settled = true;
+            observer?.disconnect?.();
+            if (pollTimer) clearInterval(pollTimer);
+            if (timeoutTimer) clearTimeout(timeoutTimer);
+            resolve(result);
+        };
+
+        const check = () => {
+            const found = pickBestCandidate(selector);
+            if (found) finish(found);
+        };
+
+        if (typeof MutationObserver !== 'undefined' && document.documentElement) {
+            observer = new MutationObserver(check);
+            observer.observe(document.documentElement, { childList: true, subtree: true, attributes: true });
+        } else if (typeof setInterval === 'function') {
+            // No observer available (older host, or a test harness): fall back to polling.
+            pollTimer = setInterval(check, INPUT_POLL_INTERVAL);
+        }
+
+        timeoutTimer = setTimeout(() => finish(null), timeoutMs);
+
+        // A composer that appeared between the first scan and the observer being
+        // installed would otherwise be missed until the next mutation.
+        check();
+    });
 }
 
 function insertText(element, text, isContentEditable) {
@@ -422,8 +551,12 @@ async function pasteImages(inputEl, imageUrls) {
                 clipboardData: dt
             });
             inputEl.focus();
-            const accepted = inputEl.dispatchEvent(pasteEvent);
-            if (!accepted) throw new Error('Image paste event was cancelled.');
+            // dispatchEvent() returns false when a listener called preventDefault(),
+            // which is exactly what a site does when it consumes the pasted image.
+            // A true return means nothing handled the paste, so we cannot confirm it.
+            const notCancelled = inputEl.dispatchEvent(pasteEvent);
+            const consumed = notCancelled === false || pasteEvent.defaultPrevented === true;
+            if (!consumed) throw new Error('No paste handler detected.');
             pasted += 1;
             await delay(IMAGE_PASTE_DELAY);
         } catch (error) {
@@ -487,6 +620,10 @@ if (globalThis.R2AIAiPasterTest) {
         attemptPaste,
         pasteImages,
         collectImageUrls,
-        getPlatformInputTarget
+        getPlatformInputTarget,
+        waitForInput,
+        pickBestCandidate,
+        scoreCandidate,
+        detectLoginRequired
     });
 }

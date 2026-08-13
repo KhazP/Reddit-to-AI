@@ -1,6 +1,6 @@
 # 🚀 Reddit to AI - Chrome Extension
 
-[![Version](https://img.shields.io/badge/version-1.2.1-blue.svg?style=for-the-badge)](manifest.json)
+[![Manifest V3](https://img.shields.io/badge/manifest-v3-blue.svg?style=for-the-badge)](src/manifest.json)
 [![License](https://img.shields.io/badge/license-MPL--2.0-green.svg?style=for-the-badge)](LICENSE)
 [![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-orange.svg?style=for-the-badge)](#contributing)
 
@@ -28,7 +28,7 @@
 
 ## Overview
 
-**Reddit to AI** is a powerful Chrome extension that bridges the gap between Reddit discussions and Large Language Models (LLMs). It allows you to scrape comprehensive data from any Reddit thread—including the main post, nested comments, and images—and seamlessly transfer it to an AI chat interface (like ChatGPT or Gemini) with a pre-configured prompt.
+**Reddit to AI** is a powerful browser extension (Chrome and Firefox) that bridges the gap between Reddit discussions and Large Language Models (LLMs). It allows you to scrape comprehensive data from any Reddit thread—including the main post, nested comments, and images—and seamlessly transfer it to an AI chat interface (like ChatGPT or Gemini) with a pre-configured prompt.
 
 Whether you're a researcher analyzing sentiment, a user looking for a "TL;DR", or just someone who wants to understand a complex debate, this tool automates the tedious copy-pasting and formatting process.
 
@@ -74,6 +74,10 @@ The extension currently supports automatic pasting and prompt injection for:
 *   **OpenAI ChatGPT** (chatgpt.com)
 *   **Anthropic Claude** (claude.ai)
 *   **Google AI Studio** (aistudio.google.com)
+*   **DeepSeek** (chat.deepseek.com)
+*   **Groq** (groq.com)
+
+You can also point the extension at your own chat UI by adding a **custom origin** in Options; without a configured origin the custom provider reports an error instead of opening a default page.
 
 ---
 
@@ -88,14 +92,41 @@ The extension currently supports automatic pasting and prompt injection for:
     *   Enable **Developer mode** (top right toggle).
 3.  **Load Unpacked**:
     *   Click **Load unpacked**.
-    *   Select the folder where you cloned the repository.
+    *   Select the `src/` folder inside the cloned repository (that is where `manifest.json` lives).
 4.  **Pin it**: Pin the "Reddit to AI" icon to your toolbar for easy access!
+
+### 🦊 Firefox
+
+Firefox needs a slightly different `manifest.json` (an MV3 event page instead of a
+service worker, plus a Gecko add-on ID). It is generated for you by the packaging
+step rather than checked in, so the two manifests cannot drift apart.
+
+1.  **Build the Firefox payload**:
+    ```bash
+    npm install
+    npm run package:extension
+    ```
+    This writes `dist-extension-firefox/` (an unpacked build) and
+    `Reddit-to-AI-v<version>-firefox.zip` (the AMO upload archive) alongside the
+    Chrome artifacts.
+2.  **Load it temporarily**:
+    *   Navigate to `about:debugging#/runtime/this-firefox`.
+    *   Click **Load Temporary Add-on…** and pick
+        `dist-extension-firefox/manifest.json`.
+    *   Temporary add-ons are removed when Firefox restarts. For a persistent
+        install, the zip has to be signed through
+        [addons.mozilla.org](https://addons.mozilla.org).
+3.  **Grant site access**: Firefox treats MV3 host permissions as optional. Open
+    **Add-ons → Reddit to AI → Permissions** and allow access to Reddit and your AI
+    sites if scraping or auto-paste does nothing.
+
+Firefox 121 or newer is required (`strict_min_version` in the generated manifest).
 
 ---
 
 ## 🧰 Software Requirements
 
-*   **Browser**: Google Chrome (or Chromium-compatible browser) with Manifest V3 support.
+*   **Browser**: Google Chrome (or Chromium-compatible browser) with Manifest V3 support, or Firefox 121+.
 *   **Runtime**: No backend server required; all extension logic runs locally.
 *   **Development checks**: See [SOFTWARE_REQUIREMENTS.md](SOFTWARE_REQUIREMENTS.md) for a full environment and tooling checklist.
 
@@ -105,6 +136,7 @@ The extension currently supports automatic pasting and prompt injection for:
 
 1.  **Navigate to Reddit**: Open any Reddit thread you want to analyze.
 2.  **Open Extension**: Click the **Reddit to AI** icon.
+    *   Shortcuts: press **Alt+Shift+S** to scrape the active thread, or right-click a thread page (or a thread link anywhere) and choose **Scrape this thread with Reddit to AI**. Rebind the shortcut at `chrome://extensions/shortcuts`.
 3.  **Configure (Optional)**:
     *   Use **Quick Filters** in the popup to hide bots or set a minimum score.
     *   Choose your destination platform (e.g., Gemini, ChatGPT).
@@ -139,7 +171,7 @@ Right-click the extension icon and select **Options** to access advanced setting
 
 *   **No training pipeline**: This repository does not train or evaluate machine-learning models.
 *   **No dataset artifacts**: This project scrapes public Reddit thread data at runtime and does not ship training/testing datasets.
-*   **Model links**: External AI platforms (Gemini, ChatGPT, Claude, AI Studio) are destinations for pasted prompts, not bundled models.
+*   **Model links**: External AI platforms (Gemini, ChatGPT, Claude, AI Studio, DeepSeek, Groq) are destinations for pasted prompts, not bundled models.
 
 ---
 
@@ -162,6 +194,9 @@ Reddit to AI is ready for the world! The interface is fully localized for:
 *   **Context Window Limits**: Extremely large threads can still exceed some AI model input limits. Use the preview meter, context presets, trim logic, or score filters to reduce prompt size.
 *   **DOM Changes**: Reddit and AI chat sites frequently update their UI. If scraping or auto-paste stops working, selectors may need updating.
 *   **Browser Security**: Some browsers may block automatic paste. The fallback overlay lets you copy the prompt manually.
+*   **Firefox host permissions**: Firefox MV3 makes `host_permissions` opt-in. Until you grant them under **Add-ons → Reddit to AI → Permissions**, scraping and auto-paste stay silent.
+*   **Firefox keyboard shortcut**: `Alt+Shift+S` is declared for both browsers, but Firefox may drop the binding if another add-on already claims it. Rebind it under **Add-ons → gear icon → Manage Extension Shortcuts**.
+*   **Firefox options page**: Firefox opens the settings page via `options_ui` in a full tab; the layout is identical to Chrome's.
 
 ---
 
@@ -183,7 +218,10 @@ This project is licensed under the **Mozilla Public License 2.0 (MPL-2.0)**. See
 
 ## 🧹 Maintenance Notes
 
-*   Version metadata now matches `manifest.json` / `package.json` at **1.2.1**.
-*   `__MACOSX` archive artifacts are ignored/removed from the packaged repo.
-*   The unused `marked.min.js` file was removed.
-*   User-facing status text now says content/prompt sending instead of summary sending.
+*   Extension sources live in `src/`; repo tooling (`scripts/`, `tests/`) stays outside the packaged payload.
+*   `src/manifest.json` and `package.json` versions are asserted to match by `npm run check`; the release ZIPs are named from that version.
+*   `src/manifest.json` is the Chrome manifest and the single source of truth. The Firefox manifest is derived from it at package time by the pure transform in `scripts/firefox-manifest.mjs` (event-page `background.scripts`, `browser_specific_settings.gecko`, `options_ui` instead of `options_page`, no `use_dynamic_url`) and checked by `tests/firefoxManifest.test.mjs` plus `scripts/validate-release.mjs`.
+*   The `importScripts(...)` call at the top of `src/service_worker.js` is guarded by a `typeof importScripts === 'function'` check: Chrome uses it, Firefox loads the same four libraries through `background.scripts` instead. Keep the two lists in the same order - a test asserts it.
+*   `npm run check` runs JSON validation, ESLint, the test suite, packaging, and release validation. Tests are discovered automatically via `node --test`, so a new `tests/*.test.mjs` file needs no script change.
+*   Permissions are allowlisted in both `tests/releaseManifest.test.mjs` and `scripts/validate-release.mjs`; the broad `tabs` permission is deliberately not requested.
+*   Historical per-release notes for v1.2.1 are archived in `UPDATE_NOTES.md`.

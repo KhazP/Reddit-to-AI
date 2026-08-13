@@ -105,6 +105,20 @@
           </select>
           <button id="saveQuickPromptBtn" class="text-action-btn" type="button" disabled>Save quick prompt</button>
         </div>
+        <!-- Inline replacement for window.prompt(), which modern Chrome blocks in
+             action popups. Shown in place when saving a preset. -->
+        <div id="presetNameRow" class="preset-name-row" hidden>
+          <label class="preset-name-label" for="presetNameInput"
+            data-i18n="popup_preset_name_label">Preset name</label>
+          <input type="text" id="presetNameInput" class="preset-name-input" maxlength="60"
+            data-i18n-placeholder="popup_preset_name_placeholder" placeholder="Preset name">
+          <div class="preset-name-actions">
+            <button id="presetNameConfirmBtn" class="text-action-btn primary" type="button"
+              data-i18n="popup_preset_name_confirm">Save</button>
+            <button id="presetNameCancelBtn" class="text-action-btn" type="button"
+              data-i18n="popup_preset_name_cancel">Cancel</button>
+          </div>
+        </div>
       </div>
 
       <div class="send-mode-section">
@@ -126,7 +140,6 @@
               <option value="deepseek">DeepSeek</option>
               <option value="groq">Groq</option>
               <option value="custom">Custom</option>
-              <option value="local">Local AI (Gemini Nano)</option>
             </select>
           </label>
         </div>
@@ -177,45 +190,9 @@
           </button>
         </div>
       </div>
-
-      <!-- Local Summary Result Card -->
-      <div id="localSummaryResultCard" class="summary-result-card" style="display: none;">
-        <div class="summary-result-header">
-          <span class="summary-result-title">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #3b82f6;">
-              <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
-            </svg>
-            Local Summary (Gemini Nano)
-          </span>
-          <div class="summary-result-actions">
-            <button id="copySummaryBtn" class="summary-action-btn" title="Copy to clipboard">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-              </svg>
-            </button>
-            <button id="exportSummaryBtn" class="summary-action-btn" title="Export as Markdown text file">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                <polyline points="7 10 12 15 17 10"></polyline>
-                <line x1="12" y1="15" x2="12" y2="3"></line>
-              </svg>
-            </button>
-            <button id="closeSummaryBtn" class="summary-action-btn" title="Close summary">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </button>
-          </div>
-        </div>
-        <div class="summary-result-content-wrap">
-          <div id="localSummaryText" class="summary-result-text"></div>
-        </div>
-      </div>
     </div>
 
-    <div id="tabPaneFilters" class="tab-content hidden" role="tabpanel" aria-labelledby="tabFilters">
+    <div id="tabPaneFilters" class="tab-content hidden" role="tabpanel" aria-labelledby="tabFilters" hidden>
       <!-- Quick Filters -->
       <div class="filters-section">
         <div class="filters-header">
@@ -231,24 +208,18 @@
 
         <!-- Main pills row -->
         <div class="pills-row">
-          <div class="custom-select-wrap" id="minScoreWrap">
-            <button class="filter-select-compact custom-select-btn" id="filterMinScoreBtn"
-              aria-expanded="false" aria-haspopup="listbox">
-              <span id="filterMinScoreLabel">Any score</span>
-              <svg class="custom-select-arrow" width="10" height="6" viewBox="0 0 10 6" fill="none">
-                <path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-                  stroke-linejoin="round" />
-              </svg>
-            </button>
-            <div class="custom-select-dropdown" id="filterMinScoreDropdown" aria-hidden="true" role="listbox">
-              <button class="custom-select-option selected" data-value="0" role="option">Any score</button>
-              <button class="custom-select-option" data-value="5" role="option">5+ pts</button>
-              <button class="custom-select-option" data-value="10" role="option">10+ pts</button>
-              <button class="custom-select-option" data-value="25" role="option">25+ pts</button>
-              <button class="custom-select-option" data-value="50" role="option">50+ pts</button>
-              <button class="custom-select-option" data-value="100" role="option">100+ pts</button>
-            </div>
-          </div>
+          <!-- A native <select> here: it is a plain list of static options, so the
+               browser's own listbox gives correct keyboard and screen-reader
+               behaviour for free. -->
+          <select id="filterMinScore" class="filter-select-compact filter-select-native"
+            aria-label="Minimum comment score">
+            <option value="0">Any score</option>
+            <option value="5">5+ pts</option>
+            <option value="10">10+ pts</option>
+            <option value="25">25+ pts</option>
+            <option value="50">50+ pts</option>
+            <option value="100">100+ pts</option>
+          </select>
           <button id="filterHideBotsBtn" class="pill-toggle" data-key="hideBots">
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
               stroke-linecap="round" stroke-linejoin="round">
@@ -262,7 +233,7 @@
         </div>
 
         <!-- Collapsible advanced panel -->
-        <div id="advancedFilters" class="advanced-filters" aria-hidden="true">
+        <div id="advancedFilters" class="advanced-filters" aria-hidden="true" inert>
           <div class="advanced-filters-inner">
             <!-- Top N -->
             <div class="adv-row">

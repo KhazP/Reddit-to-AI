@@ -12,11 +12,16 @@ assert.equal(manifest.action?.default_popup, 'popup.html', 'popup page must be p
 assert.equal(manifest.options_page, 'options.html', 'options page must be packaged');
 assert.equal(manifest.background?.service_worker, 'service_worker.js', 'service worker must be packaged');
 
-for (const permission of ['activeTab', 'scripting', 'storage', 'notifications', 'tabs']) {
+for (const permission of ['activeTab', 'scripting', 'storage', 'notifications']) {
   assert.ok(manifest.permissions.includes(permission), `expected permission: ${permission}`);
 }
 
-const allowedPermissions = new Set(['activeTab', 'scripting', 'storage', 'notifications', 'tabs', 'unlimitedStorage']);
+// The broad `tabs` permission is deliberately not requested: every tab URL the
+// extension reads belongs either to a Reddit tab (covered by host_permissions)
+// or to the active tab at the moment the user invokes the action (activeTab).
+assert.ok(!manifest.permissions.includes('tabs'), 'the broad "tabs" permission must not be requested');
+
+const allowedPermissions = new Set(['activeTab', 'scripting', 'storage', 'notifications', 'unlimitedStorage', 'contextMenus']);
 for (const permission of manifest.permissions) {
   assert.ok(allowedPermissions.has(permission), `unexpected permission: ${permission}`);
 }
@@ -32,11 +37,27 @@ const allowedHosts = new Set([
   'https://claude.ai/*',
   'https://aistudio.google.com/*',
   'https://chat.deepseek.com/*',
-  'https://*.groq.com/*'
+  'https://*.groq.com/*',
+  // Direct API mode calls these three origins with fetch() from the service worker.
+  // They are API endpoints only: no content script is injected into them.
+  'https://api.anthropic.com/*',
+  'https://api.openai.com/*',
+  'https://generativelanguage.googleapis.com/*'
 ]);
 for (const host of manifest.host_permissions) {
   assert.ok(allowedHosts.has(host), `unexpected host permission: ${host}`);
 }
+
+// Keyboard shortcut must stay declared with a localized description.
+assert.ok(manifest.commands?.['scrape-current-thread'], 'scrape-current-thread command must be declared');
+assert.match(
+  manifest.commands['scrape-current-thread'].description || '',
+  /^__MSG_[a-zA-Z0-9_]+__$/,
+  'command description must be localized'
+);
+
+// The context menu needs the contextMenus permission to register its entries.
+assert.ok(manifest.permissions.includes('contextMenus'), 'contextMenus permission is required for the right-click entry');
 
 for (const icon of ['16', '48', '128']) {
   assert.ok(manifest.icons?.[icon], `manifest icon ${icon} is required`);

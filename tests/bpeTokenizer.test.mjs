@@ -1,10 +1,15 @@
 import assert from 'node:assert/strict';
 import '../src/cl100k_base.js';
 
-assert.ok(globalThis.R2ATiktokenPromise, 'R2ATiktokenPromise is present');
-await globalThis.R2ATiktokenPromise;
+assert.equal(typeof globalThis.R2ATiktokenEnsure, 'function', 'R2ATiktokenEnsure is exposed');
+assert.equal(globalThis.R2ATiktoken, undefined, 'tokenizer is not loaded until it is requested');
 
-assert.ok(globalThis.R2ATiktoken, 'R2ATiktoken is instantiated after promise resolves');
+await globalThis.R2ATiktokenEnsure();
+
+assert.ok(globalThis.R2ATiktoken, 'R2ATiktoken is instantiated after the lazy load resolves');
+
+// A second call reuses the already-loaded instance.
+assert.equal(await globalThis.R2ATiktokenEnsure(), globalThis.R2ATiktoken, 'ensure is idempotent');
 assert.ok(globalThis.Tiktoken, 'Tiktoken class is defined');
 
 // Verify basic encoding and decoding

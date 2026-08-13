@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFile, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import { collectFiles, outDir, packageExtension, root, verifyZip } from '../scripts/package-extension.mjs';
+import { toFirefoxManifest } from '../scripts/firefox-manifest.mjs';
 
 const script = await readFile(new URL('../scripts/package-extension.mjs', import.meta.url), 'utf8');
 const manifest = JSON.parse(await readFile(new URL('../src/manifest.json', import.meta.url), 'utf8'));
@@ -34,3 +35,21 @@ for (const forbidden of ['package.json', 'package-lock.json', 'tests/promptBuild
 }
 
 await stat(join(root, `Reddit-to-AI-v${manifest.version}-upload.zip`));
+
+// --- Firefox artifact ------------------------------------------------------------
+const firefoxStaged = await collectFiles(result.firefoxOutDir);
+const firefoxZipFiles = await verifyZip(result.firefoxOutDir, result.firefoxZipPath);
+assert.deepEqual(firefoxZipFiles, firefoxStaged, 'Firefox zip must contain exactly the staged files');
+assert.deepEqual(firefoxStaged, stagedFiles, 'Firefox payload must ship the same file list as Chrome');
+
+const stagedFirefoxManifest = JSON.parse(await readFile(join(result.firefoxOutDir, 'manifest.json'), 'utf8'));
+assert.deepEqual(
+  stagedFirefoxManifest,
+  toFirefoxManifest(manifest),
+  'staged Firefox manifest must be the transform of the Chrome manifest'
+);
+
+const stagedChromeManifest = JSON.parse(await readFile(join(outDir, 'manifest.json'), 'utf8'));
+assert.deepEqual(stagedChromeManifest, manifest, 'the Chrome payload must ship src/manifest.json untouched');
+
+await stat(join(root, `Reddit-to-AI-v${manifest.version}-firefox.zip`));

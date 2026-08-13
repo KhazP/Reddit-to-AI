@@ -6,14 +6,14 @@ export default [
     ignores: [
       "node_modules/**",
       "dist-extension/**",
-      "marked.min.js",
-      "_locales/**",
-      "images/**"
+      "dist-extension-firefox/**",
+      "src/_locales/**",
+      "src/images/**"
     ]
   },
   {
     ...js.configs.recommended,
-    files: ["*.js"],
+    files: ["src/**/*.js"],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: "script",

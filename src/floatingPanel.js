@@ -18,19 +18,12 @@
       <div class="rs-live-dot" id="rsLiveDot"></div>
       <span class="rs-title">${t('panel_title') || 'Reddit to AI'}</span>
     </div>
-    <div style="display: flex; align-items: center;">
-      <button id="rsLocalSummaryBtn" class="rs-local-summary-btn" title="Summarize thread locally">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
-        </svg>
-      </button>
-      <button id="rsCloseBtn" class="rs-close-btn" title="${t('close') || 'Close'}">
-        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-          <line x1="1" y1="1" x2="9" y2="9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-          <line x1="9" y1="1" x2="1" y2="9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-        </svg>
-      </button>
-    </div>
+    <button id="rsCloseBtn" class="rs-close-btn" title="${t('close') || 'Close'}">
+      <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+        <line x1="1" y1="1" x2="9" y2="9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="9" y1="1" x2="1" y2="9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </button>
   </div>
 
   <div class="rs-content">
@@ -75,28 +68,7 @@
     <!-- Guidance -->
     <p id="rsUserGuidance" class="rs-guidance" style="display:none"></p>
 
-    <!-- Summary (shown after completion) -->
-    <div class="rs-summary-area" id="rsSummaryArea">
-      <div class="rs-summary-header">
-        <h4>Summary</h4>
-        <div class="rs-summary-actions">
-          <button id="rsCopySummaryBtn" class="rs-action-btn" title="Copy to clipboard">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-            </svg>
-          </button>
-          <button id="rsExportSummaryBtn" class="rs-action-btn" title="Export as Markdown text file">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-              <polyline points="7 10 12 15 17 10"></polyline>
-              <line x1="12" y1="15" x2="12" y2="3"></line>
-            </svg>
-          </button>
-        </div>
-      </div>
-      <div id="rsSummaryText"></div>
-    </div>
+
 
   </div>
 </div>
@@ -128,17 +100,36 @@
         const liveDot = shadow.getElementById('rsLiveDot');
         const pctEl = shadow.getElementById('rsPercentage');
         const badgeEl = shadow.getElementById('rsContextBadge');
-        const summaryArea = shadow.getElementById('rsSummaryArea');
-        const summaryText = shadow.getElementById('rsSummaryText');
-        const localSummaryBtn = shadow.getElementById('rsLocalSummaryBtn');
-        const copySummaryBtn = shadow.getElementById('rsCopySummaryBtn');
-        const exportSummaryBtn = shadow.getElementById('rsExportSummaryBtn');
+
 
         // ── Phase helpers ──────────────────────────────────
         const PHASES = ['fetch', 'parse', 'load', 'filter'];
         let committedPhaseIndex = 0; // monotonic — never goes backward
 
-        function detectPhase(message) {
+        // The service worker's phase vocabulary is richer than this four-step track,
+        // so several backend phases collapse onto the same visual node.
+        const PHASE_TO_TRACK = {
+            idle: 'fetch',
+            prepare: 'fetch',
+            fetch: 'fetch',
+            parse: 'parse',
+            load: 'load',
+            expand: 'load',
+            media: 'load',
+            filter: 'filter',
+            build: 'filter',
+            complete: 'filter'
+        };
+
+        function resolvePhase(data) {
+            const mapped = PHASE_TO_TRACK[data?.phase];
+            if (mapped) return mapped;
+            // Last-resort fallback for progress messages emitted by an older content
+            // script that predates the structured `phase` field.
+            return detectPhaseFromMessage(data?.message);
+        }
+
+        function detectPhaseFromMessage(message) {
             if (!message) return 'fetch';
             const msg = message.toLowerCase();
             // Order matters: more specific → less specific
@@ -149,7 +140,23 @@
             return 'fetch';
         }
 
-        function extractBatchInfo(message) {
+        function resolveBatchInfo(data) {
+            const batch = data?.batch;
+            if (batch && Number.isFinite(batch.current) && Number.isFinite(batch.total)) {
+                return { type: 'batch', current: batch.current, total: batch.total };
+            }
+            // The expand phase reports how many comments it has seen so far rather
+            // than an x-of-y counter.
+            if (batch && Number.isFinite(batch.count)) {
+                return { type: 'count', count: batch.count.toLocaleString() };
+            }
+            // Structured state is authoritative: once a phase is present, an absent
+            // `batch` means "no counter", not "go read the message".
+            if (data?.phase) return null;
+            return extractBatchInfoFromMessage(data?.message);
+        }
+
+        function extractBatchInfoFromMessage(message) {
             const batchMatch = message?.match(/batch\s+(\d+)\s*[\/\\]\s*(\d+)/i);
             if (batchMatch) {
                 return { type: 'batch', current: parseInt(batchMatch[1]), total: parseInt(batchMatch[2]) };
@@ -199,71 +206,7 @@
             }
         }
 
-        function formatLocalSummaryHtml(text) {
-            if (!text) return '';
-            let escaped = text
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;');
-            escaped = escaped.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-            const lines = escaped.split('\n');
-            let inList = false;
-            const htmlParts = [];
-            
-            for (const line of lines) {
-                const trimmed = line.trim();
-                if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
-                    const content = trimmed.substring(2);
-                    if (!inList) {
-                        inList = true;
-                        htmlParts.push('<ul>');
-                    }
-                    htmlParts.push('<li>' + content + '</li>');
-                } else {
-                    if (inList) {
-                        inList = false;
-                        htmlParts.push('</ul>');
-                    }
-                    if (trimmed) {
-                        htmlParts.push('<p>' + trimmed + '</p>');
-                    }
-                }
-            }
-            if (inList) {
-                htmlParts.push('</ul>');
-            }
-            return htmlParts.join('');
-        }
 
-        // ── Local Summary button ───────────────────────────
-        if (localSummaryBtn) {
-            chrome.runtime.sendMessage({ action: 'checkLocalAiCapability' }, (response) => {
-                if (chrome.runtime.lastError || !response || !response.available) {
-                    localSummaryBtn.style.display = 'none';
-                } else {
-                    localSummaryBtn.style.display = 'flex';
-                }
-            });
-
-            localSummaryBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-
-                if (summaryArea) summaryArea.style.display = 'none';
-                if (summaryText) summaryText.textContent = '';
-
-                chrome.runtime.sendMessage({
-                    action: 'scrapeReddit',
-                    tabId: null,
-                    localSummarize: true,
-                    filters: {}
-                }, (_response) => {
-                    if (chrome.runtime.lastError) {
-                        console.error('Local summary scrape start error:', chrome.runtime.lastError.message);
-                    }
-                });
-            });
-        }
 
         // ── Close button ───────────────────────────────────
         if (closeBtn && panel) {
@@ -274,42 +217,7 @@
             });
         }
 
-        // ── Copy Summary button ────────────────────────────
-        if (copySummaryBtn && summaryText) {
-            copySummaryBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                const textToCopy = summaryText.innerText || summaryText.textContent || '';
-                if (!textToCopy) return;
-                navigator.clipboard.writeText(textToCopy)
-                    .then(() => {
-                        console.log('Summary copied to clipboard!');
-                    })
-                    .catch(err => {
-                        console.error('Failed to copy summary:', err);
-                    });
-            });
-        }
 
-        // ── Export Summary button ──────────────────────────
-        if (exportSummaryBtn && summaryText) {
-            exportSummaryBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                const textToExport = summaryText.innerText || summaryText.textContent || '';
-                if (!textToExport) return;
-                
-                const blob = new Blob([textToExport], { type: 'text/markdown;charset=utf-8;' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `reddit-local-summary-${Date.now()}.md`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            });
-        }
 
         // ── Draggable ──────────────────────────────────────
         if (header && panel) {
@@ -317,10 +225,7 @@
             let offsetX = 0, offsetY = 0;
 
             header.addEventListener('mousedown', (e) => {
-                if (
-                    e.target === closeBtn || closeBtn?.contains(e.target) ||
-                    e.target === localSummaryBtn || localSummaryBtn?.contains(e.target)
-                ) return;
+                if (e.target === closeBtn || closeBtn?.contains(e.target)) return;
                 isDragging = true;
                 offsetX = e.clientX - panel.offsetLeft;
                 offsetY = e.clientY - panel.offsetTop;
@@ -367,7 +272,7 @@
                 if ((data.percentage || 0) <= 5 && committedPhaseIndex > 0) {
                     resetPhases();
                 }
-                updatePhaseUI(detectPhase(message));
+                updatePhaseUI(resolvePhase(data));
             } else if (data.error) {
                 resetPhases();
             }
@@ -388,7 +293,7 @@
                 }
 
                 // Context badge
-                const info = extractBatchInfo(message);
+                const info = resolveBatchInfo(data);
                 if (badgeEl) {
                     if (info?.type === 'batch') {
                         badgeEl.textContent = `BATCH ${info.current} / ${info.total}`;
@@ -424,20 +329,14 @@
                 }
             }
 
-            // Local Summary Area
-            if (data.summary !== undefined && data.summary !== null) {
-                if (summaryArea) summaryArea.style.display = 'flex';
-                if (summaryText) {
-                    summaryText.innerHTML = formatLocalSummaryHtml(data.summary);
-                    // scroll to bottom
-                    summaryText.scrollTop = summaryText.scrollHeight;
-                }
-            } else {
-                if (summaryArea) summaryArea.style.display = 'none';
-            }
 
-            // Auto-hide on completion
-            if (!data.isActive && !data.error && message?.includes('sent')) {
+
+            // Auto-hide on completion. `status`/`phase` are authoritative; the message
+            // check only covers states produced before those fields existed.
+            const finished = data.status
+                ? data.status === 'complete'
+                : (data.phase === 'complete' || message?.includes('sent'));
+            if (!data.isActive && !data.error && finished) {
                 setTimeout(() => {
                     if (panel.style.display !== 'none') {
                         panel.style.display = 'none';

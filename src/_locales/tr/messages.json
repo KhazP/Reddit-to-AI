@@ -552,5 +552,145 @@
     },
     "error": {
         "message": "Error"
+    },
+    "popup_preset_name_label": {
+        "message": "Hazır ayar adı",
+        "description": "Label for the inline preset-name field in the popup"
+    },
+    "popup_preset_name_placeholder": {
+        "message": "Hazır ayar adı",
+        "description": "Placeholder for the inline preset-name field"
+    },
+    "popup_preset_name_confirm": {
+        "message": "Kaydet",
+        "description": "Confirm button for saving a quick prompt as a preset"
+    },
+    "popup_preset_name_cancel": {
+        "message": "İptal",
+        "description": "Cancel button for the inline preset-name field"
+    },
+    "popup_preset_name_default": {
+        "message": "Hızlı istem",
+        "description": "Fallback name suggested when saving a quick prompt preset"
+    },
+    "command_scrape_current_thread": {
+        "message": "Geçerli Reddit başlığını topla",
+        "description": "Description for the keyboard shortcut that scrapes the active Reddit thread"
+    },
+    "context_menu_scrape_thread": {
+        "message": "Bu başlığı Reddit to AI ile topla",
+        "description": "Right-click menu entry that scrapes a Reddit thread"
+    },
+    "sw_error_custom_origin_missing": {
+        "message": "Yapılandırılmış özel bir yapay zekâ kaynağı yok. Özel sağlayıcıyı kullanmadan önce Seçenekler bölümünden ekleyin.",
+        "description": "Error shown when the custom AI provider is selected without a configured origin"
+    },
+    "preview_api_eyebrow": {
+        "message": "Doğrudan API"
+    },
+    "preview_api_title": {
+        "message": "Kendi API anahtarınla gönder"
+    },
+    "preview_api_description": {
+        "message": "İstemi doğrudan bir sağlayıcıya gönderin ve yapay zeka sohbet sekmesi açmadan yanıtı burada okuyun."
+    },
+    "preview_api_provider_label": {
+        "message": "API sağlayıcısı"
+    },
+    "preview_api_send": {
+        "message": "API ile gönder"
+    },
+    "preview_api_no_key": {
+        "message": "Bu sağlayıcı için API anahtarı yapılandırılmamış."
+    },
+    "preview_api_no_key_for": {
+        "message": "$1 için API anahtarı yapılandırılmamış."
+    },
+    "preview_api_open_options": {
+        "message": "Seçeneklerde anahtar ekle"
+    },
+    "preview_api_loading": {
+        "message": "Yapay zeka yanıtı bekleniyor…"
+    },
+    "preview_api_retry": {
+        "message": "Yeniden dene"
+    },
+    "preview_api_retryable": {
+        "message": "Bu geçici görünüyor — birazdan tekrar deneyin."
+    },
+    "preview_api_copy": {
+        "message": "Yanıtı kopyala"
+    },
+    "preview_api_copied": {
+        "message": "API yanıtı panoya kopyalandı."
+    },
+    "preview_api_refused": {
+        "message": "Sağlayıcı bu isteği yanıtlamayı reddetti."
+    },
+    "preview_api_empty_response": {
+        "message": "Sağlayıcı boş bir yanıt döndürdü."
+    },
+    "preview_api_empty_prompt": {
+        "message": "İstem boş."
+    },
+    "preview_api_truncated": {
+        "message": "belirteç sınırında kesildi"
+    },
+    "preview_api_failed": {
+        "message": "API isteği başarısız oldu."
+    },
+    "preview_api_status_sending": {
+        "message": "İstem API'ye gönderiliyor…"
+    },
+    "preview_api_status_done": {
+        "message": "API yanıtı alındı."
+    },
+    "preview_api_status_failed": {
+        "message": "API isteği başarısız oldu."
+    },
+    "options_card_direct_api_title": {
+        "message": "Doğrudan API"
+    },
+    "options_direct_api_intro": {
+        "message": "Kendi sağlayıcı API anahtarınızı ekleyerek, yapay zeka sohbet sekmesi açmadan istem önizleme sayfasında yanıt alın."
+    },
+    "options_direct_api_warning": {
+        "message": "Anahtarlar yalnızca bu cihazda yerel olarak saklanır — Google hesabınıza asla eşitlenmez ve ayar dışa aktarımına asla dahil edilmez. İstekler tarayıcınızdan doğrudan sağlayıcıya gider ve ücretlendirme o sağlayıcı tarafından yapılır."
+    },
+    "options_direct_api_key_label": {
+        "message": "API anahtarı"
+    },
+    "options_direct_api_key_placeholder": {
+        "message": "API anahtarınızı yapıştırın"
+    },
+    "options_direct_api_model_label": {
+        "message": "Model"
+    },
+    "options_direct_api_model_hint": {
+        "message": "Bu sağlayıcının kabul ettiği herhangi bir model kimliği."
+    },
+    "options_direct_api_show": {
+        "message": "Göster"
+    },
+    "options_direct_api_hide": {
+        "message": "Gizle"
+    },
+    "options_direct_api_test": {
+        "message": "Anahtarı test et"
+    },
+    "options_direct_api_testing": {
+        "message": "Test ediliyor"
+    },
+    "options_direct_api_test_ok": {
+        "message": "Anahtar çalışıyor."
+    },
+    "options_direct_api_test_no_key": {
+        "message": "Önce bir API anahtarı girin."
+    },
+    "options_direct_api_clear": {
+        "message": "Anahtarı kaldır"
+    },
+    "options_direct_api_cleared": {
+        "message": "Anahtar kaldırıldı."
     }
 }

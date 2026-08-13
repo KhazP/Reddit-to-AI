@@ -210,28 +210,91 @@
     return rebuildTreeFromSelected(comments || [], selectedIds);
   }
 
+  // Rough per-comment rendering cost (author label, indentation, score, separators).
+  const COMMENT_RENDER_OVERHEAD = 40;
+  const MIN_BUDGET_COMMENTS = 10;
+
+  function estimateCommentsChars(comments) {
+    let total = 0;
+    for (const item of flattenComments(comments || [])) {
+      const comment = item.comment;
+      total += String(comment.text || '').length
+        + String(comment.author || '').length
+        + COMMENT_RENDER_OVERHEAD;
+    }
+    return total;
+  }
+
+  function estimateDataCommentsChars(data) {
+    if (Array.isArray(data?.threads)) {
+      return data.threads.reduce((sum, thread) => sum + estimateCommentsChars(thread.comments), 0);
+    }
+    return estimateCommentsChars(data?.comments);
+  }
+
+  function applyCommentLimit(data, limit, strategy) {
+    if (Array.isArray(data.threads)) {
+      const perThread = Math.max(1, Math.ceil(limit / data.threads.length));
+      return {
+        ...data,
+        threads: data.threads.map(thread => ({
+          ...thread,
+          comments: trimComments(thread.comments, perThread, strategy)
+        }))
+      };
+    }
+    return { ...data, comments: trimComments(data.comments, limit, strategy) };
+  }
+
+  // Trims comments until the rendered prompt fits `maxChars`.
+  // The tree is cloned once and sizes are estimated from summed comment text lengths
+  // (calibrated against a single full render), so a binary search costs no extra renders.
   function trimCommentsToCharBudget(data, template, options, maxChars) {
     if (!maxChars || maxChars <= 0) return data;
-    let workingData = deepClone(data);
-    let prompt = buildPromptText(workingData, template, { ...options, skipBudgetTrim: true });
-    if (prompt.length <= maxChars) return workingData;
+    const strategy = options?.trimStrategy || 'top';
+    const renderOptions = { ...options, skipBudgetTrim: true, skipContextPreset: true };
+    const render = candidate => buildPromptText(candidate, template, renderOptions);
 
-    let limit = Math.max(20, countDataComments(workingData));
-    while (prompt.length > maxChars && limit > 10) {
-      limit = Math.max(10, Math.floor(limit * 0.75));
-      if (Array.isArray(workingData.threads)) {
-        workingData.threads = workingData.threads.map(thread => ({
-          ...thread,
-          comments: trimComments(thread.comments, Math.ceil(limit / workingData.threads.length), options.trimStrategy || 'top')
-        }));
-      } else {
-        workingData.comments = trimComments(workingData.comments, limit, options.trimStrategy || 'top');
-      }
-      prompt = buildPromptText(workingData, template, { ...options, skipBudgetTrim: true });
+    const workingData = deepClone(data);
+    const fullPrompt = render(workingData);
+    if (fullPrompt.length <= maxChars) return workingData;
+
+    const totalComments = countDataComments(workingData);
+    if (totalComments <= MIN_BUDGET_COMMENTS) {
+      workingData.contextTrimmed = true;
+      return workingData;
     }
 
-    workingData.contextTrimmed = true;
-    return workingData;
+    // Calibrate: everything in the prompt that is not comment text.
+    const baseChars = Math.max(0, fullPrompt.length - estimateDataCommentsChars(workingData));
+
+    let low = MIN_BUDGET_COMMENTS;
+    let high = totalComments;
+    let best = null;
+    while (low <= high) {
+      const mid = Math.floor((low + high) / 2);
+      const candidate = applyCommentLimit(workingData, mid, strategy);
+      const estimate = baseChars + estimateDataCommentsChars(candidate);
+      if (estimate <= maxChars) {
+        best = candidate;
+        low = mid + 1;
+      } else {
+        high = mid - 1;
+      }
+    }
+
+    let result = best || applyCommentLimit(workingData, MIN_BUDGET_COMMENTS, strategy);
+
+    // The estimate can overshoot slightly; shrink with real renders as a safety net.
+    let limit = countDataComments(result);
+    for (let attempt = 0; attempt < 4 && limit > MIN_BUDGET_COMMENTS; attempt++) {
+      if (render(result).length <= maxChars) break;
+      limit = Math.max(MIN_BUDGET_COMMENTS, Math.floor(limit * 0.85));
+      result = applyCommentLimit(workingData, limit, strategy);
+    }
+
+    result.contextTrimmed = true;
+    return result;
   }
 
   function applyContextPreset(data, presetKey = 'balanced', options = {}) {
@@ -387,9 +450,15 @@
   }
 
   function buildPromptText(data, template, options = {}) {
-    const sourceData = options.contextPreset && !options.skipContextPreset
+    let sourceData = options.contextPreset && !options.skipContextPreset
       ? applyContextPreset(data, options.contextPreset, options)
       : deepClone(data);
+    if (!options.skipBudgetTrim) {
+      const maxChars = CONTEXT_PRESETS[options.contextPreset]?.maxChars || 0;
+      if (maxChars > 0) {
+        sourceData = trimCommentsToCharBudget(sourceData, template, options, maxChars);
+      }
+    }
     const content = buildContent(sourceData, options);
     const effectiveTemplate = template || 'Please analyze the following Reddit thread.\n\n{content}';
     const prompt = effectiveTemplate.includes('{content}')

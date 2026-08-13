@@ -183,40 +183,55 @@
 
   global.Tiktoken = Tiktoken;
 
-  if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getURL) {
-    global.R2ATiktokenPromise = fetch(chrome.runtime.getURL('cl100k_base.json'))
-      .then(res => res.json())
-      .then(ranks => {
-        global.R2ATiktoken = new Tiktoken(ranks);
-        return global.R2ATiktoken;
-      })
-      .catch(err => {
-        console.error('Failed to load cl100k_base.json in extension:', err);
-      });
-  } else {
-    global.R2ATiktokenPromise = (async () => {
-      try {
-        const fs = await import('node:fs/promises');
-        let data;
-        try {
-          data = await fs.readFile('./cl100k_base.json', 'utf8');
-        } catch {
-          try {
-            data = await fs.readFile('./src/cl100k_base.json', 'utf8');
-          } catch {
-            try {
-              data = await fs.readFile('../src/cl100k_base.json', 'utf8');
-            } catch {
-              data = await fs.readFile('../cl100k_base.json', 'utf8');
-            }
-          }
-        }
-        const ranks = JSON.parse(data);
-        global.R2ATiktoken = new Tiktoken(ranks);
-        return global.R2ATiktoken;
-      } catch (err) {
-        console.error('Failed to load cl100k_base.json in Node.js:', err);
-      }
-    })();
+  // The cl100k_base.json rank table is ~1MB. Loading it eagerly in every context
+  // (service worker, popup, every AI tab, every Reddit tab) costs a fetch plus a
+  // full parse on startup, so the table is only loaded when a caller actually asks
+  // for exact token counts. Callers that do not wait fall back to length / 4.
+  let loadPromise = null;
+
+  async function loadRanksInExtension() {
+    const response = await fetch(chrome.runtime.getURL('cl100k_base.json'));
+    return response.json();
   }
+
+  async function loadRanksInNode() {
+    const fs = await import('node:fs/promises');
+    const candidates = [
+      './cl100k_base.json',
+      './src/cl100k_base.json',
+      '../src/cl100k_base.json',
+      '../cl100k_base.json'
+    ];
+    let lastError = null;
+    for (const candidate of candidates) {
+      try {
+        return JSON.parse(await fs.readFile(candidate, 'utf8'));
+      } catch (error) {
+        lastError = error;
+      }
+    }
+    throw lastError || new Error('cl100k_base.json not found');
+  }
+
+  // Starts (or joins) the lazy load. Resolves with the Tiktoken instance, or null
+  // when the rank table could not be loaded.
+  function ensureTiktoken() {
+    if (global.R2ATiktoken) return Promise.resolve(global.R2ATiktoken);
+    if (!loadPromise) {
+      const inExtension = typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getURL;
+      loadPromise = (inExtension ? loadRanksInExtension() : loadRanksInNode())
+        .then(ranks => {
+          global.R2ATiktoken = new Tiktoken(ranks);
+          return global.R2ATiktoken;
+        })
+        .catch(err => {
+          console.error('Failed to load cl100k_base.json:', err);
+          loadPromise = null;
+          return null;
+        });
+    }
+    return loadPromise;
+  }
+
+  global.R2ATiktokenEnsure = ensureTiktoken;
 })(typeof globalThis !== 'undefined' ? globalThis : window);

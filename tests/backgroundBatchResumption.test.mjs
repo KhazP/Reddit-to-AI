@@ -145,6 +145,8 @@ function createContext() {
 
 async function loadServiceWorker(context) {
   const source = await readFile(new URL('../src/service_worker.js', import.meta.url), 'utf8');
+  const parserSource = await readFile(new URL('../src/redditParser.js', import.meta.url), 'utf8');
+  vm.runInNewContext(parserSource, context, { filename: 'redditParser.js' });
   vm.runInNewContext(source, context, { filename: 'service_worker.js' });
   return context.R2AIServiceWorkerTest;
 }
