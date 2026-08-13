@@ -68,6 +68,8 @@ function createContext() {
 
 async function loadServiceWorker(context) {
   const source = await readFile(new URL('../src/service_worker.js', import.meta.url), 'utf8');
+  const parserSource = await readFile(new URL('../src/redditParser.js', import.meta.url), 'utf8');
+  vm.runInNewContext(parserSource, context, { filename: 'redditParser.js' });
   vm.runInNewContext(source, context, { filename: 'service_worker.js' });
   return context.R2AIServiceWorkerTest;
 }
@@ -84,10 +86,46 @@ async function loadServiceWorker(context) {
   await api.syncSelectors();
   assert.ok(context.getFetchCalled());
   assert.equal(context.getFetchUrl(), 'https://raw.githubusercontent.com/KhazP/Reddit-to-AI/main/selectors.json');
-  assert.deepEqual(context.getLocalStore().get('syncedSelectors'), {
-    gemini: { inputSelector: '.custom-gemini-selector' }
-  });
+  // Sanitized objects are created inside the vm realm, so compare structurally.
+  assert.equal(
+    JSON.stringify(context.getLocalStore().get('syncedSelectors')),
+    JSON.stringify({ gemini: { inputSelector: '.custom-gemini-selector' } })
+  );
   assert.ok(context.getLocalStore().get('lastSelectorSyncTime') > 0);
+}
+
+// Validation: unknown platforms, bad types and metadata keys are rejected
+{
+  const context = createContext();
+  const api = await loadServiceWorker(context);
+  const clean = api.sanitizeSyncedSelectors({
+    version: 1,
+    gemini: { inputSelector: '.g', isContentEditable: true },
+    chatgpt: { inputSelector: 42, isContentEditable: 'yes' },
+    claude: 'div.claude-input',
+    evilPlatform: { inputSelector: '.nope' },
+    groq: { inputSelector: '   ' },
+    deepseek: ['not', 'an', 'object']
+  });
+  assert.equal(
+    JSON.stringify(clean),
+    JSON.stringify({
+      gemini: { inputSelector: '.g', isContentEditable: true },
+      claude: 'div.claude-input'
+    })
+  );
+  assert.equal(api.sanitizeSyncedSelectors({ version: 1 }), null);
+  assert.equal(api.sanitizeSyncedSelectors(['a']), null);
+  assert.equal(api.sanitizeSyncedSelectors(null), null);
+}
+
+// Invalid remote payload is not stored
+{
+  const context = createContext();
+  context.setMockFetchResponse({ notAPlatform: { inputSelector: '.x' } });
+  const api = await loadServiceWorker(context);
+  await api.syncSelectors();
+  assert.equal(context.getLocalStore().get('syncedSelectors'), undefined);
 }
 
 // Test error path sync

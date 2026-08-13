@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "gemini": {
+    "inputSelector": "div.ql-editor[contenteditable=\"true\"], div[contenteditable=\"true\"].ql-editor, div.rich-textarea > div[contenteditable=\"true\"], div[contenteditable=\"true\"]",
+    "isContentEditable": true
+  },
+  "chatgpt": {
+    "inputSelector": "#prompt-textarea, div[contenteditable=\"true\"]#prompt-textarea, textarea",
+    "isContentEditable": true
+  },
+  "claude": {
+    "inputSelector": "div[contenteditable=\"true\"], [contenteditable=\"true\"]",
+    "isContentEditable": true
+  },
+  "aistudio": {
+    "inputSelector": "textarea, div[contenteditable=\"true\"]",
+    "isContentEditable": false
+  },
+  "deepseek": {
+    "inputSelector": "textarea, #chat-input, div[contenteditable=\"true\"]",
+    "isContentEditable": false
+  },
+  "groq": {
+    "inputSelector": "textarea, #chat-input, div[contenteditable=\"true\"]",
+    "isContentEditable": false
+  },
+  "custom": {
+    "inputSelector": "textarea, div[contenteditable=\"true\"]",
+    "isContentEditable": false
+  }
+}

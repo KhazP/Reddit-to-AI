@@ -3,9 +3,12 @@ import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 
 class FakeTextArea {
-  constructor() {
+  // pasteDispatchResult mirrors DOM semantics: dispatchEvent() returns false when a
+  // listener called preventDefault(), i.e. when the site consumed the pasted image.
+  constructor({ pasteDispatchResult = false } = {}) {
     this.value = '';
     this.events = [];
+    this.pasteDispatchResult = pasteDispatchResult;
   }
 
   focus() {
@@ -14,6 +17,7 @@ class FakeTextArea {
 
   dispatchEvent(event) {
     this.events.push(event);
+    if (event?.type === 'paste') return this.pasteDispatchResult;
     return true;
   }
 }
@@ -42,8 +46,8 @@ function createElement(tagName = 'div') {
   };
 }
 
-function createContext({ imageResponses }) {
-  const input = new FakeTextArea();
+function createContext({ imageResponses, pasteDispatchResult = false }) {
+  const input = new FakeTextArea({ pasteDispatchResult });
   const runtimeMessages = [];
   const body = createElement('body');
   body.innerText = 'Ready';
@@ -197,3 +201,35 @@ const okImage = { base64: Buffer.from('image-bytes').toString('base64'), mimeTyp
   assert.ok(!runtimeMessages.some(message => message.action === 'markPendingPasteConsumed'));
   assert.equal(context.sessionStorage.getItem('redditToAiPastedId'), null);
 }
+
+// dispatchEvent() returning false (preventDefault -> site consumed the image) counts as pasted.
+{
+  const { context, input } = createContext({
+    imageResponses: { 'https://example.test/one.png': okImage },
+    pasteDispatchResult: false
+  });
+  const api = await loadAiPaster(context);
+  const result = await api.pasteImages(input, ['https://example.test/one.png']);
+  assert.deepEqual(
+    { attempted: result.attempted, fetched: result.fetched, pasted: result.pasted },
+    { attempted: 1, fetched: 1, pasted: 1 }
+  );
+  assert.equal(result.failures.length, 0);
+}
+
+// dispatchEvent() returning true means no listener consumed the paste -> unverified.
+{
+  const { context, input } = createContext({
+    imageResponses: { 'https://example.test/one.png': okImage },
+    pasteDispatchResult: true
+  });
+  const api = await loadAiPaster(context);
+  const result = await api.pasteImages(input, ['https://example.test/one.png']);
+  assert.equal(result.fetched, 1);
+  assert.equal(result.pasted, 0);
+  assert.equal(result.failures.length, 1);
+  assert.equal(result.failures[0].phase, 'paste');
+  assert.match(result.failures[0].reason, /No paste handler detected/);
+}
+
+console.log('AI Paster image paste unit tests passed!');
