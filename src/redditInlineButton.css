@@ -1,0 +1,83 @@
+/* Reddit to AI - Reddit Inline Button Styling */
+
+.r2ai-inline-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 10px;
+  height: 32px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  border: none;
+  cursor: pointer;
+  background: rgba(120, 120, 128, 0.15);
+  color: inherit;
+  line-height: 1;
+  transition: background-color 0.15s ease, opacity 0.15s ease, transform 0.1s ease;
+  user-select: none;
+  margin-left: 4px;
+  box-sizing: border-box;
+  vertical-align: middle;
+}
+
+.r2ai-inline-btn:hover {
+  background: rgba(120, 120, 128, 0.25);
+}
+
+.r2ai-inline-btn:active {
+  transform: scale(0.97);
+}
+
+.r2ai-inline-btn:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.r2ai-sparkle-icon {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  display: block;
+}
+
+.r2ai-btn-text {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.r2ai-btn-spinner {
+  display: none;
+  width: 12px;
+  height: 12px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  box-sizing: border-box;
+}
+
+.r2ai-inline-btn.is-loading {
+  pointer-events: none;
+  opacity: 0.8;
+}
+
+.r2ai-inline-btn.is-loading .r2ai-sparkle-icon {
+  display: none;
+}
+
+.r2ai-inline-btn.is-loading .r2ai-btn-spinner {
+  display: inline-block;
+  animation: r2ai-spin 0.75s linear infinite;
+}
+
+@keyframes r2ai-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

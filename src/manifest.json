@@ -56,7 +56,8 @@
       ],
       "js": [
         "i18n.js",
-        "floatingPanel.js"
+        "floatingPanel.js",
+        "redditInlineButton.js"
       ],
       "run_at": "document_end"
     }
@@ -94,6 +95,7 @@
         "images/*.png",
         "_locales/**/*.json",
         "floatingPanel.css",
+        "redditInlineButton.css",
         "tooltip.css",
         "tooltip.js",
         "cl100k_base.json"
