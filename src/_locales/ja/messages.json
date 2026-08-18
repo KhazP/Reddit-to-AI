@@ -692,5 +692,26 @@
     },
     "options_direct_api_cleared": {
         "message": "キーを削除しました。"
+    },
+    "reddit_btn_label": {
+        "message": "AI"
+    },
+    "reddit_btn_tooltip": {
+        "message": "AIでスレッドを要約"
+    },
+    "settings_reddit_btn_title": {
+        "message": "Reddit ページ内 AI ボタン"
+    },
+    "settings_reddit_btn_desc": {
+        "message": "Redditの投稿アクションバー内に直接クイックAIアクションボタンを表示します"
+    },
+    "settings_reddit_btn_master": {
+        "message": "Redditでページ内AIボタンを有効化"
+    },
+    "settings_reddit_btn_feed": {
+        "message": "フィードの投稿カードに表示"
+    },
+    "settings_reddit_btn_post": {
+        "message": "投稿詳細ページ内に表示"
     }
 }

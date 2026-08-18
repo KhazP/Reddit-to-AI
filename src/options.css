@@ -1158,3 +1158,141 @@ button, input, select, textarea { font-family: inherit; }
 
 .api-key-status.error { color: var(--danger); }
 .api-key-status.success { color: var(--success); }
+
+/* ── Settings Card / Reddit In-Page Button ────────────────── */
+
+.settings-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03), var(--shadow-sm);
+  overflow: hidden;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.settings-card .card-header {
+  padding: 0 0 14px 0;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  background: transparent;
+}
+
+.card-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-title-group h2 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.1px;
+}
+
+.card-desc {
+  font-size: 12px;
+  color: var(--text-3);
+  line-height: 1.5;
+}
+
+.setting-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 4px 0;
+}
+
+.setting-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.setting-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.switch {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.switch .slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  border-radius: var(--r-full);
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
+  height: auto;
+  flex: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.switch .slider::before {
+  content: '';
+  position: absolute;
+  height: 16px;
+  width: 16px;
+  left: 2px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--text-2);
+  border-radius: 50%;
+  transition: transform var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+  box-shadow: var(--shadow-sm);
+}
+
+.switch input:focus-visible + .slider {
+  box-shadow: var(--ring);
+}
+
+.switch input:checked + .slider {
+  background: var(--accent-grad);
+  border-color: transparent;
+}
+
+.switch input:checked + .slider::before {
+  transform: translate(18px, -50%);
+  background: #fff;
+}
+
+.setting-subgroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-left: 18px;
+  border-left: 2px solid var(--surface-3);
+  margin-left: 4px;
+  transition: opacity var(--t-fast) var(--ease);
+}
+
+.setting-subgroup.disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+

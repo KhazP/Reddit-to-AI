@@ -692,5 +692,26 @@
     },
     "options_direct_api_cleared": {
         "message": "Chave removida."
+    },
+    "reddit_btn_label": {
+        "message": "IA"
+    },
+    "reddit_btn_tooltip": {
+        "message": "Resumir tópico com IA"
+    },
+    "settings_reddit_btn_title": {
+        "message": "Botão de IA na página do Reddit"
+    },
+    "settings_reddit_btn_desc": {
+        "message": "Exibir botões de ação rápida de IA diretamente nas barras de ação das postagens do Reddit"
+    },
+    "settings_reddit_btn_master": {
+        "message": "Ativar botão de IA na página do Reddit"
+    },
+    "settings_reddit_btn_feed": {
+        "message": "Mostrar nos cartões de postagem do feed"
+    },
+    "settings_reddit_btn_post": {
+        "message": "Mostrar dentro das páginas de detalhes da postagem"
     }
 }

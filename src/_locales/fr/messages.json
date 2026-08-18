@@ -692,5 +692,26 @@
     },
     "options_direct_api_cleared": {
         "message": "Clé supprimée."
+    },
+    "reddit_btn_label": {
+        "message": "IA"
+    },
+    "reddit_btn_tooltip": {
+        "message": "Résumer le fil avec l'IA"
+    },
+    "settings_reddit_btn_title": {
+        "message": "Bouton IA intégré sur Reddit"
+    },
+    "settings_reddit_btn_desc": {
+        "message": "Afficher des boutons d'action IA rapides directement dans les barres d'action des publications Reddit"
+    },
+    "settings_reddit_btn_master": {
+        "message": "Activer le bouton IA intégré sur Reddit"
+    },
+    "settings_reddit_btn_feed": {
+        "message": "Afficher sur les cartes de publication du flux"
+    },
+    "settings_reddit_btn_post": {
+        "message": "Afficher dans les pages de détail des publications"
     }
 }

@@ -692,5 +692,26 @@
     },
     "options_direct_api_cleared": {
         "message": "Anahtar kaldırıldı."
+    },
+    "reddit_btn_label": {
+        "message": "AI"
+    },
+    "reddit_btn_tooltip": {
+        "message": "Başlığı AI ile özetle"
+    },
+    "settings_reddit_btn_title": {
+        "message": "Reddit Sayfa İçi AI Butonu"
+    },
+    "settings_reddit_btn_desc": {
+        "message": "Reddit gönderi işlem çubuklarında doğrudan hızlı AI işlem butonları göster"
+    },
+    "settings_reddit_btn_master": {
+        "message": "Reddit'te sayfa içi AI butonunu etkinleştir"
+    },
+    "settings_reddit_btn_feed": {
+        "message": "Akış gönderi kartlarında göster"
+    },
+    "settings_reddit_btn_post": {
+        "message": "Gönderi detay sayfalarında göster"
     }
 }

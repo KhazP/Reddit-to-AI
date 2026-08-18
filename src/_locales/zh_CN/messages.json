@@ -692,5 +692,26 @@
     },
     "options_direct_api_cleared": {
         "message": "密钥已移除。"
+    },
+    "reddit_btn_label": {
+        "message": "AI"
+    },
+    "reddit_btn_tooltip": {
+        "message": "使用 AI 总结帖子"
+    },
+    "settings_reddit_btn_title": {
+        "message": "Reddit 页面内 AI 按钮"
+    },
+    "settings_reddit_btn_desc": {
+        "message": "直接在 Reddit 帖子操作栏中显示快捷 AI 操作按钮"
+    },
+    "settings_reddit_btn_master": {
+        "message": "在 Reddit 上启用页面内 AI 按钮"
+    },
+    "settings_reddit_btn_feed": {
+        "message": "在信息流帖子卡片上显示"
+    },
+    "settings_reddit_btn_post": {
+        "message": "在帖子详情页内显示"
     }
 }

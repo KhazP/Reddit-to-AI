@@ -148,6 +148,10 @@ async function initializeOptions() {
     const saveStatusDisplay = document.getElementById('saveStatus');
     const showNotificationsCheckbox = document.getElementById('showNotifications');
     const showPromptPreviewCheckbox = document.getElementById('showPromptPreview');
+    const showRedditInlineButtonCheckbox = document.getElementById('showRedditInlineButton');
+    const showRedditButtonInFeedCheckbox = document.getElementById('showRedditButtonInFeed');
+    const showRedditButtonInPostCheckbox = document.getElementById('showRedditButtonInPost');
+    const redditButtonSubgroup = document.getElementById('redditButtonSubgroup');
     const outputFormatSelect = document.getElementById('outputFormatSelect');
     const defaultPromptTemplateTextarea = document.getElementById('defaultPromptTemplate');
     const dataStorageDontSaveRadio = document.getElementById('dataStorageDontSave');
@@ -340,6 +344,9 @@ async function initializeOptions() {
         'mediaMode',
         'outputFormat',
         'showPromptPreview',
+        'showRedditInlineButton',
+        'showRedditButtonInFeed',
+        'showRedditButtonInPost',
         'selectedLanguage',
         'customSelectors',
         'subredditPromptMappings'
@@ -444,6 +451,29 @@ async function initializeOptions() {
         if (mediaModeSelect) mediaModeSelect.value = result.mediaMode || DEFAULT_MEDIA_MODE;
         if (outputFormatSelect) outputFormatSelect.value = result.outputFormat || DEFAULT_OUTPUT_FORMAT;
         if (showPromptPreviewCheckbox) showPromptPreviewCheckbox.checked = result.showPromptPreview !== false;
+
+        // Reddit In-Page AI Button
+        const showRedditInline = result.showRedditInlineButton !== false;
+        const showRedditFeed = result.showRedditButtonInFeed !== false;
+        const showRedditPost = result.showRedditButtonInPost !== false;
+
+        if (showRedditInlineButtonCheckbox) showRedditInlineButtonCheckbox.checked = showRedditInline;
+        if (showRedditButtonInFeedCheckbox) showRedditButtonInFeedCheckbox.checked = showRedditFeed;
+        if (showRedditButtonInPostCheckbox) showRedditButtonInPostCheckbox.checked = showRedditPost;
+
+        if (redditButtonSubgroup) {
+            redditButtonSubgroup.classList.toggle('disabled', !showRedditInline);
+        }
+
+        if (result.showRedditInlineButton === undefined) {
+            chrome.storage.sync.set({ showRedditInlineButton: true });
+        }
+        if (result.showRedditButtonInFeed === undefined) {
+            chrome.storage.sync.set({ showRedditButtonInFeed: true });
+        }
+        if (result.showRedditButtonInPost === undefined) {
+            chrome.storage.sync.set({ showRedditButtonInPost: true });
+        }
 
         // Author type filters
         setAuthorFilterControls(getAuthorTypesFromStorage(result));
@@ -763,6 +793,29 @@ async function initializeOptions() {
     if (showPromptPreviewCheckbox) {
         showPromptPreviewCheckbox.addEventListener('change', (e) => {
             chrome.storage.sync.set({ showPromptPreview: e.target.checked }, showSaveToast);
+        });
+    }
+
+    // Reddit in-page AI button toggles
+    if (showRedditInlineButtonCheckbox) {
+        showRedditInlineButtonCheckbox.addEventListener('change', (e) => {
+            const enabled = e.target.checked;
+            chrome.storage.sync.set({ showRedditInlineButton: enabled }, showSaveToast);
+            if (redditButtonSubgroup) {
+                redditButtonSubgroup.classList.toggle('disabled', !enabled);
+            }
+        });
+    }
+
+    if (showRedditButtonInFeedCheckbox) {
+        showRedditButtonInFeedCheckbox.addEventListener('change', (e) => {
+            chrome.storage.sync.set({ showRedditButtonInFeed: e.target.checked }, showSaveToast);
+        });
+    }
+
+    if (showRedditButtonInPostCheckbox) {
+        showRedditButtonInPostCheckbox.addEventListener('change', (e) => {
+            chrome.storage.sync.set({ showRedditButtonInPost: e.target.checked }, showSaveToast);
         });
     }
 
@@ -1114,6 +1167,9 @@ async function initializeOptions() {
         scrapeDepth: 'number',
         showNotifications: 'boolean',
         showPromptPreview: 'boolean',
+        showRedditInlineButton: 'boolean',
+        showRedditButtonInFeed: 'boolean',
+        showRedditButtonInPost: 'boolean',
         customPromptTemplate: 'string',
         selectedPreset: 'string',
         dataStorageOption: 'string',
