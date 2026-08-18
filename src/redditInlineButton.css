@@ -90,3 +90,12 @@
     animation-duration: 1.5s;
   }
 }
+
+@media (max-width: 640px) {
+  .r2ai-btn-text {
+    display: none;
+  }
+  .r2ai-inline-btn {
+    padding: 0 8px;
+  }
+}

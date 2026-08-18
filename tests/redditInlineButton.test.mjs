@@ -187,6 +187,26 @@ class MockDOMElement {
     return newNode;
   }
 
+  insertAdjacentElement(position, element) {
+    if (!this.parentNode) return element;
+    const parent = this.parentNode;
+    const idx = parent.children.indexOf(this);
+    if (position === 'beforebegin') {
+      parent.insertBefore(element, this);
+    } else if (position === 'afterbegin') {
+      this.insertBefore(element, this.children[0] || null);
+    } else if (position === 'beforeend') {
+      this.appendChild(element);
+    } else if (position === 'afterend') {
+      if (idx !== -1 && idx + 1 < parent.children.length) {
+        parent.insertBefore(element, parent.children[idx + 1]);
+      } else {
+        parent.appendChild(element);
+      }
+    }
+    return element;
+  }
+
   removeChild(child) {
     const idx = this.children.indexOf(child);
     if (idx !== -1) {
@@ -467,7 +487,7 @@ test('redditInlineButton.js injects button into feed post card and handles click
   // Verify button content
   const label = button.querySelector('.r2ai-btn-text');
   assert.ok(label, 'Button must contain .r2ai-btn-text');
-  assert.equal(label.textContent, 'AI');
+  assert.equal(label.textContent, 'Reddit-to-AI');
 
   const spinner = button.querySelector('.r2ai-btn-spinner');
   assert.ok(spinner, 'Button must contain .r2ai-btn-spinner');
@@ -579,4 +599,40 @@ test('redditInlineButton.js respects master toggle and sub-toggles', async () =>
   });
 
   assert.equal(row1.querySelector('.r2ai-inline-btn'), null, 'All buttons must be removed when master toggle is disabled');
+});
+
+test('redditInlineButton.js places button immediately next to Share button with Reddit-to-AI label', async () => {
+  const env = createMockEnvironment({
+    pathname: '/r/chrome_extensions/comments/abc123/test_post/',
+    storageData: {
+      showRedditInlineButton: true,
+      showRedditButtonInFeed: true,
+      showRedditButtonInPost: true
+    }
+  });
+
+  const post = new MockDOMElement('shreddit-post', { permalink: '/r/chrome_extensions/comments/abc123/test_post/' });
+  const actionRow = new MockDOMElement('div', { slot: 'action-row' });
+  const upvoteBtn = new MockDOMElement('button', { class: 'upvote-btn' });
+  const commentBtn = new MockDOMElement('button', { class: 'comment-btn' });
+  const shareBtn = new MockDOMElement('shreddit-post-share-button');
+
+  actionRow.appendChild(upvoteBtn);
+  actionRow.appendChild(commentBtn);
+  actionRow.appendChild(shareBtn);
+  post.appendChild(actionRow);
+  env.body.appendChild(post);
+
+  const code = await readFile(new URL('../src/redditInlineButton.js', import.meta.url), 'utf8');
+  vm.runInNewContext(code, env.context, { filename: 'redditInlineButton.js' });
+  await new Promise(r => setImmediate(r));
+
+  const button = actionRow.querySelector('.r2ai-inline-btn');
+  assert.ok(button, 'Button must be injected');
+  assert.equal(button.querySelector('.r2ai-btn-text')?.textContent, 'Reddit-to-AI', 'Button text must be Reddit-to-AI');
+
+  // Verify position: button must be immediately after shareBtn in actionRow.children
+  const shareIdx = actionRow.children.indexOf(shareBtn);
+  const buttonIdx = actionRow.children.indexOf(button);
+  assert.equal(buttonIdx, shareIdx + 1, 'Reddit-to-AI button must be placed immediately after the Share button');
 });

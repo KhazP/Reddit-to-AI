@@ -694,7 +694,7 @@
         "message": "密钥已移除。"
     },
     "reddit_btn_label": {
-        "message": "AI"
+        "message": "Reddit-to-AI"
     },
     "reddit_btn_tooltip": {
         "message": "使用 AI 总结帖子"

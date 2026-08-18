@@ -696,7 +696,7 @@
         "message": "Key removed."
     },
     "reddit_btn_label": {
-        "message": "AI",
+        "message": "Reddit-to-AI",
         "description": "Label on the Reddit inline AI button"
     },
     "reddit_btn_tooltip": {

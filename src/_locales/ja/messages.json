@@ -694,7 +694,7 @@
         "message": "キーを削除しました。"
     },
     "reddit_btn_label": {
-        "message": "AI"
+        "message": "Reddit-to-AI"
     },
     "reddit_btn_tooltip": {
         "message": "AIでスレッドを要約"

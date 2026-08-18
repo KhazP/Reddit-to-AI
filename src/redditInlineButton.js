@@ -97,7 +97,7 @@
     btn.type = 'button';
     btn.className = 'r2ai-inline-btn';
     const tooltip = (typeof t === 'function' ? t('reddit_btn_tooltip') : '') || 'Summarize thread with AI';
-    const label = (typeof t === 'function' ? t('reddit_btn_label') : '') || 'AI';
+    const label = (typeof t === 'function' ? t('reddit_btn_label') : '') || 'Reddit-to-AI';
     btn.title = tooltip;
     btn.setAttribute('aria-label', tooltip);
 
@@ -129,6 +129,18 @@
     btn.appendChild(spinnerEl);
 
     return btn;
+  }
+
+  function findShareTarget(actionRow, post) {
+    return (
+      actionRow.querySelector('shreddit-post-share-button') ||
+      actionRow.querySelector('shreddit-async-loader[bundlename*="share"]') ||
+      actionRow.querySelector('[slot="share-button"]') ||
+      actionRow.querySelector('button[aria-label*="Share" i], button[title*="Share" i]') ||
+      post.querySelector('shreddit-post-share-button') ||
+      post.querySelector('shreddit-async-loader[bundlename*="share"]') ||
+      null
+    );
   }
 
   function handleButtonClick(e, button, post, isMainPost) {
@@ -191,7 +203,19 @@
     actionRow.setAttribute('data-r2ai-injected', 'true');
     const button = createButtonElement();
     button.addEventListener('click', (e) => handleButtonClick(e, button, post, isMainPost));
-    actionRow.appendChild(button);
+
+    const shareTarget = findShareTarget(actionRow, post);
+    if (shareTarget && shareTarget.parentElement === actionRow) {
+      shareTarget.insertAdjacentElement('afterend', button);
+    } else if (shareTarget && actionRow.contains(shareTarget)) {
+      let wrapper = shareTarget;
+      while (wrapper.parentElement && wrapper.parentElement !== actionRow) {
+        wrapper = wrapper.parentElement;
+      }
+      wrapper.insertAdjacentElement('afterend', button);
+    } else {
+      actionRow.appendChild(button);
+    }
   }
 
   function processPosts() {
