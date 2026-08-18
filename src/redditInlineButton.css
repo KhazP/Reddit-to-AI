@@ -4,10 +4,10 @@
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  align-self: center !important;
+  vertical-align: baseline !important;
   gap: 6px !important;
-  padding: 0 10px !important;
-  height: 32px !important;
+  padding: 8px 12px !important;
+  height: auto !important;
   min-height: 32px !important;
   max-height: 32px !important;
   border-radius: 9999px !important;
@@ -18,12 +18,11 @@
   cursor: pointer !important;
   background: rgba(120, 120, 128, 0.15) !important;
   color: inherit !important;
-  line-height: 1 !important;
+  line-height: 16px !important;
   transition: background-color 0.15s ease, opacity 0.15s ease, transform 0.1s ease !important;
   user-select: none !important;
-  margin: 0 0 0 4px !important;
+  margin: 0 !important;
   box-sizing: border-box !important;
-  vertical-align: middle !important;
   text-decoration: none !important;
 }
 
@@ -44,13 +43,14 @@
   flex-shrink: 0;
   width: 14px;
   height: 14px;
-  display: block;
+  display: inline-block;
+  vertical-align: middle;
 }
 
 .r2ai-btn-text {
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 1;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  line-height: 16px !important;
 }
 
 .r2ai-btn-spinner {

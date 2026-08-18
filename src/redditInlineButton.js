@@ -133,22 +133,24 @@
     // Fallback baseline inline styles to prevent unstyled flash or host CSS reset overrides
     btn.style.borderRadius = '9999px';
     btn.style.border = 'none';
-    btn.style.height = '32px';
-    btn.style.padding = '0 10px';
+    btn.style.height = 'auto';
+    btn.style.minHeight = '32px';
+    btn.style.maxHeight = '32px';
+    btn.style.padding = '8px 12px';
     btn.style.display = 'inline-flex';
     btn.style.alignItems = 'center';
     btn.style.justifyContent = 'center';
-    btn.style.alignSelf = 'center';
+    btn.style.verticalAlign = 'baseline';
     btn.style.cursor = 'pointer';
     btn.style.background = 'rgba(120, 120, 128, 0.15)';
     btn.style.color = 'inherit';
     btn.style.fontSize = '12px';
     btn.style.fontWeight = '600';
     btn.style.fontFamily = 'inherit';
-    btn.style.lineHeight = '1';
+    btn.style.lineHeight = '16px';
     btn.style.boxSizing = 'border-box';
-    btn.style.marginLeft = '4px';
-    btn.style.verticalAlign = 'middle';
+    btn.style.margin = '0';
+    btn.style.gap = '6px';
     btn.style.userSelect = 'none';
 
     const tooltip = (typeof t === 'function' ? t('reddit_btn_tooltip') : '') || 'Summarize thread with AI';
@@ -165,7 +167,8 @@
     svg.setAttribute('height', '14');
     svg.setAttribute('fill', 'none');
     svg.style.flexShrink = '0';
-    svg.style.display = 'block';
+    svg.style.display = 'inline-block';
+    svg.style.verticalAlign = 'middle';
 
     const path = (typeof document.createElementNS === 'function')
       ? document.createElementNS('http://www.w3.org/2000/svg', 'path')
@@ -180,7 +183,7 @@
     labelEl.textContent = label;
     labelEl.style.fontSize = '12px';
     labelEl.style.fontWeight = '600';
-    labelEl.style.lineHeight = '1';
+    labelEl.style.lineHeight = '16px';
     btn.appendChild(labelEl);
 
     const spinnerEl = document.createElement('span');
