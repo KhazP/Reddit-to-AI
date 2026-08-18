@@ -474,6 +474,144 @@ if (chrome.runtime.onConnect) {
 async function handleScrapeRequest(request, sender) {
   if (scrapingState.isActive) throw new Error('Scraping already in progress.');
 
+  if (request?.threadUrl) {
+    if (!isRedditUrl(request.threadUrl)) {
+      setScrapingState({
+        isActive: false,
+        message: chrome.i18n.getMessage('popup_status_navigate') || 'Open a Reddit thread before scraping.',
+        percentage: -1,
+        phase: 'error',
+        status: 'error',
+        batch: null,
+        error: chrome.i18n.getMessage('sw_error_not_reddit') || 'Active tab is not a Reddit thread.'
+      });
+      throw new Error('Active tab is not a Reddit thread.');
+    }
+
+    setScrapingState({
+      isActive: true,
+      message: chrome.i18n.getMessage('sw_status_preparing') || 'Preparing to scrape.',
+      percentage: 5,
+      phase: 'prepare',
+      status: 'running',
+      batch: null,
+      summary: null,
+      error: null
+    });
+
+    let targetTab = null;
+    if (sender?.tab?.id != null) {
+      targetTab = sender.tab;
+    } else {
+      try {
+        targetTab = await getScrapeTargetTab(request, sender);
+      } catch (e) {
+        console.debug('Target tab lookup failed:', e);
+      }
+    }
+    const targetTabId = targetTab?.id ?? null;
+
+    const scrapeId = createId();
+    currentScrape = {
+      scrapeId,
+      tabId: targetTabId,
+      stopRequested: false,
+      storageOption: 'persistent',
+      abortController: null
+    };
+
+    if (targetTabId != null) {
+      setScrapingState({ lastScrapedTabId: targetTabId });
+    }
+
+    try {
+      setScrapingState({
+        message: chrome.i18n.getMessage('sw_status_collecting') || 'Collecting data from page.',
+        percentage: 20,
+        phase: 'fetch',
+        status: 'running'
+      });
+
+      const settings = await loadSettings();
+      const effectiveSettings = mergeRequestFiltersIntoSettings(settings, request.filters || {}, request);
+      currentScrape.storageOption = effectiveSettings.dataStorageOption;
+
+      const context = {
+        scrapeId,
+        tabId: targetTabId,
+        settings: effectiveSettings,
+        startedAt: Date.now()
+      };
+      await setStorage(chrome.storage.session, { [SCRAPE_CONTEXT_KEY]: context });
+
+      const data = await scrapeThreadFromUrl(request.threadUrl, effectiveSettings, request.filters || {});
+
+      if (currentScrape.stopRequested) {
+        throw new Error('Scraping stopped by user.');
+      }
+
+      setScrapingState({
+        message: chrome.i18n.getMessage('sw_status_processing') || 'Preparing scraped data.',
+        percentage: 80,
+        phase: 'build',
+        status: 'running'
+      });
+
+      let historyEntry = null;
+      if (effectiveSettings.dataStorageOption === 'persistent') {
+        historyEntry = await addToHistory(data, effectiveSettings);
+      }
+      await savePreviewData(data, effectiveSettings, { historyId: historyEntry?.id || null });
+
+      if (effectiveSettings.showPromptPreview === false) {
+        setScrapingState({ message: 'Opening AI tab...', percentage: 90, phase: 'build', status: 'running' });
+        await sendDataDirectlyToAi(data, effectiveSettings);
+      } else {
+        setScrapingState({ message: 'Opening prompt preview...', percentage: 90, phase: 'build', status: 'running' });
+        await openPreviewTab();
+      }
+
+      setScrapingState({
+        isActive: false,
+        percentage: 100,
+        phase: 'complete',
+        status: 'complete',
+        batch: null,
+        summary: null,
+        message: chrome.i18n.getMessage('panel_status_ready') || 'Ready to scrape.',
+        error: null
+      });
+
+      showNotificationIfEnabled(
+        chrome.i18n.getMessage('extName') || 'Reddit to AI',
+        effectiveSettings.showPromptPreview === false ? 'Content sent directly to AI.' : 'Content ready for prompt preview.'
+      );
+
+      return {
+        started: true,
+        scrapeId,
+        directUrl: true,
+        preview: effectiveSettings.showPromptPreview !== false,
+        direct: effectiveSettings.showPromptPreview === false
+      };
+    } catch (error) {
+      console.error('Direct URL scrape failed:', error);
+      setScrapingState({
+        isActive: false,
+        error: error.message,
+        message: `Error: ${error.message}`,
+        percentage: -1,
+        phase: 'error',
+        status: 'error',
+        batch: null
+      });
+      throw error;
+    } finally {
+      await clearScrapeContext();
+      if (currentScrape?.scrapeId === scrapeId) currentScrape = null;
+    }
+  }
+
   setScrapingState({
     isActive: true,
     message: chrome.i18n.getMessage('sw_status_preparing') || 'Preparing to scrape.',
@@ -2303,6 +2441,7 @@ if (globalThis.R2AIServiceWorkerTest) {
     resumeBatchScrape,
     handleBatchScrapeRequest,
     handleScrapeRequest,
+    scrapeThreadFromUrl,
     handleRuntimeMessage,
     finishTabScrape,
     getActiveScrapeContext,
@@ -2329,6 +2468,8 @@ if (globalThis.R2AIServiceWorkerTest) {
     setStorage,
     removeStorage,
     savePreviewData,
+    sendDataDirectlyToAi,
+    openPreviewTab,
     chrome: typeof chrome !== 'undefined' ? chrome : null
   });
 }
