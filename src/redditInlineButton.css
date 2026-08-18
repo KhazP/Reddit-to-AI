@@ -81,3 +81,12 @@
     transform: rotate(360deg);
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .r2ai-inline-btn {
+    transition: none;
+  }
+  .r2ai-btn-spinner {
+    animation-duration: 1.5s;
+  }
+}

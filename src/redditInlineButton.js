@@ -113,7 +113,7 @@
     const path = (typeof document.createElementNS === 'function')
       ? document.createElementNS('http://www.w3.org/2000/svg', 'path')
       : document.createElement('path');
-    path.setAttribute('d', 'M8 1L9.5 5.5L14 7L9.5 8.5L8 13L6.5 8.5L8 13L6.5 8.5L8 13Z');
+    path.setAttribute('d', 'M8 1L9.5 5.5L14 7L9.5 8.5L8 13L6.5 8.5L2 7L6.5 5.5Z');
     path.setAttribute('fill', 'currentColor');
     svg.appendChild(path);
     btn.appendChild(svg);
@@ -205,15 +205,17 @@
     const posts = document.querySelectorAll('shreddit-post, div[data-testid="post-container"], .Post');
 
     posts.forEach((post) => {
-      const permalink =
+      const rawPermalink =
         post.getAttribute('permalink') ||
         post.getAttribute('content-href') ||
         post.querySelector('a[data-testid="post-title"], a[slot="full-post-link"]')?.getAttribute('href') ||
         '';
 
+      const cleanPermalink = rawPermalink.replace(/^https?:\/\/[^\/]+/, '').split('?')[0];
+
       const isMainPost =
         isPostView &&
-        ((permalink && window.location.pathname.includes(permalink.split('?')[0])) ||
+        ((cleanPermalink && window.location.pathname.includes(cleanPermalink)) ||
           post === posts[0] ||
           post.getAttribute('view-type') === 'comments');
 
@@ -241,7 +243,6 @@
           });
         }
       }
-      return true;
     });
   }
 
