@@ -464,8 +464,15 @@ function createMockEnvironment({ pathname = '/', storageData = {} } = {}) {
   };
 }
 
-test('redditInlineButton.js injects button into feed post card and handles clicks', async () => {
-  const env = createMockEnvironment({ pathname: '/r/technology/' });
+test('redditInlineButton.js injects button into feed post card and handles clicks when feed enabled', async () => {
+  const env = createMockEnvironment({
+    pathname: '/r/technology/',
+    storageData: {
+      showRedditInlineButton: true,
+      showRedditButtonInFeed: true,
+      showRedditButtonInPost: true
+    }
+  });
   
   // Setup post element in DOM
   const post = new MockDOMElement('shreddit-post', {

@@ -454,7 +454,7 @@ async function initializeOptions() {
 
         // Reddit In-Page AI Button
         const showRedditInline = result.showRedditInlineButton !== false;
-        const showRedditFeed = result.showRedditButtonInFeed !== false;
+        const showRedditFeed = result.showRedditButtonInFeed === true;
         const showRedditPost = result.showRedditButtonInPost !== false;
 
         if (showRedditInlineButtonCheckbox) showRedditInlineButtonCheckbox.checked = showRedditInline;
@@ -469,7 +469,7 @@ async function initializeOptions() {
             chrome.storage.sync.set({ showRedditInlineButton: true });
         }
         if (result.showRedditButtonInFeed === undefined) {
-            chrome.storage.sync.set({ showRedditButtonInFeed: true });
+            chrome.storage.sync.set({ showRedditButtonInFeed: false });
         }
         if (result.showRedditButtonInPost === undefined) {
             chrome.storage.sync.set({ showRedditButtonInPost: true });

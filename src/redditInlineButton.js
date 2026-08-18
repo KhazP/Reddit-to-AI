@@ -30,7 +30,7 @@
 
   const settings = {
     showRedditInlineButton: true,
-    showRedditButtonInFeed: true,
+    showRedditButtonInFeed: false,
     showRedditButtonInPost: true
   };
 
@@ -43,7 +43,9 @@
       if (chrome.runtime?.lastError) {
         console.warn('Reddit to AI: Error loading inline button settings:', chrome.runtime.lastError.message);
       } else if (loaded) {
-        Object.assign(settings, loaded);
+        settings.showRedditInlineButton = loaded.showRedditInlineButton !== false;
+        settings.showRedditButtonInFeed = loaded.showRedditButtonInFeed === true;
+        settings.showRedditButtonInPost = loaded.showRedditButtonInPost !== false;
       }
       processPosts();
     });
@@ -58,7 +60,7 @@
         changed = true;
       }
       if (changes.showRedditButtonInFeed !== undefined) {
-        settings.showRedditButtonInFeed = changes.showRedditButtonInFeed.newValue ?? true;
+        settings.showRedditButtonInFeed = changes.showRedditButtonInFeed.newValue === true;
         changed = true;
       }
       if (changes.showRedditButtonInPost !== undefined) {
@@ -71,12 +73,20 @@
     });
   }
 
-  function findActionRow(post) {
+  function findShareButton(post) {
     return (
-      post.querySelector('div[slot="action-row"]') ||
-      post.querySelector('shreddit-async-loader[bundlename="comment_action_row"]') ||
+      post.querySelector('shreddit-post-share-button') ||
+      post.querySelector('shreddit-async-loader[bundlename*="share"]') ||
+      post.querySelector('[slot="share-button"]') ||
+      post.querySelector('button[aria-label*="Share" i], button[title*="Share" i]') ||
+      null
+    );
+  }
+
+  function findBottomActionRow(post) {
+    return (
       post.querySelector('shreddit-post-action-row') ||
-      post.querySelector('div.flex.flex-row.items-center') ||
+      post.querySelector('div[slot="action-row"]') ||
       post.querySelector('[slot="flatlist"]') ||
       post.querySelector('.flat-list') ||
       null
@@ -85,11 +95,17 @@
 
   function removeButtonFromPost(post) {
     const btn = post.querySelector('.r2ai-inline-btn');
-    if (btn) btn.remove();
-    const actionRow = findActionRow(post);
-    if (actionRow) {
-      actionRow.removeAttribute('data-r2ai-injected');
+    if (btn) {
+      if (btn.parentElement) {
+        btn.parentElement.removeAttribute('data-r2ai-injected');
+      }
+      btn.remove();
     }
+    post.querySelectorAll('[data-r2ai-injected="true"]').forEach((el) => {
+      if (!el.querySelector('.r2ai-inline-btn')) {
+        el.removeAttribute('data-r2ai-injected');
+      }
+    });
   }
 
   function createButtonElement() {
@@ -129,18 +145,6 @@
     btn.appendChild(spinnerEl);
 
     return btn;
-  }
-
-  function findShareTarget(actionRow, post) {
-    return (
-      actionRow.querySelector('shreddit-post-share-button') ||
-      actionRow.querySelector('shreddit-async-loader[bundlename*="share"]') ||
-      actionRow.querySelector('[slot="share-button"]') ||
-      actionRow.querySelector('button[aria-label*="Share" i], button[title*="Share" i]') ||
-      post.querySelector('shreddit-post-share-button') ||
-      post.querySelector('shreddit-async-loader[bundlename*="share"]') ||
-      null
-    );
   }
 
   function handleButtonClick(e, button, post, isMainPost) {
@@ -193,9 +197,25 @@
   }
 
   function injectButtonIntoPost(post, isMainPost) {
-    const actionRow = findActionRow(post);
-    if (!actionRow) return;
+    if (post.querySelector('.r2ai-inline-btn')) return;
 
+    // 1. Preferred anchor: immediately after the Share button in the bottom action bar
+    const shareBtn = findShareButton(post);
+    if (shareBtn) {
+      const container = shareBtn.parentElement;
+      if (container?.getAttribute('data-r2ai-injected') === 'true' || container?.querySelector('.r2ai-inline-btn')) {
+        return;
+      }
+      container?.setAttribute('data-r2ai-injected', 'true');
+      const button = createButtonElement();
+      button.addEventListener('click', (e) => handleButtonClick(e, button, post, isMainPost));
+      shareBtn.insertAdjacentElement('afterend', button);
+      return;
+    }
+
+    // 2. Fallback anchor: bottom action bar (never author/header row)
+    const actionRow = findBottomActionRow(post);
+    if (!actionRow) return;
     if (actionRow.getAttribute('data-r2ai-injected') === 'true' || actionRow.querySelector('.r2ai-inline-btn')) {
       return;
     }
@@ -203,19 +223,7 @@
     actionRow.setAttribute('data-r2ai-injected', 'true');
     const button = createButtonElement();
     button.addEventListener('click', (e) => handleButtonClick(e, button, post, isMainPost));
-
-    const shareTarget = findShareTarget(actionRow, post);
-    if (shareTarget && shareTarget.parentElement === actionRow) {
-      shareTarget.insertAdjacentElement('afterend', button);
-    } else if (shareTarget && actionRow.contains(shareTarget)) {
-      let wrapper = shareTarget;
-      while (wrapper.parentElement && wrapper.parentElement !== actionRow) {
-        wrapper = wrapper.parentElement;
-      }
-      wrapper.insertAdjacentElement('afterend', button);
-    } else {
-      actionRow.appendChild(button);
-    }
+    actionRow.appendChild(button);
   }
 
   function processPosts() {

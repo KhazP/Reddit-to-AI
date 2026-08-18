@@ -25,15 +25,15 @@
     openai: {
       id: 'openai',
       label: 'OpenAI',
-      defaultModel: 'gpt-5.2',
-      suggestedModels: ['gpt-5.2'],
+      defaultModel: 'gpt-5.6',
+      suggestedModels: ['gpt-5.6'],
       origin: 'https://api.openai.com'
     },
     google: {
       id: 'google',
       label: 'Google Gemini',
-      defaultModel: 'gemini-2.5-flash',
-      suggestedModels: ['gemini-2.5-flash', 'gemini-2.5-pro'],
+      defaultModel: 'gemini-flash-latest',
+      suggestedModels: ['gemini-flash-latest', 'gemini-2.5-pro'],
       origin: 'https://generativelanguage.googleapis.com'
     }
   };
