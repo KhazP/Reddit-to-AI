@@ -149,7 +149,7 @@
     btn.style.fontFamily = 'inherit';
     btn.style.lineHeight = '16px';
     btn.style.boxSizing = 'border-box';
-    btn.style.margin = '0';
+    btn.style.margin = '0 0 0 6px';
     btn.style.gap = '6px';
     btn.style.userSelect = 'none';
 

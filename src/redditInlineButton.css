@@ -21,7 +21,7 @@
   line-height: 16px !important;
   transition: background-color 0.15s ease, opacity 0.15s ease, transform 0.1s ease !important;
   user-select: none !important;
-  margin: 0 !important;
+  margin: 0 0 0 6px !important;
   box-sizing: border-box !important;
   text-decoration: none !important;
 }
