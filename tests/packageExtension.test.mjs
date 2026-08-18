@@ -26,7 +26,7 @@ const stagedFiles = await collectFiles(outDir);
 const zipFiles = await verifyZip(outDir, result.zipPath);
 assert.deepEqual(zipFiles, stagedFiles, 'upload zip must contain exactly the staged files');
 
-for (const required of ['manifest.json', 'popup.html', 'preview.html', 'options.html', 'service_worker.js', '_locales/en/messages.json']) {
+for (const required of ['manifest.json', 'popup.html', 'preview.html', 'options.html', 'service_worker.js', 'redditInlineButton.js', 'redditInlineButton.css', '_locales/en/messages.json']) {
   assert.ok(stagedFiles.includes(required), `staged package must include ${required}`);
 }
 

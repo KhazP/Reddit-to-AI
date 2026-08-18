@@ -52,6 +52,8 @@ const requiredFiles = [
   'i18n.js',
   'floatingPanel.js',
   'floatingPanel.css',
+  'redditInlineButton.js',
+  'redditInlineButton.css',
   'tooltip.js',
   'tooltip.css',
   'images/icon16.png',
