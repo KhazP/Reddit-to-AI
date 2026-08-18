@@ -59,6 +59,9 @@
         "floatingPanel.js",
         "redditInlineButton.js"
       ],
+      "css": [
+        "redditInlineButton.css"
+      ],
       "run_at": "document_end"
     }
   ],

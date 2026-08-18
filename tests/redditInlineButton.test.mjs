@@ -243,6 +243,17 @@ class MockDOMElement {
     return true;
   }
 
+  contains(node) {
+    if (!node) return false;
+    if (node === this) return true;
+    let curr = node.parentNode || node.parentElement;
+    while (curr) {
+      if (curr === this) return true;
+      curr = curr.parentNode || curr.parentElement;
+    }
+    return false;
+  }
+
   querySelector(selector) {
     return this.querySelectorAll(selector)[0] || null;
   }

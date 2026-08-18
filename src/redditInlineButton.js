@@ -130,6 +130,27 @@
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'r2ai-inline-btn';
+    // Fallback baseline inline styles to prevent unstyled flash or host CSS reset overrides
+    btn.style.borderRadius = '9999px';
+    btn.style.border = 'none';
+    btn.style.height = '32px';
+    btn.style.padding = '0 10px';
+    btn.style.display = 'inline-flex';
+    btn.style.alignItems = 'center';
+    btn.style.justifyContent = 'center';
+    btn.style.alignSelf = 'center';
+    btn.style.cursor = 'pointer';
+    btn.style.background = 'rgba(120, 120, 128, 0.15)';
+    btn.style.color = 'inherit';
+    btn.style.fontSize = '12px';
+    btn.style.fontWeight = '600';
+    btn.style.fontFamily = 'inherit';
+    btn.style.lineHeight = '1';
+    btn.style.boxSizing = 'border-box';
+    btn.style.marginLeft = '4px';
+    btn.style.verticalAlign = 'middle';
+    btn.style.userSelect = 'none';
+
     const tooltip = (typeof t === 'function' ? t('reddit_btn_tooltip') : '') || 'Summarize thread with AI';
     const label = (typeof t === 'function' ? t('reddit_btn_label') : '') || 'Reddit-to-AI';
     btn.title = tooltip;
@@ -143,6 +164,8 @@
     svg.setAttribute('width', '14');
     svg.setAttribute('height', '14');
     svg.setAttribute('fill', 'none');
+    svg.style.flexShrink = '0';
+    svg.style.display = 'block';
 
     const path = (typeof document.createElementNS === 'function')
       ? document.createElementNS('http://www.w3.org/2000/svg', 'path')
@@ -155,6 +178,9 @@
     const labelEl = document.createElement('span');
     labelEl.className = 'r2ai-btn-text';
     labelEl.textContent = label;
+    labelEl.style.fontSize = '12px';
+    labelEl.style.fontWeight = '600';
+    labelEl.style.lineHeight = '1';
     btn.appendChild(labelEl);
 
     const spinnerEl = document.createElement('span');
@@ -217,22 +243,32 @@
   function injectButtonIntoPost(post, isMainPost) {
     if (post.querySelector('.r2ai-inline-btn')) return;
 
-    // 1. Preferred anchor: immediately after the Share button in the bottom action bar
+    const actionRow = findBottomActionRow(post);
+
+    // 1. Preferred anchor: immediately after the Share button's top-level container in the bottom action bar
     const shareBtn = findShareButton(post);
     if (shareBtn) {
-      const container = shareBtn.parentElement;
-      if (container?.getAttribute('data-r2ai-injected') === 'true' || container?.querySelector('.r2ai-inline-btn')) {
+      const parentContainer = actionRow || shareBtn.closest('shreddit-post-action-row, [slot="credit-bar"], [slot="action-row"], div.flex') || shareBtn.parentElement;
+
+      let topLevelAnchor = shareBtn;
+      if (parentContainer && (typeof parentContainer.contains === 'function' ? parentContainer.contains(shareBtn) : true)) {
+        while (topLevelAnchor.parentElement && topLevelAnchor.parentElement !== parentContainer) {
+          topLevelAnchor = topLevelAnchor.parentElement;
+        }
+      }
+
+      if (parentContainer?.getAttribute('data-r2ai-injected') === 'true' || parentContainer?.querySelector('.r2ai-inline-btn')) {
         return;
       }
-      container?.setAttribute('data-r2ai-injected', 'true');
+
+      parentContainer?.setAttribute('data-r2ai-injected', 'true');
       const button = createButtonElement();
       button.addEventListener('click', (e) => handleButtonClick(e, button, post, isMainPost));
-      shareBtn.insertAdjacentElement('afterend', button);
+      topLevelAnchor.insertAdjacentElement('afterend', button);
       return;
     }
 
     // 2. Fallback anchor: bottom action bar (never author/header row)
-    const actionRow = findBottomActionRow(post);
     if (!actionRow) return;
     if (actionRow.getAttribute('data-r2ai-injected') === 'true' || actionRow.querySelector('.r2ai-inline-btn')) {
       return;
