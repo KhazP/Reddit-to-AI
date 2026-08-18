@@ -39,13 +39,19 @@
       processPosts();
       return;
     }
-    chrome.storage.sync.get(settings, (loaded) => {
+    chrome.storage.sync.get(['showRedditInlineButton', 'showRedditButtonInFeed', 'showRedditButtonInPost'], (loaded) => {
       if (chrome.runtime?.lastError) {
         console.warn('Reddit to AI: Error loading inline button settings:', chrome.runtime.lastError.message);
       } else if (loaded) {
-        settings.showRedditInlineButton = loaded.showRedditInlineButton !== false;
-        settings.showRedditButtonInFeed = loaded.showRedditButtonInFeed === true;
-        settings.showRedditButtonInPost = loaded.showRedditButtonInPost !== false;
+        if (typeof loaded.showRedditInlineButton === 'boolean') {
+          settings.showRedditInlineButton = loaded.showRedditInlineButton;
+        }
+        if (typeof loaded.showRedditButtonInFeed === 'boolean') {
+          settings.showRedditButtonInFeed = loaded.showRedditButtonInFeed;
+        }
+        if (typeof loaded.showRedditButtonInPost === 'boolean') {
+          settings.showRedditButtonInPost = loaded.showRedditButtonInPost;
+        }
       }
       processPosts();
     });
@@ -78,7 +84,15 @@
       post.querySelector('shreddit-post-share-button') ||
       post.querySelector('shreddit-async-loader[bundlename*="share"]') ||
       post.querySelector('[slot="share-button"]') ||
-      post.querySelector('button[aria-label*="Share" i], button[title*="Share" i]') ||
+      post.querySelector('button[aria-label*="Share" i]') ||
+      post.querySelector('button[title*="Share" i]') ||
+      post.querySelector('button[data-click-id="share"]') ||
+      post.querySelector('share-button') ||
+      post.querySelector('div[slot="credit-bar"] shreddit-post-share-button') ||
+      post.querySelector('div[slot="action-row"] shreddit-post-share-button') ||
+      post.querySelector('shreddit-post-action-row shreddit-post-share-button') ||
+      post.querySelector('div[slot="credit-bar"] button:last-of-type') ||
+      post.shadowRoot?.querySelector('shreddit-post-share-button, button[aria-label*="Share" i]') ||
       null
     );
   }
@@ -86,9 +100,13 @@
   function findBottomActionRow(post) {
     return (
       post.querySelector('shreddit-post-action-row') ||
+      post.querySelector('div[slot="credit-bar"]') ||
       post.querySelector('div[slot="action-row"]') ||
       post.querySelector('[slot="flatlist"]') ||
       post.querySelector('.flat-list') ||
+      post.querySelector('[data-testid="post-action-bar"]') ||
+      post.querySelector('div.feed-card-actions') ||
+      post.shadowRoot?.querySelector('shreddit-post-action-row, div[slot="credit-bar"], div[slot="action-row"]') ||
       null
     );
   }

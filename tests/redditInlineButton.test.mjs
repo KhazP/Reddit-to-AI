@@ -643,3 +643,31 @@ test('redditInlineButton.js places button immediately next to Share button with 
   const buttonIdx = actionRow.children.indexOf(button);
   assert.equal(buttonIdx, shareIdx + 1, 'Reddit-to-AI button must be placed immediately after the Share button');
 });
+
+test('redditInlineButton.js injects button in feed post cards using slot=credit-bar', async () => {
+  const env = createMockEnvironment({
+    pathname: '/r/pcmasterrace/',
+    storageData: {
+      showRedditInlineButton: true,
+      showRedditButtonInFeed: true,
+      showRedditButtonInPost: true
+    }
+  });
+
+  const post = new MockDOMElement('shreddit-post', { permalink: '/r/pcmasterrace/comments/123/meme/' });
+  const creditBar = new MockDOMElement('div', { slot: 'credit-bar' });
+  const shareBtn = new MockDOMElement('shreddit-post-share-button');
+  creditBar.appendChild(shareBtn);
+  post.appendChild(creditBar);
+  env.body.appendChild(post);
+
+  const code = await readFile(new URL('../src/redditInlineButton.js', import.meta.url), 'utf8');
+  vm.runInNewContext(code, env.context, { filename: 'redditInlineButton.js' });
+  await new Promise(r => setImmediate(r));
+
+  const button = creditBar.querySelector('.r2ai-inline-btn');
+  assert.ok(button, 'Button must be injected into credit-bar next to share');
+  const shareIdx = creditBar.children.indexOf(shareBtn);
+  const buttonIdx = creditBar.children.indexOf(button);
+  assert.equal(buttonIdx, shareIdx + 1, 'Button must be placed immediately after the Share button in credit-bar');
+});

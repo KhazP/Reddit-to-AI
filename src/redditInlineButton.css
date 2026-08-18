@@ -4,9 +4,12 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  align-self: center;
   gap: 6px;
   padding: 0 10px;
   height: 32px;
+  min-height: 32px;
+  max-height: 32px;
   border-radius: 9999px;
   font-size: 12px;
   font-weight: 600;
@@ -18,7 +21,7 @@
   line-height: 1;
   transition: background-color 0.15s ease, opacity 0.15s ease, transform 0.1s ease;
   user-select: none;
-  margin-left: 4px;
+  margin: 0 0 0 4px;
   box-sizing: border-box;
   vertical-align: middle;
 }

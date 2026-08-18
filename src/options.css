@@ -455,11 +455,11 @@ button, input, select, textarea { font-family: inherit; }
 
 .platform-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 10px;
 }
 
-.platform-option { cursor: pointer; position: relative; }
+.platform-option { cursor: pointer; position: relative; display: block; height: 100%; }
 
 .platform-option input {
   position: absolute;
@@ -474,18 +474,30 @@ button, input, select, textarea { font-family: inherit; }
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 16px 8px;
+  padding: 14px 8px;
+  height: 106px;
+  min-height: 106px;
+  max-height: 106px;
+  box-sizing: border-box;
   background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: var(--r-md);
-  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 
-.platform-box:hover { background: var(--surface-3); border-color: var(--border-strong); }
+.platform-box:hover {
+  background: var(--surface-3);
+  border-color: var(--border-strong);
+}
+
+.platform-box:active {
+  transform: scale(0.98);
+}
 
 .platform-icon {
   width: 32px;
   height: 32px;
+  flex-shrink: 0;
   opacity: 0.85;
   transition: opacity var(--t-fast) var(--ease);
 }
@@ -496,6 +508,14 @@ button, input, select, textarea { font-family: inherit; }
   font-size: 12px;
   font-weight: 500;
   color: var(--text-2);
+  text-align: center;
+  line-height: 1.25;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  word-break: break-word;
   transition: color var(--t-fast) var(--ease);
 }
 
