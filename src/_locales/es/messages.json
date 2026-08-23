@@ -158,6 +158,15 @@
     "options_hint_notifications": {
         "message": "Mostrar actualizaciones de estado como notificaciones del navegador"
     },
+    "options_card_telemetry_title": {
+        "message": "Estadísticas de uso anónimas"
+    },
+    "options_label_telemetry": {
+        "message": "Enviar recuentos de uso anónimos"
+    },
+    "options_hint_telemetry": {
+        "message": "Recuentos de cinco acciones (instalado, actualizado, sesión iniciada, hilo extraído, prompt enviado) más un ID de instalación aleatorio y la versión de la extensión, como máximo cada 30 minutos. Nunca contenido de Reddit, URL, subreddits, prompts ni claves de API. Al desactivarlo se elimina el ID de instalación."
+    },
     "options_card_presets_title": {
         "message": "Preajustes de instrucciones"
     },

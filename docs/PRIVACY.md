@@ -1,7 +1,7 @@
 # Privacy Policy
 
 **Reddit to AI**  
-Last updated: April 28, 2026
+Last updated: August 23, 2026
 
 ---
 
@@ -9,7 +9,9 @@ Last updated: April 28, 2026
 
 Reddit to AI is a Chrome extension that prepares Reddit threads for AI tools you choose. It can open a prompt preview first, or it can hand the generated prompt directly to the selected AI site when you choose direct send.
 
-The extension developer does not operate a backend for this extension and does not collect analytics, usage data, crash reports, scraped Reddit content, prompts, API keys, or personal information.
+The extension developer does not collect scraped Reddit content, prompts, API keys, or personal information.
+
+The extension does send a small amount of anonymous usage data, described in "Anonymous Usage Statistics" below. You can turn it off in Options.
 
 ---
 
@@ -50,7 +52,51 @@ Reddit to AI offers three storage modes:
 
 General preferences, prompt templates, saved prompt presets, selected provider, filters, and similar settings are saved with `chrome.storage.sync` so Chrome can sync them across your signed-in browser profiles.
 
-No stored extension data is sent to any server controlled by the extension developer.
+Apart from the anonymous usage counts described below, no stored extension data is sent to any server controlled by the extension developer.
+
+---
+
+## Anonymous Usage Statistics
+
+The extension reports how often five actions happen, so the developer can tell whether
+the extension is used and which parts matter. This is on by default and you can turn it
+off at any time in **Options -> Anonymous Usage Stats**.
+
+**What is sent**, and nothing else:
+
+| Field | Value |
+|-------|-------|
+| App name | The fixed string `reddit-to-ai` |
+| Ingest key | A fixed public string that filters spam at the endpoint |
+| Install ID | A random UUID created once at install. It is not derived from you, your browser, your account or your hardware |
+| Version | The extension version, for example `1.5.1` |
+| Event counts | How many times each of the five events below happened since the last report |
+
+The five event names are fixed. No other name can ever be sent:
+
+| Event | Meaning |
+|-------|---------|
+| `ext_installed` | The extension was installed |
+| `ext_updated` | The extension version changed |
+| `ext_active` | A browser session started with the extension enabled |
+| `ext_extract` | A Reddit thread was scraped |
+| `ext_handoff` | A prompt was handed off to an AI provider |
+
+**What is never sent**: Reddit URLs, thread titles, post or comment text, subreddit
+names, usernames, prompt text, prompt templates, provider choice, API keys, IP-derived
+location, settings values, or anything you typed.
+
+Events are counted locally in `chrome.storage.local` and uploaded at most once every 30
+minutes, and once when the browser starts. There is never one request per action. If the
+upload fails for any reason, the batch is discarded rather than retried.
+
+**Turning it off** deletes the install ID and every buffered event immediately, and stops
+all uploads. Turning it back on creates a brand new random install ID, so the two periods
+cannot be linked.
+
+**Firefox**: the Firefox build of this extension does not send usage statistics at all.
+The AMO listing declares no data collection, and the telemetry code disables itself on
+that build.
 
 ---
 
@@ -84,6 +130,7 @@ The extension requests the following Chrome permissions:
 | `scripting` | Inject the scraper or paste helper into supported pages |
 | `storage` | Save settings, prompt handoff payloads, and optional history according to your storage choice |
 | `notifications` | Show completion or status notifications when enabled |
+| `alarms` | Run the 30-minute timer that uploads the anonymous usage counts. Grants no access to your data |
 | `tabs` | Open the preview page, options page, feedback page, or selected AI destination |
 
 Host permissions for Reddit and supported AI provider domains are used to scrape Reddit content and complete the browser-side prompt handoff.

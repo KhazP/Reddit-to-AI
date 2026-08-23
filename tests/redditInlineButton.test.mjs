@@ -28,6 +28,15 @@ test('manifest.json registers redditInlineButton.js and redditInlineButton.css',
 test('redditInlineButton.css defines required styles, spinner, and animations', async () => {
   const css = await readFile(new URL('../src/redditInlineButton.css', import.meta.url), 'utf8');
   assert.ok(css.includes('.r2ai-inline-btn'), 'CSS must define .r2ai-inline-btn');
+  assert.ok(css.includes('.reddit-to-ai-button'), 'CSS must define .reddit-to-ai-button');
+  assert.ok(css.includes('.r2ai-in-post'), 'CSS must define .r2ai-in-post spacing rule');
+  assert.ok(css.includes('.r2ai-in-feed'), 'CSS must define .r2ai-in-feed spacing rule');
+  assert.ok(css.includes('.reddit-to-ai-button-container'), 'CSS must define .reddit-to-ai-button-container');
+  assert.ok(css.includes('margin-left: 8px'), 'CSS must specify 8px margin for in-post alignment');
+  assert.ok(css.includes('margin-left: 4px'), 'CSS must specify 4px margin for in-feed alignment');
+  assert.ok(css.includes('gap: 4px'), 'CSS must specify 4px internal button gap');
+  assert.ok(css.includes('z-index: 10'), 'CSS must specify elevated z-index for clickability');
+  assert.ok(css.includes('pointer-events: auto'), 'CSS must ensure pointer-events: auto for button');
   assert.ok(css.includes('.r2ai-btn-spinner'), 'CSS must define .r2ai-btn-spinner');
   assert.ok(css.includes('.is-loading'), 'CSS must handle .is-loading state');
   assert.ok(css.includes('@keyframes r2ai-spin') || css.includes('animation:'), 'CSS must define rotation animation');
@@ -523,6 +532,10 @@ test('redditInlineButton.js injects button into feed post card and handles click
   assert.ok(prevented, 'Click event should preventDefault');
   assert.ok(stopped, 'Click event should stopPropagation');
   assert.ok(button.classList.contains('is-loading'), 'Button should have .is-loading class after click');
+  assert.equal(spinner.style.display, 'inline-block', 'Spinner must be set to inline-block on click');
+  const sparkle = button.querySelector('.r2ai-sparkle-icon');
+  assert.ok(sparkle, 'Button must contain .r2ai-sparkle-icon');
+  assert.equal(sparkle.style.display, 'none', 'Sparkle icon must be set to display: none on click');
 
   // Verify message sent to background with threadUrl
   assert.equal(env.sentMessages.length, 1);
@@ -543,6 +556,8 @@ test('redditInlineButton.js injects button into feed post card and handles click
   });
 
   assert.equal(button.classList.contains('is-loading'), false, 'Button loading state must reset upon completion');
+  assert.equal(spinner.style.display, '', 'Spinner display must be reset upon completion');
+  assert.equal(sparkle.style.display, '', 'Sparkle display must be reset upon completion');
 });
 
 test('redditInlineButton.js handles post detail view clicks without threadUrl parameter', async () => {
@@ -681,4 +696,64 @@ test('redditInlineButton.js injects button in feed post cards using slot=credit-
   const shareIdx = creditBar.children.indexOf(shareBtn);
   const buttonIdx = creditBar.children.indexOf(button);
   assert.equal(buttonIdx, shareIdx + 1, 'Button must be placed immediately after the Share button in credit-bar');
+});
+
+test('redditInlineButton.js assigns context-aware spacing classes and margins (in-post 8px vs in-feed 4px)', async () => {
+  // 1. In-Post view
+  const postEnv = createMockEnvironment({ pathname: '/r/news/comments/abc1234/headline/' });
+  const postElement = new MockDOMElement('shreddit-post', { permalink: '/r/news/comments/abc1234/headline/' });
+  const postActionRow = new MockDOMElement('div', { slot: 'action-row' });
+  const postShare = new MockDOMElement('shreddit-post-share-button');
+  postActionRow.appendChild(postShare);
+  postElement.appendChild(postActionRow);
+  postEnv.body.appendChild(postElement);
+
+  const code = await readFile(new URL('../src/redditInlineButton.js', import.meta.url), 'utf8');
+  vm.runInNewContext(code, postEnv.context, { filename: 'redditInlineButton.js' });
+  await new Promise(r => setImmediate(r));
+
+  const postBtn = postActionRow.querySelector('.r2ai-inline-btn');
+  assert.ok(postBtn, 'In-post button must be present');
+  assert.ok(postBtn.classList.contains('r2ai-in-post'), 'In-post button must have r2ai-in-post class');
+  assert.equal(postBtn.style.margin, '0 0 0 8px', 'In-post button style.margin must be 8px');
+  assert.equal(postBtn.style.gap, '4px', 'In-post button style.gap must be 4px');
+
+  // 2. In-Feed view
+  const feedEnv = createMockEnvironment({
+    pathname: '/r/news/',
+    storageData: { showRedditButtonInFeed: true }
+  });
+  const feedElement = new MockDOMElement('shreddit-post', { permalink: '/r/news/comments/xyz9876/feed_item/' });
+  const feedCreditBar = new MockDOMElement('div', { slot: 'credit-bar' });
+  const feedShare = new MockDOMElement('shreddit-post-share-button');
+  feedCreditBar.appendChild(feedShare);
+  feedElement.appendChild(feedCreditBar);
+  feedEnv.body.appendChild(feedElement);
+
+  vm.runInNewContext(code, feedEnv.context, { filename: 'redditInlineButton.js' });
+  await new Promise(r => setImmediate(r));
+
+  const feedBtn = feedCreditBar.querySelector('.r2ai-inline-btn');
+  assert.ok(feedBtn, 'In-feed button must be present');
+  assert.ok(feedBtn.classList.contains('r2ai-in-feed'), 'In-feed button must have r2ai-in-feed class');
+  assert.equal(feedBtn.style.margin, '0 0 0 4px', 'In-feed button style.margin must be 4px');
+  assert.equal(feedBtn.style.gap, '4px', 'In-feed button style.gap must be 4px');
+  assert.equal(feedBtn.style.position, 'relative', 'Button style.position must be relative');
+  assert.equal(feedBtn.style.zIndex, '10', 'Button style.zIndex must be 10');
+  assert.equal(feedBtn.style.pointerEvents, 'auto', 'Button style.pointerEvents must be auto');
+
+  // Verify pointerdown and mousedown event stopPropagation
+  let pointerdownStopped = false;
+  feedBtn.dispatchEvent({
+    type: 'pointerdown',
+    stopPropagation() { pointerdownStopped = true; }
+  });
+  assert.ok(pointerdownStopped, 'pointerdown should stopPropagation to prevent Reddit card navigation');
+
+  let mousedownStopped = false;
+  feedBtn.dispatchEvent({
+    type: 'mousedown',
+    stopPropagation() { mousedownStopped = true; }
+  });
+  assert.ok(mousedownStopped, 'mousedown should stopPropagation to prevent Reddit card navigation');
 });

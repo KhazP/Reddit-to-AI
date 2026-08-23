@@ -694,6 +694,36 @@
                     </div>
                 </div>
 
+                <!-- Anonymous Usage Stats Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="20" x2="18" y2="10" />
+                            <line x1="12" y1="20" x2="12" y2="4" />
+                            <line x1="6" y1="20" x2="6" y2="14" />
+                        </svg>
+                        <h2 class="card-title" data-i18n="options_card_telemetry_title">Anonymous Usage Stats</h2>
+                    </div>
+                    <div class="card-content">
+                        <label class="toggle-row">
+                            <div class="toggle-info">
+                                <span class="toggle-label" data-i18n="options_label_telemetry">Send anonymous usage
+                                    counts</span>
+                                <span class="toggle-hint" data-i18n="options_hint_telemetry">Counts of five actions
+                                    (installed, updated, session started, thread extracted, prompt sent) plus a random
+                                    install ID and the extension version, at most once every 30 minutes. Never any
+                                    Reddit content, URLs, subreddits, prompts or API keys. Turning this off deletes the
+                                    install ID.</span>
+                            </div>
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="telemetryEnabled" checked>
+                                <span class="toggle-slider"></span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
                 <!-- Scrape History Card -->
                 <div class="card" id="historyCard">
                     <div class="card-header">
@@ -869,6 +899,7 @@
     <script src="i18n.js"></script>
     <script src="tooltip.js"></script>
     <script src="apiProviders.js"></script>
+    <script src="telemetry.js"></script>
     <script src="options.js"></script>
 </body>
 

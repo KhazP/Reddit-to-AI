@@ -126,11 +126,15 @@
     });
   }
 
-  function createButtonElement() {
+  function createButtonElement(isMainPost = false) {
     const btn = document.createElement('button');
     btn.type = 'button';
-    btn.className = 'r2ai-inline-btn';
+    btn.className = `r2ai-inline-btn ${isMainPost ? 'r2ai-in-post' : 'r2ai-in-feed'}`;
     // Fallback baseline inline styles to prevent unstyled flash or host CSS reset overrides
+    btn.style.position = 'relative';
+    btn.style.zIndex = '10';
+    btn.style.pointerEvents = 'auto';
+    btn.style.cursor = 'pointer';
     btn.style.borderRadius = '9999px';
     btn.style.border = 'none';
     btn.style.height = 'auto';
@@ -141,7 +145,6 @@
     btn.style.alignItems = 'center';
     btn.style.justifyContent = 'center';
     btn.style.verticalAlign = 'baseline';
-    btn.style.cursor = 'pointer';
     btn.style.background = 'rgba(120, 120, 128, 0.15)';
     btn.style.color = 'inherit';
     btn.style.fontSize = '12px';
@@ -149,8 +152,8 @@
     btn.style.fontFamily = 'inherit';
     btn.style.lineHeight = '16px';
     btn.style.boxSizing = 'border-box';
-    btn.style.margin = '0 0 0 6px';
-    btn.style.gap = '6px';
+    btn.style.margin = isMainPost ? '0 0 0 8px' : '0 0 0 4px';
+    btn.style.gap = '4px';
     btn.style.userSelect = 'none';
 
     const tooltip = (typeof t === 'function' ? t('reddit_btn_tooltip') : '') || 'Summarize thread with AI';
@@ -167,8 +170,8 @@
     svg.setAttribute('height', '14');
     svg.setAttribute('fill', 'none');
     svg.style.flexShrink = '0';
-    svg.style.display = 'inline-block';
     svg.style.verticalAlign = 'middle';
+    svg.style.pointerEvents = 'none';
 
     const path = (typeof document.createElementNS === 'function')
       ? document.createElementNS('http://www.w3.org/2000/svg', 'path')
@@ -184,11 +187,13 @@
     labelEl.style.fontSize = '12px';
     labelEl.style.fontWeight = '600';
     labelEl.style.lineHeight = '16px';
+    labelEl.style.pointerEvents = 'none';
     btn.appendChild(labelEl);
 
     const spinnerEl = document.createElement('span');
     spinnerEl.className = 'r2ai-btn-spinner';
     spinnerEl.setAttribute('aria-hidden', 'true');
+    spinnerEl.style.pointerEvents = 'none';
     btn.appendChild(spinnerEl);
 
     return btn;
@@ -197,18 +202,28 @@
   function handleButtonClick(e, button, post, isMainPost) {
     e.preventDefault();
     e.stopPropagation();
+    if (typeof e.stopImmediatePropagation === 'function') {
+      e.stopImmediatePropagation();
+    }
 
     if (button.classList.contains('is-loading')) return;
     button.classList.add('is-loading');
 
+    const spinner = button.querySelector('.r2ai-btn-spinner');
+    const icon = button.querySelector('.r2ai-sparkle-icon');
+    if (spinner) spinner.style.display = 'inline-block';
+    if (icon) icon.style.display = 'none';
+
     const timeoutId = setTimeout(() => {
-      button.classList.remove('is-loading');
+      resetLoading();
     }, 30000);
 
-    const resetLoading = () => {
+    function resetLoading() {
       clearTimeout(timeoutId);
       button.classList.remove('is-loading');
-    };
+      if (spinner) spinner.style.display = '';
+      if (icon) icon.style.display = '';
+    }
 
     const permalink =
       post.getAttribute('permalink') ||
@@ -243,6 +258,22 @@
     }
   }
 
+  function attachButtonListeners(button, post, isMainPost) {
+    button.addEventListener('click', (e) => handleButtonClick(e, button, post, isMainPost));
+    button.addEventListener('pointerdown', (e) => {
+      e.stopPropagation();
+      if (typeof e.stopImmediatePropagation === 'function') {
+        e.stopImmediatePropagation();
+      }
+    });
+    button.addEventListener('mousedown', (e) => {
+      e.stopPropagation();
+      if (typeof e.stopImmediatePropagation === 'function') {
+        e.stopImmediatePropagation();
+      }
+    });
+  }
+
   function injectButtonIntoPost(post, isMainPost) {
     if (post.querySelector('.r2ai-inline-btn')) return;
 
@@ -265,8 +296,8 @@
       }
 
       parentContainer?.setAttribute('data-r2ai-injected', 'true');
-      const button = createButtonElement();
-      button.addEventListener('click', (e) => handleButtonClick(e, button, post, isMainPost));
+      const button = createButtonElement(isMainPost);
+      attachButtonListeners(button, post, isMainPost);
       topLevelAnchor.insertAdjacentElement('afterend', button);
       return;
     }
@@ -278,8 +309,8 @@
     }
 
     actionRow.setAttribute('data-r2ai-injected', 'true');
-    const button = createButtonElement();
-    button.addEventListener('click', (e) => handleButtonClick(e, button, post, isMainPost));
+    const button = createButtonElement(isMainPost);
+    attachButtonListeners(button, post, isMainPost);
     actionRow.appendChild(button);
   }
 
@@ -323,12 +354,16 @@
 
   if (typeof chrome !== 'undefined' && chrome.runtime?.onMessage) {
     chrome.runtime.onMessage.addListener((request) => {
-      if (request?.action === 'updateFloatingPanel') {
+      if (request?.action === 'updateFloatingPanel' || request?.action === 'scrapingStateUpdate') {
         const data = request.data;
         const finished = data && (!data.isActive || !!data.error || data.status === 'complete' || data.phase === 'complete');
         if (finished) {
           document.querySelectorAll('.r2ai-inline-btn.is-loading').forEach((btn) => {
             btn.classList.remove('is-loading');
+            const sp = btn.querySelector('.r2ai-btn-spinner');
+            if (sp) sp.style.display = '';
+            const ic = btn.querySelector('.r2ai-sparkle-icon');
+            if (ic) ic.style.display = '';
           });
         }
       }

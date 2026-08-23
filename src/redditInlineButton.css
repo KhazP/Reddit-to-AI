@@ -1,11 +1,15 @@
 /* Reddit to AI - Reddit Inline Button Styling */
 
-.r2ai-inline-btn {
+.r2ai-inline-btn,
+.reddit-to-ai-button {
+  position: relative !important;
+  z-index: 10 !important;
+  pointer-events: auto !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
   vertical-align: baseline !important;
-  gap: 6px !important;
+  gap: 4px !important;
   padding: 8px 12px !important;
   height: auto !important;
   min-height: 32px !important;
@@ -21,20 +25,62 @@
   line-height: 16px !important;
   transition: background-color 0.15s ease, opacity 0.15s ease, transform 0.1s ease !important;
   user-select: none !important;
-  margin: 0 0 0 6px !important;
+  margin: 0 0 0 8px !important;
+  margin-left: 8px !important;
   box-sizing: border-box !important;
   text-decoration: none !important;
 }
 
-.r2ai-inline-btn:hover {
+/* Ensure action bar containers stay in active pointer-events layer above card overlay */
+shreddit-post [slot="credit-bar"],
+shreddit-post [slot="action-row"],
+shreddit-post shreddit-post-action-row,
+[data-r2ai-injected="true"] {
+  position: relative !important;
+  z-index: 5 !important;
+  pointer-events: auto !important;
+}
+
+/* In-post action bar spacing (matches standard Reddit post-action margin ~8px) */
+.r2ai-inline-btn.r2ai-in-post,
+.reddit-to-ai-button.r2ai-in-post {
+  margin: 0 0 0 8px !important;
+  margin-left: 8px !important;
+}
+
+/* In-feed post card spacing (matches Reddit's gap-2xs 4px token) */
+.r2ai-inline-btn.r2ai-in-feed,
+.reddit-to-ai-button.r2ai-in-feed {
+  margin: 0 0 0 4px !important;
+  margin-left: 4px !important;
+}
+
+/* If the extension button is injected into a flex container */
+.reddit-to-ai-button-container {
+  display: flex;
+  gap: 4px; /* Matches Reddit's gap-2xs token */
+  align-items: center;
+  position: relative !important;
+  z-index: 10 !important;
+  pointer-events: auto !important;
+}
+
+/* Containers that already supply layout gap (gap-2xs, gap-x-2xs, grid gap, flex gap) */
+:is([class*="gap-"], [style*="gap"]) > :is(.r2ai-inline-btn, .reddit-to-ai-button),
+.grid > :is(.r2ai-inline-btn, .reddit-to-ai-button) {
+  margin-left: 0 !important;
+}
+
+.r2ai-inline-btn:hover,
+.reddit-to-ai-button:hover {
   background: rgba(120, 120, 128, 0.25) !important;
 }
 
-.r2ai-inline-btn:active {
+:is(.r2ai-inline-btn, .reddit-to-ai-button):active {
   transform: scale(0.97);
 }
 
-.r2ai-inline-btn:focus-visible {
+:is(.r2ai-inline-btn, .reddit-to-ai-button):focus-visible {
   outline: 2px solid currentColor;
   outline-offset: 2px;
 }
@@ -45,12 +91,14 @@
   height: 14px;
   display: inline-block;
   vertical-align: middle;
+  pointer-events: none !important;
 }
 
 .r2ai-btn-text {
   font-size: 12px !important;
   font-weight: 600 !important;
   line-height: 16px !important;
+  pointer-events: none !important;
 }
 
 .r2ai-btn-spinner {
@@ -61,20 +109,23 @@
   border-top-color: transparent;
   border-radius: 50%;
   box-sizing: border-box;
+  pointer-events: none !important;
 }
 
-.r2ai-inline-btn.is-loading {
-  pointer-events: none;
-  opacity: 0.8;
+:is(.r2ai-inline-btn, .reddit-to-ai-button).is-loading {
+  pointer-events: none !important;
+  opacity: 0.85 !important;
+  cursor: wait !important;
+  animation: r2ai-pulse 1.5s ease-in-out infinite !important;
 }
 
-.r2ai-inline-btn.is-loading .r2ai-sparkle-icon {
-  display: none;
+:is(.r2ai-inline-btn, .reddit-to-ai-button).is-loading .r2ai-sparkle-icon {
+  display: none !important;
 }
 
-.r2ai-inline-btn.is-loading .r2ai-btn-spinner {
-  display: inline-block;
-  animation: r2ai-spin 0.75s linear infinite;
+:is(.r2ai-inline-btn, .reddit-to-ai-button).is-loading .r2ai-btn-spinner {
+  display: inline-block !important;
+  animation: r2ai-spin 0.75s linear infinite !important;
 }
 
 @keyframes r2ai-spin {
@@ -86,12 +137,22 @@
   }
 }
 
+@keyframes r2ai-pulse {
+  0%, 100% {
+    opacity: 0.85;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .r2ai-inline-btn {
+  :is(.r2ai-inline-btn, .reddit-to-ai-button) {
     transition: none;
+    animation: none !important;
   }
   .r2ai-btn-spinner {
-    animation-duration: 1.5s;
+    animation-duration: 1.5s !important;
   }
 }
 
@@ -99,7 +160,7 @@
   .r2ai-btn-text {
     display: none;
   }
-  .r2ai-inline-btn {
+  :is(.r2ai-inline-btn, .reddit-to-ai-button) {
     padding: 0 8px;
   }
 }

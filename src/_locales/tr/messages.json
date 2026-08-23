@@ -158,6 +158,15 @@
     "options_hint_notifications": {
         "message": "Durum güncellemelerini tarayıcı bildirimi olarak göster"
     },
+    "options_card_telemetry_title": {
+        "message": "Anonim kullanım istatistikleri"
+    },
+    "options_label_telemetry": {
+        "message": "Anonim kullanım sayılarını gönder"
+    },
+    "options_hint_telemetry": {
+        "message": "Beş işlemin sayısı (kuruldu, güncellendi, oturum başladı, konu çıkarıldı, istem gönderildi) ile rastgele bir kurulum kimliği ve eklenti sürümü, en fazla 30 dakikada bir gönderilir. Reddit içeriği, URL, subreddit adı, istem veya API anahtarı asla gönderilmez. Kapatmak kurulum kimliğini siler."
+    },
     "options_card_presets_title": {
         "message": "Prompt Hazır Ayarları"
     },

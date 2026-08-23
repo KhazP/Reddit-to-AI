@@ -33,6 +33,11 @@ assert.match(
 assert.equal(firefox.browser_specific_settings.gecko.id, GECKO_ID, 'gecko id is required for installing/signing');
 assert.equal(firefox.browser_specific_settings.gecko.strict_min_version, GECKO_MIN_VERSION);
 assert.match(GECKO_MIN_VERSION, /^\d+\.\d+$/, 'strict_min_version must be a Gecko version string');
+assert.deepEqual(
+  firefox.browser_specific_settings.gecko.data_collection_permissions,
+  { required: ['none'] },
+  'AMO requires data_collection_permissions disclosure'
+);
 
 // --- options page ----------------------------------------------------------------
 // options_page is Chrome-only; without options_ui, runtime.openOptionsPage() is a no-op.

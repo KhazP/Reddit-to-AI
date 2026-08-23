@@ -190,6 +190,15 @@
     "options_hint_notifications": {
         "message": "Display status updates as browser notifications"
     },
+    "options_card_telemetry_title": {
+        "message": "Anonymous Usage Stats"
+    },
+    "options_label_telemetry": {
+        "message": "Send anonymous usage counts"
+    },
+    "options_hint_telemetry": {
+        "message": "Counts of five actions (installed, updated, session started, thread extracted, prompt sent) plus a random install ID and the extension version, at most once every 30 minutes. Never any Reddit content, URLs, subreddits, prompts or API keys. Turning this off deletes the install ID."
+    },
     "options_card_presets_title": {
         "message": "Prompt Presets"
     },

@@ -45,6 +45,7 @@ const requiredFiles = [
   'service_worker.js',
   'promptBuilder.js',
   'apiProviders.js',
+  'telemetry.js',
   'cl100k_base.js',
   'cl100k_base.json',
   'redditScraper.js',
@@ -121,7 +122,7 @@ async function validateManifest(files, dir = stageDir) {
   assert(manifest.default_locale === 'en', 'Manifest default_locale must be en');
   assert(files.includes(`_locales/${manifest.default_locale}/messages.json`), 'Default locale messages file is missing');
 
-  const allowedPermissions = new Set(['activeTab', 'scripting', 'storage', 'notifications', 'unlimitedStorage', 'contextMenus']);
+  const allowedPermissions = new Set(['activeTab', 'scripting', 'storage', 'notifications', 'unlimitedStorage', 'contextMenus', 'alarms']);
   for (const permission of manifest.permissions || []) {
     assert(allowedPermissions.has(permission), `Unexpected manifest permission: ${permission}`);
   }
@@ -182,6 +183,10 @@ function validateFirefoxManifest(manifest, chromeManifest) {
   assert(
     /^\d+\.\d+$/.test(manifest.browser_specific_settings.gecko.strict_min_version || ''),
     'Firefox manifest must declare a gecko strict_min_version'
+  );
+  assert(
+    JSON.stringify(manifest.browser_specific_settings.gecko.data_collection_permissions) === JSON.stringify({ required: ['none'] }),
+    'Firefox manifest must declare data_collection_permissions: { required: ["none"] }'
   );
   assert(!('options_page' in manifest), 'Firefox manifest must use options_ui instead of options_page');
   assert(manifest.options_ui?.page === 'options.html', 'Firefox manifest must point options_ui at options.html');

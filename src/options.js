@@ -147,6 +147,7 @@ async function initializeOptions() {
     // Element references
     const saveStatusDisplay = document.getElementById('saveStatus');
     const showNotificationsCheckbox = document.getElementById('showNotifications');
+    const telemetryEnabledCheckbox = document.getElementById('telemetryEnabled');
     const showPromptPreviewCheckbox = document.getElementById('showPromptPreview');
     const showRedditInlineButtonCheckbox = document.getElementById('showRedditInlineButton');
     const showRedditButtonInFeedCheckbox = document.getElementById('showRedditButtonInFeed');
@@ -787,6 +788,17 @@ async function initializeOptions() {
     if (showNotificationsCheckbox) {
         showNotificationsCheckbox.addEventListener('change', (e) => {
             chrome.storage.sync.set({ showNotifications: e.target.checked }, showSaveToast);
+        });
+    }
+
+    // Anonymous usage stats. Deliberately kept out of storage.sync and out of the
+    // settings export: the install ID must not follow the user to another profile.
+    if (telemetryEnabledCheckbox && globalThis.R2AITelemetry) {
+        globalThis.R2AITelemetry.isEnabled()
+            .then(enabled => { telemetryEnabledCheckbox.checked = enabled; })
+            .catch(() => { });
+        telemetryEnabledCheckbox.addEventListener('change', (e) => {
+            globalThis.R2AITelemetry.setEnabled(e.target.checked).then(showSaveToast).catch(() => { });
         });
     }
 
