@@ -190,6 +190,15 @@
     "options_hint_notifications": {
         "message": "Display status updates as browser notifications"
     },
+    "options_card_telemetry_title": {
+        "message": "Anonymous Usage Stats"
+    },
+    "options_label_telemetry": {
+        "message": "Send anonymous usage counts"
+    },
+    "options_hint_telemetry": {
+        "message": "Counts of five actions (installed, updated, session started, thread extracted, prompt sent) plus a random install ID and the extension version, at most once every 30 minutes. Never any Reddit content, URLs, subreddits, prompts or API keys. Turning this off deletes the install ID."
+    },
     "options_card_presets_title": {
         "message": "Prompt Presets"
     },
@@ -694,5 +703,33 @@
     },
     "options_direct_api_cleared": {
         "message": "Key removed."
+    },
+    "reddit_btn_label": {
+        "message": "Reddit-to-AI",
+        "description": "Label on the Reddit inline AI button"
+    },
+    "reddit_btn_tooltip": {
+        "message": "Summarize thread with AI",
+        "description": "Tooltip for Reddit inline AI button"
+    },
+    "settings_reddit_btn_title": {
+        "message": "Reddit In-Page AI Button",
+        "description": "Settings title for Reddit button"
+    },
+    "settings_reddit_btn_desc": {
+        "message": "Display quick AI action buttons directly within Reddit post action bars",
+        "description": "Description for Reddit button settings"
+    },
+    "settings_reddit_btn_master": {
+        "message": "Enable in-page AI button on Reddit",
+        "description": "Master toggle label"
+    },
+    "settings_reddit_btn_feed": {
+        "message": "Show on feed post cards",
+        "description": "Feed post sub-toggle label"
+    },
+    "settings_reddit_btn_post": {
+        "message": "Show inside post detail pages",
+        "description": "Inside post sub-toggle label"
     }
 }

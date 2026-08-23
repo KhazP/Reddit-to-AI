@@ -45,6 +45,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 function bindElements() {
+  els.tabBtns = document.querySelectorAll('.tab-btn');
+  els.tabPanels = document.querySelectorAll('.tab-panel');
+  els.pruneBadge = document.getElementById('pruneBadge');
+  els.exportDropdown = document.getElementById('exportDropdown');
+  els.exportDropdownBtn = document.getElementById('exportDropdownBtn');
   els.threadMeta = document.getElementById('threadMeta');
   els.warningLabel = document.getElementById('warningLabel');
   els.warningMessage = document.getElementById('warningMessage');
@@ -99,6 +104,27 @@ function bindElements() {
 }
 
 function bindEvents() {
+  els.tabBtns?.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tab = btn.getAttribute('data-tab');
+      switchTab(tab);
+    });
+  });
+
+  els.exportDropdownBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    els.exportDropdown?.classList.toggle('open');
+    const expanded = els.exportDropdown?.classList.contains('open');
+    els.exportDropdownBtn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+  });
+
+  document.addEventListener('click', (e) => {
+    if (els.exportDropdown && !els.exportDropdown.contains(e.target)) {
+      els.exportDropdown.classList.remove('open');
+      els.exportDropdownBtn?.setAttribute('aria-expanded', 'false');
+    }
+  });
+
   [els.contextPresetSelect, els.trimStrategySelect, els.mediaModeSelect, els.outputFormatSelect].forEach(select => {
     select?.addEventListener('change', () => {
       previewState.dirty = false;
@@ -129,6 +155,8 @@ function bindEvents() {
   els.copyBtnBottom?.addEventListener('click', copyPrompt);
   els.exportChips.forEach(chip => {
     chip.addEventListener('click', () => {
+      els.exportDropdown?.classList.remove('open');
+      els.exportDropdownBtn?.setAttribute('aria-expanded', 'false');
       const format = chip.getAttribute('data-format');
       exportPrompt(format);
     });
@@ -789,10 +817,47 @@ function buildCommentTreeHtml(comment, checkedIds) {
   }
 }
 
+function switchTab(tabKey) {
+  if (!tabKey) return;
+  if (els.tabBtns) {
+    els.tabBtns.forEach(btn => {
+      const isTarget = btn.getAttribute('data-tab') === tabKey;
+      btn.classList.toggle('active', isTarget);
+      btn.setAttribute('aria-selected', isTarget ? 'true' : 'false');
+    });
+  }
+  const panelIdMap = {
+    prompt: 'tabPanelPrompt',
+    prune: 'tabPanelPrune',
+    api: 'tabPanelApi'
+  };
+  const targetPanelId = panelIdMap[tabKey] || `tabPanel${tabKey.charAt(0).toUpperCase() + tabKey.slice(1)}`;
+  if (els.tabPanels) {
+    els.tabPanels.forEach(panel => {
+      panel.classList.toggle('active', panel.id === targetPanelId);
+    });
+  }
+}
+
+function updatePruneBadge() {
+  if (!els.pruneBadge) return;
+  const checkboxes = els.commentsTreeContainer?.querySelectorAll('.comment-checkbox');
+  if (!checkboxes || !checkboxes.length) {
+    els.pruneBadge.textContent = '0';
+    return;
+  }
+  let selected = 0;
+  for (const cb of checkboxes) {
+    if (cb.checked && !cb.disabled) selected++;
+  }
+  els.pruneBadge.textContent = `${selected}/${checkboxes.length}`;
+}
+
 function renderCommentTree(comments) {
   if (!els.commentsTreeContainer) return;
   if (!Array.isArray(comments) || comments.length === 0) {
-    els.commentsTreeContainer.innerHTML = '<p style="padding: 8px; color: var(--dim);">No comments available.</p>';
+    els.commentsTreeContainer.innerHTML = '<p style="padding: 8px; color: var(--text-3);">No comments available.</p>';
+    updatePruneBadge();
     return;
   }
   const checkedIds = new Set();
@@ -806,6 +871,7 @@ function renderCommentTree(comments) {
   
   els.commentsTreeContainer.innerHTML = comments.map(comment => buildCommentTreeHtml(comment, checkedIds)).join('');
   updateCheckboxPropagation();
+  updatePruneBadge();
 }
 
 function updateCheckboxPropagation() {
@@ -815,6 +881,7 @@ function updateCheckboxPropagation() {
   for (const root of roots) {
     propagateNode(root, true);
   }
+  updatePruneBadge();
 }
 
 function propagateNode(element, parentCheckedAndEnabled) {

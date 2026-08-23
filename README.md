@@ -60,7 +60,8 @@ Whether you're a researcher analyzing sentiment, a user looking for a "TL;DR", o
 *   **Batch / Multi-thread Mode**:
     *   Paste several Reddit thread URLs and scrape them one by one for combined analysis.
 *   **Privacy First**:
-    *   **No Remote Server**: All processing happens locally in your browser.
+    *   **No Remote Server for Your Content**: All scraping, prompt building, and history stay local. Thread content, prompts, and API keys never reach the developer.
+    *   **Anonymous Usage Stats (opt-out)**: Counts of five events (`ext_installed`, `ext_updated`, `ext_active`, `ext_extract`, `ext_handoff`) plus a random install UUID and the extension version are sent at most every 30 minutes. Never URLs, subreddits, titles, comment text, prompts, or keys. Turn it off in **Options → Anonymous Usage Stats**; doing so deletes the install UUID. The Firefox build sends nothing at all. See [docs/PRIVACY.md](docs/PRIVACY.md).
     *   **Don't Save** mode uses one-time handoff cleanup after paste.
     *   **Session Only** mode uses session storage when available, so temporary data is cleared with the browser/extension session.
 
@@ -159,6 +160,7 @@ Right-click the extension icon and select **Options** to access advanced setting
     *   Customize the default templates for each analysis type.
 *   **Privacy & Storage**:
     *   Choose **Don't Save**, **Session Only**, or **Persistent** storage behavior.
+    *   **Anonymous Usage Stats**: Toggle the anonymous event counts off (they are on by default).
 *   **History**:
     *   Search, filter, favorite, pin, export, re-send, and compare previously scraped threads.
 *   **Appearance**:

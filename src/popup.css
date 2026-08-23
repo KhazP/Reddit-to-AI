@@ -66,29 +66,34 @@ body {
   font-size: 13px;
   line-height: 1.5;
   min-height: auto;
-  scrollbar-gutter: stable;
-  overflow-y: scroll;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   -webkit-font-smoothing: antialiased;
 }
 
-/* Scrollbars */
-body::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+  background: transparent;
+}
+
+/* Scrollbars for inner scrollable areas */
 .summary-result-content-wrap::-webkit-scrollbar {
   width: 6px;
 }
 
-body::-webkit-scrollbar-track,
 .summary-result-content-wrap::-webkit-scrollbar-track {
   background: transparent;
 }
 
-body::-webkit-scrollbar-thumb,
 .summary-result-content-wrap::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.12);
   border-radius: var(--r-full);
 }
 
-body::-webkit-scrollbar-thumb:hover,
 .summary-result-content-wrap::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.22);
 }
@@ -984,27 +989,18 @@ textarea:focus-visible,
   color: var(--text);
 }
 
-/* ── Advanced Filters (Collapsible) ───────────────────────── */
+/* ── Advanced Filters (Full View) ─────────────────────────── */
 
 .advanced-filters {
-  display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows var(--t-med) var(--ease);
-}
-
-.advanced-filters[aria-hidden="false"] {
-  grid-template-rows: 1fr;
-}
-
-.advanced-filters-inner {
-  overflow: hidden;
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.advanced-filters[aria-hidden="false"] .advanced-filters-inner {
-  padding-top: 4px;
+.advanced-filters-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .adv-row {

@@ -188,6 +188,15 @@
     "options_hint_notifications": {
         "message": "Status-Updates als Browser-Benachrichtigungen anzeigen"
     },
+    "options_card_telemetry_title": {
+        "message": "Anonyme Nutzungsstatistik"
+    },
+    "options_label_telemetry": {
+        "message": "Anonyme Nutzungszahlen senden"
+    },
+    "options_hint_telemetry": {
+        "message": "Zähler für fünf Aktionen (installiert, aktualisiert, Sitzung gestartet, Thread extrahiert, Prompt gesendet) sowie eine zufällige Installations-ID und die Erweiterungsversion, höchstens alle 30 Minuten. Niemals Reddit-Inhalte, URLs, Subreddits, Prompts oder API-Schlüssel. Beim Ausschalten wird die Installations-ID gelöscht."
+    },
     "options_card_presets_title": {
         "message": "Prompt-Vorlagen"
     },
@@ -692,5 +701,26 @@
     },
     "options_direct_api_cleared": {
         "message": "Schlüssel entfernt."
+    },
+    "reddit_btn_label": {
+        "message": "Reddit-to-AI"
+    },
+    "reddit_btn_tooltip": {
+        "message": "Thread mit KI zusammenfassen"
+    },
+    "settings_reddit_btn_title": {
+        "message": "Reddit In-Page-KI-Button"
+    },
+    "settings_reddit_btn_desc": {
+        "message": "Schnellaktions-Buttons für KI direkt in Reddit-Beitragsleisten anzeigen"
+    },
+    "settings_reddit_btn_master": {
+        "message": "In-Page-KI-Button auf Reddit aktivieren"
+    },
+    "settings_reddit_btn_feed": {
+        "message": "Auf Feed-Beitragskarten anzeigen"
+    },
+    "settings_reddit_btn_post": {
+        "message": "In Beitragsdetailseiten anzeigen"
     }
 }

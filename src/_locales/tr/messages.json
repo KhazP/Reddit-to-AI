@@ -158,6 +158,15 @@
     "options_hint_notifications": {
         "message": "Durum güncellemelerini tarayıcı bildirimi olarak göster"
     },
+    "options_card_telemetry_title": {
+        "message": "Anonim kullanım istatistikleri"
+    },
+    "options_label_telemetry": {
+        "message": "Anonim kullanım sayılarını gönder"
+    },
+    "options_hint_telemetry": {
+        "message": "Beş işlemin sayısı (kuruldu, güncellendi, oturum başladı, konu çıkarıldı, istem gönderildi) ile rastgele bir kurulum kimliği ve eklenti sürümü, en fazla 30 dakikada bir gönderilir. Reddit içeriği, URL, subreddit adı, istem veya API anahtarı asla gönderilmez. Kapatmak kurulum kimliğini siler."
+    },
     "options_card_presets_title": {
         "message": "Prompt Hazır Ayarları"
     },
@@ -692,5 +701,26 @@
     },
     "options_direct_api_cleared": {
         "message": "Anahtar kaldırıldı."
+    },
+    "reddit_btn_label": {
+        "message": "Reddit-to-AI"
+    },
+    "reddit_btn_tooltip": {
+        "message": "Başlığı AI ile özetle"
+    },
+    "settings_reddit_btn_title": {
+        "message": "Reddit Sayfa İçi AI Butonu"
+    },
+    "settings_reddit_btn_desc": {
+        "message": "Reddit gönderi işlem çubuklarında doğrudan hızlı AI işlem butonları göster"
+    },
+    "settings_reddit_btn_master": {
+        "message": "Reddit'te sayfa içi AI butonunu etkinleştir"
+    },
+    "settings_reddit_btn_feed": {
+        "message": "Akış gönderi kartlarında göster"
+    },
+    "settings_reddit_btn_post": {
+        "message": "Gönderi detay sayfalarında göster"
     }
 }

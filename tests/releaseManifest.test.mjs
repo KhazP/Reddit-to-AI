@@ -21,7 +21,8 @@ for (const permission of ['activeTab', 'scripting', 'storage', 'notifications'])
 // or to the active tab at the moment the user invokes the action (activeTab).
 assert.ok(!manifest.permissions.includes('tabs'), 'the broad "tabs" permission must not be requested');
 
-const allowedPermissions = new Set(['activeTab', 'scripting', 'storage', 'notifications', 'unlimitedStorage', 'contextMenus']);
+// `alarms` drives the 30-minute telemetry flush; it grants no access to user data.
+const allowedPermissions = new Set(['activeTab', 'scripting', 'storage', 'notifications', 'unlimitedStorage', 'contextMenus', 'alarms']);
 for (const permission of manifest.permissions) {
   assert.ok(allowedPermissions.has(permission), `unexpected permission: ${permission}`);
 }

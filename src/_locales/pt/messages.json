@@ -158,6 +158,15 @@
     "options_hint_notifications": {
         "message": "Mostrar atualizações de status como notificações do navegador"
     },
+    "options_card_telemetry_title": {
+        "message": "Estatísticas de uso anônimas"
+    },
+    "options_label_telemetry": {
+        "message": "Enviar contagens de uso anônimas"
+    },
+    "options_hint_telemetry": {
+        "message": "Contagens de cinco ações (instalado, atualizado, sessão iniciada, thread extraída, prompt enviado) mais um ID de instalação aleatório e a versão da extensão, no máximo a cada 30 minutos. Nunca conteúdo do Reddit, URLs, subreddits, prompts ou chaves de API. Desativar apaga o ID de instalação."
+    },
     "options_card_presets_title": {
         "message": "Predefinições de Prompt"
     },
@@ -692,5 +701,26 @@
     },
     "options_direct_api_cleared": {
         "message": "Chave removida."
+    },
+    "reddit_btn_label": {
+        "message": "Reddit-to-AI"
+    },
+    "reddit_btn_tooltip": {
+        "message": "Resumir tópico com IA"
+    },
+    "settings_reddit_btn_title": {
+        "message": "Botão de IA na página do Reddit"
+    },
+    "settings_reddit_btn_desc": {
+        "message": "Exibir botões de ação rápida de IA diretamente nas barras de ação das postagens do Reddit"
+    },
+    "settings_reddit_btn_master": {
+        "message": "Ativar botão de IA na página do Reddit"
+    },
+    "settings_reddit_btn_feed": {
+        "message": "Mostrar nos cartões de postagem do feed"
+    },
+    "settings_reddit_btn_post": {
+        "message": "Mostrar dentro das páginas de detalhes da postagem"
     }
 }

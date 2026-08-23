@@ -80,8 +80,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const popupProviderSelect = document.getElementById('popupProviderSelect');
   const dontSaveThisScrape = document.getElementById('dontSaveThisScrape');
   const scrapeEstimate = document.getElementById('scrapeEstimate');
-  const expandFiltersBtn = document.getElementById('expandFiltersBtn');
-  const advancedFilters = document.getElementById('advancedFilters');
   const filterHideBotsBtn = document.getElementById('filterHideBotsBtn');
   const filterOpOnlyBtn = document.getElementById('filterOpOnlyBtn');
   const filterFlairedBtn = document.getElementById('filterFlairedBtn');
@@ -372,11 +370,6 @@ Data:
     if (sendModeSelect) sendModeSelect.value = result.showPromptPreview === false ? 'directOnce' : 'preview';
     if (popupProviderSelect) popupProviderSelect.value = result.selectedLlmProvider || 'gemini';
     if (outputFormatSelect) outputFormatSelect.value = result.outputFormat || 'auto';
-
-    // Advanced panel state
-    if (result.advancedFiltersExpanded) {
-      setAdvancedFiltersExpanded(true);
-    }
 
     // Quick prompt - restore if saved
     if (result.quickPrompt && quickPromptInput) {
@@ -738,25 +731,6 @@ Data:
       filterFlairedBtn.classList.toggle('active');
       updateAuthorFilters();
       updateScrapeEstimate();
-    });
-  }
-
-  // ── Expand / Collapse advanced filters ─────────────────
-  // The panel animates via grid-template-rows, so `hidden` (display:none) would kill
-  // the transition. `inert` gives the same "not focusable, not announced" guarantee
-  // while leaving the element rendered.
-  function setAdvancedFiltersExpanded(expanded) {
-    expandFiltersBtn?.setAttribute('aria-expanded', expanded ? 'true' : 'false');
-    if (!advancedFilters) return;
-    advancedFilters.setAttribute('aria-hidden', expanded ? 'false' : 'true');
-    advancedFilters.inert = !expanded;
-  }
-
-  if (expandFiltersBtn) {
-    expandFiltersBtn.addEventListener('click', () => {
-      const expanded = expandFiltersBtn.getAttribute('aria-expanded') === 'true';
-      setAdvancedFiltersExpanded(!expanded);
-      chrome.storage.sync.set({ advancedFiltersExpanded: !expanded });
     });
   }
 

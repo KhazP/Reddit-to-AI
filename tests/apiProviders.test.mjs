@@ -45,7 +45,7 @@ assert.ok(R2AIApiProviders, 'R2AIApiProviders should be attached to globalThis')
   });
   assert.equal(request.url, 'https://api.openai.com/v1/chat/completions');
   assert.equal(request.headers.authorization, 'Bearer sk-openai-fake');
-  assert.equal(request.body.model, 'gpt-5.2', 'default OpenAI model');
+  assert.equal(request.body.model, 'gpt-5.6', 'default OpenAI model');
   assert.equal(request.body.max_completion_tokens, 8192);
   assert.equal(request.body.max_tokens, undefined);
 
@@ -66,7 +66,7 @@ assert.ok(R2AIApiProviders, 'R2AIApiProviders should be attached to globalThis')
   });
   assert.equal(
     request.url,
-    'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent'
+    'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent'
   );
   assert.equal(request.headers['x-goog-api-key'], 'goog-fake');
   assert.ok(!request.url.includes('goog-fake'), 'key must never be placed in the URL');

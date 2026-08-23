@@ -52,17 +52,13 @@ const worker = await readFile(new URL('../src/service_worker.js', import.meta.ur
   assert.match(popupJs, /b\.tabIndex = selected \? 0 : -1/, 'roving tabindex is applied');
 }
 
-// 4. Collapsed regions are genuinely inaccessible, not just aria-hidden.
+// 4. Inactive tab regions are genuinely inaccessible, while active filters are full view.
 {
   assert.match(popupJs, /c\.hidden = true/, 'inactive tab panels get the hidden attribute');
   assert.match(popupJs, /targetPane\.hidden = false/, 'the active panel is unhidden');
   assert.match(popupHtml, /id="tabPaneFilters"[^>]*hidden>/, 'the initially inactive panel starts hidden');
-
-  // The advanced panel animates via grid-template-rows, so it uses inert instead
-  // of hidden, which would break the transition.
-  assert.match(popupJs, /advancedFilters\.inert = !expanded/, 'the advanced panel toggles inert');
-  assert.match(popupHtml, /id="advancedFilters"[^>]*inert>/, 'it starts inert while collapsed');
-  assert.match(popupCss, /grid-template-rows/, 'the collapse animation is still in place');
+  assert.match(popupHtml, /id="advancedFilters"/, 'advanced filters container exists in full view');
+  assert.match(popupCss, /\.advanced-filters/, 'advanced filters styling is in place');
 }
 
 // 5. The min-score control is a native select, not a hand-rolled listbox.

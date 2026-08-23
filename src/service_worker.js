@@ -5,7 +5,7 @@
 // one in `background.scripts`, so the globals are already present and the call is
 // skipped. Keep both lists in the same order (see scripts/firefox-manifest.mjs).
 if (typeof importScripts === 'function') {
-  importScripts('cl100k_base.js', 'redditParser.js', 'promptBuilder.js', 'apiProviders.js');
+  importScripts('cl100k_base.js', 'redditParser.js', 'promptBuilder.js', 'apiProviders.js', 'telemetry.js');
 }
 
 const DEFAULT_PROMPT_TEMPLATE = 'Summarize the following Reddit thread:\n\n{content}';
@@ -94,6 +94,7 @@ function autoResumeBatch(done) {
 
 chrome.runtime.onInstalled.addListener(() => {
   console.debug('Reddit to AI installed.');
+  globalThis.R2AITelemetry?.init();
   syncSelectors().catch(err => console.error('Selector sync on installed failed:', err));
   registerAllCustomOrigins().catch(err => console.error('Failed to register custom origins on installed:', err));
   registerContextMenus();
@@ -474,6 +475,141 @@ if (chrome.runtime.onConnect) {
 async function handleScrapeRequest(request, sender) {
   if (scrapingState.isActive) throw new Error('Scraping already in progress.');
 
+  if (request?.threadUrl) {
+    if (!isRedditUrl(request.threadUrl)) {
+      setScrapingState({
+        isActive: false,
+        message: chrome.i18n.getMessage('popup_status_navigate') || 'Open a Reddit thread before scraping.',
+        percentage: -1,
+        phase: 'error',
+        status: 'error',
+        batch: null,
+        error: chrome.i18n.getMessage('sw_error_not_reddit') || 'Active tab is not a Reddit thread.'
+      });
+      throw new Error('Active tab is not a Reddit thread.');
+    }
+
+    let targetTab = null;
+    if (sender?.tab?.id != null) {
+      targetTab = sender.tab;
+    } else {
+      try {
+        targetTab = await getScrapeTargetTab(request, sender);
+      } catch (e) {
+        console.debug('Target tab lookup failed:', e);
+      }
+    }
+    const targetTabId = targetTab?.id ?? null;
+
+    setScrapingState({
+      isActive: true,
+      lastScrapedTabId: targetTabId,
+      message: chrome.i18n.getMessage('sw_status_preparing') || 'Preparing to scrape.',
+      percentage: 5,
+      phase: 'prepare',
+      status: 'running',
+      batch: null,
+      summary: null,
+      error: null
+    });
+
+    const scrapeId = createId();
+    currentScrape = {
+      scrapeId,
+      tabId: targetTabId,
+      stopRequested: false,
+      storageOption: 'persistent',
+      abortController: null
+    };
+
+    try {
+      setScrapingState({
+        message: chrome.i18n.getMessage('sw_status_collecting') || 'Collecting data from page.',
+        percentage: 20,
+        phase: 'fetch',
+        status: 'running'
+      });
+
+      const settings = await loadSettings();
+      const effectiveSettings = mergeRequestFiltersIntoSettings(settings, request.filters || {}, request);
+      currentScrape.storageOption = effectiveSettings.dataStorageOption;
+
+      const context = {
+        scrapeId,
+        tabId: targetTabId,
+        settings: effectiveSettings,
+        startedAt: Date.now()
+      };
+      await setStorage(chrome.storage.session, { [SCRAPE_CONTEXT_KEY]: context });
+
+      const data = await scrapeThreadFromUrl(request.threadUrl, effectiveSettings, request.filters || {});
+
+      if (currentScrape.stopRequested) {
+        throw new Error('Scraping stopped by user.');
+      }
+
+      setScrapingState({
+        message: chrome.i18n.getMessage('sw_status_processing') || 'Preparing scraped data.',
+        percentage: 80,
+        phase: 'build',
+        status: 'running'
+      });
+
+      let historyEntry = null;
+      if (effectiveSettings.dataStorageOption === 'persistent') {
+        historyEntry = await addToHistory(data, effectiveSettings);
+      }
+      await savePreviewData(data, effectiveSettings, { historyId: historyEntry?.id || null });
+
+      if (effectiveSettings.showPromptPreview === false) {
+        setScrapingState({ message: 'Opening AI tab...', percentage: 90, phase: 'build', status: 'running' });
+        await sendDataDirectlyToAi(data, effectiveSettings);
+      } else {
+        setScrapingState({ message: 'Opening prompt preview...', percentage: 90, phase: 'build', status: 'running' });
+        await openPreviewTab();
+      }
+
+      setScrapingState({
+        isActive: false,
+        percentage: 100,
+        phase: 'complete',
+        status: 'complete',
+        batch: null,
+        summary: null,
+        message: chrome.i18n.getMessage('panel_status_ready') || 'Ready to scrape.',
+        error: null
+      });
+
+      showNotificationIfEnabled(
+        chrome.i18n.getMessage('extName') || 'Reddit to AI',
+        effectiveSettings.showPromptPreview === false ? 'Content sent directly to AI.' : 'Content ready for prompt preview.'
+      );
+
+      return {
+        started: true,
+        scrapeId,
+        directUrl: true,
+        preview: effectiveSettings.showPromptPreview !== false,
+        direct: effectiveSettings.showPromptPreview === false
+      };
+    } catch (error) {
+      console.error('Direct URL scrape failed:', error);
+      setScrapingState({
+        isActive: false,
+        error: error.message,
+        message: `Error: ${error.message}`,
+        percentage: -1,
+        phase: 'error',
+        status: 'error',
+        batch: null
+      });
+      throw error;
+    } finally {
+      await clearScrapeContext();
+      if (currentScrape?.scrapeId === scrapeId) currentScrape = null;
+    }
+  }
+
   setScrapingState({
     isActive: true,
     message: chrome.i18n.getMessage('sw_status_preparing') || 'Preparing to scrape.',
@@ -826,6 +962,7 @@ async function savePreviewData(data, settings, extra = {}) {
     await setStorage(chrome.storage.local, { [LEGACY_THREAD_KEY]: data })
       .catch(error => console.warn('Reddit to AI: Failed to persist legacy thread copy:', error));
   }
+  globalThis.R2AITelemetry?.record('ext_extract');
   return payload;
 }
 
@@ -873,6 +1010,7 @@ async function sendPromptToAi(request) {
 
     const aiUrl = await getAiUrl(pastePayload.aiProvider);
     await chrome.tabs.create({ url: aiUrl });
+    globalThis.R2AITelemetry?.record('ext_handoff');
     return { success: true, pasteId: pastePayload.pasteId };
   } finally {
     activePasteHandoffs.delete(handoffKey);
@@ -1882,6 +2020,12 @@ function normalizeBatchUrls(urls) {
 }
 
 async function scrapeThreadFromUrl(url, settings, filters) {
+  setScrapingState({
+    message: chrome.i18n.getMessage('panel_phase_fetch') || 'Fetching thread data...',
+    percentage: 30,
+    phase: 'fetch',
+    status: 'running'
+  });
   const sortMode = filters.redditSortMode || settings.redditSortMode || 'confidence';
   const jsonUrl = buildRedditJsonUrl(url, sortMode, filters.scrapeDepth || settings.scrapeDepth || 10);
   const response = await fetchJsonWithRetry(jsonUrl);
@@ -1889,10 +2033,24 @@ async function scrapeThreadFromUrl(url, settings, filters) {
   const commentsData = response?.[1]?.data?.children || [];
   if (!postData) throw new Error(`Could not scrape ${url}`);
 
+  setScrapingState({
+    message: chrome.i18n.getMessage('panel_phase_parse') || 'Parsing comments...',
+    percentage: 55,
+    phase: 'parse',
+    status: 'running'
+  });
+
   const moreIds = [];
   const roots = parseBackgroundComments(commentsData, Boolean(filters.includeHidden), filters.scrapeDepth || settings.scrapeDepth || 10, moreIds);
   const moreResult = await fetchMoreChildrenBackground(postData.name, moreIds, Boolean(filters.includeHidden), sortMode);
   const merged = mergeAdditionalComments(roots, moreResult.comments, postData.name).roots;
+
+  setScrapingState({
+    message: chrome.i18n.getMessage('panel_phase_filter') || 'Filtering comments...',
+    percentage: 75,
+    phase: 'filter',
+    status: 'running'
+  });
   const filtered = applyBackgroundFilters(merged, filters, settings);
 
   const data = {
@@ -2155,6 +2313,8 @@ async function checkAndSyncSelectors() {
 if (!globalThis.R2AIServiceWorkerTest) {
   checkAndSyncSelectors().catch(err => console.error('Selector check failed:', err));
   registerAllCustomOrigins().catch(err => console.error('Failed to register custom origins on startup:', err));
+  // Re-arms the flush alarm and the once-per-session marker on every worker wake-up.
+  globalThis.R2AITelemetry?.init();
 }
 
 // Set up listeners
@@ -2162,6 +2322,8 @@ if (chrome.runtime.onStartup) {
   chrome.runtime.onStartup.addListener(() => {
     checkAndSyncSelectors().catch(err => console.error('Selector check failed:', err));
     registerAllCustomOrigins().catch(err => console.error('Failed to register custom origins on startup listener:', err));
+    globalThis.R2AITelemetry?.init();
+    globalThis.R2AITelemetry?.flush();
   });
 }
 
@@ -2303,6 +2465,7 @@ if (globalThis.R2AIServiceWorkerTest) {
     resumeBatchScrape,
     handleBatchScrapeRequest,
     handleScrapeRequest,
+    scrapeThreadFromUrl,
     handleRuntimeMessage,
     finishTabScrape,
     getActiveScrapeContext,
@@ -2329,6 +2492,8 @@ if (globalThis.R2AIServiceWorkerTest) {
     setStorage,
     removeStorage,
     savePreviewData,
+    sendDataDirectlyToAi,
+    openPreviewTab,
     chrome: typeof chrome !== 'undefined' ? chrome : null
   });
 }

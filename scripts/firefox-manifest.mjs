@@ -4,7 +4,7 @@
 //
 // Differences Firefox requires:
 //   1. `background.service_worker` -> `background.scripts`. Firefox MV3 uses an event
-//      page, not a service worker. `importScripts` is unavailable there, so the four
+//      page, not a service worker. `importScripts` is unavailable there, so the
 //      libraries the worker imports are listed ahead of service_worker.js and loaded
 //      as classic scripts sharing one global scope - identical to what importScripts
 //      produces in Chrome. The importScripts call in service_worker.js is guarded by
@@ -25,7 +25,8 @@ export const BACKGROUND_LIBS = [
   'cl100k_base.js',
   'redditParser.js',
   'promptBuilder.js',
-  'apiProviders.js'
+  'apiProviders.js',
+  'telemetry.js'
 ];
 
 export function toFirefoxManifest(chromeManifest) {
@@ -41,7 +42,12 @@ export function toFirefoxManifest(chromeManifest) {
     ...(manifest.browser_specific_settings || {}),
     gecko: {
       id: GECKO_ID,
-      strict_min_version: GECKO_MIN_VERSION
+      strict_min_version: GECKO_MIN_VERSION,
+      data_collection_permissions: {
+        required: [
+          'none'
+        ]
+      }
     }
   };
 

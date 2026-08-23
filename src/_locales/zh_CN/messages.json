@@ -158,6 +158,15 @@
     "options_hint_notifications": {
         "message": "以浏览器通知形式显示状态更新"
     },
+    "options_card_telemetry_title": {
+        "message": "匿名使用统计"
+    },
+    "options_label_telemetry": {
+        "message": "发送匿名使用次数"
+    },
+    "options_hint_telemetry": {
+        "message": "五种操作的次数（已安装、已更新、会话开始、已提取帖子、已发送提示）以及一个随机安装 ID 和扩展版本，最多每 30 分钟发送一次。绝不发送 Reddit 内容、网址、子版块名称、提示词或 API 密钥。关闭后会删除安装 ID。"
+    },
     "options_card_presets_title": {
         "message": "提示词预设"
     },
@@ -692,5 +701,26 @@
     },
     "options_direct_api_cleared": {
         "message": "密钥已移除。"
+    },
+    "reddit_btn_label": {
+        "message": "Reddit-to-AI"
+    },
+    "reddit_btn_tooltip": {
+        "message": "使用 AI 总结帖子"
+    },
+    "settings_reddit_btn_title": {
+        "message": "Reddit 页面内 AI 按钮"
+    },
+    "settings_reddit_btn_desc": {
+        "message": "直接在 Reddit 帖子操作栏中显示快捷 AI 操作按钮"
+    },
+    "settings_reddit_btn_master": {
+        "message": "在 Reddit 上启用页面内 AI 按钮"
+    },
+    "settings_reddit_btn_feed": {
+        "message": "在信息流帖子卡片上显示"
+    },
+    "settings_reddit_btn_post": {
+        "message": "在帖子详情页内显示"
     }
 }
