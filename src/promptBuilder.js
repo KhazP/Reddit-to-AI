@@ -52,12 +52,28 @@
     executive: 'Write an executive summary first, followed by key evidence and recommended next steps.'
   };
 
+  // Approximate context window per AI target, in tokens.
+  const PROVIDER_CONTEXT_LIMITS = {
+    chatgpt: 272000,
+    gemini: 1000000,
+    aistudio: 1000000,
+    claude: 1000000,
+    deepseek: 1000000,
+    groq: 131072
+  };
+  const DEFAULT_CONTEXT_LIMIT = 128000;
+
+  // minRatio is the share of the provider's context window where a level starts.
   const WARNING_LEVELS = [
-    { key: 'low', label: 'Low', minTokens: 0, message: 'Comfortable prompt size.' },
-    { key: 'medium', label: 'Medium', minTokens: 12000, message: 'May be large for smaller models.' },
-    { key: 'high', label: 'High', minTokens: 48000, message: 'Large prompt. Consider Balanced or Small.' },
-    { key: 'critical', label: 'Critical', minTokens: 120000, message: 'Very large. Many AI sites may reject or truncate it.' }
+    { key: 'low', label: 'Low', minRatio: 0, message: 'Comfortable prompt size.' },
+    { key: 'medium', label: 'Medium', minRatio: 0.1, message: 'May be large for smaller models.' },
+    { key: 'high', label: 'High', minRatio: 0.4, message: 'Large prompt. Consider Balanced or Small.' },
+    { key: 'critical', label: 'Critical', minRatio: 0.95, message: 'Very large. The AI may reject or truncate it.' }
   ];
+
+  function getContextLimit(provider) {
+    return PROVIDER_CONTEXT_LIMITS[provider] || DEFAULT_CONTEXT_LIMIT;
+  }
 
   function safeTranslate(key, fallback, params = []) {
     try {
@@ -486,25 +502,27 @@
     return Math.ceil(String(text || '').length / 4);
   }
 
-  function getWarning(tokens) {
+  function getWarning(tokens, limit = DEFAULT_CONTEXT_LIMIT) {
     let current = WARNING_LEVELS[0];
     for (const level of WARNING_LEVELS) {
-      if (tokens >= level.minTokens) current = level;
+      if (tokens >= level.minRatio * limit) current = level;
     }
     return current;
   }
 
-  function estimatePromptStats(promptText, data) {
+  function estimatePromptStats(promptText, data, provider) {
     const chars = String(promptText || '').length;
     const tokens = estimateTokens(promptText);
-    const warning = getWarning(tokens);
+    const limit = getContextLimit(provider);
+    const warning = getWarning(tokens, limit);
     return {
       chars,
       tokens,
       comments: countDataComments(data),
       images: countImages(data),
       warning,
-      percentOfLargeContext: Math.min(100, Math.round((tokens / 128000) * 100))
+      contextLimit: limit,
+      percentOfLargeContext: Math.min(100, Math.round((tokens / limit) * 100))
     };
   }
 
@@ -652,6 +670,8 @@
     applyContextPreset,
     buildPromptText,
     estimatePromptStats,
+    getContextLimit,
+    PROVIDER_CONTEXT_LIMITS,
     formatAllComments,
     countComments,
     countDataComments,

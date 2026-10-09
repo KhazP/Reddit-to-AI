@@ -731,5 +731,1467 @@
     "settings_reddit_btn_post": {
         "message": "Show inside post detail pages",
         "description": "Inside post sub-toggle label"
+    },
+    "panel_region_label": {
+        "message": "Reddit to AI progress"
+    },
+    "panel_close_label": {
+        "message": "Close panel"
+    },
+    "panel_progress_label": {
+        "message": "Scrape progress"
+    },
+    "panel_phase_fetch": {
+        "message": "Fetch"
+    },
+    "panel_phase_parse": {
+        "message": "Read"
+    },
+    "panel_phase_load": {
+        "message": "Comments"
+    },
+    "panel_phase_filter": {
+        "message": "Prepare"
+    },
+    "panel_badge_batch": {
+        "message": "Batch $CURRENT$ of $TOTAL$",
+        "placeholders": {
+            "current": {
+                "content": "$1"
+            },
+            "total": {
+                "content": "$2"
+            }
+        }
+    },
+    "panel_badge_comments": {
+        "message": "$COUNT$ comments",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            }
+        }
+    },
+    "panel_done_sent": {
+        "message": "Sent to $AI$",
+        "placeholders": {
+            "ai": {
+                "content": "$1"
+            }
+        }
+    },
+    "panel_ai_generic": {
+        "message": "your AI"
+    },
+    "panel_done_sent_hint": {
+        "message": "The AI tab has your thread. Check it for the answer."
+    },
+    "panel_done_preview": {
+        "message": "Ready in preview"
+    },
+    "panel_done_preview_hint": {
+        "message": "Review the prompt in the new tab, then send it."
+    },
+    "panel_error_title": {
+        "message": "Something went wrong"
+    },
+    "panel_error_config_title": {
+        "message": "Setup needed"
+    },
+    "panel_error_not_reddit_title": {
+        "message": "Open a Reddit thread first"
+    },
+    "panel_error_busy_title": {
+        "message": "Already working on a thread"
+    },
+    "panel_error_network_title": {
+        "message": "Connection problem"
+    },
+    "panel_error_stopped_title": {
+        "message": "Scrape stopped"
+    },
+    "panel_error_unknown": {
+        "message": "An unexpected error occurred."
+    },
+    "panel_error_unreachable": {
+        "message": "The extension could not be reached. Reload the page and try again."
+    },
+    "panel_btn_retry": {
+        "message": "Retry"
+    },
+    "panel_btn_dismiss": {
+        "message": "Dismiss"
+    },
+    "panel_btn_settings": {
+        "message": "Open settings"
+    },
+    "panel_retrying": {
+        "message": "Retrying…"
+    },
+    "inline_btn_label": {
+        "message": "Summarize with AI"
+    },
+    "inline_btn_working": {
+        "message": "Summarizing…"
+    },
+    "inline_btn_done": {
+        "message": "Done"
+    },
+    "inline_btn_failed": {
+        "message": "Failed — retry"
+    },
+    "inline_btn_failed_title": {
+        "message": "Couldn’t start. Click to try again."
+    },
+    "inline_error_no_response": {
+        "message": "The extension did not respond. Reload the page and try again."
+    },
+    "popup_feedback_title": {
+        "message": "Send feedback"
+    },
+    "popup_settings_title": {
+        "message": "Settings"
+    },
+    "popup_tab_scrape": {
+        "message": "Scrape"
+    },
+    "popup_tab_filters": {
+        "message": "Filters"
+    },
+    "popup_filters_active_count": {
+        "message": "$COUNT$ active",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            }
+        }
+    },
+    "popup_filter_reset": {
+        "message": "Reset"
+    },
+    "popup_empty_title": {
+        "message": "Open a Reddit thread to get started"
+    },
+    "popup_empty_hint": {
+        "message": "On a thread, use the Reddit to AI button next to Share, or press Alt+Shift+S."
+    },
+    "popup_preset_question": {
+        "message": "What do you want?"
+    },
+    "popup_saved_presets_label": {
+        "message": "Your presets"
+    },
+    "popup_saved_presets_more": {
+        "message": "+$COUNT$ more",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            }
+        }
+    },
+    "popup_saved_presets_more_title": {
+        "message": "Manage all presets in Settings"
+    },
+    "popup_saved_preset_applied": {
+        "message": "Using \"$NAME$\".",
+        "placeholders": {
+            "name": {
+                "content": "$1"
+            }
+        }
+    },
+    "popup_saved_preset_saved": {
+        "message": "Saved preset \"$NAME$\".",
+        "placeholders": {
+            "name": {
+                "content": "$1"
+            }
+        }
+    },
+    "popup_label_mode": {
+        "message": "Mode"
+    },
+    "popup_label_format": {
+        "message": "Answer format"
+    },
+    "popup_label_custom_prompt": {
+        "message": "Custom prompt (optional)"
+    },
+    "popup_quick_prompt_placeholder": {
+        "message": "Type your own instructions to replace the preset..."
+    },
+    "popup_save_quick_prompt": {
+        "message": "Save as preset"
+    },
+    "popup_save_quick_prompt_disabled": {
+        "message": "Type a custom prompt first"
+    },
+    "popup_dont_save_label": {
+        "message": "Don't save this scrape to history"
+    },
+    "popup_summary_custom_prompt": {
+        "message": "Custom prompt"
+    },
+    "popup_summary_not_saved": {
+        "message": "Not saved"
+    },
+    "popup_btn_scrape_send": {
+        "message": "Scrape & Send to $PROVIDER$",
+        "placeholders": {
+            "provider": {
+                "content": "$1"
+            }
+        }
+    },
+    "popup_btn_done": {
+        "message": "Done"
+    },
+    "popup_btn_disabled_not_thread": {
+        "message": "Open a Reddit thread (or add batch URLs in Filters) to scrape."
+    },
+    "popup_btn_shortcut_hint": {
+        "message": "Shortcut: Ctrl+Enter (Cmd+Enter on Mac)"
+    },
+    "popup_budget_none": {
+        "message": "No thread to estimate yet"
+    },
+    "popup_budget_line_safe": {
+        "message": "~$TOKENS$ tokens · fits $PROVIDER$",
+        "placeholders": {
+            "tokens": {
+                "content": "$1"
+            },
+            "provider": {
+                "content": "$2"
+            }
+        }
+    },
+    "popup_budget_line_moderate": {
+        "message": "~$TOKENS$ tokens · long for $PROVIDER$",
+        "placeholders": {
+            "tokens": {
+                "content": "$1"
+            },
+            "provider": {
+                "content": "$2"
+            }
+        }
+    },
+    "popup_budget_line_large": {
+        "message": "~$TOKENS$ tokens · near $PROVIDER$'s limit",
+        "placeholders": {
+            "tokens": {
+                "content": "$1"
+            },
+            "provider": {
+                "content": "$2"
+            }
+        }
+    },
+    "popup_budget_line_over": {
+        "message": "~$TOKENS$ tokens · too long for $PROVIDER$",
+        "placeholders": {
+            "tokens": {
+                "content": "$1"
+            },
+            "provider": {
+                "content": "$2"
+            }
+        }
+    },
+    "popup_estimate_scope": {
+        "message": "$CONTEXT$ · $DEPTH$ depth",
+        "placeholders": {
+            "context": {
+                "content": "$1"
+            },
+            "depth": {
+                "content": "$2"
+            }
+        }
+    },
+    "popup_context_best": {
+        "message": "Best quality"
+    },
+    "popup_context_best_desc": {
+        "message": "Largest budget for the most thorough answer"
+    },
+    "popup_export_label": {
+        "message": "Export last scrape"
+    },
+    "popup_export_disabled_hint": {
+        "message": "Exports unlock after your first scrape."
+    },
+    "popup_export_done": {
+        "message": "Saved"
+    },
+    "popup_export_failed": {
+        "message": "Export failed."
+    },
+    "popup_export_nodata": {
+        "message": "No data available to export."
+    },
+    "popup_toast_dismiss": {
+        "message": "Dismiss"
+    },
+    "preview_back": {
+        "message": "Back"
+    },
+    "preview_back_title": {
+        "message": "Back to Reddit tab"
+    },
+    "preview_badge": {
+        "message": "Preview"
+    },
+    "preview_loading_thread": {
+        "message": "Loading thread…"
+    },
+    "preview_no_thread": {
+        "message": "No thread loaded"
+    },
+    "preview_tabs_label": {
+        "message": "Preview views"
+    },
+    "preview_tab_prompt": {
+        "message": "Prompt & Send"
+    },
+    "preview_tab_prune": {
+        "message": "Prune Comments"
+    },
+    "preview_export": {
+        "message": "Export"
+    },
+    "preview_save_preset": {
+        "message": "Save preset"
+    },
+    "preview_save_preset_title": {
+        "message": "Save the current prompt and settings as a reusable preset"
+    },
+    "preview_copy": {
+        "message": "Copy"
+    },
+    "preview_copy_title": {
+        "message": "Copy prompt to clipboard"
+    },
+    "preview_copied": {
+        "message": "Copied ✓"
+    },
+    "preview_copy_failed": {
+        "message": "Copy failed"
+    },
+    "preview_empty_short": {
+        "message": "Empty"
+    },
+    "preview_send_to": {
+        "message": "Send to $PROVIDER$",
+        "placeholders": {
+            "provider": {
+                "content": "$1",
+                "example": "Gemini"
+            }
+        }
+    },
+    "preview_send_title": {
+        "message": "Open the AI chat with this prompt"
+    },
+    "preview_sending": {
+        "message": "Opening…"
+    },
+    "preview_sent": {
+        "message": "Sent ✓"
+    },
+    "preview_send_failed": {
+        "message": "Failed — try again"
+    },
+    "preview_provider_fallback": {
+        "message": "AI"
+    },
+    "preview_needs_thread": {
+        "message": "Load a thread first — there is no prompt yet."
+    },
+    "preview_preset_name_label": {
+        "message": "Preset name"
+    },
+    "preview_preset_name_hint": {
+        "message": "Saves this prompt with the current preset, trim strategy, media and format settings."
+    },
+    "preview_preset_name_default": {
+        "message": "Custom preview preset"
+    },
+    "preview_preset_name_sub": {
+        "message": "r/$SUBREDDIT$ preset",
+        "placeholders": {
+            "subreddit": {
+                "content": "$1",
+                "example": "AskReddit"
+            }
+        }
+    },
+    "preview_cancel": {
+        "message": "Cancel"
+    },
+    "preview_save": {
+        "message": "Save"
+    },
+    "preview_saved": {
+        "message": "Saved ✓"
+    },
+    "preview_save_failed": {
+        "message": "Not saved"
+    },
+    "preview_final_prompt": {
+        "message": "Final prompt"
+    },
+    "preview_edit_hint": {
+        "message": "You can edit this text before sending."
+    },
+    "preview_rebuild_notice": {
+        "message": "Settings changed. Your edited prompt was kept."
+    },
+    "preview_apply_rebuilt": {
+        "message": "Apply rebuilt prompt"
+    },
+    "preview_keep_edits": {
+        "message": "Keep edits"
+    },
+    "preview_restore_prompt": {
+        "message": "Restore generated prompt"
+    },
+    "preview_prompt_placeholder": {
+        "message": "Generated prompt will appear here…"
+    },
+    "preview_shortcut_send": {
+        "message": "to send"
+    },
+    "preview_shortcut_copy": {
+        "message": "to copy"
+    },
+    "preview_load_error_title": {
+        "message": "Couldn't load this thread"
+    },
+    "preview_load_error_hint": {
+        "message": "Try again. If it keeps failing, close this tab and run the scrape again from the Reddit thread."
+    },
+    "preview_load_error_none": {
+        "message": "No scraped thread was found for this tab. It may have expired."
+    },
+    "preview_try_again": {
+        "message": "Try again"
+    },
+    "preview_budget_eyebrow": {
+        "message": "AI context budget"
+    },
+    "preview_budget_preparing": {
+        "message": "Preparing context budget."
+    },
+    "preview_budget_unavailable": {
+        "message": "The budget appears once a thread is loaded."
+    },
+    "preview_budget_level": {
+        "message": "Size: $LEVEL$",
+        "placeholders": {
+            "level": {
+                "content": "$1",
+                "example": "Low"
+            }
+        }
+    },
+    "preview_unit_tokens": {
+        "message": "tokens"
+    },
+    "preview_unit_chars": {
+        "message": "chars"
+    },
+    "preview_unit_comments": {
+        "message": "comments"
+    },
+    "preview_unit_images": {
+        "message": "images"
+    },
+    "preview_guidance_critical": {
+        "message": "$PROVIDER$ may reject or truncate this. Use Balanced or Small before sending.",
+        "placeholders": {
+            "provider": {
+                "content": "$1",
+                "example": "Gemini"
+            }
+        }
+    },
+    "preview_guidance_high": {
+        "message": "$PROVIDER$ should handle this only on large-context models. Consider trimming comments.",
+        "placeholders": {
+            "provider": {
+                "content": "$1",
+                "example": "Gemini"
+            }
+        }
+    },
+    "preview_guidance_medium": {
+        "message": "$PROVIDER$ should usually accept this, but smaller models may shorten the answer.",
+        "placeholders": {
+            "provider": {
+                "content": "$1",
+                "example": "Gemini"
+            }
+        }
+    },
+    "preview_guidance_low": {
+        "message": "$PROVIDER$ should have comfortable room for this prompt.",
+        "placeholders": {
+            "provider": {
+                "content": "$1",
+                "example": "Gemini"
+            }
+        }
+    },
+    "preview_params_eyebrow": {
+        "message": "Prompt settings"
+    },
+    "preview_field_context": {
+        "message": "Context preset"
+    },
+    "preview_field_trim": {
+        "message": "Trim strategy"
+    },
+    "preview_field_format": {
+        "message": "Output format"
+    },
+    "preview_field_platform": {
+        "message": "AI platform"
+    },
+    "preview_field_media": {
+        "message": "Media handling"
+    },
+    "preview_skip_label": {
+        "message": "Skip this preview next time"
+    },
+    "preview_skip_hint": {
+        "message": "Future scrapes will paste straight into the AI chat without stopping here. You can turn the preview back on in Options."
+    },
+    "preview_missing_title": {
+        "message": "Some replies couldn't be loaded — the thread may be incomplete."
+    },
+    "preview_missing_text": {
+        "message": "You can try loading them again before sending."
+    },
+    "preview_missing_count": {
+        "message": "$COUNT$ replies could not be loaded. Try loading them again before sending.",
+        "placeholders": {
+            "count": {
+                "content": "$1",
+                "example": "12"
+            }
+        }
+    },
+    "preview_missing_resume": {
+        "message": "Load missing replies"
+    },
+    "preview_missing_resuming": {
+        "message": "Loading replies…"
+    },
+    "preview_prune_title": {
+        "message": "Choose which comments to include"
+    },
+    "preview_prune_description": {
+        "message": "Uncheck a comment to leave it out of the prompt. Its replies are left out too."
+    },
+    "preview_select_all": {
+        "message": "Select all"
+    },
+    "preview_clear_all": {
+        "message": "Clear all"
+    },
+    "preview_tree_empty_title": {
+        "message": "No comments to choose from"
+    },
+    "preview_tree_empty_body": {
+        "message": "This thread has no comments, or the current context preset left none in the prompt."
+    },
+    "preview_api_error_title": {
+        "message": "The request didn't go through"
+    },
+    "preview_api_sending": {
+        "message": "Sending…"
+    },
+    "preview_api_done": {
+        "message": "Done ✓"
+    },
+    "preview_api_failed_short": {
+        "message": "Failed"
+    },
+    "preview_api_send_disabled": {
+        "message": "Add an API key for this provider in Options to send."
+    },
+    "preview_api_no_key_option": {
+        "message": "$PROVIDER$ (no key)",
+        "placeholders": {
+            "provider": {
+                "content": "$1",
+                "example": "OpenAI"
+            }
+        }
+    },
+    "preview_status_ready_short": {
+        "message": "Ready."
+    },
+    "preview_status_ready": {
+        "message": "Ready. Review or edit the prompt, then send it."
+    },
+    "preview_status_loading": {
+        "message": "Loading scraped thread…"
+    },
+    "preview_status_load_failed": {
+        "message": "Couldn't load the thread."
+    },
+    "preview_status_already_sending": {
+        "message": "Already opening AI tab."
+    },
+    "preview_status_empty": {
+        "message": "The prompt is empty — add some text before sending."
+    },
+    "preview_status_opening": {
+        "message": "Opening $PROVIDER$…",
+        "placeholders": {
+            "provider": {
+                "content": "$1",
+                "example": "Gemini"
+            }
+        }
+    },
+    "preview_status_sent": {
+        "message": "$PROVIDER$ opened. If the prompt isn't pasted automatically, use the copy button on that page.",
+        "placeholders": {
+            "provider": {
+                "content": "$1",
+                "example": "Gemini"
+            }
+        }
+    },
+    "preview_status_send_failed": {
+        "message": "Could not send the prompt. Try again, or copy it instead."
+    },
+    "preview_status_copied": {
+        "message": "Prompt copied to clipboard."
+    },
+    "preview_status_nothing_to_copy": {
+        "message": "The prompt is empty — nothing to copy."
+    },
+    "preview_status_copy_failed": {
+        "message": "Couldn't copy. Select the text and press Ctrl+C instead."
+    },
+    "preview_status_copy_failed_short": {
+        "message": "Copy failed."
+    },
+    "preview_status_export_nodata": {
+        "message": "No data available to export."
+    },
+    "preview_status_exported": {
+        "message": "Exported as $FORMAT$.",
+        "placeholders": {
+            "format": {
+                "content": "$1",
+                "example": "MD"
+            }
+        }
+    },
+    "preview_status_export_failed": {
+        "message": "Export failed."
+    },
+    "preview_status_preset_name_needed": {
+        "message": "Give the preset a name first."
+    },
+    "preview_status_preset_saved": {
+        "message": "Saved preset “$NAME$”.",
+        "placeholders": {
+            "name": {
+                "content": "$1",
+                "example": "Weekly digest"
+            }
+        }
+    },
+    "preview_status_preset_failed": {
+        "message": "Couldn't save the preset: $ERROR$",
+        "placeholders": {
+            "error": {
+                "content": "$1",
+                "example": "QUOTA_BYTES quota exceeded"
+            }
+        }
+    },
+    "preview_status_rebuilt": {
+        "message": "Rebuilt prompt applied."
+    },
+    "preview_status_kept": {
+        "message": "Edited prompt kept."
+    },
+    "preview_status_restored": {
+        "message": "Generated prompt restored."
+    },
+    "preview_status_skip_on": {
+        "message": "Next time, scrapes will go straight to the AI chat."
+    },
+    "preview_status_skip_off": {
+        "message": "Next time, scrapes will open this preview first."
+    },
+    "preview_status_resuming": {
+        "message": "Trying to load the missing replies…"
+    },
+    "preview_status_resume_failed": {
+        "message": "Couldn't load the missing replies."
+    },
+    "preview_status_resumed": {
+        "message": "Done. Added $COUNT$ replies.",
+        "placeholders": {
+            "count": {
+                "content": "$1",
+                "example": "8"
+            }
+        }
+    },
+    "preview_status_focus_failed": {
+        "message": "Couldn't find the Reddit tab."
+    },
+    "preview_threads_combined": {
+        "message": "$COUNT$ Reddit threads combined for comparison.",
+        "placeholders": {
+            "count": {
+                "content": "$1",
+                "example": "3"
+            }
+        }
+    },
+    "options_header_settings": {
+        "message": "Settings"
+    },
+    "options_nav_aria": {
+        "message": "Settings sections"
+    },
+    "options_nav_ai": {
+        "message": "AI & sending"
+    },
+    "options_nav_prompts": {
+        "message": "Prompts"
+    },
+    "options_nav_scraping": {
+        "message": "Scraping"
+    },
+    "options_nav_reddit": {
+        "message": "Reddit button"
+    },
+    "options_nav_general": {
+        "message": "General"
+    },
+    "options_nav_history": {
+        "message": "History"
+    },
+    "options_nav_advanced": {
+        "message": "Advanced"
+    },
+    "options_pane_ai_desc": {
+        "message": "Where your Reddit threads go, and what happens when you send one."
+    },
+    "options_pane_prompts_desc": {
+        "message": "What the AI is asked to do with each thread."
+    },
+    "options_pane_scraping_desc": {
+        "message": "How much of a thread is collected, and which comments are kept."
+    },
+    "options_pane_general_desc": {
+        "message": "Appearance, language, notifications and your data."
+    },
+    "options_pane_history_desc": {
+        "message": "Threads you scraped recently. Re-send one to a different AI, compare several, or export them."
+    },
+    "options_pane_advanced_desc": {
+        "message": "For power users and troubleshooting. The defaults work well for most people."
+    },
+    "options_platform_custom": {
+        "message": "Custom site"
+    },
+    "options_hint_custom_platform": {
+        "message": "Custom sites (like a local WebUI) are added under Advanced › Custom AI sites."
+    },
+    "options_card_send_flow_title": {
+        "message": "When you send a thread"
+    },
+    "options_label_show_preview": {
+        "message": "Show prompt preview before sending"
+    },
+    "options_hint_show_preview": {
+        "message": "Turn off to scrape and open the AI tab immediately."
+    },
+    "options_label_output_format": {
+        "message": "Answer format"
+    },
+    "options_hint_output_format": {
+        "message": "The format the AI is asked to answer in. You can change it per thread in the preview."
+    },
+    "options_format_auto": {
+        "message": "Let the AI decide"
+    },
+    "options_format_bullets": {
+        "message": "Bullet points"
+    },
+    "options_format_table": {
+        "message": "Table"
+    },
+    "options_format_pros_cons": {
+        "message": "Pros and cons"
+    },
+    "options_format_executive": {
+        "message": "Executive summary"
+    },
+    "options_hint_prompt_plain": {
+        "message": "Use {content} where the Reddit thread should go. Pick “Custom” to write your own."
+    },
+    "options_card_saved_presets_title": {
+        "message": "Saved prompt presets"
+    },
+    "options_saved_presets_desc": {
+        "message": "Presets you saved from the popup or the preview page."
+    },
+    "options_saved_presets_empty": {
+        "message": "No saved prompt presets yet"
+    },
+    "options_saved_presets_none_hint": {
+        "message": "No saved presets yet"
+    },
+    "options_btn_import_presets": {
+        "message": "Import presets"
+    },
+    "options_btn_export_presets": {
+        "message": "Export presets"
+    },
+    "options_btn_clear_presets": {
+        "message": "Delete all presets"
+    },
+    "options_confirm_clear_presets": {
+        "message": "Delete all saved prompt presets? This can’t be undone."
+    },
+    "options_btn_cancel": {
+        "message": "Cancel"
+    },
+    "options_btn_delete_all": {
+        "message": "Delete all"
+    },
+    "options_btn_use": {
+        "message": "Use"
+    },
+    "options_btn_export": {
+        "message": "Export"
+    },
+    "options_btn_remove": {
+        "message": "Remove"
+    },
+    "options_untitled_preset": {
+        "message": "Untitled preset"
+    },
+    "options_unknown_date": {
+        "message": "Unknown date"
+    },
+    "options_preset_applied": {
+        "message": "Now using “$NAME$” as your custom prompt.",
+        "placeholders": {
+            "name": {
+                "content": "$1"
+            }
+        }
+    },
+    "options_preset_deleted": {
+        "message": "Preset deleted."
+    },
+    "options_preset_exported": {
+        "message": "Preset exported."
+    },
+    "options_presets_exported": {
+        "message": "Presets exported."
+    },
+    "options_presets_imported": {
+        "message": "Imported $COUNT$ preset(s).",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            }
+        }
+    },
+    "options_presets_cleared": {
+        "message": "All saved presets deleted."
+    },
+    "options_import_no_presets": {
+        "message": "That file does not contain prompt presets."
+    },
+    "options_author_op_label": {
+        "message": "Original poster (OP)"
+    },
+    "options_author_flaired_label": {
+        "message": "Users with flair"
+    },
+    "options_author_summary_all": {
+        "message": "Including comments from everyone. Turn on one or both to keep only those authors."
+    },
+    "options_author_summary_op": {
+        "message": "Only comments by the original poster."
+    },
+    "options_author_summary_flaired": {
+        "message": "Only comments by users with flair."
+    },
+    "options_author_summary_both": {
+        "message": "Only comments by the original poster or by users with flair."
+    },
+    "options_scraping_more_hint": {
+        "message": "Prompt size, comment sorting and media handling are under"
+    },
+    "options_reddit_btn_disabled_hint": {
+        "message": "Turn on the in-page button to choose where it appears."
+    },
+    "options_card_appearance_title": {
+        "message": "Appearance"
+    },
+    "options_label_theme": {
+        "message": "Theme"
+    },
+    "options_theme_auto": {
+        "message": "Auto"
+    },
+    "options_theme_dark": {
+        "message": "Dark"
+    },
+    "options_theme_light": {
+        "message": "Light"
+    },
+    "options_hint_theme": {
+        "message": "Auto follows your system setting."
+    },
+    "options_language_applied": {
+        "message": "Language applied."
+    },
+    "options_storage_desc": {
+        "message": "What happens to a scraped thread after it has been sent."
+    },
+    "options_backup_title": {
+        "message": "Back up your settings"
+    },
+    "options_backup_hint": {
+        "message": "Exports your preferences as a JSON file. API keys are never included."
+    },
+    "options_btn_export_settings": {
+        "message": "Export settings"
+    },
+    "options_btn_import_settings": {
+        "message": "Import settings"
+    },
+    "options_settings_exported": {
+        "message": "Settings exported."
+    },
+    "options_import_bad_json": {
+        "message": "Could not read that file as JSON:"
+    },
+    "options_import_read_failed": {
+        "message": "Could not read that file."
+    },
+    "options_import_no_settings": {
+        "message": "That file does not contain settings."
+    },
+    "options_import_none_recognized": {
+        "message": "That file does not contain any recognized settings."
+    },
+    "options_import_failed": {
+        "message": "Could not import settings:"
+    },
+    "options_telemetry_default_on": {
+        "message": "On by default"
+    },
+    "options_telemetry_sent_label": {
+        "message": "Sent"
+    },
+    "options_telemetry_sent": {
+        "message": "How many times five things happened (installed, updated, browser session started, thread extracted, prompt sent), plus a random install ID and the extension version."
+    },
+    "options_telemetry_never_label": {
+        "message": "Never sent"
+    },
+    "options_telemetry_never": {
+        "message": "Reddit content, URLs, subreddit names, titles, prompts, API keys, or anything you type."
+    },
+    "options_telemetry_when_label": {
+        "message": "How often"
+    },
+    "options_telemetry_when": {
+        "message": "At most once every 30 minutes. Turning this off deletes the install ID and any counts not yet sent."
+    },
+    "options_telemetry_unsupported": {
+        "message": "Usage counts are never sent in this browser build."
+    },
+    "options_history_filters_aria": {
+        "message": "History filters"
+    },
+    "options_history_search_placeholder": {
+        "message": "Search title, subreddit, flair, URL..."
+    },
+    "options_history_all_platforms": {
+        "message": "All AI platforms"
+    },
+    "options_history_all_presets": {
+        "message": "All prompts"
+    },
+    "options_history_any_date": {
+        "message": "Any date"
+    },
+    "options_history_today": {
+        "message": "Today"
+    },
+    "options_history_week": {
+        "message": "Last 7 days"
+    },
+    "options_history_month": {
+        "message": "Last 30 days"
+    },
+    "options_history_min_comments": {
+        "message": "Min comments"
+    },
+    "options_aria_platform": {
+        "message": "AI platform"
+    },
+    "options_aria_prompt": {
+        "message": "Prompt"
+    },
+    "options_aria_date": {
+        "message": "Date"
+    },
+    "options_aria_pattern": {
+        "message": "Subreddit pattern"
+    },
+    "options_aria_test_sub": {
+        "message": "Subreddit to test"
+    },
+    "options_aria_site": {
+        "message": "Site address"
+    },
+    "options_btn_compare": {
+        "message": "Compare selected"
+    },
+    "options_compare_hint": {
+        "message": "Select at least two threads to compare"
+    },
+    "options_compare_selected": {
+        "message": "$COUNT$ selected for compare",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            }
+        }
+    },
+    "options_history_compare": {
+        "message": "Compare"
+    },
+    "options_history_comments": {
+        "message": "$COUNT$ comments",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            }
+        }
+    },
+    "options_history_pin": {
+        "message": "Pin"
+    },
+    "options_history_unpin": {
+        "message": "Unpin"
+    },
+    "options_history_favorite": {
+        "message": "Add to favorites"
+    },
+    "options_history_unfavorite": {
+        "message": "Remove from favorites"
+    },
+    "options_history_no_match": {
+        "message": "No history items match your filters"
+    },
+    "options_hist_opening_preview": {
+        "message": "Opening preview for history item..."
+    },
+    "options_hist_preview_opened": {
+        "message": "Preview opened for history item."
+    },
+    "options_hist_resend_failed": {
+        "message": "Could not resend history item:"
+    },
+    "options_hist_deleted": {
+        "message": "History item deleted."
+    },
+    "options_hist_delete_failed": {
+        "message": "Could not delete history item:"
+    },
+    "options_hist_export_failed": {
+        "message": "Could not export history item:"
+    },
+    "options_hist_exported": {
+        "message": "History item exported."
+    },
+    "options_hist_update_failed": {
+        "message": "Could not update history item:"
+    },
+    "options_hist_pinned": {
+        "message": "History item pinned."
+    },
+    "options_hist_unpinned": {
+        "message": "History item unpinned."
+    },
+    "options_hist_favorited": {
+        "message": "History item favorited."
+    },
+    "options_hist_unfavorited": {
+        "message": "History item unfavorited."
+    },
+    "options_hist_opening_compare": {
+        "message": "Opening comparison preview..."
+    },
+    "options_hist_compare_opened": {
+        "message": "Comparison preview opened."
+    },
+    "options_hist_compare_failed": {
+        "message": "Could not compare history items:"
+    },
+    "options_hist_cleared": {
+        "message": "Scrape history cleared."
+    },
+    "options_hist_clear_failed": {
+        "message": "Could not clear scrape history:"
+    },
+    "options_adv_tuning_title": {
+        "message": "Prompt size & comment selection"
+    },
+    "options_adv_tuning_desc": {
+        "message": "How much of the thread goes into the prompt, and which comments are kept when it is trimmed."
+    },
+    "options_label_context_budget": {
+        "message": "Default prompt size"
+    },
+    "options_hint_context_budget": {
+        "message": "The starting prompt size in the preview. Bigger prompts keep more comments."
+    },
+    "options_context_small": {
+        "message": "Small"
+    },
+    "options_context_balanced": {
+        "message": "Balanced"
+    },
+    "options_context_full": {
+        "message": "Full"
+    },
+    "options_context_max": {
+        "message": "Largest (best quality)"
+    },
+    "options_label_trim": {
+        "message": "When trimming, keep"
+    },
+    "options_trim_top": {
+        "message": "Top scored"
+    },
+    "options_trim_controversial": {
+        "message": "Controversial"
+    },
+    "options_trim_op": {
+        "message": "OP replies"
+    },
+    "options_trim_flaired": {
+        "message": "Flaired users"
+    },
+    "options_trim_diverse": {
+        "message": "Diverse viewpoints"
+    },
+    "options_trim_newest": {
+        "message": "Newest"
+    },
+    "options_trim_longest": {
+        "message": "Longest helpful comments"
+    },
+    "options_label_sort": {
+        "message": "Reddit comment sort"
+    },
+    "options_sort_best": {
+        "message": "Best"
+    },
+    "options_sort_top": {
+        "message": "Top"
+    },
+    "options_sort_new": {
+        "message": "New"
+    },
+    "options_sort_controversial": {
+        "message": "Controversial"
+    },
+    "options_sort_old": {
+        "message": "Old"
+    },
+    "options_sort_qa": {
+        "message": "Q&A"
+    },
+    "options_sort_live": {
+        "message": "Live"
+    },
+    "options_label_media": {
+        "message": "Images and media"
+    },
+    "options_media_attach": {
+        "message": "Attach images and list media links"
+    },
+    "options_media_urls": {
+        "message": "List media links only"
+    },
+    "options_media_ignore": {
+        "message": "Ignore media"
+    },
+    "options_adv_mappings_desc": {
+        "message": "Use a different prompt automatically for certain subreddits."
+    },
+    "options_mappings_empty_input": {
+        "message": "Enter a subreddit name or pattern first."
+    },
+    "options_mappings_duplicate": {
+        "message": "A rule for this pattern already exists."
+    },
+    "options_mappings_added": {
+        "message": "Rule added."
+    },
+    "options_tester_match": {
+        "message": "Match"
+    },
+    "options_tester_nomatch": {
+        "message": "No match"
+    },
+    "options_tester_match_detail": {
+        "message": "r/$SUB$ matches “$PATTERN$”, so it uses the $PRESET$ prompt.",
+        "placeholders": {
+            "sub": {
+                "content": "$1"
+            },
+            "pattern": {
+                "content": "$2"
+            },
+            "preset": {
+                "content": "$3"
+            }
+        }
+    },
+    "options_tester_nomatch_detail": {
+        "message": "r/$SUB$ matches no rule, so it uses your default prompt ($PRESET$).",
+        "placeholders": {
+            "sub": {
+                "content": "$1"
+            },
+            "preset": {
+                "content": "$2"
+            }
+        }
+    },
+    "options_adv_custom_title": {
+        "message": "Custom AI sites"
+    },
+    "options_adv_custom_desc": {
+        "message": "Send threads to a self-hosted or local AI web app."
+    },
+    "options_custom_origin_hint": {
+        "message": "Enter the address of your AI web app (for example http://localhost:3000). Chrome will ask you to allow access to that site."
+    },
+    "options_btn_add_custom_origin": {
+        "message": "Add site"
+    },
+    "options_custom_origin_empty": {
+        "message": "No custom sites added yet."
+    },
+    "options_custom_origin_empty_input": {
+        "message": "Enter a site address first, for example http://localhost:3000."
+    },
+    "options_custom_origin_invalid": {
+        "message": "That doesn’t look like a web address. Try something like http://localhost:3000."
+    },
+    "options_custom_origin_requesting": {
+        "message": "Waiting for you to allow access…"
+    },
+    "options_custom_origin_error": {
+        "message": "Could not request access:"
+    },
+    "options_custom_origin_denied": {
+        "message": "Access was not allowed, so the site was not added."
+    },
+    "options_custom_origin_exists": {
+        "message": "That site is already in the list."
+    },
+    "options_custom_origin_added": {
+        "message": "Site added."
+    },
+    "options_custom_origin_removed": {
+        "message": "Site removed."
+    },
+    "options_custom_origin_remove_title": {
+        "message": "Remove site and revoke access"
+    },
+    "options_adv_selectors_title": {
+        "message": "Input field selectors"
+    },
+    "options_adv_selectors_desc": {
+        "message": "If pasting into an AI site stops working after it changes its layout, point the extension at the right text box."
+    },
+    "options_selectors_hint": {
+        "message": "CSS selectors. Leave empty to use the built-in default."
+    },
+    "options_footer_version": {
+        "message": "Reddit to AI v$VERSION$",
+        "placeholders": {
+            "version": {
+                "content": "$1"
+            }
+        }
+    },
+    "welcome_page_title": {
+        "message": "Welcome to Reddit to AI"
+    },
+    "welcome_progress_aria": {
+        "message": "Setup progress"
+    },
+    "welcome_dot_1": {
+        "message": "Step 1: Pick your AI"
+    },
+    "welcome_dot_2": {
+        "message": "Step 2: Ways to start"
+    },
+    "welcome_dot_3": {
+        "message": "Step 3: Privacy"
+    },
+    "welcome_step_count": {
+        "message": "Step $CURRENT$ of $TOTAL$",
+        "placeholders": {
+            "current": {
+                "content": "$1"
+            },
+            "total": {
+                "content": "$2"
+            }
+        }
+    },
+    "welcome_eyebrow": {
+        "message": "Welcome — let’s get you set up"
+    },
+    "welcome_step1_title": {
+        "message": "Pick your AI"
+    },
+    "welcome_step1_lead": {
+        "message": "Where should your Reddit threads go? The thread opens there with your prompt already pasted in. You can change this any time."
+    },
+    "welcome_step1_more": {
+        "message": "A local or self-hosted AI site, or your own API key, can be added later in Settings."
+    },
+    "welcome_provider_saved": {
+        "message": "Saved — threads will open in $NAME$.",
+        "placeholders": {
+            "name": {
+                "content": "$1"
+            }
+        }
+    },
+    "welcome_save_failed": {
+        "message": "Could not save. Try again."
+    },
+    "welcome_step2_title": {
+        "message": "Four ways to start"
+    },
+    "welcome_step2_lead": {
+        "message": "Open any Reddit thread, then use whichever is closest."
+    },
+    "welcome_way_inline_title": {
+        "message": "The button on Reddit"
+    },
+    "welcome_way_inline_desc": {
+        "message": "Click it in a post’s action bar, next to Share."
+    },
+    "welcome_way_popup_title": {
+        "message": "The toolbar icon"
+    },
+    "welcome_way_popup_desc": {
+        "message": "Open the popup and press the big button. Pin the icon from the puzzle-piece menu so it’s always there."
+    },
+    "welcome_way_shortcut_title": {
+        "message": "A keyboard shortcut"
+    },
+    "welcome_way_shortcut_desc": {
+        "message": "Press it on any Reddit thread."
+    },
+    "welcome_way_shortcut_change": {
+        "message": "Change shortcut"
+    },
+    "welcome_way_shortcut_unset": {
+        "message": "No shortcut is set yet. You can choose one in Chrome."
+    },
+    "welcome_way_menu_title": {
+        "message": "Right-click a thread link"
+    },
+    "welcome_way_menu_desc": {
+        "message": "Works on thread links anywhere, without opening the thread first."
+    },
+    "welcome_mock_open_link": {
+        "message": "Open link in new tab"
+    },
+    "welcome_mock_copy_link": {
+        "message": "Copy link address"
+    },
+    "welcome_step3_title": {
+        "message": "Your data, plainly"
+    },
+    "welcome_step3_lead": {
+        "message": "Here’s exactly what goes where."
+    },
+    "welcome_fact_ai_title": {
+        "message": "Threads go only to the AI you pick"
+    },
+    "welcome_fact_ai_desc": {
+        "message": "The thread is read in your browser and handed straight to your chosen AI. It never passes through our servers."
+    },
+    "welcome_fact_ai_desc_named": {
+        "message": "The thread is read in your browser and handed straight to $NAME$ (or to its API, if you add a key later). It never passes through our servers.",
+        "placeholders": {
+            "name": {
+                "content": "$1"
+            }
+        }
+    },
+    "welcome_fact_local_title": {
+        "message": "History and API keys stay on this device"
+    },
+    "welcome_fact_local_desc": {
+        "message": "Your scrape history and any API keys are stored only in this browser. You can limit or clear history in Settings."
+    },
+    "welcome_telemetry_label": {
+        "message": "Share anonymous usage counts"
+    },
+    "welcome_telemetry_hint": {
+        "message": "Just how many times five things happened (installed, updated, session started, thread extracted, prompt sent), a random install ID and the version. Never Reddit content, URLs, subreddits, prompts or keys."
+    },
+    "welcome_telemetry_on": {
+        "message": "Thanks — anonymous counts are on."
+    },
+    "welcome_telemetry_off": {
+        "message": "Off. Your install ID and any unsent counts were deleted."
+    },
+    "welcome_settings_prefix": {
+        "message": "Everything else lives in"
+    },
+    "welcome_settings_link": {
+        "message": "Settings"
+    },
+    "welcome_btn_back": {
+        "message": "Back"
+    },
+    "welcome_btn_next": {
+        "message": "Next"
+    },
+    "welcome_btn_done": {
+        "message": "Done"
+    },
+    "welcome_btn_open_reddit": {
+        "message": "Open Reddit"
+    },
+    "welcome_keys_hint": {
+        "message": "Tip: use the arrow keys or Enter to move between steps."
     }
 }

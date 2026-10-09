@@ -722,5 +722,1467 @@
     },
     "settings_reddit_btn_post": {
         "message": "在帖子详情页内显示"
+    },
+    "panel_region_label": {
+        "message": "Reddit to AI 进度"
+    },
+    "panel_close_label": {
+        "message": "关闭面板"
+    },
+    "panel_progress_label": {
+        "message": "抓取进度"
+    },
+    "panel_phase_fetch": {
+        "message": "获取"
+    },
+    "panel_phase_parse": {
+        "message": "读取"
+    },
+    "panel_phase_load": {
+        "message": "评论"
+    },
+    "panel_phase_filter": {
+        "message": "整理"
+    },
+    "panel_badge_batch": {
+        "message": "第 $CURRENT$ 批，共 $TOTAL$ 批",
+        "placeholders": {
+            "current": {
+                "content": "$1"
+            },
+            "total": {
+                "content": "$2"
+            }
+        }
+    },
+    "panel_badge_comments": {
+        "message": "$COUNT$ 条评论",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            }
+        }
+    },
+    "panel_done_sent": {
+        "message": "已发送到 $AI$",
+        "placeholders": {
+            "ai": {
+                "content": "$1"
+            }
+        }
+    },
+    "panel_ai_generic": {
+        "message": "你的 AI"
+    },
+    "panel_done_sent_hint": {
+        "message": "AI 标签页已收到帖子，请在那里查看回答。"
+    },
+    "panel_done_preview": {
+        "message": "已在预览中准备好"
+    },
+    "panel_done_preview_hint": {
+        "message": "请在新标签页中检查提示词，然后发送。"
+    },
+    "panel_error_title": {
+        "message": "出了点问题"
+    },
+    "panel_error_config_title": {
+        "message": "需要设置"
+    },
+    "panel_error_not_reddit_title": {
+        "message": "请先打开一个 Reddit 帖子"
+    },
+    "panel_error_busy_title": {
+        "message": "正在处理另一个帖子"
+    },
+    "panel_error_network_title": {
+        "message": "连接出现问题"
+    },
+    "panel_error_stopped_title": {
+        "message": "抓取已停止"
+    },
+    "panel_error_unknown": {
+        "message": "发生了意外错误。"
+    },
+    "panel_error_unreachable": {
+        "message": "无法连接到扩展程序。请刷新页面后重试。"
+    },
+    "panel_btn_retry": {
+        "message": "重试"
+    },
+    "panel_btn_dismiss": {
+        "message": "关闭"
+    },
+    "panel_btn_settings": {
+        "message": "打开设置"
+    },
+    "panel_retrying": {
+        "message": "正在重试…"
+    },
+    "inline_btn_label": {
+        "message": "用 AI 总结"
+    },
+    "inline_btn_working": {
+        "message": "正在总结…"
+    },
+    "inline_btn_done": {
+        "message": "完成"
+    },
+    "inline_btn_failed": {
+        "message": "失败 — 重试"
+    },
+    "inline_btn_failed_title": {
+        "message": "无法开始。点击重试。"
+    },
+    "inline_error_no_response": {
+        "message": "扩展程序没有响应。请刷新页面后重试。"
+    },
+    "popup_feedback_title": {
+        "message": "发送反馈"
+    },
+    "popup_settings_title": {
+        "message": "设置"
+    },
+    "popup_tab_scrape": {
+        "message": "抓取"
+    },
+    "popup_tab_filters": {
+        "message": "筛选"
+    },
+    "popup_filters_active_count": {
+        "message": "$COUNT$ 项已启用",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            }
+        }
+    },
+    "popup_filter_reset": {
+        "message": "重置"
+    },
+    "popup_empty_title": {
+        "message": "打开一个 Reddit 帖子即可开始"
+    },
+    "popup_empty_hint": {
+        "message": "在帖子页面，使用“分享”旁的 Reddit to AI 按钮，或按 Alt+Shift+S。"
+    },
+    "popup_preset_question": {
+        "message": "你想要什么？"
+    },
+    "popup_saved_presets_label": {
+        "message": "我的预设"
+    },
+    "popup_saved_presets_more": {
+        "message": "另外 $COUNT$ 个",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            }
+        }
+    },
+    "popup_saved_presets_more_title": {
+        "message": "在设置中管理所有预设"
+    },
+    "popup_saved_preset_applied": {
+        "message": "正在使用“$NAME$”。",
+        "placeholders": {
+            "name": {
+                "content": "$1"
+            }
+        }
+    },
+    "popup_saved_preset_saved": {
+        "message": "已保存预设“$NAME$”。",
+        "placeholders": {
+            "name": {
+                "content": "$1"
+            }
+        }
+    },
+    "popup_label_mode": {
+        "message": "模式"
+    },
+    "popup_label_format": {
+        "message": "回答格式"
+    },
+    "popup_label_custom_prompt": {
+        "message": "自定义提示词（可选）"
+    },
+    "popup_quick_prompt_placeholder": {
+        "message": "输入你自己的指令以替换预设…"
+    },
+    "popup_save_quick_prompt": {
+        "message": "保存为预设"
+    },
+    "popup_save_quick_prompt_disabled": {
+        "message": "请先输入自定义提示词"
+    },
+    "popup_dont_save_label": {
+        "message": "不将本次抓取保存到历史记录"
+    },
+    "popup_summary_custom_prompt": {
+        "message": "自定义提示词"
+    },
+    "popup_summary_not_saved": {
+        "message": "不保存"
+    },
+    "popup_btn_scrape_send": {
+        "message": "抓取并发送到 $PROVIDER$",
+        "placeholders": {
+            "provider": {
+                "content": "$1"
+            }
+        }
+    },
+    "popup_btn_done": {
+        "message": "完成"
+    },
+    "popup_btn_disabled_not_thread": {
+        "message": "请打开一个 Reddit 帖子（或在“筛选”中添加批量网址）后再抓取。"
+    },
+    "popup_btn_shortcut_hint": {
+        "message": "快捷键：Ctrl+Enter（Mac 上为 Cmd+Enter）"
+    },
+    "popup_budget_none": {
+        "message": "暂无可估算的帖子"
+    },
+    "popup_budget_line_safe": {
+        "message": "约 $TOKENS$ 个 token · 适合 $PROVIDER$",
+        "placeholders": {
+            "tokens": {
+                "content": "$1"
+            },
+            "provider": {
+                "content": "$2"
+            }
+        }
+    },
+    "popup_budget_line_moderate": {
+        "message": "约 $TOKENS$ 个 token · 对 $PROVIDER$ 偏长",
+        "placeholders": {
+            "tokens": {
+                "content": "$1"
+            },
+            "provider": {
+                "content": "$2"
+            }
+        }
+    },
+    "popup_budget_line_large": {
+        "message": "约 $TOKENS$ 个 token · 接近 $PROVIDER$ 的上限",
+        "placeholders": {
+            "tokens": {
+                "content": "$1"
+            },
+            "provider": {
+                "content": "$2"
+            }
+        }
+    },
+    "popup_budget_line_over": {
+        "message": "约 $TOKENS$ 个 token · 对 $PROVIDER$ 来说过长",
+        "placeholders": {
+            "tokens": {
+                "content": "$1"
+            },
+            "provider": {
+                "content": "$2"
+            }
+        }
+    },
+    "popup_estimate_scope": {
+        "message": "$CONTEXT$ · 深度 $DEPTH$",
+        "placeholders": {
+            "context": {
+                "content": "$1"
+            },
+            "depth": {
+                "content": "$2"
+            }
+        }
+    },
+    "popup_context_best": {
+        "message": "最佳质量"
+    },
+    "popup_context_best_desc": {
+        "message": "最大预算，获得最全面的回答"
+    },
+    "popup_export_label": {
+        "message": "导出上次抓取"
+    },
+    "popup_export_disabled_hint": {
+        "message": "完成首次抓取后即可导出。"
+    },
+    "popup_export_done": {
+        "message": "已保存"
+    },
+    "popup_export_failed": {
+        "message": "导出失败。"
+    },
+    "popup_export_nodata": {
+        "message": "没有可导出的数据。"
+    },
+    "popup_toast_dismiss": {
+        "message": "关闭"
+    },
+    "preview_back": {
+        "message": "返回"
+    },
+    "preview_back_title": {
+        "message": "返回 Reddit 标签页"
+    },
+    "preview_badge": {
+        "message": "预览"
+    },
+    "preview_loading_thread": {
+        "message": "正在加载帖子…"
+    },
+    "preview_no_thread": {
+        "message": "未加载帖子"
+    },
+    "preview_tabs_label": {
+        "message": "预览视图"
+    },
+    "preview_tab_prompt": {
+        "message": "提示词与发送"
+    },
+    "preview_tab_prune": {
+        "message": "筛选评论"
+    },
+    "preview_export": {
+        "message": "导出"
+    },
+    "preview_save_preset": {
+        "message": "保存预设"
+    },
+    "preview_save_preset_title": {
+        "message": "将当前提示词和设置保存为可复用的预设"
+    },
+    "preview_copy": {
+        "message": "复制"
+    },
+    "preview_copy_title": {
+        "message": "将提示词复制到剪贴板"
+    },
+    "preview_copied": {
+        "message": "已复制 ✓"
+    },
+    "preview_copy_failed": {
+        "message": "复制失败"
+    },
+    "preview_empty_short": {
+        "message": "为空"
+    },
+    "preview_send_to": {
+        "message": "发送到 $PROVIDER$",
+        "placeholders": {
+            "provider": {
+                "content": "$1",
+                "example": "Gemini"
+            }
+        }
+    },
+    "preview_send_title": {
+        "message": "用此提示词打开 AI 聊天"
+    },
+    "preview_sending": {
+        "message": "正在打开…"
+    },
+    "preview_sent": {
+        "message": "已发送 ✓"
+    },
+    "preview_send_failed": {
+        "message": "失败 — 请重试"
+    },
+    "preview_provider_fallback": {
+        "message": "AI"
+    },
+    "preview_needs_thread": {
+        "message": "请先加载帖子 — 目前还没有提示词。"
+    },
+    "preview_preset_name_label": {
+        "message": "预设名称"
+    },
+    "preview_preset_name_hint": {
+        "message": "将此提示词与当前的上下文预设、裁剪策略、媒体和格式设置一起保存。"
+    },
+    "preview_preset_name_default": {
+        "message": "自定义预览预设"
+    },
+    "preview_preset_name_sub": {
+        "message": "r/$SUBREDDIT$ 预设",
+        "placeholders": {
+            "subreddit": {
+                "content": "$1",
+                "example": "AskReddit"
+            }
+        }
+    },
+    "preview_cancel": {
+        "message": "取消"
+    },
+    "preview_save": {
+        "message": "保存"
+    },
+    "preview_saved": {
+        "message": "已保存 ✓"
+    },
+    "preview_save_failed": {
+        "message": "未保存"
+    },
+    "preview_final_prompt": {
+        "message": "最终提示词"
+    },
+    "preview_edit_hint": {
+        "message": "发送前可以编辑此文本。"
+    },
+    "preview_rebuild_notice": {
+        "message": "设置已更改。已保留你编辑过的提示词。"
+    },
+    "preview_apply_rebuilt": {
+        "message": "应用重新生成的提示词"
+    },
+    "preview_keep_edits": {
+        "message": "保留编辑"
+    },
+    "preview_restore_prompt": {
+        "message": "恢复生成的提示词"
+    },
+    "preview_prompt_placeholder": {
+        "message": "生成的提示词将显示在这里…"
+    },
+    "preview_shortcut_send": {
+        "message": "发送"
+    },
+    "preview_shortcut_copy": {
+        "message": "复制"
+    },
+    "preview_load_error_title": {
+        "message": "无法加载此帖子"
+    },
+    "preview_load_error_hint": {
+        "message": "请重试。如果仍然失败，请关闭此标签页并在 Reddit 帖子中重新抓取。"
+    },
+    "preview_load_error_none": {
+        "message": "未找到此标签页的抓取内容，可能已过期。"
+    },
+    "preview_try_again": {
+        "message": "重试"
+    },
+    "preview_budget_eyebrow": {
+        "message": "AI 上下文预算"
+    },
+    "preview_budget_preparing": {
+        "message": "正在准备上下文预算。"
+    },
+    "preview_budget_unavailable": {
+        "message": "加载帖子后会显示预算。"
+    },
+    "preview_budget_level": {
+        "message": "大小：$LEVEL$",
+        "placeholders": {
+            "level": {
+                "content": "$1",
+                "example": "Low"
+            }
+        }
+    },
+    "preview_unit_tokens": {
+        "message": "词元"
+    },
+    "preview_unit_chars": {
+        "message": "字符"
+    },
+    "preview_unit_comments": {
+        "message": "评论"
+    },
+    "preview_unit_images": {
+        "message": "图片"
+    },
+    "preview_guidance_critical": {
+        "message": "$PROVIDER$ 可能会拒绝或截断此内容。发送前请改用 Balanced 或 Small。",
+        "placeholders": {
+            "provider": {
+                "content": "$1",
+                "example": "Gemini"
+            }
+        }
+    },
+    "preview_guidance_high": {
+        "message": "$PROVIDER$ 只有在大上下文模型上才能处理。建议裁剪评论。",
+        "placeholders": {
+            "provider": {
+                "content": "$1",
+                "example": "Gemini"
+            }
+        }
+    },
+    "preview_guidance_medium": {
+        "message": "$PROVIDER$ 通常可以接受，但较小的模型可能会缩短回答。",
+        "placeholders": {
+            "provider": {
+                "content": "$1",
+                "example": "Gemini"
+            }
+        }
+    },
+    "preview_guidance_low": {
+        "message": "$PROVIDER$ 有足够空间处理此提示词。",
+        "placeholders": {
+            "provider": {
+                "content": "$1",
+                "example": "Gemini"
+            }
+        }
+    },
+    "preview_params_eyebrow": {
+        "message": "提示词设置"
+    },
+    "preview_field_context": {
+        "message": "上下文预设"
+    },
+    "preview_field_trim": {
+        "message": "裁剪策略"
+    },
+    "preview_field_format": {
+        "message": "输出格式"
+    },
+    "preview_field_platform": {
+        "message": "AI 平台"
+    },
+    "preview_field_media": {
+        "message": "媒体处理"
+    },
+    "preview_skip_label": {
+        "message": "下次跳过此预览"
+    },
+    "preview_skip_hint": {
+        "message": "之后的抓取将直接粘贴到 AI 聊天中，不再在此停留。可以在选项中重新开启预览。"
+    },
+    "preview_missing_title": {
+        "message": "部分回复未能加载 — 帖子内容可能不完整。"
+    },
+    "preview_missing_text": {
+        "message": "发送前可以尝试重新加载它们。"
+    },
+    "preview_missing_count": {
+        "message": "有 $COUNT$ 条回复未能加载。发送前请尝试重新加载。",
+        "placeholders": {
+            "count": {
+                "content": "$1",
+                "example": "12"
+            }
+        }
+    },
+    "preview_missing_resume": {
+        "message": "加载缺失的回复"
+    },
+    "preview_missing_resuming": {
+        "message": "正在加载回复…"
+    },
+    "preview_prune_title": {
+        "message": "选择要包含的评论"
+    },
+    "preview_prune_description": {
+        "message": "取消勾选的评论不会包含在提示词中，其回复也会一并排除。"
+    },
+    "preview_select_all": {
+        "message": "全选"
+    },
+    "preview_clear_all": {
+        "message": "全部取消"
+    },
+    "preview_tree_empty_title": {
+        "message": "没有可选择的评论"
+    },
+    "preview_tree_empty_body": {
+        "message": "此帖子没有评论，或当前的上下文预设未在提示词中保留任何评论。"
+    },
+    "preview_api_error_title": {
+        "message": "请求未成功"
+    },
+    "preview_api_sending": {
+        "message": "正在发送…"
+    },
+    "preview_api_done": {
+        "message": "完成 ✓"
+    },
+    "preview_api_failed_short": {
+        "message": "失败"
+    },
+    "preview_api_send_disabled": {
+        "message": "请先在选项中为此服务商添加 API 密钥。"
+    },
+    "preview_api_no_key_option": {
+        "message": "$PROVIDER$（无密钥）",
+        "placeholders": {
+            "provider": {
+                "content": "$1",
+                "example": "OpenAI"
+            }
+        }
+    },
+    "preview_status_ready_short": {
+        "message": "就绪。"
+    },
+    "preview_status_ready": {
+        "message": "就绪。检查或编辑提示词后即可发送。"
+    },
+    "preview_status_loading": {
+        "message": "正在加载抓取的帖子…"
+    },
+    "preview_status_load_failed": {
+        "message": "无法加载帖子。"
+    },
+    "preview_status_already_sending": {
+        "message": "正在打开 AI 标签页。"
+    },
+    "preview_status_empty": {
+        "message": "提示词为空 — 请先添加内容再发送。"
+    },
+    "preview_status_opening": {
+        "message": "正在打开 $PROVIDER$…",
+        "placeholders": {
+            "provider": {
+                "content": "$1",
+                "example": "Gemini"
+            }
+        }
+    },
+    "preview_status_sent": {
+        "message": "已打开 $PROVIDER$。如果提示词没有自动粘贴，请使用该页面上的复制按钮。",
+        "placeholders": {
+            "provider": {
+                "content": "$1",
+                "example": "Gemini"
+            }
+        }
+    },
+    "preview_status_send_failed": {
+        "message": "无法发送提示词。请重试，或改为复制。"
+    },
+    "preview_status_copied": {
+        "message": "提示词已复制到剪贴板。"
+    },
+    "preview_status_nothing_to_copy": {
+        "message": "提示词为空 — 没有可复制的内容。"
+    },
+    "preview_status_copy_failed": {
+        "message": "无法复制。请选中文本后按 Ctrl+C。"
+    },
+    "preview_status_copy_failed_short": {
+        "message": "复制失败。"
+    },
+    "preview_status_export_nodata": {
+        "message": "没有可导出的数据。"
+    },
+    "preview_status_exported": {
+        "message": "已导出为 $FORMAT$。",
+        "placeholders": {
+            "format": {
+                "content": "$1",
+                "example": "MD"
+            }
+        }
+    },
+    "preview_status_export_failed": {
+        "message": "导出失败。"
+    },
+    "preview_status_preset_name_needed": {
+        "message": "请先为预设命名。"
+    },
+    "preview_status_preset_saved": {
+        "message": "已保存预设“$NAME$”。",
+        "placeholders": {
+            "name": {
+                "content": "$1",
+                "example": "Weekly digest"
+            }
+        }
+    },
+    "preview_status_preset_failed": {
+        "message": "无法保存预设：$ERROR$",
+        "placeholders": {
+            "error": {
+                "content": "$1",
+                "example": "QUOTA_BYTES quota exceeded"
+            }
+        }
+    },
+    "preview_status_rebuilt": {
+        "message": "已应用重新生成的提示词。"
+    },
+    "preview_status_kept": {
+        "message": "已保留编辑过的提示词。"
+    },
+    "preview_status_restored": {
+        "message": "已恢复生成的提示词。"
+    },
+    "preview_status_skip_on": {
+        "message": "下次抓取将直接发送到 AI 聊天。"
+    },
+    "preview_status_skip_off": {
+        "message": "下次抓取将先打开此预览。"
+    },
+    "preview_status_resuming": {
+        "message": "正在尝试加载缺失的回复…"
+    },
+    "preview_status_resume_failed": {
+        "message": "无法加载缺失的回复。"
+    },
+    "preview_status_resumed": {
+        "message": "完成。已添加 $COUNT$ 条回复。",
+        "placeholders": {
+            "count": {
+                "content": "$1",
+                "example": "8"
+            }
+        }
+    },
+    "preview_status_focus_failed": {
+        "message": "找不到 Reddit 标签页。"
+    },
+    "preview_threads_combined": {
+        "message": "已合并 $COUNT$ 个 Reddit 帖子用于比较。",
+        "placeholders": {
+            "count": {
+                "content": "$1",
+                "example": "3"
+            }
+        }
+    },
+    "options_header_settings": {
+        "message": "设置"
+    },
+    "options_nav_aria": {
+        "message": "设置分区"
+    },
+    "options_nav_ai": {
+        "message": "AI 与发送"
+    },
+    "options_nav_prompts": {
+        "message": "提示词"
+    },
+    "options_nav_scraping": {
+        "message": "抓取"
+    },
+    "options_nav_reddit": {
+        "message": "Reddit 按钮"
+    },
+    "options_nav_general": {
+        "message": "常规"
+    },
+    "options_nav_history": {
+        "message": "历史记录"
+    },
+    "options_nav_advanced": {
+        "message": "高级"
+    },
+    "options_pane_ai_desc": {
+        "message": "Reddit 帖子发送到哪里，以及发送时会发生什么。"
+    },
+    "options_pane_prompts_desc": {
+        "message": "要求 AI 如何处理每个帖子。"
+    },
+    "options_pane_scraping_desc": {
+        "message": "抓取帖子的多少内容，以及保留哪些评论。"
+    },
+    "options_pane_general_desc": {
+        "message": "外观、语言、通知和你的数据。"
+    },
+    "options_pane_history_desc": {
+        "message": "最近抓取的帖子。可以重新发送到其他 AI、比较多个帖子或导出。"
+    },
+    "options_pane_advanced_desc": {
+        "message": "供高级用户和排查问题使用。默认设置适合大多数人。"
+    },
+    "options_platform_custom": {
+        "message": "自定义站点"
+    },
+    "options_hint_custom_platform": {
+        "message": "自定义站点（如本地 WebUI）可在“高级 › 自定义 AI 站点”中添加。"
+    },
+    "options_card_send_flow_title": {
+        "message": "发送帖子时"
+    },
+    "options_label_show_preview": {
+        "message": "发送前显示提示词预览"
+    },
+    "options_hint_show_preview": {
+        "message": "关闭后将直接抓取并立即打开 AI 标签页。"
+    },
+    "options_label_output_format": {
+        "message": "回答格式"
+    },
+    "options_hint_output_format": {
+        "message": "要求 AI 使用的回答格式。可在预览中按帖子更改。"
+    },
+    "options_format_auto": {
+        "message": "由 AI 决定"
+    },
+    "options_format_bullets": {
+        "message": "要点列表"
+    },
+    "options_format_table": {
+        "message": "表格"
+    },
+    "options_format_pros_cons": {
+        "message": "优缺点"
+    },
+    "options_format_executive": {
+        "message": "执行摘要"
+    },
+    "options_hint_prompt_plain": {
+        "message": "在需要放入 Reddit 帖子的位置使用 {content}。选择“自定义”可自行编写。"
+    },
+    "options_card_saved_presets_title": {
+        "message": "已保存的提示词预设"
+    },
+    "options_saved_presets_desc": {
+        "message": "你在弹出窗口或预览页面中保存的预设。"
+    },
+    "options_saved_presets_empty": {
+        "message": "还没有保存的预设"
+    },
+    "options_saved_presets_none_hint": {
+        "message": "暂无已保存的预设"
+    },
+    "options_btn_import_presets": {
+        "message": "导入预设"
+    },
+    "options_btn_export_presets": {
+        "message": "导出预设"
+    },
+    "options_btn_clear_presets": {
+        "message": "删除所有预设"
+    },
+    "options_confirm_clear_presets": {
+        "message": "删除所有已保存的预设？此操作无法撤销。"
+    },
+    "options_btn_cancel": {
+        "message": "取消"
+    },
+    "options_btn_delete_all": {
+        "message": "全部删除"
+    },
+    "options_btn_use": {
+        "message": "使用"
+    },
+    "options_btn_export": {
+        "message": "导出"
+    },
+    "options_btn_remove": {
+        "message": "移除"
+    },
+    "options_untitled_preset": {
+        "message": "未命名预设"
+    },
+    "options_unknown_date": {
+        "message": "日期未知"
+    },
+    "options_preset_applied": {
+        "message": "现在使用“$NAME$”作为自定义提示词。",
+        "placeholders": {
+            "name": {
+                "content": "$1"
+            }
+        }
+    },
+    "options_preset_deleted": {
+        "message": "预设已删除。"
+    },
+    "options_preset_exported": {
+        "message": "预设已导出。"
+    },
+    "options_presets_exported": {
+        "message": "预设已导出。"
+    },
+    "options_presets_imported": {
+        "message": "已导入 $COUNT$ 个预设。",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            }
+        }
+    },
+    "options_presets_cleared": {
+        "message": "所有已保存的预设已删除。"
+    },
+    "options_import_no_presets": {
+        "message": "该文件不包含提示词预设。"
+    },
+    "options_author_op_label": {
+        "message": "楼主（OP）"
+    },
+    "options_author_flaired_label": {
+        "message": "带标签（flair）的用户"
+    },
+    "options_author_summary_all": {
+        "message": "包含所有人的评论。开启其中一项或两项可只保留这些作者的评论。"
+    },
+    "options_author_summary_op": {
+        "message": "仅限楼主的评论。"
+    },
+    "options_author_summary_flaired": {
+        "message": "仅限带标签用户的评论。"
+    },
+    "options_author_summary_both": {
+        "message": "仅限楼主或带标签用户的评论。"
+    },
+    "options_scraping_more_hint": {
+        "message": "提示词大小、评论排序和媒体处理位于"
+    },
+    "options_reddit_btn_disabled_hint": {
+        "message": "开启页内按钮后即可选择其显示位置。"
+    },
+    "options_card_appearance_title": {
+        "message": "外观"
+    },
+    "options_label_theme": {
+        "message": "主题"
+    },
+    "options_theme_auto": {
+        "message": "自动"
+    },
+    "options_theme_dark": {
+        "message": "深色"
+    },
+    "options_theme_light": {
+        "message": "浅色"
+    },
+    "options_hint_theme": {
+        "message": "“自动”跟随系统设置。"
+    },
+    "options_language_applied": {
+        "message": "语言已应用。"
+    },
+    "options_storage_desc": {
+        "message": "抓取的帖子发送后如何处理。"
+    },
+    "options_backup_title": {
+        "message": "备份你的设置"
+    },
+    "options_backup_hint": {
+        "message": "将偏好设置导出为 JSON 文件。绝不包含 API 密钥。"
+    },
+    "options_btn_export_settings": {
+        "message": "导出设置"
+    },
+    "options_btn_import_settings": {
+        "message": "导入设置"
+    },
+    "options_settings_exported": {
+        "message": "设置已导出。"
+    },
+    "options_import_bad_json": {
+        "message": "无法将该文件读取为 JSON："
+    },
+    "options_import_read_failed": {
+        "message": "无法读取该文件。"
+    },
+    "options_import_no_settings": {
+        "message": "该文件不包含设置。"
+    },
+    "options_import_none_recognized": {
+        "message": "该文件不包含任何可识别的设置。"
+    },
+    "options_import_failed": {
+        "message": "无法导入设置："
+    },
+    "options_telemetry_default_on": {
+        "message": "默认开启"
+    },
+    "options_telemetry_sent_label": {
+        "message": "会发送"
+    },
+    "options_telemetry_sent": {
+        "message": "五类事件的发生次数（安装、更新、浏览器会话开始、帖子提取、提示词发送），外加一个随机安装 ID 和扩展版本号。"
+    },
+    "options_telemetry_never_label": {
+        "message": "绝不发送"
+    },
+    "options_telemetry_never": {
+        "message": "Reddit 内容、URL、子版块名称、标题、提示词、API 密钥，以及你输入的任何内容。"
+    },
+    "options_telemetry_when_label": {
+        "message": "频率"
+    },
+    "options_telemetry_when": {
+        "message": "最多每 30 分钟发送一次。关闭后会删除安装 ID 和尚未发送的计数。"
+    },
+    "options_telemetry_unsupported": {
+        "message": "此浏览器版本从不发送使用计数。"
+    },
+    "options_history_filters_aria": {
+        "message": "历史记录筛选"
+    },
+    "options_history_search_placeholder": {
+        "message": "搜索标题、子版块、标签、URL..."
+    },
+    "options_history_all_platforms": {
+        "message": "所有 AI 平台"
+    },
+    "options_history_all_presets": {
+        "message": "所有提示词"
+    },
+    "options_history_any_date": {
+        "message": "任意日期"
+    },
+    "options_history_today": {
+        "message": "今天"
+    },
+    "options_history_week": {
+        "message": "最近 7 天"
+    },
+    "options_history_month": {
+        "message": "最近 30 天"
+    },
+    "options_history_min_comments": {
+        "message": "最少评论数"
+    },
+    "options_aria_platform": {
+        "message": "AI 平台"
+    },
+    "options_aria_prompt": {
+        "message": "提示词"
+    },
+    "options_aria_date": {
+        "message": "日期"
+    },
+    "options_aria_pattern": {
+        "message": "子版块匹配模式"
+    },
+    "options_aria_test_sub": {
+        "message": "要测试的子版块"
+    },
+    "options_aria_site": {
+        "message": "站点地址"
+    },
+    "options_btn_compare": {
+        "message": "比较所选"
+    },
+    "options_compare_hint": {
+        "message": "请至少选择两个帖子进行比较"
+    },
+    "options_compare_selected": {
+        "message": "已选 $COUNT$ 个用于比较",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            }
+        }
+    },
+    "options_history_compare": {
+        "message": "比较"
+    },
+    "options_history_comments": {
+        "message": "$COUNT$ 条评论",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            }
+        }
+    },
+    "options_history_pin": {
+        "message": "置顶"
+    },
+    "options_history_unpin": {
+        "message": "取消置顶"
+    },
+    "options_history_favorite": {
+        "message": "加入收藏"
+    },
+    "options_history_unfavorite": {
+        "message": "取消收藏"
+    },
+    "options_history_no_match": {
+        "message": "没有符合筛选条件的历史记录"
+    },
+    "options_hist_opening_preview": {
+        "message": "正在打开历史记录预览..."
+    },
+    "options_hist_preview_opened": {
+        "message": "已打开历史记录预览。"
+    },
+    "options_hist_resend_failed": {
+        "message": "无法重新发送历史记录："
+    },
+    "options_hist_deleted": {
+        "message": "历史记录已删除。"
+    },
+    "options_hist_delete_failed": {
+        "message": "无法删除历史记录："
+    },
+    "options_hist_export_failed": {
+        "message": "无法导出历史记录："
+    },
+    "options_hist_exported": {
+        "message": "历史记录已导出。"
+    },
+    "options_hist_update_failed": {
+        "message": "无法更新历史记录："
+    },
+    "options_hist_pinned": {
+        "message": "已置顶。"
+    },
+    "options_hist_unpinned": {
+        "message": "已取消置顶。"
+    },
+    "options_hist_favorited": {
+        "message": "已加入收藏。"
+    },
+    "options_hist_unfavorited": {
+        "message": "已取消收藏。"
+    },
+    "options_hist_opening_compare": {
+        "message": "正在打开比较预览..."
+    },
+    "options_hist_compare_opened": {
+        "message": "已打开比较预览。"
+    },
+    "options_hist_compare_failed": {
+        "message": "无法比较历史记录："
+    },
+    "options_hist_cleared": {
+        "message": "历史记录已清空。"
+    },
+    "options_hist_clear_failed": {
+        "message": "无法清空历史记录："
+    },
+    "options_adv_tuning_title": {
+        "message": "提示词大小与评论选择"
+    },
+    "options_adv_tuning_desc": {
+        "message": "帖子有多少内容放入提示词，以及裁剪时保留哪些评论。"
+    },
+    "options_label_context_budget": {
+        "message": "默认提示词大小"
+    },
+    "options_hint_context_budget": {
+        "message": "预览中的初始提示词大小。越大保留的评论越多。"
+    },
+    "options_context_small": {
+        "message": "小"
+    },
+    "options_context_balanced": {
+        "message": "均衡"
+    },
+    "options_context_full": {
+        "message": "完整"
+    },
+    "options_context_max": {
+        "message": "最大（最佳质量）"
+    },
+    "options_label_trim": {
+        "message": "裁剪时保留"
+    },
+    "options_trim_top": {
+        "message": "高分评论"
+    },
+    "options_trim_controversial": {
+        "message": "有争议的"
+    },
+    "options_trim_op": {
+        "message": "楼主回复"
+    },
+    "options_trim_flaired": {
+        "message": "带标签用户"
+    },
+    "options_trim_diverse": {
+        "message": "多元观点"
+    },
+    "options_trim_newest": {
+        "message": "最新"
+    },
+    "options_trim_longest": {
+        "message": "最长的有用评论"
+    },
+    "options_label_sort": {
+        "message": "Reddit 评论排序"
+    },
+    "options_sort_best": {
+        "message": "最佳"
+    },
+    "options_sort_top": {
+        "message": "热门"
+    },
+    "options_sort_new": {
+        "message": "最新"
+    },
+    "options_sort_controversial": {
+        "message": "有争议"
+    },
+    "options_sort_old": {
+        "message": "最早"
+    },
+    "options_sort_qa": {
+        "message": "问答"
+    },
+    "options_sort_live": {
+        "message": "实时"
+    },
+    "options_label_media": {
+        "message": "图片和媒体"
+    },
+    "options_media_attach": {
+        "message": "附加图片并列出媒体链接"
+    },
+    "options_media_urls": {
+        "message": "仅列出媒体链接"
+    },
+    "options_media_ignore": {
+        "message": "忽略媒体"
+    },
+    "options_adv_mappings_desc": {
+        "message": "为特定子版块自动使用不同的提示词。"
+    },
+    "options_mappings_empty_input": {
+        "message": "请先输入子版块名称或匹配模式。"
+    },
+    "options_mappings_duplicate": {
+        "message": "该模式的规则已存在。"
+    },
+    "options_mappings_added": {
+        "message": "规则已添加。"
+    },
+    "options_tester_match": {
+        "message": "匹配"
+    },
+    "options_tester_nomatch": {
+        "message": "无匹配"
+    },
+    "options_tester_match_detail": {
+        "message": "r/$SUB$ 匹配“$PATTERN$”，因此使用 $PRESET$ 提示词。",
+        "placeholders": {
+            "sub": {
+                "content": "$1"
+            },
+            "pattern": {
+                "content": "$2"
+            },
+            "preset": {
+                "content": "$3"
+            }
+        }
+    },
+    "options_tester_nomatch_detail": {
+        "message": "r/$SUB$ 未匹配任何规则，因此使用默认提示词（$PRESET$）。",
+        "placeholders": {
+            "sub": {
+                "content": "$1"
+            },
+            "preset": {
+                "content": "$2"
+            }
+        }
+    },
+    "options_adv_custom_title": {
+        "message": "自定义 AI 站点"
+    },
+    "options_adv_custom_desc": {
+        "message": "将帖子发送到自托管或本地的 AI 网页应用。"
+    },
+    "options_custom_origin_hint": {
+        "message": "输入你的 AI 网页应用地址（例如 http://localhost:3000）。Chrome 会请求访问该站点的权限。"
+    },
+    "options_btn_add_custom_origin": {
+        "message": "添加站点"
+    },
+    "options_custom_origin_empty": {
+        "message": "尚未添加自定义站点。"
+    },
+    "options_custom_origin_empty_input": {
+        "message": "请先输入站点地址，例如 http://localhost:3000。"
+    },
+    "options_custom_origin_invalid": {
+        "message": "这看起来不是网址。请尝试类似 http://localhost:3000 的地址。"
+    },
+    "options_custom_origin_requesting": {
+        "message": "正在等待你允许访问…"
+    },
+    "options_custom_origin_error": {
+        "message": "无法请求访问权限："
+    },
+    "options_custom_origin_denied": {
+        "message": "未获允许访问，因此未添加该站点。"
+    },
+    "options_custom_origin_exists": {
+        "message": "该站点已在列表中。"
+    },
+    "options_custom_origin_added": {
+        "message": "站点已添加。"
+    },
+    "options_custom_origin_removed": {
+        "message": "站点已移除。"
+    },
+    "options_custom_origin_remove_title": {
+        "message": "移除站点并撤销访问权限"
+    },
+    "options_adv_selectors_title": {
+        "message": "输入框选择器"
+    },
+    "options_adv_selectors_desc": {
+        "message": "如果 AI 站点改版后无法粘贴，可在此指定正确的输入框。"
+    },
+    "options_selectors_hint": {
+        "message": "CSS 选择器。留空则使用内置默认值。"
+    },
+    "options_footer_version": {
+        "message": "Reddit to AI v$VERSION$",
+        "placeholders": {
+            "version": {
+                "content": "$1"
+            }
+        }
+    },
+    "welcome_page_title": {
+        "message": "欢迎使用 Reddit to AI"
+    },
+    "welcome_progress_aria": {
+        "message": "设置进度"
+    },
+    "welcome_dot_1": {
+        "message": "第 1 步：选择 AI"
+    },
+    "welcome_dot_2": {
+        "message": "第 2 步：开始方式"
+    },
+    "welcome_dot_3": {
+        "message": "第 3 步：隐私"
+    },
+    "welcome_step_count": {
+        "message": "第 $CURRENT$ 步，共 $TOTAL$ 步",
+        "placeholders": {
+            "current": {
+                "content": "$1"
+            },
+            "total": {
+                "content": "$2"
+            }
+        }
+    },
+    "welcome_eyebrow": {
+        "message": "欢迎 — 我们来完成设置"
+    },
+    "welcome_step1_title": {
+        "message": "选择你的 AI"
+    },
+    "welcome_step1_lead": {
+        "message": "要把 Reddit 帖子发送到哪里？帖子会在那里打开，提示词已自动粘贴。你可以随时更改。"
+    },
+    "welcome_step1_more": {
+        "message": "本地或自托管的 AI 站点、你自己的 API 密钥，都可以稍后在设置中添加。"
+    },
+    "welcome_provider_saved": {
+        "message": "已保存 — 帖子将在 $NAME$ 中打开。",
+        "placeholders": {
+            "name": {
+                "content": "$1"
+            }
+        }
+    },
+    "welcome_save_failed": {
+        "message": "保存失败，请重试。"
+    },
+    "welcome_step2_title": {
+        "message": "四种开始方式"
+    },
+    "welcome_step2_lead": {
+        "message": "打开任意 Reddit 帖子，然后用最顺手的方式开始。"
+    },
+    "welcome_way_inline_title": {
+        "message": "Reddit 上的按钮"
+    },
+    "welcome_way_inline_desc": {
+        "message": "在帖子操作栏中“分享”旁边点击它。"
+    },
+    "welcome_way_popup_title": {
+        "message": "工具栏图标"
+    },
+    "welcome_way_popup_desc": {
+        "message": "打开弹出窗口并点击大按钮。可通过拼图图标菜单固定扩展图标，方便随时使用。"
+    },
+    "welcome_way_shortcut_title": {
+        "message": "键盘快捷键"
+    },
+    "welcome_way_shortcut_desc": {
+        "message": "在任意 Reddit 帖子页面按下即可。"
+    },
+    "welcome_way_shortcut_change": {
+        "message": "更改快捷键"
+    },
+    "welcome_way_shortcut_unset": {
+        "message": "尚未设置快捷键。你可以在 Chrome 中设置。"
+    },
+    "welcome_way_menu_title": {
+        "message": "右键点击帖子链接"
+    },
+    "welcome_way_menu_desc": {
+        "message": "任何位置的帖子链接都可使用，无需先打开帖子。"
+    },
+    "welcome_mock_open_link": {
+        "message": "在新标签页中打开链接"
+    },
+    "welcome_mock_copy_link": {
+        "message": "复制链接地址"
+    },
+    "welcome_step3_title": {
+        "message": "你的数据，说清楚"
+    },
+    "welcome_step3_lead": {
+        "message": "具体说明什么数据去往哪里。"
+    },
+    "welcome_fact_ai_title": {
+        "message": "帖子只发送给你选择的 AI"
+    },
+    "welcome_fact_ai_desc": {
+        "message": "帖子在你的浏览器中读取，并直接交给你选择的 AI，从不经过我们的服务器。"
+    },
+    "welcome_fact_ai_desc_named": {
+        "message": "帖子在你的浏览器中读取，并直接交给 $NAME$（如果之后添加了密钥，则交给其 API），从不经过我们的服务器。",
+        "placeholders": {
+            "name": {
+                "content": "$1"
+            }
+        }
+    },
+    "welcome_fact_local_title": {
+        "message": "历史记录和 API 密钥仅保存在本设备"
+    },
+    "welcome_fact_local_desc": {
+        "message": "抓取历史和 API 密钥仅存储在此浏览器中。你可以在设置中限制或清空历史记录。"
+    },
+    "welcome_telemetry_label": {
+        "message": "分享匿名使用计数"
+    },
+    "welcome_telemetry_hint": {
+        "message": "仅包括五类事件的次数（安装、更新、会话开始、帖子提取、提示词发送）、一个随机安装 ID 和版本号。绝不包含 Reddit 内容、URL、子版块、提示词或密钥。"
+    },
+    "welcome_telemetry_on": {
+        "message": "谢谢 — 匿名计数已开启。"
+    },
+    "welcome_telemetry_off": {
+        "message": "已关闭。安装 ID 和未发送的计数已删除。"
+    },
+    "welcome_settings_prefix": {
+        "message": "其他所有选项都在"
+    },
+    "welcome_settings_link": {
+        "message": "设置"
+    },
+    "welcome_btn_back": {
+        "message": "上一步"
+    },
+    "welcome_btn_next": {
+        "message": "下一步"
+    },
+    "welcome_btn_done": {
+        "message": "完成"
+    },
+    "welcome_btn_open_reddit": {
+        "message": "打开 Reddit"
+    },
+    "welcome_keys_hint": {
+        "message": "提示：使用方向键或回车键在步骤间切换。"
     }
 }

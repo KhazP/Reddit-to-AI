@@ -722,5 +722,1467 @@
     },
     "settings_reddit_btn_post": {
         "message": "In Beitragsdetailseiten anzeigen"
+    },
+    "panel_region_label": {
+        "message": "Reddit to AI – Fortschritt"
+    },
+    "panel_close_label": {
+        "message": "Panel schließen"
+    },
+    "panel_progress_label": {
+        "message": "Fortschritt beim Auslesen"
+    },
+    "panel_phase_fetch": {
+        "message": "Abrufen"
+    },
+    "panel_phase_parse": {
+        "message": "Lesen"
+    },
+    "panel_phase_load": {
+        "message": "Kommentare"
+    },
+    "panel_phase_filter": {
+        "message": "Vorbereiten"
+    },
+    "panel_badge_batch": {
+        "message": "Stapel $CURRENT$ von $TOTAL$",
+        "placeholders": {
+            "current": {
+                "content": "$1"
+            },
+            "total": {
+                "content": "$2"
+            }
+        }
+    },
+    "panel_badge_comments": {
+        "message": "$COUNT$ Kommentare",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            }
+        }
+    },
+    "panel_done_sent": {
+        "message": "An $AI$ gesendet",
+        "placeholders": {
+            "ai": {
+                "content": "$1"
+            }
+        }
+    },
+    "panel_ai_generic": {
+        "message": "deine KI"
+    },
+    "panel_done_sent_hint": {
+        "message": "Der KI-Tab hat deinen Thread. Dort findest du die Antwort."
+    },
+    "panel_done_preview": {
+        "message": "Bereit in der Vorschau"
+    },
+    "panel_done_preview_hint": {
+        "message": "Prüfe den Prompt im neuen Tab und sende ihn dann."
+    },
+    "panel_error_title": {
+        "message": "Etwas ist schiefgelaufen"
+    },
+    "panel_error_config_title": {
+        "message": "Einrichtung erforderlich"
+    },
+    "panel_error_not_reddit_title": {
+        "message": "Öffne zuerst einen Reddit-Thread"
+    },
+    "panel_error_busy_title": {
+        "message": "Ein Thread wird bereits verarbeitet"
+    },
+    "panel_error_network_title": {
+        "message": "Verbindungsproblem"
+    },
+    "panel_error_stopped_title": {
+        "message": "Auslesen gestoppt"
+    },
+    "panel_error_unknown": {
+        "message": "Ein unerwarteter Fehler ist aufgetreten."
+    },
+    "panel_error_unreachable": {
+        "message": "Die Erweiterung ist nicht erreichbar. Lade die Seite neu und versuche es erneut."
+    },
+    "panel_btn_retry": {
+        "message": "Erneut versuchen"
+    },
+    "panel_btn_dismiss": {
+        "message": "Schließen"
+    },
+    "panel_btn_settings": {
+        "message": "Einstellungen öffnen"
+    },
+    "panel_retrying": {
+        "message": "Neuer Versuch…"
+    },
+    "inline_btn_label": {
+        "message": "Mit KI zusammenfassen"
+    },
+    "inline_btn_working": {
+        "message": "Wird zusammengefasst…"
+    },
+    "inline_btn_done": {
+        "message": "Fertig"
+    },
+    "inline_btn_failed": {
+        "message": "Fehler – erneut"
+    },
+    "inline_btn_failed_title": {
+        "message": "Konnte nicht starten. Klicke, um es erneut zu versuchen."
+    },
+    "inline_error_no_response": {
+        "message": "Die Erweiterung hat nicht reagiert. Lade die Seite neu und versuche es erneut."
+    },
+    "popup_feedback_title": {
+        "message": "Feedback senden"
+    },
+    "popup_settings_title": {
+        "message": "Einstellungen"
+    },
+    "popup_tab_scrape": {
+        "message": "Erfassen"
+    },
+    "popup_tab_filters": {
+        "message": "Filter"
+    },
+    "popup_filters_active_count": {
+        "message": "$COUNT$ aktiv",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            }
+        }
+    },
+    "popup_filter_reset": {
+        "message": "Zurücksetzen"
+    },
+    "popup_empty_title": {
+        "message": "Öffne einen Reddit-Thread, um loszulegen"
+    },
+    "popup_empty_hint": {
+        "message": "Nutze im Thread die Reddit-to-AI-Schaltfläche neben „Teilen“ oder drücke Alt+Umschalt+S."
+    },
+    "popup_preset_question": {
+        "message": "Was möchtest du?"
+    },
+    "popup_saved_presets_label": {
+        "message": "Deine Vorlagen"
+    },
+    "popup_saved_presets_more": {
+        "message": "+$COUNT$ weitere",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            }
+        }
+    },
+    "popup_saved_presets_more_title": {
+        "message": "Alle Vorlagen in den Einstellungen verwalten"
+    },
+    "popup_saved_preset_applied": {
+        "message": "„$NAME$“ wird verwendet.",
+        "placeholders": {
+            "name": {
+                "content": "$1"
+            }
+        }
+    },
+    "popup_saved_preset_saved": {
+        "message": "Vorlage „$NAME$“ gespeichert.",
+        "placeholders": {
+            "name": {
+                "content": "$1"
+            }
+        }
+    },
+    "popup_label_mode": {
+        "message": "Modus"
+    },
+    "popup_label_format": {
+        "message": "Antwortformat"
+    },
+    "popup_label_custom_prompt": {
+        "message": "Eigener Prompt (optional)"
+    },
+    "popup_quick_prompt_placeholder": {
+        "message": "Eigene Anweisungen eingeben, um die Vorlage zu ersetzen …"
+    },
+    "popup_save_quick_prompt": {
+        "message": "Als Vorlage speichern"
+    },
+    "popup_save_quick_prompt_disabled": {
+        "message": "Gib zuerst einen eigenen Prompt ein"
+    },
+    "popup_dont_save_label": {
+        "message": "Diese Erfassung nicht im Verlauf speichern"
+    },
+    "popup_summary_custom_prompt": {
+        "message": "Eigener Prompt"
+    },
+    "popup_summary_not_saved": {
+        "message": "Nicht gespeichert"
+    },
+    "popup_btn_scrape_send": {
+        "message": "Erfassen & an $PROVIDER$ senden",
+        "placeholders": {
+            "provider": {
+                "content": "$1"
+            }
+        }
+    },
+    "popup_btn_done": {
+        "message": "Fertig"
+    },
+    "popup_btn_disabled_not_thread": {
+        "message": "Öffne einen Reddit-Thread (oder füge unter „Filter“ Batch-URLs hinzu), um zu erfassen."
+    },
+    "popup_btn_shortcut_hint": {
+        "message": "Tastenkürzel: Strg+Eingabe (Cmd+Eingabe auf dem Mac)"
+    },
+    "popup_budget_none": {
+        "message": "Noch kein Thread zum Schätzen"
+    },
+    "popup_budget_line_safe": {
+        "message": "~$TOKENS$ Tokens · passt zu $PROVIDER$",
+        "placeholders": {
+            "tokens": {
+                "content": "$1"
+            },
+            "provider": {
+                "content": "$2"
+            }
+        }
+    },
+    "popup_budget_line_moderate": {
+        "message": "~$TOKENS$ Tokens · lang für $PROVIDER$",
+        "placeholders": {
+            "tokens": {
+                "content": "$1"
+            },
+            "provider": {
+                "content": "$2"
+            }
+        }
+    },
+    "popup_budget_line_large": {
+        "message": "~$TOKENS$ Tokens · nahe am Limit von $PROVIDER$",
+        "placeholders": {
+            "tokens": {
+                "content": "$1"
+            },
+            "provider": {
+                "content": "$2"
+            }
+        }
+    },
+    "popup_budget_line_over": {
+        "message": "~$TOKENS$ Tokens · zu lang für $PROVIDER$",
+        "placeholders": {
+            "tokens": {
+                "content": "$1"
+            },
+            "provider": {
+                "content": "$2"
+            }
+        }
+    },
+    "popup_estimate_scope": {
+        "message": "$CONTEXT$ · Tiefe: $DEPTH$",
+        "placeholders": {
+            "context": {
+                "content": "$1"
+            },
+            "depth": {
+                "content": "$2"
+            }
+        }
+    },
+    "popup_context_best": {
+        "message": "Beste Qualität"
+    },
+    "popup_context_best_desc": {
+        "message": "Größtes Budget für die gründlichste Antwort"
+    },
+    "popup_export_label": {
+        "message": "Letzte Erfassung exportieren"
+    },
+    "popup_export_disabled_hint": {
+        "message": "Exporte sind nach deiner ersten Erfassung verfügbar."
+    },
+    "popup_export_done": {
+        "message": "Gespeichert"
+    },
+    "popup_export_failed": {
+        "message": "Export fehlgeschlagen."
+    },
+    "popup_export_nodata": {
+        "message": "Keine Daten zum Exportieren vorhanden."
+    },
+    "popup_toast_dismiss": {
+        "message": "Schließen"
+    },
+    "preview_back": {
+        "message": "Zurück"
+    },
+    "preview_back_title": {
+        "message": "Zurück zum Reddit-Tab"
+    },
+    "preview_badge": {
+        "message": "Vorschau"
+    },
+    "preview_loading_thread": {
+        "message": "Thread wird geladen…"
+    },
+    "preview_no_thread": {
+        "message": "Kein Thread geladen"
+    },
+    "preview_tabs_label": {
+        "message": "Vorschauansichten"
+    },
+    "preview_tab_prompt": {
+        "message": "Prompt & Senden"
+    },
+    "preview_tab_prune": {
+        "message": "Kommentare auswählen"
+    },
+    "preview_export": {
+        "message": "Exportieren"
+    },
+    "preview_save_preset": {
+        "message": "Vorlage speichern"
+    },
+    "preview_save_preset_title": {
+        "message": "Aktuellen Prompt und Einstellungen als wiederverwendbare Vorlage speichern"
+    },
+    "preview_copy": {
+        "message": "Kopieren"
+    },
+    "preview_copy_title": {
+        "message": "Prompt in die Zwischenablage kopieren"
+    },
+    "preview_copied": {
+        "message": "Kopiert ✓"
+    },
+    "preview_copy_failed": {
+        "message": "Kopieren fehlgeschlagen"
+    },
+    "preview_empty_short": {
+        "message": "Leer"
+    },
+    "preview_send_to": {
+        "message": "An $PROVIDER$ senden",
+        "placeholders": {
+            "provider": {
+                "content": "$1",
+                "example": "Gemini"
+            }
+        }
+    },
+    "preview_send_title": {
+        "message": "KI-Chat mit diesem Prompt öffnen"
+    },
+    "preview_sending": {
+        "message": "Wird geöffnet…"
+    },
+    "preview_sent": {
+        "message": "Gesendet ✓"
+    },
+    "preview_send_failed": {
+        "message": "Fehlgeschlagen – erneut versuchen"
+    },
+    "preview_provider_fallback": {
+        "message": "KI"
+    },
+    "preview_needs_thread": {
+        "message": "Lade zuerst einen Thread – es gibt noch keinen Prompt."
+    },
+    "preview_preset_name_label": {
+        "message": "Name der Vorlage"
+    },
+    "preview_preset_name_hint": {
+        "message": "Speichert diesen Prompt mit der aktuellen Kontextvorgabe, Kürzungsstrategie sowie den Medien- und Formateinstellungen."
+    },
+    "preview_preset_name_default": {
+        "message": "Eigene Vorschau-Vorlage"
+    },
+    "preview_preset_name_sub": {
+        "message": "r/$SUBREDDIT$-Vorlage",
+        "placeholders": {
+            "subreddit": {
+                "content": "$1",
+                "example": "AskReddit"
+            }
+        }
+    },
+    "preview_cancel": {
+        "message": "Abbrechen"
+    },
+    "preview_save": {
+        "message": "Speichern"
+    },
+    "preview_saved": {
+        "message": "Gespeichert ✓"
+    },
+    "preview_save_failed": {
+        "message": "Nicht gespeichert"
+    },
+    "preview_final_prompt": {
+        "message": "Fertiger Prompt"
+    },
+    "preview_edit_hint": {
+        "message": "Du kannst diesen Text vor dem Senden bearbeiten."
+    },
+    "preview_rebuild_notice": {
+        "message": "Einstellungen geändert. Dein bearbeiteter Prompt wurde beibehalten."
+    },
+    "preview_apply_rebuilt": {
+        "message": "Neu erstellten Prompt übernehmen"
+    },
+    "preview_keep_edits": {
+        "message": "Änderungen behalten"
+    },
+    "preview_restore_prompt": {
+        "message": "Generierten Prompt wiederherstellen"
+    },
+    "preview_prompt_placeholder": {
+        "message": "Der generierte Prompt erscheint hier…"
+    },
+    "preview_shortcut_send": {
+        "message": "zum Senden"
+    },
+    "preview_shortcut_copy": {
+        "message": "zum Kopieren"
+    },
+    "preview_load_error_title": {
+        "message": "Dieser Thread konnte nicht geladen werden"
+    },
+    "preview_load_error_hint": {
+        "message": "Versuche es erneut. Wenn es weiterhin fehlschlägt, schließe diesen Tab und starte das Auslesen erneut im Reddit-Thread."
+    },
+    "preview_load_error_none": {
+        "message": "Für diesen Tab wurde kein ausgelesener Thread gefunden. Er ist möglicherweise abgelaufen."
+    },
+    "preview_try_again": {
+        "message": "Erneut versuchen"
+    },
+    "preview_budget_eyebrow": {
+        "message": "KI-Kontextbudget"
+    },
+    "preview_budget_preparing": {
+        "message": "Kontextbudget wird vorbereitet."
+    },
+    "preview_budget_unavailable": {
+        "message": "Das Budget erscheint, sobald ein Thread geladen ist."
+    },
+    "preview_budget_level": {
+        "message": "Größe: $LEVEL$",
+        "placeholders": {
+            "level": {
+                "content": "$1",
+                "example": "Low"
+            }
+        }
+    },
+    "preview_unit_tokens": {
+        "message": "Tokens"
+    },
+    "preview_unit_chars": {
+        "message": "Zeichen"
+    },
+    "preview_unit_comments": {
+        "message": "Kommentare"
+    },
+    "preview_unit_images": {
+        "message": "Bilder"
+    },
+    "preview_guidance_critical": {
+        "message": "$PROVIDER$ könnte dies ablehnen oder abschneiden. Wähle vor dem Senden „Balanced“ oder „Small“.",
+        "placeholders": {
+            "provider": {
+                "content": "$1",
+                "example": "Gemini"
+            }
+        }
+    },
+    "preview_guidance_high": {
+        "message": "$PROVIDER$ schafft das nur mit Modellen mit großem Kontext. Erwäge, Kommentare zu kürzen.",
+        "placeholders": {
+            "provider": {
+                "content": "$1",
+                "example": "Gemini"
+            }
+        }
+    },
+    "preview_guidance_medium": {
+        "message": "$PROVIDER$ sollte das meist annehmen, kleinere Modelle kürzen die Antwort aber eventuell.",
+        "placeholders": {
+            "provider": {
+                "content": "$1",
+                "example": "Gemini"
+            }
+        }
+    },
+    "preview_guidance_low": {
+        "message": "$PROVIDER$ hat für diesen Prompt ausreichend Platz.",
+        "placeholders": {
+            "provider": {
+                "content": "$1",
+                "example": "Gemini"
+            }
+        }
+    },
+    "preview_params_eyebrow": {
+        "message": "Prompt-Einstellungen"
+    },
+    "preview_field_context": {
+        "message": "Kontextvorgabe"
+    },
+    "preview_field_trim": {
+        "message": "Kürzungsstrategie"
+    },
+    "preview_field_format": {
+        "message": "Ausgabeformat"
+    },
+    "preview_field_platform": {
+        "message": "KI-Plattform"
+    },
+    "preview_field_media": {
+        "message": "Umgang mit Medien"
+    },
+    "preview_skip_label": {
+        "message": "Diese Vorschau künftig überspringen"
+    },
+    "preview_skip_hint": {
+        "message": "Künftige Auslesevorgänge werden direkt in den KI-Chat eingefügt, ohne hier anzuhalten. Du kannst die Vorschau in den Optionen wieder einschalten."
+    },
+    "preview_missing_title": {
+        "message": "Einige Antworten konnten nicht geladen werden – der Thread ist möglicherweise unvollständig."
+    },
+    "preview_missing_text": {
+        "message": "Du kannst vor dem Senden versuchen, sie erneut zu laden."
+    },
+    "preview_missing_count": {
+        "message": "$COUNT$ Antworten konnten nicht geladen werden. Versuche vor dem Senden, sie erneut zu laden.",
+        "placeholders": {
+            "count": {
+                "content": "$1",
+                "example": "12"
+            }
+        }
+    },
+    "preview_missing_resume": {
+        "message": "Fehlende Antworten laden"
+    },
+    "preview_missing_resuming": {
+        "message": "Antworten werden geladen…"
+    },
+    "preview_prune_title": {
+        "message": "Wähle die Kommentare aus, die einbezogen werden"
+    },
+    "preview_prune_description": {
+        "message": "Entferne das Häkchen, um einen Kommentar aus dem Prompt herauszunehmen. Seine Antworten werden ebenfalls entfernt."
+    },
+    "preview_select_all": {
+        "message": "Alle auswählen"
+    },
+    "preview_clear_all": {
+        "message": "Alle abwählen"
+    },
+    "preview_tree_empty_title": {
+        "message": "Keine Kommentare zur Auswahl"
+    },
+    "preview_tree_empty_body": {
+        "message": "Dieser Thread hat keine Kommentare, oder die aktuelle Kontextvorgabe hat keine im Prompt gelassen."
+    },
+    "preview_api_error_title": {
+        "message": "Die Anfrage ist fehlgeschlagen"
+    },
+    "preview_api_sending": {
+        "message": "Wird gesendet…"
+    },
+    "preview_api_done": {
+        "message": "Fertig ✓"
+    },
+    "preview_api_failed_short": {
+        "message": "Fehlgeschlagen"
+    },
+    "preview_api_send_disabled": {
+        "message": "Füge in den Optionen einen API-Schlüssel für diesen Anbieter hinzu, um zu senden."
+    },
+    "preview_api_no_key_option": {
+        "message": "$PROVIDER$ (kein Schlüssel)",
+        "placeholders": {
+            "provider": {
+                "content": "$1",
+                "example": "OpenAI"
+            }
+        }
+    },
+    "preview_status_ready_short": {
+        "message": "Bereit."
+    },
+    "preview_status_ready": {
+        "message": "Bereit. Prüfe oder bearbeite den Prompt und sende ihn dann."
+    },
+    "preview_status_loading": {
+        "message": "Ausgelesener Thread wird geladen…"
+    },
+    "preview_status_load_failed": {
+        "message": "Der Thread konnte nicht geladen werden."
+    },
+    "preview_status_already_sending": {
+        "message": "KI-Tab wird bereits geöffnet."
+    },
+    "preview_status_empty": {
+        "message": "Der Prompt ist leer – füge vor dem Senden Text hinzu."
+    },
+    "preview_status_opening": {
+        "message": "$PROVIDER$ wird geöffnet…",
+        "placeholders": {
+            "provider": {
+                "content": "$1",
+                "example": "Gemini"
+            }
+        }
+    },
+    "preview_status_sent": {
+        "message": "$PROVIDER$ wurde geöffnet. Wird der Prompt nicht automatisch eingefügt, nutze dort die Kopieren-Schaltfläche.",
+        "placeholders": {
+            "provider": {
+                "content": "$1",
+                "example": "Gemini"
+            }
+        }
+    },
+    "preview_status_send_failed": {
+        "message": "Der Prompt konnte nicht gesendet werden. Versuche es erneut oder kopiere ihn stattdessen."
+    },
+    "preview_status_copied": {
+        "message": "Prompt in die Zwischenablage kopiert."
+    },
+    "preview_status_nothing_to_copy": {
+        "message": "Der Prompt ist leer – nichts zu kopieren."
+    },
+    "preview_status_copy_failed": {
+        "message": "Kopieren nicht möglich. Markiere den Text und drücke stattdessen Strg+C."
+    },
+    "preview_status_copy_failed_short": {
+        "message": "Kopieren fehlgeschlagen."
+    },
+    "preview_status_export_nodata": {
+        "message": "Keine Daten zum Exportieren vorhanden."
+    },
+    "preview_status_exported": {
+        "message": "Als $FORMAT$ exportiert.",
+        "placeholders": {
+            "format": {
+                "content": "$1",
+                "example": "MD"
+            }
+        }
+    },
+    "preview_status_export_failed": {
+        "message": "Export fehlgeschlagen."
+    },
+    "preview_status_preset_name_needed": {
+        "message": "Gib der Vorlage zuerst einen Namen."
+    },
+    "preview_status_preset_saved": {
+        "message": "Vorlage „$NAME$“ gespeichert.",
+        "placeholders": {
+            "name": {
+                "content": "$1",
+                "example": "Weekly digest"
+            }
+        }
+    },
+    "preview_status_preset_failed": {
+        "message": "Vorlage konnte nicht gespeichert werden: $ERROR$",
+        "placeholders": {
+            "error": {
+                "content": "$1",
+                "example": "QUOTA_BYTES quota exceeded"
+            }
+        }
+    },
+    "preview_status_rebuilt": {
+        "message": "Neu erstellter Prompt übernommen."
+    },
+    "preview_status_kept": {
+        "message": "Bearbeiteter Prompt beibehalten."
+    },
+    "preview_status_restored": {
+        "message": "Generierter Prompt wiederhergestellt."
+    },
+    "preview_status_skip_on": {
+        "message": "Beim nächsten Mal geht das Auslesen direkt in den KI-Chat."
+    },
+    "preview_status_skip_off": {
+        "message": "Beim nächsten Mal öffnet sich zuerst diese Vorschau."
+    },
+    "preview_status_resuming": {
+        "message": "Fehlende Antworten werden geladen…"
+    },
+    "preview_status_resume_failed": {
+        "message": "Die fehlenden Antworten konnten nicht geladen werden."
+    },
+    "preview_status_resumed": {
+        "message": "Fertig. $COUNT$ Antworten hinzugefügt.",
+        "placeholders": {
+            "count": {
+                "content": "$1",
+                "example": "8"
+            }
+        }
+    },
+    "preview_status_focus_failed": {
+        "message": "Der Reddit-Tab wurde nicht gefunden."
+    },
+    "preview_threads_combined": {
+        "message": "$COUNT$ Reddit-Threads zum Vergleich zusammengeführt.",
+        "placeholders": {
+            "count": {
+                "content": "$1",
+                "example": "3"
+            }
+        }
+    },
+    "options_header_settings": {
+        "message": "Einstellungen"
+    },
+    "options_nav_aria": {
+        "message": "Einstellungsbereiche"
+    },
+    "options_nav_ai": {
+        "message": "KI & Senden"
+    },
+    "options_nav_prompts": {
+        "message": "Prompts"
+    },
+    "options_nav_scraping": {
+        "message": "Erfassen"
+    },
+    "options_nav_reddit": {
+        "message": "Reddit-Schaltfläche"
+    },
+    "options_nav_general": {
+        "message": "Allgemein"
+    },
+    "options_nav_history": {
+        "message": "Verlauf"
+    },
+    "options_nav_advanced": {
+        "message": "Erweitert"
+    },
+    "options_pane_ai_desc": {
+        "message": "Wohin deine Reddit-Threads gehen und was beim Senden passiert."
+    },
+    "options_pane_prompts_desc": {
+        "message": "Was die KI mit jedem Thread machen soll."
+    },
+    "options_pane_scraping_desc": {
+        "message": "Wie viel von einem Thread erfasst wird und welche Kommentare bleiben."
+    },
+    "options_pane_general_desc": {
+        "message": "Darstellung, Sprache, Benachrichtigungen und deine Daten."
+    },
+    "options_pane_history_desc": {
+        "message": "Kürzlich erfasste Threads. Sende einen an eine andere KI, vergleiche mehrere oder exportiere sie."
+    },
+    "options_pane_advanced_desc": {
+        "message": "Für Fortgeschrittene und zur Fehlerbehebung. Die Standardwerte passen für die meisten."
+    },
+    "options_platform_custom": {
+        "message": "Eigene Seite"
+    },
+    "options_hint_custom_platform": {
+        "message": "Eigene Seiten (z. B. eine lokale WebUI) fügst du unter Erweitert › Eigene KI-Seiten hinzu."
+    },
+    "options_card_send_flow_title": {
+        "message": "Beim Senden eines Threads"
+    },
+    "options_label_show_preview": {
+        "message": "Prompt-Vorschau vor dem Senden anzeigen"
+    },
+    "options_hint_show_preview": {
+        "message": "Ausschalten, um sofort zu erfassen und den KI-Tab zu öffnen."
+    },
+    "options_label_output_format": {
+        "message": "Antwortformat"
+    },
+    "options_hint_output_format": {
+        "message": "Das Format, in dem die KI antworten soll. In der Vorschau pro Thread änderbar."
+    },
+    "options_format_auto": {
+        "message": "KI entscheiden lassen"
+    },
+    "options_format_bullets": {
+        "message": "Stichpunkte"
+    },
+    "options_format_table": {
+        "message": "Tabelle"
+    },
+    "options_format_pros_cons": {
+        "message": "Vor- und Nachteile"
+    },
+    "options_format_executive": {
+        "message": "Management-Zusammenfassung"
+    },
+    "options_hint_prompt_plain": {
+        "message": "Setze {content} dort ein, wo der Reddit-Thread stehen soll. Wähle „Benutzerdefiniert“, um selbst zu schreiben."
+    },
+    "options_card_saved_presets_title": {
+        "message": "Gespeicherte Prompt-Vorlagen"
+    },
+    "options_saved_presets_desc": {
+        "message": "Vorlagen, die du im Popup oder in der Vorschau gespeichert hast."
+    },
+    "options_saved_presets_empty": {
+        "message": "Noch keine gespeicherten Prompt-Vorlagen"
+    },
+    "options_saved_presets_none_hint": {
+        "message": "Noch keine gespeicherten Vorlagen"
+    },
+    "options_btn_import_presets": {
+        "message": "Vorlagen importieren"
+    },
+    "options_btn_export_presets": {
+        "message": "Vorlagen exportieren"
+    },
+    "options_btn_clear_presets": {
+        "message": "Alle Vorlagen löschen"
+    },
+    "options_confirm_clear_presets": {
+        "message": "Alle gespeicherten Prompt-Vorlagen löschen? Das lässt sich nicht rückgängig machen."
+    },
+    "options_btn_cancel": {
+        "message": "Abbrechen"
+    },
+    "options_btn_delete_all": {
+        "message": "Alle löschen"
+    },
+    "options_btn_use": {
+        "message": "Verwenden"
+    },
+    "options_btn_export": {
+        "message": "Exportieren"
+    },
+    "options_btn_remove": {
+        "message": "Entfernen"
+    },
+    "options_untitled_preset": {
+        "message": "Unbenannte Vorlage"
+    },
+    "options_unknown_date": {
+        "message": "Unbekanntes Datum"
+    },
+    "options_preset_applied": {
+        "message": "„$NAME$“ wird jetzt als eigener Prompt verwendet.",
+        "placeholders": {
+            "name": {
+                "content": "$1"
+            }
+        }
+    },
+    "options_preset_deleted": {
+        "message": "Vorlage gelöscht."
+    },
+    "options_preset_exported": {
+        "message": "Vorlage exportiert."
+    },
+    "options_presets_exported": {
+        "message": "Vorlagen exportiert."
+    },
+    "options_presets_imported": {
+        "message": "$COUNT$ Vorlage(n) importiert.",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            }
+        }
+    },
+    "options_presets_cleared": {
+        "message": "Alle gespeicherten Vorlagen gelöscht."
+    },
+    "options_import_no_presets": {
+        "message": "Diese Datei enthält keine Prompt-Vorlagen."
+    },
+    "options_author_op_label": {
+        "message": "Original-Poster (OP)"
+    },
+    "options_author_flaired_label": {
+        "message": "Nutzer mit Flair"
+    },
+    "options_author_summary_all": {
+        "message": "Kommentare von allen werden einbezogen. Aktiviere eine oder beide Optionen, um nur diese Autoren zu behalten."
+    },
+    "options_author_summary_op": {
+        "message": "Nur Kommentare des Original-Posters."
+    },
+    "options_author_summary_flaired": {
+        "message": "Nur Kommentare von Nutzern mit Flair."
+    },
+    "options_author_summary_both": {
+        "message": "Nur Kommentare des Original-Posters oder von Nutzern mit Flair."
+    },
+    "options_scraping_more_hint": {
+        "message": "Prompt-Größe, Kommentarsortierung und Medien findest du unter"
+    },
+    "options_reddit_btn_disabled_hint": {
+        "message": "Aktiviere die Schaltfläche auf der Seite, um festzulegen, wo sie erscheint."
+    },
+    "options_card_appearance_title": {
+        "message": "Darstellung"
+    },
+    "options_label_theme": {
+        "message": "Design"
+    },
+    "options_theme_auto": {
+        "message": "Automatisch"
+    },
+    "options_theme_dark": {
+        "message": "Dunkel"
+    },
+    "options_theme_light": {
+        "message": "Hell"
+    },
+    "options_hint_theme": {
+        "message": "Automatisch folgt der Systemeinstellung."
+    },
+    "options_language_applied": {
+        "message": "Sprache übernommen."
+    },
+    "options_storage_desc": {
+        "message": "Was mit einem erfassten Thread nach dem Senden passiert."
+    },
+    "options_backup_title": {
+        "message": "Einstellungen sichern"
+    },
+    "options_backup_hint": {
+        "message": "Exportiert deine Einstellungen als JSON-Datei. API-Schlüssel sind nie enthalten."
+    },
+    "options_btn_export_settings": {
+        "message": "Einstellungen exportieren"
+    },
+    "options_btn_import_settings": {
+        "message": "Einstellungen importieren"
+    },
+    "options_settings_exported": {
+        "message": "Einstellungen exportiert."
+    },
+    "options_import_bad_json": {
+        "message": "Die Datei konnte nicht als JSON gelesen werden:"
+    },
+    "options_import_read_failed": {
+        "message": "Die Datei konnte nicht gelesen werden."
+    },
+    "options_import_no_settings": {
+        "message": "Diese Datei enthält keine Einstellungen."
+    },
+    "options_import_none_recognized": {
+        "message": "Diese Datei enthält keine bekannten Einstellungen."
+    },
+    "options_import_failed": {
+        "message": "Einstellungen konnten nicht importiert werden:"
+    },
+    "options_telemetry_default_on": {
+        "message": "Standardmäßig an"
+    },
+    "options_telemetry_sent_label": {
+        "message": "Gesendet"
+    },
+    "options_telemetry_sent": {
+        "message": "Wie oft fünf Dinge passiert sind (installiert, aktualisiert, Browsersitzung gestartet, Thread erfasst, Prompt gesendet), dazu eine zufällige Installations-ID und die Erweiterungsversion."
+    },
+    "options_telemetry_never_label": {
+        "message": "Nie gesendet"
+    },
+    "options_telemetry_never": {
+        "message": "Reddit-Inhalte, URLs, Subreddit-Namen, Titel, Prompts, API-Schlüssel oder irgendetwas, das du eingibst."
+    },
+    "options_telemetry_when_label": {
+        "message": "Wie oft"
+    },
+    "options_telemetry_when": {
+        "message": "Höchstens alle 30 Minuten. Beim Ausschalten werden die Installations-ID und noch nicht gesendete Zählungen gelöscht."
+    },
+    "options_telemetry_unsupported": {
+        "message": "In dieser Browser-Version werden keine Nutzungszahlen gesendet."
+    },
+    "options_history_filters_aria": {
+        "message": "Verlaufsfilter"
+    },
+    "options_history_search_placeholder": {
+        "message": "Titel, Subreddit, Flair, URL suchen..."
+    },
+    "options_history_all_platforms": {
+        "message": "Alle KI-Plattformen"
+    },
+    "options_history_all_presets": {
+        "message": "Alle Prompts"
+    },
+    "options_history_any_date": {
+        "message": "Beliebiges Datum"
+    },
+    "options_history_today": {
+        "message": "Heute"
+    },
+    "options_history_week": {
+        "message": "Letzte 7 Tage"
+    },
+    "options_history_month": {
+        "message": "Letzte 30 Tage"
+    },
+    "options_history_min_comments": {
+        "message": "Min. Kommentare"
+    },
+    "options_aria_platform": {
+        "message": "KI-Plattform"
+    },
+    "options_aria_prompt": {
+        "message": "Prompt"
+    },
+    "options_aria_date": {
+        "message": "Datum"
+    },
+    "options_aria_pattern": {
+        "message": "Subreddit-Muster"
+    },
+    "options_aria_test_sub": {
+        "message": "Zu testender Subreddit"
+    },
+    "options_aria_site": {
+        "message": "Adresse der Seite"
+    },
+    "options_btn_compare": {
+        "message": "Auswahl vergleichen"
+    },
+    "options_compare_hint": {
+        "message": "Wähle mindestens zwei Threads zum Vergleichen"
+    },
+    "options_compare_selected": {
+        "message": "$COUNT$ zum Vergleich ausgewählt",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            }
+        }
+    },
+    "options_history_compare": {
+        "message": "Vergleichen"
+    },
+    "options_history_comments": {
+        "message": "$COUNT$ Kommentare",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            }
+        }
+    },
+    "options_history_pin": {
+        "message": "Anheften"
+    },
+    "options_history_unpin": {
+        "message": "Lösen"
+    },
+    "options_history_favorite": {
+        "message": "Zu Favoriten hinzufügen"
+    },
+    "options_history_unfavorite": {
+        "message": "Aus Favoriten entfernen"
+    },
+    "options_history_no_match": {
+        "message": "Keine Verlaufseinträge passen zu deinen Filtern"
+    },
+    "options_hist_opening_preview": {
+        "message": "Vorschau für Verlaufseintrag wird geöffnet..."
+    },
+    "options_hist_preview_opened": {
+        "message": "Vorschau für Verlaufseintrag geöffnet."
+    },
+    "options_hist_resend_failed": {
+        "message": "Verlaufseintrag konnte nicht erneut gesendet werden:"
+    },
+    "options_hist_deleted": {
+        "message": "Verlaufseintrag gelöscht."
+    },
+    "options_hist_delete_failed": {
+        "message": "Verlaufseintrag konnte nicht gelöscht werden:"
+    },
+    "options_hist_export_failed": {
+        "message": "Verlaufseintrag konnte nicht exportiert werden:"
+    },
+    "options_hist_exported": {
+        "message": "Verlaufseintrag exportiert."
+    },
+    "options_hist_update_failed": {
+        "message": "Verlaufseintrag konnte nicht aktualisiert werden:"
+    },
+    "options_hist_pinned": {
+        "message": "Verlaufseintrag angeheftet."
+    },
+    "options_hist_unpinned": {
+        "message": "Verlaufseintrag gelöst."
+    },
+    "options_hist_favorited": {
+        "message": "Zu Favoriten hinzugefügt."
+    },
+    "options_hist_unfavorited": {
+        "message": "Aus Favoriten entfernt."
+    },
+    "options_hist_opening_compare": {
+        "message": "Vergleichsvorschau wird geöffnet..."
+    },
+    "options_hist_compare_opened": {
+        "message": "Vergleichsvorschau geöffnet."
+    },
+    "options_hist_compare_failed": {
+        "message": "Verlaufseinträge konnten nicht verglichen werden:"
+    },
+    "options_hist_cleared": {
+        "message": "Verlauf gelöscht."
+    },
+    "options_hist_clear_failed": {
+        "message": "Verlauf konnte nicht gelöscht werden:"
+    },
+    "options_adv_tuning_title": {
+        "message": "Prompt-Größe & Kommentarauswahl"
+    },
+    "options_adv_tuning_desc": {
+        "message": "Wie viel vom Thread in den Prompt kommt und welche Kommentare beim Kürzen bleiben."
+    },
+    "options_label_context_budget": {
+        "message": "Standard-Prompt-Größe"
+    },
+    "options_hint_context_budget": {
+        "message": "Die Anfangsgröße des Prompts in der Vorschau. Größere Prompts behalten mehr Kommentare."
+    },
+    "options_context_small": {
+        "message": "Klein"
+    },
+    "options_context_balanced": {
+        "message": "Ausgewogen"
+    },
+    "options_context_full": {
+        "message": "Vollständig"
+    },
+    "options_context_max": {
+        "message": "Am größten (beste Qualität)"
+    },
+    "options_label_trim": {
+        "message": "Beim Kürzen behalten"
+    },
+    "options_trim_top": {
+        "message": "Am besten bewertet"
+    },
+    "options_trim_controversial": {
+        "message": "Umstritten"
+    },
+    "options_trim_op": {
+        "message": "Antworten des OP"
+    },
+    "options_trim_flaired": {
+        "message": "Nutzer mit Flair"
+    },
+    "options_trim_diverse": {
+        "message": "Vielfältige Sichtweisen"
+    },
+    "options_trim_newest": {
+        "message": "Neueste"
+    },
+    "options_trim_longest": {
+        "message": "Längste hilfreiche Kommentare"
+    },
+    "options_label_sort": {
+        "message": "Reddit-Kommentarsortierung"
+    },
+    "options_sort_best": {
+        "message": "Beste"
+    },
+    "options_sort_top": {
+        "message": "Top"
+    },
+    "options_sort_new": {
+        "message": "Neu"
+    },
+    "options_sort_controversial": {
+        "message": "Umstritten"
+    },
+    "options_sort_old": {
+        "message": "Alt"
+    },
+    "options_sort_qa": {
+        "message": "Fragen & Antworten"
+    },
+    "options_sort_live": {
+        "message": "Live"
+    },
+    "options_label_media": {
+        "message": "Bilder und Medien"
+    },
+    "options_media_attach": {
+        "message": "Bilder anhängen und Medienlinks auflisten"
+    },
+    "options_media_urls": {
+        "message": "Nur Medienlinks auflisten"
+    },
+    "options_media_ignore": {
+        "message": "Medien ignorieren"
+    },
+    "options_adv_mappings_desc": {
+        "message": "Für bestimmte Subreddits automatisch einen anderen Prompt verwenden."
+    },
+    "options_mappings_empty_input": {
+        "message": "Gib zuerst einen Subreddit-Namen oder ein Muster ein."
+    },
+    "options_mappings_duplicate": {
+        "message": "Für dieses Muster gibt es bereits eine Regel."
+    },
+    "options_mappings_added": {
+        "message": "Regel hinzugefügt."
+    },
+    "options_tester_match": {
+        "message": "Treffer"
+    },
+    "options_tester_nomatch": {
+        "message": "Kein Treffer"
+    },
+    "options_tester_match_detail": {
+        "message": "r/$SUB$ passt zu „$PATTERN$“ und verwendet daher den Prompt $PRESET$.",
+        "placeholders": {
+            "sub": {
+                "content": "$1"
+            },
+            "pattern": {
+                "content": "$2"
+            },
+            "preset": {
+                "content": "$3"
+            }
+        }
+    },
+    "options_tester_nomatch_detail": {
+        "message": "r/$SUB$ passt zu keiner Regel und verwendet daher deinen Standard-Prompt ($PRESET$).",
+        "placeholders": {
+            "sub": {
+                "content": "$1"
+            },
+            "preset": {
+                "content": "$2"
+            }
+        }
+    },
+    "options_adv_custom_title": {
+        "message": "Eigene KI-Seiten"
+    },
+    "options_adv_custom_desc": {
+        "message": "Threads an eine selbst gehostete oder lokale KI-Web-App senden."
+    },
+    "options_custom_origin_hint": {
+        "message": "Gib die Adresse deiner KI-Web-App ein (z. B. http://localhost:3000). Chrome fragt dann nach der Zugriffserlaubnis."
+    },
+    "options_btn_add_custom_origin": {
+        "message": "Seite hinzufügen"
+    },
+    "options_custom_origin_empty": {
+        "message": "Noch keine eigenen Seiten hinzugefügt."
+    },
+    "options_custom_origin_empty_input": {
+        "message": "Gib zuerst eine Adresse ein, z. B. http://localhost:3000."
+    },
+    "options_custom_origin_invalid": {
+        "message": "Das sieht nicht nach einer Webadresse aus. Versuch es z. B. mit http://localhost:3000."
+    },
+    "options_custom_origin_requesting": {
+        "message": "Warte auf deine Zugriffserlaubnis…"
+    },
+    "options_custom_origin_error": {
+        "message": "Zugriff konnte nicht angefragt werden:"
+    },
+    "options_custom_origin_denied": {
+        "message": "Der Zugriff wurde nicht erlaubt, daher wurde die Seite nicht hinzugefügt."
+    },
+    "options_custom_origin_exists": {
+        "message": "Diese Seite ist bereits in der Liste."
+    },
+    "options_custom_origin_added": {
+        "message": "Seite hinzugefügt."
+    },
+    "options_custom_origin_removed": {
+        "message": "Seite entfernt."
+    },
+    "options_custom_origin_remove_title": {
+        "message": "Seite entfernen und Zugriff widerrufen"
+    },
+    "options_adv_selectors_title": {
+        "message": "Selektoren für Eingabefelder"
+    },
+    "options_adv_selectors_desc": {
+        "message": "Wenn das Einfügen nach einer Layoutänderung der KI-Seite nicht mehr klappt, gib hier das richtige Textfeld an."
+    },
+    "options_selectors_hint": {
+        "message": "CSS-Selektoren. Leer lassen, um den eingebauten Standard zu nutzen."
+    },
+    "options_footer_version": {
+        "message": "Reddit to AI v$VERSION$",
+        "placeholders": {
+            "version": {
+                "content": "$1"
+            }
+        }
+    },
+    "welcome_page_title": {
+        "message": "Willkommen bei Reddit to AI"
+    },
+    "welcome_progress_aria": {
+        "message": "Einrichtungsfortschritt"
+    },
+    "welcome_dot_1": {
+        "message": "Schritt 1: KI auswählen"
+    },
+    "welcome_dot_2": {
+        "message": "Schritt 2: So startest du"
+    },
+    "welcome_dot_3": {
+        "message": "Schritt 3: Datenschutz"
+    },
+    "welcome_step_count": {
+        "message": "Schritt $CURRENT$ von $TOTAL$",
+        "placeholders": {
+            "current": {
+                "content": "$1"
+            },
+            "total": {
+                "content": "$2"
+            }
+        }
+    },
+    "welcome_eyebrow": {
+        "message": "Willkommen – richten wir alles ein"
+    },
+    "welcome_step1_title": {
+        "message": "Wähle deine KI"
+    },
+    "welcome_step1_lead": {
+        "message": "Wohin sollen deine Reddit-Threads gehen? Der Thread öffnet sich dort mit bereits eingefügtem Prompt. Du kannst das jederzeit ändern."
+    },
+    "welcome_step1_more": {
+        "message": "Eine lokale oder selbst gehostete KI-Seite oder einen eigenen API-Schlüssel kannst du später in den Einstellungen hinzufügen."
+    },
+    "welcome_provider_saved": {
+        "message": "Gespeichert – Threads öffnen sich in $NAME$.",
+        "placeholders": {
+            "name": {
+                "content": "$1"
+            }
+        }
+    },
+    "welcome_save_failed": {
+        "message": "Speichern fehlgeschlagen. Bitte erneut versuchen."
+    },
+    "welcome_step2_title": {
+        "message": "Vier Wege zum Start"
+    },
+    "welcome_step2_lead": {
+        "message": "Öffne einen beliebigen Reddit-Thread und nimm, was gerade am nächsten liegt."
+    },
+    "welcome_way_inline_title": {
+        "message": "Die Schaltfläche auf Reddit"
+    },
+    "welcome_way_inline_desc": {
+        "message": "Klicke sie in der Aktionsleiste eines Beitrags, neben „Teilen“."
+    },
+    "welcome_way_popup_title": {
+        "message": "Das Symbol in der Symbolleiste"
+    },
+    "welcome_way_popup_desc": {
+        "message": "Öffne das Popup und drücke die große Schaltfläche. Hefte das Symbol über das Puzzle-Menü an, damit es immer sichtbar ist."
+    },
+    "welcome_way_shortcut_title": {
+        "message": "Ein Tastenkürzel"
+    },
+    "welcome_way_shortcut_desc": {
+        "message": "Drücke es in einem beliebigen Reddit-Thread."
+    },
+    "welcome_way_shortcut_change": {
+        "message": "Kürzel ändern"
+    },
+    "welcome_way_shortcut_unset": {
+        "message": "Noch kein Kürzel festgelegt. Du kannst in Chrome eines wählen."
+    },
+    "welcome_way_menu_title": {
+        "message": "Rechtsklick auf einen Thread-Link"
+    },
+    "welcome_way_menu_desc": {
+        "message": "Funktioniert mit Thread-Links überall, ohne den Thread vorher zu öffnen."
+    },
+    "welcome_mock_open_link": {
+        "message": "Link in neuem Tab öffnen"
+    },
+    "welcome_mock_copy_link": {
+        "message": "Linkadresse kopieren"
+    },
+    "welcome_step3_title": {
+        "message": "Deine Daten, klar erklärt"
+    },
+    "welcome_step3_lead": {
+        "message": "Hier steht genau, was wohin geht."
+    },
+    "welcome_fact_ai_title": {
+        "message": "Threads gehen nur an die KI deiner Wahl"
+    },
+    "welcome_fact_ai_desc": {
+        "message": "Der Thread wird in deinem Browser gelesen und direkt an deine gewählte KI übergeben. Er läuft nie über unsere Server."
+    },
+    "welcome_fact_ai_desc_named": {
+        "message": "Der Thread wird in deinem Browser gelesen und direkt an $NAME$ übergeben (oder an dessen API, falls du später einen Schlüssel hinzufügst). Er läuft nie über unsere Server.",
+        "placeholders": {
+            "name": {
+                "content": "$1"
+            }
+        }
+    },
+    "welcome_fact_local_title": {
+        "message": "Verlauf und API-Schlüssel bleiben auf diesem Gerät"
+    },
+    "welcome_fact_local_desc": {
+        "message": "Dein Verlauf und alle API-Schlüssel werden nur in diesem Browser gespeichert. Den Verlauf kannst du in den Einstellungen begrenzen oder löschen."
+    },
+    "welcome_telemetry_label": {
+        "message": "Anonyme Nutzungszahlen teilen"
+    },
+    "welcome_telemetry_hint": {
+        "message": "Nur wie oft fünf Dinge passiert sind (installiert, aktualisiert, Sitzung gestartet, Thread erfasst, Prompt gesendet), eine zufällige Installations-ID und die Version. Nie Reddit-Inhalte, URLs, Subreddits, Prompts oder Schlüssel."
+    },
+    "welcome_telemetry_on": {
+        "message": "Danke – anonyme Zählungen sind an."
+    },
+    "welcome_telemetry_off": {
+        "message": "Aus. Deine Installations-ID und nicht gesendete Zählungen wurden gelöscht."
+    },
+    "welcome_settings_prefix": {
+        "message": "Alles Weitere findest du in den"
+    },
+    "welcome_settings_link": {
+        "message": "Einstellungen"
+    },
+    "welcome_btn_back": {
+        "message": "Zurück"
+    },
+    "welcome_btn_next": {
+        "message": "Weiter"
+    },
+    "welcome_btn_done": {
+        "message": "Fertig"
+    },
+    "welcome_btn_open_reddit": {
+        "message": "Reddit öffnen"
+    },
+    "welcome_keys_hint": {
+        "message": "Tipp: Mit den Pfeiltasten oder Enter wechselst du zwischen den Schritten."
     }
 }

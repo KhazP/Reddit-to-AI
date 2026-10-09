@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title data-i18n="welcome_page_title">Welcome to Reddit to AI</title>
+    <link rel="stylesheet" href="tokens.css">
+    <link rel="stylesheet" href="welcome.css">
+    <script src="theme.js"></script>
+</head>
+
+<body>
+    <main class="welcome">
+        <header class="brand">
+            <svg class="brand-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <circle cx="12" cy="12" r="10" fill="#FF4500" />
+                <circle cx="8" cy="10" r="1.5" fill="white" />
+                <circle cx="16" cy="10" r="1.5" fill="white" />
+                <path d="M8 14c0 0 2 2 4 2s4-2 4-2" stroke="white" stroke-width="1.5" stroke-linecap="round" />
+            </svg>
+            <span class="brand-name"><span class="brand-reddit">Reddit</span><span class="brand-to">to</span>AI</span>
+        </header>
+
+        <div class="panel">
+            <nav class="progress" aria-label="Setup progress" data-i18n-aria-label="welcome_progress_aria">
+                <div class="r2-progress progress-track" aria-hidden="true">
+                    <div class="r2-progress-fill" id="progressFill"></div>
+                </div>
+                <ol class="progress-dots">
+                    <li><button type="button" class="dot" data-goto="0" aria-current="step"
+                            aria-label="Step 1: Pick your AI" data-i18n-aria-label="welcome_dot_1"></button></li>
+                    <li><button type="button" class="dot" data-goto="1" aria-label="Step 2: Ways to start"
+                            data-i18n-aria-label="welcome_dot_2"></button></li>
+                    <li><button type="button" class="dot" data-goto="2" aria-label="Step 3: Privacy"
+                            data-i18n-aria-label="welcome_dot_3"></button></li>
+                </ol>
+                <span class="step-count" id="stepCount" aria-live="polite">Step 1 of 3</span>
+            </nav>
+
+            <div class="steps" id="steps" data-dir="forward">
+                <!-- Step 1: provider -->
+                <section class="step" id="step-0" aria-labelledby="step-0-title">
+                    <p class="eyebrow" data-i18n="welcome_eyebrow">Welcome — let's get you set up</p>
+                    <h1 class="step-title" id="step-0-title" tabindex="-1" data-i18n="welcome_step1_title">Pick your
+                        AI</h1>
+                    <p class="step-lead" data-i18n="welcome_step1_lead">Where should your Reddit threads go? The
+                        thread opens there with your prompt already pasted in. You can change this any time.</p>
+
+                    <div class="provider-grid" role="radiogroup" aria-labelledby="step-0-title">
+                        <label class="provider">
+                            <input type="radio" name="welcomeProvider" value="gemini">
+                            <span class="provider-card">
+                                <img src="images/gemini-color.svg" alt="" width="28" height="28">
+                                <span class="provider-name">Gemini</span>
+                            </span>
+                        </label>
+                        <label class="provider">
+                            <input type="radio" name="welcomeProvider" value="chatgpt">
+                            <span class="provider-card">
+                                <img src="images/openai.svg" alt="" width="28" height="28" class="icon-mono">
+                                <span class="provider-name">ChatGPT</span>
+                            </span>
+                        </label>
+                        <label class="provider">
+                            <input type="radio" name="welcomeProvider" value="claude">
+                            <span class="provider-card">
+                                <img src="images/claude-color.svg" alt="" width="28" height="28">
+                                <span class="provider-name">Claude</span>
+                            </span>
+                        </label>
+                        <label class="provider">
+                            <input type="radio" name="welcomeProvider" value="aistudio">
+                            <span class="provider-card">
+                                <img src="images/aistudio.svg" alt="" width="28" height="28" class="icon-mono">
+                                <span class="provider-name">AI Studio</span>
+                            </span>
+                        </label>
+                        <label class="provider">
+                            <input type="radio" name="welcomeProvider" value="deepseek">
+                            <span class="provider-card">
+                                <img src="images/deepseek.svg" alt="" width="28" height="28">
+                                <span class="provider-name">DeepSeek</span>
+                            </span>
+                        </label>
+                        <label class="provider">
+                            <input type="radio" name="welcomeProvider" value="groq">
+                            <span class="provider-card">
+                                <img src="images/groq.svg" alt="" width="28" height="28">
+                                <span class="provider-name">Groq</span>
+                            </span>
+                        </label>
+                    </div>
+                    <p class="hint" id="providerStatus" role="status" aria-live="polite"></p>
+                    <p class="hint" data-i18n="welcome_step1_more">A local or self-hosted AI site, or your own API
+                        key, can be added later in Settings.</p>
+                </section>
+
+                <!-- Step 2: ways to start -->
+                <section class="step" id="step-1" aria-labelledby="step-1-title" hidden>
+                    <h1 class="step-title" id="step-1-title" tabindex="-1" data-i18n="welcome_step2_title">Four ways
+                        to start</h1>
+                    <p class="step-lead" data-i18n="welcome_step2_lead">Open any Reddit thread, then use whichever is
+                        closest.</p>
+
+                    <ul class="ways">
+                        <li class="way">
+                            <div class="mock mock-actionbar" aria-hidden="true">
+                                <span class="mock-pill">▲ 1.2k</span>
+                                <span class="mock-pill mock-hl">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 2l2.2 6.8L21 11l-6.8 2.2L12 20l-2.2-6.8L3 11l6.8-2.2z" />
+                                    </svg>
+                                    <span id="mockInlineLabel">Summarize with AI</span>
+                                </span>
+                            </div>
+                            <div class="way-text">
+                                <h2 class="way-title" data-i18n="welcome_way_inline_title">The button on Reddit</h2>
+                                <p class="way-desc" data-i18n="welcome_way_inline_desc">Click it in a post's action
+                                    bar, next to Share.</p>
+                            </div>
+                        </li>
+                        <li class="way">
+                            <div class="mock mock-toolbar" aria-hidden="true">
+                                <span class="mock-url"></span>
+                                <span class="mock-ext"></span>
+                                <img class="mock-ext mock-hl-ring" src="images/icon48.png" alt="" width="18"
+                                    height="18">
+                                <span class="mock-ext"></span>
+                            </div>
+                            <div class="way-text">
+                                <h2 class="way-title" data-i18n="welcome_way_popup_title">The toolbar icon</h2>
+                                <p class="way-desc" data-i18n="welcome_way_popup_desc">Open the popup and press the
+                                    big button. Pin the icon from the puzzle-piece menu so it's always there.</p>
+                            </div>
+                        </li>
+                        <li class="way">
+                            <div class="mock mock-keys" aria-hidden="true" id="shortcutMock">
+                                <kbd>Alt</kbd><span class="plus">+</span><kbd>Shift</kbd><span
+                                    class="plus">+</span><kbd>S</kbd>
+                            </div>
+                            <div class="way-text">
+                                <h2 class="way-title" data-i18n="welcome_way_shortcut_title">A keyboard shortcut</h2>
+                                <p class="way-desc">
+                                    <span id="shortcutText" data-i18n="welcome_way_shortcut_desc">Press it on any
+                                        Reddit thread.</span>
+                                    <button type="button" class="link-btn" id="shortcutSettingsBtn"
+                                        data-i18n="welcome_way_shortcut_change">Change shortcut</button>
+                                </p>
+                            </div>
+                        </li>
+                        <li class="way">
+                            <div class="mock mock-menu" aria-hidden="true">
+                                <span class="mock-menu-item" data-i18n="welcome_mock_open_link">Open link in new tab</span>
+                                <span class="mock-menu-item mock-menu-hl" id="mockMenuLabel">Scrape this thread with
+                                    Reddit to AI</span>
+                                <span class="mock-menu-item" data-i18n="welcome_mock_copy_link">Copy link address</span>
+                            </div>
+                            <div class="way-text">
+                                <h2 class="way-title" data-i18n="welcome_way_menu_title">Right-click a thread link
+                                </h2>
+                                <p class="way-desc" data-i18n="welcome_way_menu_desc">Works on thread links anywhere,
+                                    without opening the thread first.</p>
+                            </div>
+                        </li>
+                    </ul>
+                </section>
+
+                <!-- Step 3: privacy -->
+                <section class="step" id="step-2" aria-labelledby="step-2-title" hidden>
+                    <h1 class="step-title" id="step-2-title" tabindex="-1" data-i18n="welcome_step3_title">Your data,
+                        plainly</h1>
+                    <p class="step-lead" data-i18n="welcome_step3_lead">Here's exactly what goes where.</p>
+
+                    <ul class="facts">
+                        <li class="fact">
+                            <span class="fact-icon" aria-hidden="true">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M5 12h14"></path>
+                                    <path d="M13 5l7 7-7 7"></path>
+                                </svg>
+                            </span>
+                            <span class="fact-text">
+                                <strong data-i18n="welcome_fact_ai_title">Threads go only to the AI you pick</strong>
+                                <span id="factAiDesc" data-i18n="welcome_fact_ai_desc">The thread is read in your
+                                    browser and handed straight to your chosen AI. It never passes through our
+                                    servers.</span>
+                            </span>
+                        </li>
+                        <li class="fact">
+                            <span class="fact-icon" aria-hidden="true">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="11" width="18" height="11" rx="2"></rect>
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                </svg>
+                            </span>
+                            <span class="fact-text">
+                                <strong data-i18n="welcome_fact_local_title">History and API keys stay on this
+                                    device</strong>
+                                <span data-i18n="welcome_fact_local_desc">Your scrape history and any API keys are
+                                    stored only in this browser. You can limit or clear history in Settings.</span>
+                            </span>
+                        </li>
+                    </ul>
+
+                    <div class="telemetry">
+                        <label class="toggle-row" for="welcomeTelemetry">
+                            <span class="toggle-info">
+                                <span class="toggle-label" data-i18n="welcome_telemetry_label">Share anonymous usage
+                                    counts</span>
+                                <span class="toggle-hint" id="welcomeTelemetryHint"
+                                    data-i18n="welcome_telemetry_hint">Just how many times five things happened
+                                    (installed, updated, session started, thread extracted, prompt sent), a random
+                                    install ID and the version. Never Reddit content, URLs, subreddits, prompts or
+                                    keys.</span>
+                            </span>
+                            <span class="toggle-switch">
+                                <input type="checkbox" id="welcomeTelemetry" checked
+                                    aria-describedby="welcomeTelemetryHint">
+                                <span class="toggle-slider"></span>
+                            </span>
+                        </label>
+                        <p class="hint" id="telemetryStatus" role="status" aria-live="polite"></p>
+                    </div>
+
+                    <p class="hint">
+                        <span data-i18n="welcome_settings_prefix">Everything else lives in</span>
+                        <a href="options.html" class="link-btn" id="openSettingsLink"
+                            data-i18n="welcome_settings_link">Settings</a>
+                    </p>
+                </section>
+            </div>
+
+            <footer class="panel-nav">
+                <button type="button" class="btn btn-ghost" id="backBtn" data-i18n="welcome_btn_back">Back</button>
+                <span class="nav-spacer"></span>
+                <button type="button" class="btn btn-ghost" id="doneBtn" data-i18n="welcome_btn_done"
+                    hidden>Done</button>
+                <button type="button" class="btn btn-primary" id="nextBtn" data-i18n="welcome_btn_next">Next</button>
+                <button type="button" class="btn btn-primary" id="openRedditBtn" data-i18n="welcome_btn_open_reddit"
+                    hidden>Open Reddit</button>
+            </footer>
+        </div>
+
+        <p class="keys-hint" data-i18n="welcome_keys_hint">Tip: use the arrow keys or Enter to move between steps.
+        </p>
+    </main>
+
+    <script src="i18n.js"></script>
+    <script src="telemetry.js"></script>
+    <script src="welcome.js"></script>
+</body>
+
+</html>

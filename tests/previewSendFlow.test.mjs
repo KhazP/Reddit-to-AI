@@ -15,8 +15,8 @@ assert.match(html, /id="keepEditsBtn"/, 'preview has Keep edits control');
 
 assert.match(preview, /sendInFlight/, 'preview guards duplicate sends in memory');
 assert.match(preview, /Already opening AI tab\./, 'duplicate send click is ignored with visible status');
-assert.match(preview, /els\.sendBtnBottom/, 'bottom send button participates in send state');
-assert.match(preview, /els\.skipNextBtn/, 'skip preview button participates in send state');
+assert.match(preview, /els\.sendBtn\.disabled = inFlight/, 'send button is disabled while a send is in flight');
+assert.doesNotMatch(html, /style="display:\s*none;?"/, 'no dead inline-hidden action buttons in the preview header');
 
 assert.match(worker, /activePasteHandoffs/, 'service worker guards duplicate paste handoffs');
 assert.match(worker, /request\.directSendOnce === true\s*\?\s*false/s, 'directSendOnce overrides preview for one request');

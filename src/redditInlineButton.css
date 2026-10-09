@@ -1,4 +1,8 @@
-/* Reddit to AI - Reddit Inline Button Styling */
+/* Reddit to AI - Reddit Inline Button Styling
+   Injected into reddit.com pages (no tokens.css here). The button must look native
+   next to Reddit's Share button in both Reddit themes, so colour comes from
+   currentColor/inherit plus a translucent neutral fill; orange is only an icon
+   accent and a hover/focus cue. */
 
 .r2ai-inline-btn,
 .reddit-to-ai-button {
@@ -23,12 +27,13 @@
   background: rgba(120, 120, 128, 0.15) !important;
   color: inherit !important;
   line-height: 16px !important;
-  transition: background-color 0.15s ease, opacity 0.15s ease, transform 0.1s ease !important;
+  transition: background-color 0.15s ease, opacity 0.15s ease, transform 0.15s ease !important;
   user-select: none !important;
   margin: 0 0 0 8px !important;
   margin-left: 8px !important;
   box-sizing: border-box !important;
   text-decoration: none !important;
+  white-space: nowrap !important;
 }
 
 /* Ensure action bar containers stay in active pointer-events layer above card overlay */
@@ -71,18 +76,27 @@ shreddit-post shreddit-post-action-row,
   margin-left: 0 !important;
 }
 
-.r2ai-inline-btn:hover,
-.reddit-to-ai-button:hover {
+:is(.r2ai-inline-btn, .reddit-to-ai-button):hover {
   background: rgba(120, 120, 128, 0.25) !important;
 }
 
 :is(.r2ai-inline-btn, .reddit-to-ai-button):active {
-  transform: scale(0.97);
+  transform: scale(0.97) !important;
 }
 
 :is(.r2ai-inline-btn, .reddit-to-ai-button):focus-visible {
-  outline: 2px solid currentColor;
-  outline-offset: 2px;
+  outline: 2px solid #ff4500 !important;
+  outline-offset: 2px !important;
+}
+
+/* ── Icons ───────────────────────────────────────────────── */
+
+:is(.r2ai-inline-btn, .reddit-to-ai-button) .r2ai-icon {
+  flex-shrink: 0 !important;
+  width: 14px !important;
+  height: 14px !important;
+  vertical-align: middle !important;
+  pointer-events: none !important;
 }
 
 .r2ai-sparkle-icon {
@@ -92,6 +106,16 @@ shreddit-post shreddit-post-action-row,
   display: inline-block;
   vertical-align: middle;
   pointer-events: none !important;
+  color: #ff4500;
+  transition: transform 0.24s cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+:is(.r2ai-inline-btn, .reddit-to-ai-button):is(:hover, :focus-visible) .r2ai-sparkle-icon {
+  transform: rotate(18deg) scale(1.1);
+}
+
+:is(.r2ai-inline-btn, .reddit-to-ai-button) :is(.r2ai-check-icon, .r2ai-alert-icon) {
+  display: none !important;
 }
 
 .r2ai-btn-text {
@@ -105,18 +129,21 @@ shreddit-post shreddit-post-action-row,
   display: none;
   width: 12px;
   height: 12px;
+  margin: 1px;
   border: 2px solid currentColor;
   border-top-color: transparent;
   border-radius: 50%;
   box-sizing: border-box;
   pointer-events: none !important;
+  flex-shrink: 0;
 }
+
+/* ── Loading ─────────────────────────────────────────────── */
 
 :is(.r2ai-inline-btn, .reddit-to-ai-button).is-loading {
   pointer-events: none !important;
   opacity: 0.85 !important;
-  cursor: wait !important;
-  animation: r2ai-pulse 1.5s ease-in-out infinite !important;
+  cursor: progress !important;
 }
 
 :is(.r2ai-inline-btn, .reddit-to-ai-button).is-loading .r2ai-sparkle-icon {
@@ -128,6 +155,38 @@ shreddit-post shreddit-post-action-row,
   animation: r2ai-spin 0.75s linear infinite !important;
 }
 
+/* ── Success (checkmark pop, ~1.5s) ──────────────────────── */
+
+:is(.r2ai-inline-btn, .reddit-to-ai-button).is-success .r2ai-sparkle-icon {
+  display: none !important;
+}
+
+:is(.r2ai-inline-btn, .reddit-to-ai-button).is-success .r2ai-check-icon {
+  display: inline-block !important;
+  color: #12a150 !important;
+  animation: r2ai-pop 0.4s cubic-bezier(0.34, 1.4, 0.64, 1) both !important;
+}
+
+/* ── Error ───────────────────────────────────────────────── */
+
+:is(.r2ai-inline-btn, .reddit-to-ai-button).is-error {
+  background: rgba(229, 72, 77, 0.14) !important;
+}
+
+:is(.r2ai-inline-btn, .reddit-to-ai-button).is-error:hover {
+  background: rgba(229, 72, 77, 0.22) !important;
+}
+
+:is(.r2ai-inline-btn, .reddit-to-ai-button).is-error .r2ai-sparkle-icon {
+  display: none !important;
+}
+
+:is(.r2ai-inline-btn, .reddit-to-ai-button).is-error .r2ai-alert-icon {
+  display: inline-block !important;
+  color: #e5484d !important;
+  animation: r2ai-pop 0.4s cubic-bezier(0.34, 1.4, 0.64, 1) both !important;
+}
+
 @keyframes r2ai-spin {
   0% {
     transform: rotate(0deg);
@@ -137,30 +196,47 @@ shreddit-post shreddit-post-action-row,
   }
 }
 
-@keyframes r2ai-pulse {
-  0%, 100% {
-    opacity: 0.85;
-  }
-  50% {
-    opacity: 0.6;
-  }
+@keyframes r2ai-pop {
+  0% { opacity: 0; transform: scale(0.6); }
+  60% { opacity: 1; transform: scale(1.12); }
+  100% { opacity: 1; transform: scale(1); }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  :is(.r2ai-inline-btn, .reddit-to-ai-button) {
-    transition: none;
-    animation: none !important;
-  }
-  .r2ai-btn-spinner {
-    animation-duration: 1.5s !important;
-  }
-}
+/* ── Narrow screens: icon only (accessible name stays in aria-label) ── */
 
 @media (max-width: 640px) {
-  .r2ai-btn-text {
-    display: none;
+  :is(.r2ai-inline-btn, .reddit-to-ai-button) .r2ai-btn-text {
+    display: none !important;
   }
-  :is(.r2ai-inline-btn, .reddit-to-ai-button) {
-    padding: 0 8px;
+  .r2ai-inline-btn.r2ai-inline-btn,
+  .reddit-to-ai-button.reddit-to-ai-button {
+    padding: 8px !important;
+    min-width: 32px !important;
+  }
+}
+
+/* ── Reduced motion ──────────────────────────────────────── */
+/* Doubled class selectors + !important so these beat the !important base rules
+   above. The spinner keeps turning slowly: it is the only "working" signal. */
+
+@media (prefers-reduced-motion: reduce) {
+  .r2ai-inline-btn.r2ai-inline-btn,
+  .reddit-to-ai-button.reddit-to-ai-button {
+    transition: none !important;
+    animation: none !important;
+  }
+  .r2ai-inline-btn.r2ai-inline-btn:active,
+  .reddit-to-ai-button.reddit-to-ai-button:active {
+    transform: none !important;
+  }
+  .r2ai-inline-btn.r2ai-inline-btn .r2ai-icon,
+  .reddit-to-ai-button.reddit-to-ai-button .r2ai-icon {
+    transition: none !important;
+    animation: none !important;
+    transform: none !important;
+  }
+  .r2ai-inline-btn.r2ai-inline-btn.is-loading .r2ai-btn-spinner,
+  .reddit-to-ai-button.reddit-to-ai-button.is-loading .r2ai-btn-spinner {
+    animation-duration: 1.5s !important;
   }
 }

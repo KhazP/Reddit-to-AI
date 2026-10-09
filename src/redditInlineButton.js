@@ -126,6 +126,133 @@
     });
   }
 
+  // Localized string with an English fallback (getMessage returns '' for unknown keys).
+  function tr(key, fallback) {
+    let message = '';
+    try {
+      if (typeof window !== 'undefined' && typeof window.t === 'function') message = window.t(key);
+      if (!message && typeof chrome !== 'undefined' && chrome.i18n?.getMessage) message = chrome.i18n.getMessage(key);
+    } catch {
+      message = '';
+    }
+    // A missing key echoes back from some shims; treat that as missing too.
+    return message && message !== key ? message : fallback;
+  }
+
+  function createIcon(className, d, mode) {
+    const ns = 'http://www.w3.org/2000/svg';
+    const make = (tag) => (typeof document.createElementNS === 'function'
+      ? document.createElementNS(ns, tag)
+      : document.createElement(tag));
+    const svg = make('svg');
+    svg.setAttribute('class', `r2ai-icon ${className}`);
+    svg.setAttribute('viewBox', '0 0 16 16');
+    svg.setAttribute('width', '14');
+    svg.setAttribute('height', '14');
+    svg.setAttribute('fill', 'none');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.style.flexShrink = '0';
+    svg.style.verticalAlign = 'middle';
+    svg.style.pointerEvents = 'none';
+    const path = make('path');
+    path.setAttribute('d', d);
+    if (mode === 'fill') {
+      path.setAttribute('fill', 'currentColor');
+    } else {
+      path.setAttribute('stroke', 'currentColor');
+      path.setAttribute('stroke-width', '2');
+      path.setAttribute('stroke-linecap', 'round');
+      path.setAttribute('stroke-linejoin', 'round');
+    }
+    svg.appendChild(path);
+    return svg;
+  }
+
+  // ── Button state machine: idle → loading → success | error → idle ──
+  const SUCCESS_MS = 1500;
+  const ERROR_MS = 8000;
+  const WATCHDOG_MS = 30000;
+  const buttonTimers = new WeakMap();
+
+  function getTimers(button) {
+    let timers = buttonTimers.get(button);
+    if (!timers) {
+      timers = { revert: null, watchdog: null };
+      buttonTimers.set(button, timers);
+    }
+    return timers;
+  }
+
+  function clearButtonTimers(button) {
+    const timers = getTimers(button);
+    clearTimeout(timers.revert);
+    clearTimeout(timers.watchdog);
+    timers.revert = null;
+    timers.watchdog = null;
+  }
+
+  function setButtonState(button, state, detail) {
+    const label = button.querySelector('.r2ai-btn-text');
+    const spinner = button.querySelector('.r2ai-btn-spinner');
+    const icon = button.querySelector('.r2ai-sparkle-icon');
+    const idleLabel = tr('inline_btn_label', 'Summarize with AI');
+    const idleTitle = tr('reddit_btn_tooltip', 'Summarize thread with AI');
+
+    button.classList.remove('is-loading', 'is-success', 'is-error');
+    button.setAttribute('data-state', state);
+    if (spinner) spinner.style.display = state === 'loading' ? 'inline-block' : '';
+    if (icon) icon.style.display = state === 'loading' ? 'none' : '';
+
+    let text = idleLabel;
+    let title = idleTitle;
+    if (state === 'loading') {
+      button.classList.add('is-loading');
+      button.setAttribute('aria-busy', 'true');
+      title = tr('inline_btn_working', 'Summarizing…');
+    } else {
+      button.removeAttribute('aria-busy');
+    }
+    if (state === 'success') {
+      button.classList.add('is-success');
+      text = tr('inline_btn_done', 'Done');
+      title = text;
+    } else if (state === 'error') {
+      button.classList.add('is-error');
+      text = tr('inline_btn_failed', 'Failed — retry');
+      title = detail ? `${text}: ${detail}` : tr('inline_btn_failed_title', 'Couldn’t start. Click to try again.');
+    }
+    if (label && state !== 'loading') label.textContent = text;
+    button.title = title;
+    button.setAttribute('aria-label', state === 'idle' ? idleTitle : title);
+  }
+
+  function setButtonIdle(button) {
+    clearButtonTimers(button);
+    setButtonState(button, 'idle');
+  }
+
+  function setButtonSuccess(button) {
+    clearButtonTimers(button);
+    setButtonState(button, 'success');
+    getTimers(button).revert = setTimeout(() => setButtonState(button, 'idle'), SUCCESS_MS);
+  }
+
+  function setButtonError(button, detail, { errorType, retry } = {}) {
+    clearButtonTimers(button);
+    setButtonState(button, 'error', detail);
+    getTimers(button).revert = setTimeout(() => setButtonState(button, 'idle'), ERROR_MS);
+    // Also surface it in the floating panel (same content-script world) so a
+    // failure is never only a console warning.
+    try {
+      window.__redditToAiPanel?.showError(detail || tr('inline_btn_failed_title', 'Couldn’t start. Click to try again.'), {
+        errorType: errorType || 'generic',
+        onRetry: retry
+      });
+    } catch (err) {
+      console.warn('Reddit to AI: Could not show the error in the panel:', err);
+    }
+  }
+
   function createButtonElement(isMainPost = false) {
     const btn = document.createElement('button');
     btn.type = 'button';
@@ -156,30 +283,17 @@
     btn.style.gap = '4px';
     btn.style.userSelect = 'none';
 
-    const tooltip = (typeof t === 'function' ? t('reddit_btn_tooltip') : '') || 'Summarize thread with AI';
-    const label = (typeof t === 'function' ? t('reddit_btn_label') : '') || 'Reddit-to-AI';
+    const tooltip = tr('reddit_btn_tooltip', 'Summarize thread with AI');
+    const label = tr('inline_btn_label', 'Summarize with AI');
     btn.title = tooltip;
+    // The visible label is hidden below 640px, so the accessible name always comes
+    // from aria-label (kept in sync with the button state).
     btn.setAttribute('aria-label', tooltip);
+    btn.setAttribute('data-state', 'idle');
 
-    const svg = (typeof document.createElementNS === 'function')
-      ? document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-      : document.createElement('svg');
-    svg.setAttribute('class', 'r2ai-sparkle-icon');
-    svg.setAttribute('viewBox', '0 0 16 16');
-    svg.setAttribute('width', '14');
-    svg.setAttribute('height', '14');
-    svg.setAttribute('fill', 'none');
-    svg.style.flexShrink = '0';
-    svg.style.verticalAlign = 'middle';
-    svg.style.pointerEvents = 'none';
-
-    const path = (typeof document.createElementNS === 'function')
-      ? document.createElementNS('http://www.w3.org/2000/svg', 'path')
-      : document.createElement('path');
-    path.setAttribute('d', 'M8 1L9.5 5.5L14 7L9.5 8.5L8 13L6.5 8.5L2 7L6.5 5.5Z');
-    path.setAttribute('fill', 'currentColor');
-    svg.appendChild(path);
-    btn.appendChild(svg);
+    btn.appendChild(createIcon('r2ai-sparkle-icon', 'M8 1L9.5 5.5L14 7L9.5 8.5L8 13L6.5 8.5L2 7L6.5 5.5Z', 'fill'));
+    btn.appendChild(createIcon('r2ai-check-icon', 'M3.5 8.5L6.5 11.5L12.5 4.5', 'stroke'));
+    btn.appendChild(createIcon('r2ai-alert-icon', 'M8 4V9M8 11.5V12', 'stroke'));
 
     const labelEl = document.createElement('span');
     labelEl.className = 'r2ai-btn-text';
@@ -207,23 +321,43 @@
     }
 
     if (button.classList.contains('is-loading')) return;
-    button.classList.add('is-loading');
+    clearButtonTimers(button);
+    setButtonState(button, 'loading');
 
-    const spinner = button.querySelector('.r2ai-btn-spinner');
-    const icon = button.querySelector('.r2ai-sparkle-icon');
-    if (spinner) spinner.style.display = 'inline-block';
-    if (icon) icon.style.display = 'none';
+    const retry = () => handleButtonClick(
+      { preventDefault() {}, stopPropagation() {} },
+      button,
+      post,
+      isMainPost
+    );
+    const fail = (detail, errorType) => setButtonError(button, detail, { errorType, retry });
 
-    const timeoutId = setTimeout(() => {
-      resetLoading();
-    }, 30000);
-
-    function resetLoading() {
-      clearTimeout(timeoutId);
-      button.classList.remove('is-loading');
-      if (spinner) spinner.style.display = '';
-      if (icon) icon.style.display = '';
-    }
+    // Watchdog: if no terminal state arrives in time, ask the service worker where
+    // the scrape is instead of silently resetting. Long scrapes simply re-arm it.
+    const armWatchdog = () => {
+      getTimers(button).watchdog = setTimeout(() => {
+        if (!button.classList.contains('is-loading')) return;
+        try {
+          chrome.runtime.sendMessage({ action: 'getScrapingState' }, (state) => {
+            if (!button.classList.contains('is-loading')) return;
+            if (chrome.runtime?.lastError || !state) {
+              fail(tr('inline_error_no_response', 'The extension did not respond. Reload the page and try again.'), 'generic');
+            } else if (state.isActive) {
+              armWatchdog();
+            } else if (state.status === 'complete') {
+              setButtonSuccess(button);
+            } else if (state.error) {
+              fail(state.error, state.errorType);
+            } else {
+              fail(tr('inline_error_no_response', 'The extension did not respond. Reload the page and try again.'), 'generic');
+            }
+          });
+        } catch (err) {
+          fail(err?.message || String(err), 'generic');
+        }
+      }, WATCHDOG_MS);
+    };
+    armWatchdog();
 
     const permalink =
       post.getAttribute('permalink') ||
@@ -245,16 +379,16 @@
       chrome.runtime.sendMessage(message, (response) => {
         if (chrome.runtime?.lastError) {
           console.warn('Reddit to AI: Button send failed:', chrome.runtime.lastError.message);
-          resetLoading();
+          fail(tr('inline_error_no_response', 'The extension did not respond. Reload the page and try again.'), 'generic');
           return;
         }
         if (response && response.status === 'error') {
-          resetLoading();
+          fail(response.error, response.errorType);
         }
       });
     } catch (err) {
       console.warn('Reddit to AI: Error sending scrape message:', err);
-      resetLoading();
+      fail(tr('inline_error_no_response', 'The extension did not respond. Reload the page and try again.'), 'generic');
     }
   }
 
@@ -356,14 +490,22 @@
     chrome.runtime.onMessage.addListener((request) => {
       if (request?.action === 'updateFloatingPanel' || request?.action === 'scrapingStateUpdate') {
         const data = request.data;
-        const finished = data && (!data.isActive || !!data.error || data.status === 'complete' || data.phase === 'complete');
+        // A transient error belongs to another entry point (shortcut / context menu),
+        // not to the scrape this button started.
+        const finished = data && !data.transient &&
+          (!data.isActive || !!data.error || data.status === 'complete' || data.phase === 'complete');
         if (finished) {
           document.querySelectorAll('.r2ai-inline-btn.is-loading').forEach((btn) => {
-            btn.classList.remove('is-loading');
-            const sp = btn.querySelector('.r2ai-btn-spinner');
-            if (sp) sp.style.display = '';
-            const ic = btn.querySelector('.r2ai-sparkle-icon');
-            if (ic) ic.style.display = '';
+            if (data.error) {
+              // The panel already shows this error from the same state update.
+              clearButtonTimers(btn);
+              setButtonState(btn, 'error', data.error);
+              getTimers(btn).revert = setTimeout(() => setButtonState(btn, 'idle'), ERROR_MS);
+            } else if (data.status === 'complete' || data.phase === 'complete') {
+              setButtonSuccess(btn);
+            } else {
+              setButtonIdle(btn);
+            }
           });
         }
       }

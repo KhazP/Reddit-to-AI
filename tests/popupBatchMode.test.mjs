@@ -7,7 +7,7 @@ const html = await readFile(new URL('../src/popup.html', import.meta.url), 'utf8
 assert.match(html, /<option value="directOnce">Send directly once<\/option>/, 'popup direct mode is one-shot');
 assert.doesNotMatch(popup, /showPromptPreview:\s*\(sendModeSelect\?\.value \|\| 'preview'\) !== 'direct'/, 'popup must not persist direct send from mode select');
 assert.match(popup, /directSendOnce/, 'popup sends one-shot direct flag to service worker');
-assert.match(popup, /Scrape & Send Once/, 'single-thread direct CTA is explicit');
+assert.match(popup, /Scrape & Send to \$\{provider\}/, 'single-thread direct CTA names the destination');
 
 assert.match(html, /id="batchUrlStatus"/, 'popup renders live batch URL status');
 assert.match(popup, /function isRedditBatchUrl/, 'popup validates batch URLs as Reddit URLs');
