@@ -722,5 +722,1467 @@
     },
     "settings_reddit_btn_post": {
         "message": "Mostrar dentro das páginas de detalhes da postagem"
+    },
+    "panel_region_label": {
+        "message": "Progresso do Reddit to AI"
+    },
+    "panel_close_label": {
+        "message": "Fechar painel"
+    },
+    "panel_progress_label": {
+        "message": "Progresso da extração"
+    },
+    "panel_phase_fetch": {
+        "message": "Buscar"
+    },
+    "panel_phase_parse": {
+        "message": "Ler"
+    },
+    "panel_phase_load": {
+        "message": "Comentários"
+    },
+    "panel_phase_filter": {
+        "message": "Preparar"
+    },
+    "panel_badge_batch": {
+        "message": "Lote $CURRENT$ de $TOTAL$",
+        "placeholders": {
+            "current": {
+                "content": "$1"
+            },
+            "total": {
+                "content": "$2"
+            }
+        }
+    },
+    "panel_badge_comments": {
+        "message": "$COUNT$ comentários",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            }
+        }
+    },
+    "panel_done_sent": {
+        "message": "Enviado para $AI$",
+        "placeholders": {
+            "ai": {
+                "content": "$1"
+            }
+        }
+    },
+    "panel_ai_generic": {
+        "message": "sua IA"
+    },
+    "panel_done_sent_hint": {
+        "message": "A aba da IA já tem sua thread. Confira a resposta lá."
+    },
+    "panel_done_preview": {
+        "message": "Pronto na pré-visualização"
+    },
+    "panel_done_preview_hint": {
+        "message": "Revise o prompt na nova aba e depois envie."
+    },
+    "panel_error_title": {
+        "message": "Algo deu errado"
+    },
+    "panel_error_config_title": {
+        "message": "Configuração necessária"
+    },
+    "panel_error_not_reddit_title": {
+        "message": "Abra uma thread do Reddit primeiro"
+    },
+    "panel_error_busy_title": {
+        "message": "Já existe uma thread em andamento"
+    },
+    "panel_error_network_title": {
+        "message": "Problema de conexão"
+    },
+    "panel_error_stopped_title": {
+        "message": "Extração interrompida"
+    },
+    "panel_error_unknown": {
+        "message": "Ocorreu um erro inesperado."
+    },
+    "panel_error_unreachable": {
+        "message": "Não foi possível acessar a extensão. Recarregue a página e tente novamente."
+    },
+    "panel_btn_retry": {
+        "message": "Tentar novamente"
+    },
+    "panel_btn_dismiss": {
+        "message": "Dispensar"
+    },
+    "panel_btn_settings": {
+        "message": "Abrir configurações"
+    },
+    "panel_retrying": {
+        "message": "Tentando novamente…"
+    },
+    "inline_btn_label": {
+        "message": "Resumir com IA"
+    },
+    "inline_btn_working": {
+        "message": "Resumindo…"
+    },
+    "inline_btn_done": {
+        "message": "Pronto"
+    },
+    "inline_btn_failed": {
+        "message": "Falhou — repetir"
+    },
+    "inline_btn_failed_title": {
+        "message": "Não foi possível iniciar. Clique para tentar novamente."
+    },
+    "inline_error_no_response": {
+        "message": "A extensão não respondeu. Recarregue a página e tente novamente."
+    },
+    "popup_feedback_title": {
+        "message": "Enviar feedback"
+    },
+    "popup_settings_title": {
+        "message": "Configurações"
+    },
+    "popup_tab_scrape": {
+        "message": "Extrair"
+    },
+    "popup_tab_filters": {
+        "message": "Filtros"
+    },
+    "popup_filters_active_count": {
+        "message": "$COUNT$ ativos",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            }
+        }
+    },
+    "popup_filter_reset": {
+        "message": "Redefinir"
+    },
+    "popup_empty_title": {
+        "message": "Abra uma thread do Reddit para começar"
+    },
+    "popup_empty_hint": {
+        "message": "Em uma thread, use o botão Reddit to AI ao lado de Compartilhar ou pressione Alt+Shift+S."
+    },
+    "popup_preset_question": {
+        "message": "O que você quer?"
+    },
+    "popup_saved_presets_label": {
+        "message": "Suas predefinições"
+    },
+    "popup_saved_presets_more": {
+        "message": "+$COUNT$ mais",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            }
+        }
+    },
+    "popup_saved_presets_more_title": {
+        "message": "Gerencie todas as predefinições nas Configurações"
+    },
+    "popup_saved_preset_applied": {
+        "message": "Usando \"$NAME$\".",
+        "placeholders": {
+            "name": {
+                "content": "$1"
+            }
+        }
+    },
+    "popup_saved_preset_saved": {
+        "message": "Predefinição \"$NAME$\" salva.",
+        "placeholders": {
+            "name": {
+                "content": "$1"
+            }
+        }
+    },
+    "popup_label_mode": {
+        "message": "Modo"
+    },
+    "popup_label_format": {
+        "message": "Formato da resposta"
+    },
+    "popup_label_custom_prompt": {
+        "message": "Prompt personalizado (opcional)"
+    },
+    "popup_quick_prompt_placeholder": {
+        "message": "Digite suas próprias instruções para substituir a predefinição..."
+    },
+    "popup_save_quick_prompt": {
+        "message": "Salvar como predefinição"
+    },
+    "popup_save_quick_prompt_disabled": {
+        "message": "Digite um prompt personalizado primeiro"
+    },
+    "popup_dont_save_label": {
+        "message": "Não salvar esta extração no histórico"
+    },
+    "popup_summary_custom_prompt": {
+        "message": "Prompt personalizado"
+    },
+    "popup_summary_not_saved": {
+        "message": "Não salvo"
+    },
+    "popup_btn_scrape_send": {
+        "message": "Extrair e enviar para $PROVIDER$",
+        "placeholders": {
+            "provider": {
+                "content": "$1"
+            }
+        }
+    },
+    "popup_btn_done": {
+        "message": "Pronto"
+    },
+    "popup_btn_disabled_not_thread": {
+        "message": "Abra uma thread do Reddit (ou adicione URLs em lote em Filtros) para extrair."
+    },
+    "popup_btn_shortcut_hint": {
+        "message": "Atalho: Ctrl+Enter (Cmd+Enter no Mac)"
+    },
+    "popup_budget_none": {
+        "message": "Nenhuma thread para estimar ainda"
+    },
+    "popup_budget_line_safe": {
+        "message": "~$TOKENS$ tokens · cabe no $PROVIDER$",
+        "placeholders": {
+            "tokens": {
+                "content": "$1"
+            },
+            "provider": {
+                "content": "$2"
+            }
+        }
+    },
+    "popup_budget_line_moderate": {
+        "message": "~$TOKENS$ tokens · longo para o $PROVIDER$",
+        "placeholders": {
+            "tokens": {
+                "content": "$1"
+            },
+            "provider": {
+                "content": "$2"
+            }
+        }
+    },
+    "popup_budget_line_large": {
+        "message": "~$TOKENS$ tokens · perto do limite do $PROVIDER$",
+        "placeholders": {
+            "tokens": {
+                "content": "$1"
+            },
+            "provider": {
+                "content": "$2"
+            }
+        }
+    },
+    "popup_budget_line_over": {
+        "message": "~$TOKENS$ tokens · longo demais para o $PROVIDER$",
+        "placeholders": {
+            "tokens": {
+                "content": "$1"
+            },
+            "provider": {
+                "content": "$2"
+            }
+        }
+    },
+    "popup_estimate_scope": {
+        "message": "$CONTEXT$ · profundidade $DEPTH$",
+        "placeholders": {
+            "context": {
+                "content": "$1"
+            },
+            "depth": {
+                "content": "$2"
+            }
+        }
+    },
+    "popup_context_best": {
+        "message": "Melhor qualidade"
+    },
+    "popup_context_best_desc": {
+        "message": "Maior orçamento para a resposta mais completa"
+    },
+    "popup_export_label": {
+        "message": "Exportar a última extração"
+    },
+    "popup_export_disabled_hint": {
+        "message": "As exportações ficam disponíveis após sua primeira extração."
+    },
+    "popup_export_done": {
+        "message": "Salvo"
+    },
+    "popup_export_failed": {
+        "message": "Falha na exportação."
+    },
+    "popup_export_nodata": {
+        "message": "Não há dados para exportar."
+    },
+    "popup_toast_dismiss": {
+        "message": "Dispensar"
+    },
+    "preview_back": {
+        "message": "Voltar"
+    },
+    "preview_back_title": {
+        "message": "Voltar para a aba do Reddit"
+    },
+    "preview_badge": {
+        "message": "Prévia"
+    },
+    "preview_loading_thread": {
+        "message": "Carregando tópico…"
+    },
+    "preview_no_thread": {
+        "message": "Nenhum tópico carregado"
+    },
+    "preview_tabs_label": {
+        "message": "Visualizações da prévia"
+    },
+    "preview_tab_prompt": {
+        "message": "Prompt e envio"
+    },
+    "preview_tab_prune": {
+        "message": "Filtrar comentários"
+    },
+    "preview_export": {
+        "message": "Exportar"
+    },
+    "preview_save_preset": {
+        "message": "Salvar predefinição"
+    },
+    "preview_save_preset_title": {
+        "message": "Salvar o prompt e as configurações atuais como uma predefinição reutilizável"
+    },
+    "preview_copy": {
+        "message": "Copiar"
+    },
+    "preview_copy_title": {
+        "message": "Copiar o prompt para a área de transferência"
+    },
+    "preview_copied": {
+        "message": "Copiado ✓"
+    },
+    "preview_copy_failed": {
+        "message": "Falha ao copiar"
+    },
+    "preview_empty_short": {
+        "message": "Vazio"
+    },
+    "preview_send_to": {
+        "message": "Enviar para $PROVIDER$",
+        "placeholders": {
+            "provider": {
+                "content": "$1",
+                "example": "Gemini"
+            }
+        }
+    },
+    "preview_send_title": {
+        "message": "Abrir o chat de IA com este prompt"
+    },
+    "preview_sending": {
+        "message": "Abrindo…"
+    },
+    "preview_sent": {
+        "message": "Enviado ✓"
+    },
+    "preview_send_failed": {
+        "message": "Falhou — tente de novo"
+    },
+    "preview_provider_fallback": {
+        "message": "IA"
+    },
+    "preview_needs_thread": {
+        "message": "Carregue um tópico primeiro — ainda não há prompt."
+    },
+    "preview_preset_name_label": {
+        "message": "Nome da predefinição"
+    },
+    "preview_preset_name_hint": {
+        "message": "Salva este prompt com a predefinição de contexto, a estratégia de corte e as configurações de mídia e formato atuais."
+    },
+    "preview_preset_name_default": {
+        "message": "Predefinição personalizada da prévia"
+    },
+    "preview_preset_name_sub": {
+        "message": "Predefinição r/$SUBREDDIT$",
+        "placeholders": {
+            "subreddit": {
+                "content": "$1",
+                "example": "AskReddit"
+            }
+        }
+    },
+    "preview_cancel": {
+        "message": "Cancelar"
+    },
+    "preview_save": {
+        "message": "Salvar"
+    },
+    "preview_saved": {
+        "message": "Salvo ✓"
+    },
+    "preview_save_failed": {
+        "message": "Não salvo"
+    },
+    "preview_final_prompt": {
+        "message": "Prompt final"
+    },
+    "preview_edit_hint": {
+        "message": "Você pode editar este texto antes de enviar."
+    },
+    "preview_rebuild_notice": {
+        "message": "As configurações mudaram. Seu prompt editado foi mantido."
+    },
+    "preview_apply_rebuilt": {
+        "message": "Aplicar prompt regenerado"
+    },
+    "preview_keep_edits": {
+        "message": "Manter edições"
+    },
+    "preview_restore_prompt": {
+        "message": "Restaurar prompt gerado"
+    },
+    "preview_prompt_placeholder": {
+        "message": "O prompt gerado aparecerá aqui…"
+    },
+    "preview_shortcut_send": {
+        "message": "para enviar"
+    },
+    "preview_shortcut_copy": {
+        "message": "para copiar"
+    },
+    "preview_load_error_title": {
+        "message": "Não foi possível carregar este tópico"
+    },
+    "preview_load_error_hint": {
+        "message": "Tente novamente. Se continuar falhando, feche esta aba e faça a extração de novo a partir do tópico do Reddit."
+    },
+    "preview_load_error_none": {
+        "message": "Nenhum tópico extraído foi encontrado para esta aba. Ele pode ter expirado."
+    },
+    "preview_try_again": {
+        "message": "Tentar novamente"
+    },
+    "preview_budget_eyebrow": {
+        "message": "Orçamento de contexto da IA"
+    },
+    "preview_budget_preparing": {
+        "message": "Preparando o orçamento de contexto."
+    },
+    "preview_budget_unavailable": {
+        "message": "O orçamento aparece quando um tópico é carregado."
+    },
+    "preview_budget_level": {
+        "message": "Tamanho: $LEVEL$",
+        "placeholders": {
+            "level": {
+                "content": "$1",
+                "example": "Low"
+            }
+        }
+    },
+    "preview_unit_tokens": {
+        "message": "tokens"
+    },
+    "preview_unit_chars": {
+        "message": "caract."
+    },
+    "preview_unit_comments": {
+        "message": "comentários"
+    },
+    "preview_unit_images": {
+        "message": "imagens"
+    },
+    "preview_guidance_critical": {
+        "message": "$PROVIDER$ pode rejeitar ou truncar isto. Use Balanced ou Small antes de enviar.",
+        "placeholders": {
+            "provider": {
+                "content": "$1",
+                "example": "Gemini"
+            }
+        }
+    },
+    "preview_guidance_high": {
+        "message": "$PROVIDER$ só deve lidar com isso em modelos de contexto grande. Considere cortar comentários.",
+        "placeholders": {
+            "provider": {
+                "content": "$1",
+                "example": "Gemini"
+            }
+        }
+    },
+    "preview_guidance_medium": {
+        "message": "$PROVIDER$ geralmente aceita isto, mas modelos menores podem encurtar a resposta.",
+        "placeholders": {
+            "provider": {
+                "content": "$1",
+                "example": "Gemini"
+            }
+        }
+    },
+    "preview_guidance_low": {
+        "message": "$PROVIDER$ deve ter espaço de sobra para este prompt.",
+        "placeholders": {
+            "provider": {
+                "content": "$1",
+                "example": "Gemini"
+            }
+        }
+    },
+    "preview_params_eyebrow": {
+        "message": "Configurações do prompt"
+    },
+    "preview_field_context": {
+        "message": "Predefinição de contexto"
+    },
+    "preview_field_trim": {
+        "message": "Estratégia de corte"
+    },
+    "preview_field_format": {
+        "message": "Formato de saída"
+    },
+    "preview_field_platform": {
+        "message": "Plataforma de IA"
+    },
+    "preview_field_media": {
+        "message": "Tratamento de mídia"
+    },
+    "preview_skip_label": {
+        "message": "Pular esta prévia da próxima vez"
+    },
+    "preview_skip_hint": {
+        "message": "As próximas extrações serão coladas direto no chat de IA, sem parar aqui. Você pode reativar a prévia nas Opções."
+    },
+    "preview_missing_title": {
+        "message": "Algumas respostas não puderam ser carregadas — o tópico pode estar incompleto."
+    },
+    "preview_missing_text": {
+        "message": "Você pode tentar carregá-las de novo antes de enviar."
+    },
+    "preview_missing_count": {
+        "message": "Não foi possível carregar $COUNT$ respostas. Tente carregá-las de novo antes de enviar.",
+        "placeholders": {
+            "count": {
+                "content": "$1",
+                "example": "12"
+            }
+        }
+    },
+    "preview_missing_resume": {
+        "message": "Carregar respostas ausentes"
+    },
+    "preview_missing_resuming": {
+        "message": "Carregando respostas…"
+    },
+    "preview_prune_title": {
+        "message": "Escolha quais comentários incluir"
+    },
+    "preview_prune_description": {
+        "message": "Desmarque um comentário para deixá-lo fora do prompt. As respostas dele também ficam de fora."
+    },
+    "preview_select_all": {
+        "message": "Selecionar tudo"
+    },
+    "preview_clear_all": {
+        "message": "Limpar tudo"
+    },
+    "preview_tree_empty_title": {
+        "message": "Nenhum comentário para escolher"
+    },
+    "preview_tree_empty_body": {
+        "message": "Este tópico não tem comentários, ou a predefinição de contexto atual não deixou nenhum no prompt."
+    },
+    "preview_api_error_title": {
+        "message": "A solicitação não foi concluída"
+    },
+    "preview_api_sending": {
+        "message": "Enviando…"
+    },
+    "preview_api_done": {
+        "message": "Pronto ✓"
+    },
+    "preview_api_failed_short": {
+        "message": "Falhou"
+    },
+    "preview_api_send_disabled": {
+        "message": "Adicione uma chave de API deste provedor nas Opções para enviar."
+    },
+    "preview_api_no_key_option": {
+        "message": "$PROVIDER$ (sem chave)",
+        "placeholders": {
+            "provider": {
+                "content": "$1",
+                "example": "OpenAI"
+            }
+        }
+    },
+    "preview_status_ready_short": {
+        "message": "Pronto."
+    },
+    "preview_status_ready": {
+        "message": "Pronto. Revise ou edite o prompt e depois envie."
+    },
+    "preview_status_loading": {
+        "message": "Carregando o tópico extraído…"
+    },
+    "preview_status_load_failed": {
+        "message": "Não foi possível carregar o tópico."
+    },
+    "preview_status_already_sending": {
+        "message": "A aba de IA já está sendo aberta."
+    },
+    "preview_status_empty": {
+        "message": "O prompt está vazio — adicione algum texto antes de enviar."
+    },
+    "preview_status_opening": {
+        "message": "Abrindo $PROVIDER$…",
+        "placeholders": {
+            "provider": {
+                "content": "$1",
+                "example": "Gemini"
+            }
+        }
+    },
+    "preview_status_sent": {
+        "message": "$PROVIDER$ foi aberto. Se o prompt não for colado automaticamente, use o botão de copiar naquela página.",
+        "placeholders": {
+            "provider": {
+                "content": "$1",
+                "example": "Gemini"
+            }
+        }
+    },
+    "preview_status_send_failed": {
+        "message": "Não foi possível enviar o prompt. Tente de novo ou copie-o."
+    },
+    "preview_status_copied": {
+        "message": "Prompt copiado para a área de transferência."
+    },
+    "preview_status_nothing_to_copy": {
+        "message": "O prompt está vazio — nada para copiar."
+    },
+    "preview_status_copy_failed": {
+        "message": "Não foi possível copiar. Selecione o texto e pressione Ctrl+C."
+    },
+    "preview_status_copy_failed_short": {
+        "message": "Falha ao copiar."
+    },
+    "preview_status_export_nodata": {
+        "message": "Não há dados para exportar."
+    },
+    "preview_status_exported": {
+        "message": "Exportado como $FORMAT$.",
+        "placeholders": {
+            "format": {
+                "content": "$1",
+                "example": "MD"
+            }
+        }
+    },
+    "preview_status_export_failed": {
+        "message": "Falha na exportação."
+    },
+    "preview_status_preset_name_needed": {
+        "message": "Dê um nome à predefinição primeiro."
+    },
+    "preview_status_preset_saved": {
+        "message": "Predefinição “$NAME$” salva.",
+        "placeholders": {
+            "name": {
+                "content": "$1",
+                "example": "Weekly digest"
+            }
+        }
+    },
+    "preview_status_preset_failed": {
+        "message": "Não foi possível salvar a predefinição: $ERROR$",
+        "placeholders": {
+            "error": {
+                "content": "$1",
+                "example": "QUOTA_BYTES quota exceeded"
+            }
+        }
+    },
+    "preview_status_rebuilt": {
+        "message": "Prompt regenerado aplicado."
+    },
+    "preview_status_kept": {
+        "message": "Prompt editado mantido."
+    },
+    "preview_status_restored": {
+        "message": "Prompt gerado restaurado."
+    },
+    "preview_status_skip_on": {
+        "message": "Da próxima vez, as extrações irão direto para o chat de IA."
+    },
+    "preview_status_skip_off": {
+        "message": "Da próxima vez, as extrações abrirão esta prévia primeiro."
+    },
+    "preview_status_resuming": {
+        "message": "Tentando carregar as respostas ausentes…"
+    },
+    "preview_status_resume_failed": {
+        "message": "Não foi possível carregar as respostas ausentes."
+    },
+    "preview_status_resumed": {
+        "message": "Pronto. $COUNT$ respostas adicionadas.",
+        "placeholders": {
+            "count": {
+                "content": "$1",
+                "example": "8"
+            }
+        }
+    },
+    "preview_status_focus_failed": {
+        "message": "Não foi possível encontrar a aba do Reddit."
+    },
+    "preview_threads_combined": {
+        "message": "$COUNT$ tópicos do Reddit combinados para comparação.",
+        "placeholders": {
+            "count": {
+                "content": "$1",
+                "example": "3"
+            }
+        }
+    },
+    "options_header_settings": {
+        "message": "Configurações"
+    },
+    "options_nav_aria": {
+        "message": "Seções de configurações"
+    },
+    "options_nav_ai": {
+        "message": "IA e envio"
+    },
+    "options_nav_prompts": {
+        "message": "Prompts"
+    },
+    "options_nav_scraping": {
+        "message": "Coleta"
+    },
+    "options_nav_reddit": {
+        "message": "Botão do Reddit"
+    },
+    "options_nav_general": {
+        "message": "Geral"
+    },
+    "options_nav_history": {
+        "message": "Histórico"
+    },
+    "options_nav_advanced": {
+        "message": "Avançado"
+    },
+    "options_pane_ai_desc": {
+        "message": "Para onde vão seus tópicos do Reddit e o que acontece ao enviar um."
+    },
+    "options_pane_prompts_desc": {
+        "message": "O que a IA deve fazer com cada tópico."
+    },
+    "options_pane_scraping_desc": {
+        "message": "Quanto de um tópico é coletado e quais comentários são mantidos."
+    },
+    "options_pane_general_desc": {
+        "message": "Aparência, idioma, notificações e seus dados."
+    },
+    "options_pane_history_desc": {
+        "message": "Tópicos coletados recentemente. Reenvie um para outra IA, compare vários ou exporte-os."
+    },
+    "options_pane_advanced_desc": {
+        "message": "Para usuários avançados e solução de problemas. Os padrões funcionam bem para a maioria."
+    },
+    "options_platform_custom": {
+        "message": "Site personalizado"
+    },
+    "options_hint_custom_platform": {
+        "message": "Sites personalizados (como uma WebUI local) são adicionados em Avançado › Sites de IA personalizados."
+    },
+    "options_card_send_flow_title": {
+        "message": "Ao enviar um tópico"
+    },
+    "options_label_show_preview": {
+        "message": "Mostrar prévia do prompt antes de enviar"
+    },
+    "options_hint_show_preview": {
+        "message": "Desative para coletar e abrir a aba da IA imediatamente."
+    },
+    "options_label_output_format": {
+        "message": "Formato da resposta"
+    },
+    "options_hint_output_format": {
+        "message": "O formato em que a IA deve responder. Você pode mudar por tópico na prévia."
+    },
+    "options_format_auto": {
+        "message": "Deixar a IA decidir"
+    },
+    "options_format_bullets": {
+        "message": "Tópicos"
+    },
+    "options_format_table": {
+        "message": "Tabela"
+    },
+    "options_format_pros_cons": {
+        "message": "Prós e contras"
+    },
+    "options_format_executive": {
+        "message": "Resumo executivo"
+    },
+    "options_hint_prompt_plain": {
+        "message": "Use {content} onde o tópico do Reddit deve entrar. Escolha “Personalizado” para escrever o seu."
+    },
+    "options_card_saved_presets_title": {
+        "message": "Predefinições de prompt salvas"
+    },
+    "options_saved_presets_desc": {
+        "message": "Predefinições salvas no pop-up ou na página de prévia."
+    },
+    "options_saved_presets_empty": {
+        "message": "Nenhuma predefinição salva ainda"
+    },
+    "options_saved_presets_none_hint": {
+        "message": "Nenhuma predefinição salva"
+    },
+    "options_btn_import_presets": {
+        "message": "Importar predefinições"
+    },
+    "options_btn_export_presets": {
+        "message": "Exportar predefinições"
+    },
+    "options_btn_clear_presets": {
+        "message": "Excluir todas as predefinições"
+    },
+    "options_confirm_clear_presets": {
+        "message": "Excluir todas as predefinições salvas? Não é possível desfazer."
+    },
+    "options_btn_cancel": {
+        "message": "Cancelar"
+    },
+    "options_btn_delete_all": {
+        "message": "Excluir tudo"
+    },
+    "options_btn_use": {
+        "message": "Usar"
+    },
+    "options_btn_export": {
+        "message": "Exportar"
+    },
+    "options_btn_remove": {
+        "message": "Remover"
+    },
+    "options_untitled_preset": {
+        "message": "Predefinição sem título"
+    },
+    "options_unknown_date": {
+        "message": "Data desconhecida"
+    },
+    "options_preset_applied": {
+        "message": "Agora usando “$NAME$” como seu prompt personalizado.",
+        "placeholders": {
+            "name": {
+                "content": "$1"
+            }
+        }
+    },
+    "options_preset_deleted": {
+        "message": "Predefinição excluída."
+    },
+    "options_preset_exported": {
+        "message": "Predefinição exportada."
+    },
+    "options_presets_exported": {
+        "message": "Predefinições exportadas."
+    },
+    "options_presets_imported": {
+        "message": "$COUNT$ predefinição(ões) importada(s).",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            }
+        }
+    },
+    "options_presets_cleared": {
+        "message": "Todas as predefinições salvas foram excluídas."
+    },
+    "options_import_no_presets": {
+        "message": "Esse arquivo não contém predefinições de prompt."
+    },
+    "options_author_op_label": {
+        "message": "Autor original (OP)"
+    },
+    "options_author_flaired_label": {
+        "message": "Usuários com flair"
+    },
+    "options_author_summary_all": {
+        "message": "Incluindo comentários de todos. Ative uma ou as duas opções para manter só esses autores."
+    },
+    "options_author_summary_op": {
+        "message": "Apenas comentários do autor original."
+    },
+    "options_author_summary_flaired": {
+        "message": "Apenas comentários de usuários com flair."
+    },
+    "options_author_summary_both": {
+        "message": "Apenas comentários do autor original ou de usuários com flair."
+    },
+    "options_scraping_more_hint": {
+        "message": "Tamanho do prompt, ordem dos comentários e mídia ficam em"
+    },
+    "options_reddit_btn_disabled_hint": {
+        "message": "Ative o botão na página para escolher onde ele aparece."
+    },
+    "options_card_appearance_title": {
+        "message": "Aparência"
+    },
+    "options_label_theme": {
+        "message": "Tema"
+    },
+    "options_theme_auto": {
+        "message": "Automático"
+    },
+    "options_theme_dark": {
+        "message": "Escuro"
+    },
+    "options_theme_light": {
+        "message": "Claro"
+    },
+    "options_hint_theme": {
+        "message": "Automático segue a configuração do sistema."
+    },
+    "options_language_applied": {
+        "message": "Idioma aplicado."
+    },
+    "options_storage_desc": {
+        "message": "O que acontece com um tópico coletado depois de enviado."
+    },
+    "options_backup_title": {
+        "message": "Backup das configurações"
+    },
+    "options_backup_hint": {
+        "message": "Exporta suas preferências como arquivo JSON. Chaves de API nunca são incluídas."
+    },
+    "options_btn_export_settings": {
+        "message": "Exportar configurações"
+    },
+    "options_btn_import_settings": {
+        "message": "Importar configurações"
+    },
+    "options_settings_exported": {
+        "message": "Configurações exportadas."
+    },
+    "options_import_bad_json": {
+        "message": "Não foi possível ler o arquivo como JSON:"
+    },
+    "options_import_read_failed": {
+        "message": "Não foi possível ler o arquivo."
+    },
+    "options_import_no_settings": {
+        "message": "Esse arquivo não contém configurações."
+    },
+    "options_import_none_recognized": {
+        "message": "Esse arquivo não contém configurações reconhecidas."
+    },
+    "options_import_failed": {
+        "message": "Não foi possível importar as configurações:"
+    },
+    "options_telemetry_default_on": {
+        "message": "Ativado por padrão"
+    },
+    "options_telemetry_sent_label": {
+        "message": "Enviado"
+    },
+    "options_telemetry_sent": {
+        "message": "Quantas vezes cinco coisas aconteceram (instalação, atualização, sessão do navegador iniciada, tópico extraído, prompt enviado), além de um ID de instalação aleatório e a versão da extensão."
+    },
+    "options_telemetry_never_label": {
+        "message": "Nunca enviado"
+    },
+    "options_telemetry_never": {
+        "message": "Conteúdo do Reddit, URLs, nomes de subreddits, títulos, prompts, chaves de API ou qualquer coisa que você digite."
+    },
+    "options_telemetry_when_label": {
+        "message": "Com que frequência"
+    },
+    "options_telemetry_when": {
+        "message": "No máximo uma vez a cada 30 minutos. Desativar apaga o ID de instalação e as contagens ainda não enviadas."
+    },
+    "options_telemetry_unsupported": {
+        "message": "Nesta versão para navegador, as contagens de uso nunca são enviadas."
+    },
+    "options_history_filters_aria": {
+        "message": "Filtros do histórico"
+    },
+    "options_history_search_placeholder": {
+        "message": "Buscar título, subreddit, flair, URL..."
+    },
+    "options_history_all_platforms": {
+        "message": "Todas as plataformas de IA"
+    },
+    "options_history_all_presets": {
+        "message": "Todos os prompts"
+    },
+    "options_history_any_date": {
+        "message": "Qualquer data"
+    },
+    "options_history_today": {
+        "message": "Hoje"
+    },
+    "options_history_week": {
+        "message": "Últimos 7 dias"
+    },
+    "options_history_month": {
+        "message": "Últimos 30 dias"
+    },
+    "options_history_min_comments": {
+        "message": "Mín. comentários"
+    },
+    "options_aria_platform": {
+        "message": "Plataforma de IA"
+    },
+    "options_aria_prompt": {
+        "message": "Prompt"
+    },
+    "options_aria_date": {
+        "message": "Data"
+    },
+    "options_aria_pattern": {
+        "message": "Padrão de subreddit"
+    },
+    "options_aria_test_sub": {
+        "message": "Subreddit para testar"
+    },
+    "options_aria_site": {
+        "message": "Endereço do site"
+    },
+    "options_btn_compare": {
+        "message": "Comparar selecionados"
+    },
+    "options_compare_hint": {
+        "message": "Selecione pelo menos dois tópicos para comparar"
+    },
+    "options_compare_selected": {
+        "message": "$COUNT$ selecionado(s) para comparar",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            }
+        }
+    },
+    "options_history_compare": {
+        "message": "Comparar"
+    },
+    "options_history_comments": {
+        "message": "$COUNT$ comentários",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            }
+        }
+    },
+    "options_history_pin": {
+        "message": "Fixar"
+    },
+    "options_history_unpin": {
+        "message": "Desafixar"
+    },
+    "options_history_favorite": {
+        "message": "Adicionar aos favoritos"
+    },
+    "options_history_unfavorite": {
+        "message": "Remover dos favoritos"
+    },
+    "options_history_no_match": {
+        "message": "Nenhum item do histórico corresponde aos filtros"
+    },
+    "options_hist_opening_preview": {
+        "message": "Abrindo a prévia do item..."
+    },
+    "options_hist_preview_opened": {
+        "message": "Prévia aberta."
+    },
+    "options_hist_resend_failed": {
+        "message": "Não foi possível reenviar o item:"
+    },
+    "options_hist_deleted": {
+        "message": "Item excluído."
+    },
+    "options_hist_delete_failed": {
+        "message": "Não foi possível excluir o item:"
+    },
+    "options_hist_export_failed": {
+        "message": "Não foi possível exportar o item:"
+    },
+    "options_hist_exported": {
+        "message": "Item exportado."
+    },
+    "options_hist_update_failed": {
+        "message": "Não foi possível atualizar o item:"
+    },
+    "options_hist_pinned": {
+        "message": "Item fixado."
+    },
+    "options_hist_unpinned": {
+        "message": "Item desafixado."
+    },
+    "options_hist_favorited": {
+        "message": "Adicionado aos favoritos."
+    },
+    "options_hist_unfavorited": {
+        "message": "Removido dos favoritos."
+    },
+    "options_hist_opening_compare": {
+        "message": "Abrindo a prévia de comparação..."
+    },
+    "options_hist_compare_opened": {
+        "message": "Prévia de comparação aberta."
+    },
+    "options_hist_compare_failed": {
+        "message": "Não foi possível comparar os itens:"
+    },
+    "options_hist_cleared": {
+        "message": "Histórico apagado."
+    },
+    "options_hist_clear_failed": {
+        "message": "Não foi possível apagar o histórico:"
+    },
+    "options_adv_tuning_title": {
+        "message": "Tamanho do prompt e seleção de comentários"
+    },
+    "options_adv_tuning_desc": {
+        "message": "Quanto do tópico entra no prompt e quais comentários ficam quando ele é reduzido."
+    },
+    "options_label_context_budget": {
+        "message": "Tamanho padrão do prompt"
+    },
+    "options_hint_context_budget": {
+        "message": "O tamanho inicial do prompt na prévia. Prompts maiores mantêm mais comentários."
+    },
+    "options_context_small": {
+        "message": "Pequeno"
+    },
+    "options_context_balanced": {
+        "message": "Equilibrado"
+    },
+    "options_context_full": {
+        "message": "Completo"
+    },
+    "options_context_max": {
+        "message": "Máximo (melhor qualidade)"
+    },
+    "options_label_trim": {
+        "message": "Ao reduzir, manter"
+    },
+    "options_trim_top": {
+        "message": "Mais votados"
+    },
+    "options_trim_controversial": {
+        "message": "Polêmicos"
+    },
+    "options_trim_op": {
+        "message": "Respostas do OP"
+    },
+    "options_trim_flaired": {
+        "message": "Usuários com flair"
+    },
+    "options_trim_diverse": {
+        "message": "Pontos de vista diversos"
+    },
+    "options_trim_newest": {
+        "message": "Mais recentes"
+    },
+    "options_trim_longest": {
+        "message": "Comentários úteis mais longos"
+    },
+    "options_label_sort": {
+        "message": "Ordem dos comentários do Reddit"
+    },
+    "options_sort_best": {
+        "message": "Melhores"
+    },
+    "options_sort_top": {
+        "message": "Mais votados"
+    },
+    "options_sort_new": {
+        "message": "Novos"
+    },
+    "options_sort_controversial": {
+        "message": "Polêmicos"
+    },
+    "options_sort_old": {
+        "message": "Antigos"
+    },
+    "options_sort_qa": {
+        "message": "Perguntas e respostas"
+    },
+    "options_sort_live": {
+        "message": "Ao vivo"
+    },
+    "options_label_media": {
+        "message": "Imagens e mídia"
+    },
+    "options_media_attach": {
+        "message": "Anexar imagens e listar links de mídia"
+    },
+    "options_media_urls": {
+        "message": "Listar apenas links de mídia"
+    },
+    "options_media_ignore": {
+        "message": "Ignorar mídia"
+    },
+    "options_adv_mappings_desc": {
+        "message": "Use automaticamente outro prompt para certos subreddits."
+    },
+    "options_mappings_empty_input": {
+        "message": "Digite primeiro um nome ou padrão de subreddit."
+    },
+    "options_mappings_duplicate": {
+        "message": "Já existe uma regra para esse padrão."
+    },
+    "options_mappings_added": {
+        "message": "Regra adicionada."
+    },
+    "options_tester_match": {
+        "message": "Corresponde"
+    },
+    "options_tester_nomatch": {
+        "message": "Sem correspondência"
+    },
+    "options_tester_match_detail": {
+        "message": "r/$SUB$ corresponde a “$PATTERN$”, então usa o prompt $PRESET$.",
+        "placeholders": {
+            "sub": {
+                "content": "$1"
+            },
+            "pattern": {
+                "content": "$2"
+            },
+            "preset": {
+                "content": "$3"
+            }
+        }
+    },
+    "options_tester_nomatch_detail": {
+        "message": "r/$SUB$ não corresponde a nenhuma regra, então usa seu prompt padrão ($PRESET$).",
+        "placeholders": {
+            "sub": {
+                "content": "$1"
+            },
+            "preset": {
+                "content": "$2"
+            }
+        }
+    },
+    "options_adv_custom_title": {
+        "message": "Sites de IA personalizados"
+    },
+    "options_adv_custom_desc": {
+        "message": "Envie tópicos para um app web de IA próprio ou local."
+    },
+    "options_custom_origin_hint": {
+        "message": "Digite o endereço do seu app web de IA (por exemplo http://localhost:3000). O Chrome pedirá permissão de acesso ao site."
+    },
+    "options_btn_add_custom_origin": {
+        "message": "Adicionar site"
+    },
+    "options_custom_origin_empty": {
+        "message": "Nenhum site personalizado ainda."
+    },
+    "options_custom_origin_empty_input": {
+        "message": "Digite primeiro um endereço, por exemplo http://localhost:3000."
+    },
+    "options_custom_origin_invalid": {
+        "message": "Isso não parece um endereço web. Tente algo como http://localhost:3000."
+    },
+    "options_custom_origin_requesting": {
+        "message": "Aguardando você permitir o acesso…"
+    },
+    "options_custom_origin_error": {
+        "message": "Não foi possível solicitar acesso:"
+    },
+    "options_custom_origin_denied": {
+        "message": "O acesso não foi permitido, então o site não foi adicionado."
+    },
+    "options_custom_origin_exists": {
+        "message": "Esse site já está na lista."
+    },
+    "options_custom_origin_added": {
+        "message": "Site adicionado."
+    },
+    "options_custom_origin_removed": {
+        "message": "Site removido."
+    },
+    "options_custom_origin_remove_title": {
+        "message": "Remover o site e revogar o acesso"
+    },
+    "options_adv_selectors_title": {
+        "message": "Seletores do campo de entrada"
+    },
+    "options_adv_selectors_desc": {
+        "message": "Se colar em um site de IA parar de funcionar após uma mudança de layout, indique aqui a caixa de texto certa."
+    },
+    "options_selectors_hint": {
+        "message": "Seletores CSS. Deixe vazio para usar o padrão interno."
+    },
+    "options_footer_version": {
+        "message": "Reddit to AI v$VERSION$",
+        "placeholders": {
+            "version": {
+                "content": "$1"
+            }
+        }
+    },
+    "welcome_page_title": {
+        "message": "Boas-vindas ao Reddit to AI"
+    },
+    "welcome_progress_aria": {
+        "message": "Progresso da configuração"
+    },
+    "welcome_dot_1": {
+        "message": "Etapa 1: Escolha sua IA"
+    },
+    "welcome_dot_2": {
+        "message": "Etapa 2: Formas de começar"
+    },
+    "welcome_dot_3": {
+        "message": "Etapa 3: Privacidade"
+    },
+    "welcome_step_count": {
+        "message": "Etapa $CURRENT$ de $TOTAL$",
+        "placeholders": {
+            "current": {
+                "content": "$1"
+            },
+            "total": {
+                "content": "$2"
+            }
+        }
+    },
+    "welcome_eyebrow": {
+        "message": "Boas-vindas — vamos configurar"
+    },
+    "welcome_step1_title": {
+        "message": "Escolha sua IA"
+    },
+    "welcome_step1_lead": {
+        "message": "Para onde seus tópicos do Reddit devem ir? O tópico abre lá com o prompt já colado. Você pode mudar isso quando quiser."
+    },
+    "welcome_step1_more": {
+        "message": "Um site de IA local ou próprio, ou sua própria chave de API, pode ser adicionado depois nas Configurações."
+    },
+    "welcome_provider_saved": {
+        "message": "Salvo — os tópicos vão abrir no $NAME$.",
+        "placeholders": {
+            "name": {
+                "content": "$1"
+            }
+        }
+    },
+    "welcome_save_failed": {
+        "message": "Não foi possível salvar. Tente novamente."
+    },
+    "welcome_step2_title": {
+        "message": "Quatro formas de começar"
+    },
+    "welcome_step2_lead": {
+        "message": "Abra qualquer tópico do Reddit e use o que estiver mais à mão."
+    },
+    "welcome_way_inline_title": {
+        "message": "O botão no Reddit"
+    },
+    "welcome_way_inline_desc": {
+        "message": "Clique nele na barra de ações do post, ao lado de Compartilhar."
+    },
+    "welcome_way_popup_title": {
+        "message": "O ícone da barra de ferramentas"
+    },
+    "welcome_way_popup_desc": {
+        "message": "Abra o pop-up e pressione o botão grande. Fixe o ícone pelo menu de peça de quebra-cabeça para tê-lo sempre à mão."
+    },
+    "welcome_way_shortcut_title": {
+        "message": "Um atalho de teclado"
+    },
+    "welcome_way_shortcut_desc": {
+        "message": "Pressione em qualquer tópico do Reddit."
+    },
+    "welcome_way_shortcut_change": {
+        "message": "Alterar atalho"
+    },
+    "welcome_way_shortcut_unset": {
+        "message": "Nenhum atalho definido ainda. Você pode escolher um no Chrome."
+    },
+    "welcome_way_menu_title": {
+        "message": "Clique com o botão direito em um link de tópico"
+    },
+    "welcome_way_menu_desc": {
+        "message": "Funciona com links de tópicos em qualquer lugar, sem abrir o tópico antes."
+    },
+    "welcome_mock_open_link": {
+        "message": "Abrir link em nova guia"
+    },
+    "welcome_mock_copy_link": {
+        "message": "Copiar endereço do link"
+    },
+    "welcome_step3_title": {
+        "message": "Seus dados, sem rodeios"
+    },
+    "welcome_step3_lead": {
+        "message": "Veja exatamente o que vai para onde."
+    },
+    "welcome_fact_ai_title": {
+        "message": "Os tópicos vão só para a IA que você escolher"
+    },
+    "welcome_fact_ai_desc": {
+        "message": "O tópico é lido no seu navegador e entregue direto à IA escolhida. Ele nunca passa pelos nossos servidores."
+    },
+    "welcome_fact_ai_desc_named": {
+        "message": "O tópico é lido no seu navegador e entregue direto ao $NAME$ (ou à API dele, se você adicionar uma chave depois). Ele nunca passa pelos nossos servidores.",
+        "placeholders": {
+            "name": {
+                "content": "$1"
+            }
+        }
+    },
+    "welcome_fact_local_title": {
+        "message": "Histórico e chaves de API ficam neste dispositivo"
+    },
+    "welcome_fact_local_desc": {
+        "message": "Seu histórico e quaisquer chaves de API ficam só neste navegador. Você pode limitar ou apagar o histórico nas Configurações."
+    },
+    "welcome_telemetry_label": {
+        "message": "Compartilhar contagens de uso anônimas"
+    },
+    "welcome_telemetry_hint": {
+        "message": "Só quantas vezes cinco coisas aconteceram (instalação, atualização, sessão iniciada, tópico extraído, prompt enviado), um ID de instalação aleatório e a versão. Nunca conteúdo do Reddit, URLs, subreddits, prompts ou chaves."
+    },
+    "welcome_telemetry_on": {
+        "message": "Obrigado — as contagens anônimas estão ativadas."
+    },
+    "welcome_telemetry_off": {
+        "message": "Desativado. Seu ID de instalação e as contagens não enviadas foram apagados."
+    },
+    "welcome_settings_prefix": {
+        "message": "Todo o resto fica em"
+    },
+    "welcome_settings_link": {
+        "message": "Configurações"
+    },
+    "welcome_btn_back": {
+        "message": "Voltar"
+    },
+    "welcome_btn_next": {
+        "message": "Próximo"
+    },
+    "welcome_btn_done": {
+        "message": "Concluir"
+    },
+    "welcome_btn_open_reddit": {
+        "message": "Abrir o Reddit"
+    },
+    "welcome_keys_hint": {
+        "message": "Dica: use as setas ou Enter para navegar entre as etapas."
     }
 }

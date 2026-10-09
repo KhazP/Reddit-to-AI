@@ -15,6 +15,9 @@ const PASTE_STORAGE_KEY = 'redditPendingPaste';
 const LEGACY_THREAD_KEY = 'redditThreadData';
 const SCRAPING_STATE_KEY = 'redditScrapingState';
 const SCRAPE_CONTEXT_KEY = 'redditActiveScrape';
+// Last scrape request (minus the action), kept so the floating panel's Retry button
+// can re-run exactly the same scrape even after the worker was restarted.
+const LAST_SCRAPE_REQUEST_KEY = 'redditLastScrapeRequest';
 // API keys live in chrome.storage.local only - never in storage.sync, which would
 // replicate them through Google's servers.
 const DIRECT_API_CONFIG_KEY = 'directApiConfig';
@@ -34,6 +37,13 @@ const DEFAULT_STATE = {
   batch: null,
   summary: null,
   error: null,
+  // errorType: null | 'config' | 'not_reddit' | 'busy' | 'network' | 'stopped' | 'generic'
+  // Derived from `error` in setScrapingState so the panel can pick plain-language
+  // copy (and an "Open settings" link) without parsing the message itself.
+  errorType: null,
+  // Set on completion: delivery 'direct' | 'preview', plus the AI's display name.
+  delivery: null,
+  aiName: null,
   lastScrapedTabId: null
 };
 
@@ -92,8 +102,10 @@ function autoResumeBatch(done) {
   });
 }
 
-chrome.runtime.onInstalled.addListener(() => {
+chrome.runtime.onInstalled.addListener((details) => {
   console.debug('Reddit to AI installed.');
+  // First run only: never re-open the welcome page on an extension update.
+  if (details?.reason === 'install') openWelcomePage();
   globalThis.R2AITelemetry?.init();
   syncSelectors().catch(err => console.error('Selector sync on installed failed:', err));
   registerAllCustomOrigins().catch(err => console.error('Failed to register custom origins on installed:', err));
@@ -152,7 +164,7 @@ if (chrome.contextMenus?.onClicked) {
         }
         return undefined;
       })
-      .catch(error => notifyEntryPointFailure(error));
+      .catch(error => notifyEntryPointFailure(error, tab?.id));
   });
 }
 
@@ -163,16 +175,156 @@ if (chrome.commands?.onCommand) {
     // popup's scrape with stored settings and no per-scrape filter overrides.
     ready
       .then(() => handleScrapeRequest({}, null))
-      .catch(error => notifyEntryPointFailure(error));
+      .catch(error => notifyEntryPointFailure(error, null));
   });
 }
 
-function notifyEntryPointFailure(error) {
+// Shortcut / context-menu failures have no popup to report into and the system
+// notification is optional, so the failure is also surfaced on the action badge
+// and in the floating panel of the Reddit tab - it must never be silent.
+function notifyEntryPointFailure(error, tabId) {
   console.error('Reddit to AI: scrape entry point failed:', error);
-  showNotificationIfEnabled(
-    chrome.i18n.getMessage('extName') || 'Reddit to AI',
-    error?.message || (chrome.i18n.getMessage('sw_error_not_reddit') || 'Active tab is not a Reddit thread.')
-  );
+  const message = error?.message || (chrome.i18n.getMessage('sw_error_not_reddit') || 'Active tab is not a Reddit thread.');
+  showNotificationIfEnabled(chrome.i18n.getMessage('extName') || 'Reddit to AI', message);
+  showErrorBadge(message);
+  showErrorInPanel(message, tabId).catch(err => console.debug('Panel error surface skipped:', err?.message || err));
+}
+
+function openWelcomePage() {
+  if (!chrome.tabs?.create) return;
+  Promise.resolve(chrome.tabs.create({ url: chrome.runtime.getURL('welcome.html') }))
+    .catch(error => console.debug('Welcome page skipped:', error?.message || error));
+}
+
+const ERROR_BADGE_MS = 15000;
+let errorBadgeTimer = null;
+
+function ignoreActionError() {
+  if (chrome.runtime.lastError) console.debug('Action update skipped:', chrome.runtime.lastError.message);
+}
+
+function showErrorBadge(message) {
+  if (!chrome.action?.setBadgeText) return;
+  const name = chrome.i18n.getMessage('extName') || 'Reddit to AI';
+  try {
+    chrome.action.setBadgeText({ text: '!' }, ignoreActionError);
+    chrome.action.setBadgeBackgroundColor?.({ color: '#dc2626' }, ignoreActionError);
+    chrome.action.setTitle?.({ title: `${name}: ${message}` }, ignoreActionError);
+  } catch (error) {
+    console.debug('Error badge skipped:', error?.message || error);
+    return;
+  }
+  clearTimeout(errorBadgeTimer);
+  errorBadgeTimer = setTimeout(clearErrorBadge, ERROR_BADGE_MS);
+}
+
+function clearErrorBadge() {
+  clearTimeout(errorBadgeTimer);
+  errorBadgeTimer = null;
+  if (!chrome.action?.setBadgeText) return;
+  try {
+    chrome.action.setBadgeText({ text: '' }, ignoreActionError);
+    chrome.action.setTitle?.({ title: chrome.i18n.getMessage('extName') || 'Reddit to AI' }, ignoreActionError);
+  } catch (error) {
+    console.debug('Error badge reset skipped:', error?.message || error);
+  }
+}
+
+// Pushes a one-off error to the floating panel of a Reddit tab without touching the
+// shared scrapingState (a "busy" failure must not clobber the scrape that is running).
+async function showErrorInPanel(message, tabId) {
+  let tab = null;
+  if (typeof tabId === 'number') tab = await getTabById(tabId).catch(() => null);
+  if (!tab) tab = await getActiveTab().catch(() => null);
+  if (tab?.id == null || !isRedditUrl(getTabUrl(tab))) return;
+  const payload = {
+    action: 'updateFloatingPanel',
+    data: {
+      ...scrapingState,
+      isActive: false,
+      status: 'error',
+      phase: 'error',
+      percentage: -1,
+      batch: null,
+      error: message,
+      errorType: classifyError(message),
+      message,
+      // Not part of the shared state: the panel must not treat it as the end of
+      // whatever scrape may be running elsewhere.
+      transient: true
+    }
+  };
+  try {
+    await sendMessageToTab(tab.id, payload);
+  } catch {
+    // No panel in that tab yet (e.g. it was opened before the extension was
+    // installed): inject it, then deliver the error once more.
+    await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['floatingPanel.js'] });
+    await delay(150);
+    await sendMessageToTab(tab.id, payload);
+  }
+}
+
+function classifyError(message) {
+  if (!message) return null;
+  const text = String(message);
+  if (/already in progress/i.test(text)) return 'busy';
+  if (/stopped by user/i.test(text)) return 'stopped';
+  if (/not a reddit|open a reddit|valid reddit/i.test(text)) return 'not_reddit';
+  if (/api key|custom ai origin|custom origin|in options|settings|configur|unauthori[sz]ed|\b40[13]\b/i.test(text)) return 'config';
+  if (/network|failed to fetch|timed out|timeout|rate limit|\b429\b|\b50[234]\b|offline/i.test(text)) return 'network';
+  return 'generic';
+}
+
+const AI_DISPLAY_NAMES = {
+  gemini: 'Gemini',
+  chatgpt: 'ChatGPT',
+  claude: 'Claude',
+  aistudio: 'AI Studio',
+  deepseek: 'DeepSeek',
+  groq: 'Groq'
+};
+
+// Extra fields for the `complete` state so the panel can say where the thread went.
+function completionFields(settings) {
+  const direct = settings?.showPromptPreview === false;
+  return {
+    delivery: direct ? 'direct' : 'preview',
+    aiName: direct ? (AI_DISPLAY_NAMES[settings?.selectedLlmProvider] || null) : null
+  };
+}
+
+let lastScrapeRequest = null;
+
+function rememberScrapeRequest(request, sender) {
+  try {
+    const copy = JSON.parse(JSON.stringify(request || {}));
+    delete copy.action;
+    if (copy.tabId == null && sender?.tab?.id != null) copy.tabId = sender.tab.id;
+    lastScrapeRequest = copy;
+    if (chrome.storage.session) {
+      setStorage(chrome.storage.session, { [LAST_SCRAPE_REQUEST_KEY]: copy })
+        .catch(error => console.debug('Last scrape request persist skipped:', error.message));
+    }
+  } catch (error) {
+    console.debug('Last scrape request not recorded:', error?.message || error);
+  }
+}
+
+async function getLastScrapeRequest() {
+  if (lastScrapeRequest) return lastScrapeRequest;
+  const stored = await getStorage(chrome.storage.session, LAST_SCRAPE_REQUEST_KEY).catch(() => ({}));
+  return stored?.[LAST_SCRAPE_REQUEST_KEY] || null;
+}
+
+// Request for the panel's Retry button. A batch or a thread-URL scrape is repeated
+// as-is; a tab scrape re-targets the tab the Retry came from.
+function buildRetryRequest(stored, sender) {
+  const base = stored ? { ...stored } : {};
+  if (Array.isArray(base.batchUrls) && base.batchUrls.length > 0) return base;
+  if (base.threadUrl) return base;
+  if (sender?.tab?.id != null) base.tabId = sender.tab.id;
+  return base;
 }
 
 // Opens a thread link in a background tab, waits for it to finish loading, then runs
@@ -239,17 +391,44 @@ function handleRuntimeMessage(request, sender, sendResponse) {
         .then(result => sendResponse({ status: 'success', ...result, currentState: scrapingState }))
         .catch(error => {
           console.error('Scrape failed:', error);
-          setScrapingState({
-            isActive: false,
-            error: error.message,
-            message: `Error: ${error.message}`,
-            percentage: -1,
-            phase: 'error',
+          // A second request while one is running must not overwrite the running
+          // scrape's state with an error.
+          if (classifyError(error.message) !== 'busy') {
+            setScrapingState({
+              isActive: false,
+              error: error.message,
+              message: `Error: ${error.message}`,
+              percentage: -1,
+              phase: 'error',
+              status: 'error',
+              batch: null
+            });
+          }
+          sendResponse({
             status: 'error',
-            batch: null
+            error: error.message,
+            errorType: classifyError(error.message),
+            currentState: scrapingState
           });
-          sendResponse({ status: 'error', error: error.message, currentState: scrapingState });
         });
+      return;
+    }
+    case 'retryLastScrape': {
+      // Sent by the floating panel's Retry button: re-run the last scrape request.
+      getLastScrapeRequest()
+        .then(stored => handleRuntimeMessage(
+          { ...buildRetryRequest(stored, sender), action: 'scrapeReddit' },
+          sender,
+          sendResponse
+        ))
+        .catch(error => sendResponse({ status: 'error', error: error.message }));
+      return;
+    }
+    case 'openOptionsPage': {
+      // Content scripts cannot open the options page themselves.
+      Promise.resolve(chrome.runtime.openOptionsPage?.())
+        .then(() => sendResponse({ ok: true }))
+        .catch(error => sendResponse({ error: error.message }));
       return;
     }
     case 'scrapeComplete': {
@@ -474,6 +653,7 @@ if (chrome.runtime.onConnect) {
 
 async function handleScrapeRequest(request, sender) {
   if (scrapingState.isActive) throw new Error('Scraping already in progress.');
+  rememberScrapeRequest(request, sender);
 
   if (request?.threadUrl) {
     if (!isRedditUrl(request.threadUrl)) {
@@ -577,7 +757,8 @@ async function handleScrapeRequest(request, sender) {
         batch: null,
         summary: null,
         message: chrome.i18n.getMessage('panel_status_ready') || 'Ready to scrape.',
-        error: null
+        error: null,
+        ...completionFields(effectiveSettings)
       });
 
       showNotificationIfEnabled(
@@ -751,7 +932,8 @@ async function finishTabScrape(scrapeId, { data, error } = {}) {
       batch: null,
       summary: null,
       message: effectiveSettings.showPromptPreview === false ? 'Content sent directly to AI.' : 'Content ready for prompt preview.',
-      error: null
+      error: null,
+      ...completionFields(effectiveSettings)
     });
 
     showNotificationIfEnabled(
@@ -887,7 +1069,8 @@ async function resumeBatchScrape(batch) {
       status: 'complete',
       batch: null,
       message: effectiveSettings.showPromptPreview === false ? 'Batch sent directly to AI.' : 'Batch ready for prompt preview.',
-      error: null
+      error: null,
+      ...completionFields(effectiveSettings)
     });
     return { summary: null, preview: effectiveSettings.showPromptPreview !== false, direct: effectiveSettings.showPromptPreview === false, batch: true };
   } catch (error) {
@@ -907,8 +1090,9 @@ async function resumeBatchScrape(batch) {
   }
 }
 
-async function handleBatchScrapeRequest(request, _sender) {
+async function handleBatchScrapeRequest(request, sender) {
   if (scrapingState.isActive) throw new Error('Scraping already in progress.');
+  rememberScrapeRequest(request, sender);
   const urls = normalizeBatchUrls(request.batchUrls);
   if (urls.length === 0) throw new Error('No valid Reddit URLs were provided.');
 
@@ -1642,6 +1826,14 @@ function removeStorage(area, keys) {
 // =====================
 
 function setScrapingState(patch) {
+  if (patch && 'error' in patch) {
+    patch = { ...patch, errorType: classifyError(patch.error) };
+  }
+  if (patch?.isActive === true) {
+    // A new scrape supersedes any earlier failure shown on the toolbar icon.
+    if (errorBadgeTimer) clearErrorBadge();
+    patch = { ...patch, delivery: null, aiName: null };
+  }
   scrapingState = { ...scrapingState, ...patch };
   persistScrapingState();
   broadcastScrapingState();

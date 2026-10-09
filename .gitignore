@@ -60,3 +60,6 @@ docs/CODE_CHECKLIST_AUDIT.md
 
 # macOS archive artifacts
 __MACOSX/
+
+# Playwright MCP debug output
+.playwright-mcp/

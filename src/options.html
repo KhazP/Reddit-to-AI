@@ -1,65 +1,64 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-    <title data-i18n="options_title">Reddit to AI - Settings</title>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title data-i18n="options_title">Reddit to AI - Settings</title>
+    <link rel="stylesheet" type="text/css" href="tokens.css">
     <link rel="stylesheet" type="text/css" href="options.css">
     <link rel="stylesheet" type="text/css" href="tooltip.css">
+    <script src="theme.js"></script>
 </head>
 
 <body>
     <div class="options-container">
-        <!-- Header -->
+        <!-- Header (sticky) -->
         <header class="header">
-            <div class="header-left">
-                <div class="logo">
-                    <svg class="logo-icon" width="32" height="32" viewBox="0 0 24 24" fill="none">
-                        <circle cx="12" cy="12" r="10" fill="#FF4500" />
-                        <circle cx="8" cy="10" r="1.5" fill="white" />
-                        <circle cx="16" cy="10" r="1.5" fill="white" />
-                        <path d="M8 14c0 0 2 2 4 2s4-2 4-2" stroke="white" stroke-width="1.5" stroke-linecap="round" />
-                    </svg>
-                    <div class="logo-text">
-                        <span class="logo-title"><span class="logo-reddit">Reddit</span><span
-                                class="logo-to">to</span><span class="logo-ai">AI</span></span>
-                        <span class="logo-subtitle" data-i18n="options_title">Settings</span>
-                    </div>
+            <div class="logo">
+                <svg class="logo-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10" fill="#FF4500" />
+                    <circle cx="8" cy="10" r="1.5" fill="white" />
+                    <circle cx="16" cy="10" r="1.5" fill="white" />
+                    <path d="M8 14c0 0 2 2 4 2s4-2 4-2" stroke="white" stroke-width="1.5" stroke-linecap="round" />
+                </svg>
+                <div class="logo-text">
+                    <span class="logo-title"><span class="logo-reddit">Reddit</span><span
+                            class="logo-to">to</span><span class="logo-ai">AI</span></span>
+                    <span class="logo-subtitle" data-i18n="options_header_settings">Settings</span>
                 </div>
             </div>
-            <div class="header-right">
-                <div id="saveStatus" class="save-toast"></div>
-            </div>
+            <div id="saveStatus" class="save-toast" role="status" aria-live="polite" aria-atomic="true"></div>
         </header>
 
-        <!-- Main Content - Sidebar Layout -->
         <main class="main-content">
-            <nav class="sidebar-nav">
-                <button type="button" class="nav-item active" data-target="sectionAi">
-                    <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                        aria-hidden="true">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <line x1="2" y1="12" x2="22" y2="12"></line>
-                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+            <nav class="sidebar-nav" role="tablist" aria-orientation="vertical" aria-label="Settings sections"
+                data-i18n-aria-label="options_nav_aria" id="settingsNav">
+                <span class="nav-indicator" aria-hidden="true"></span>
+                <button type="button" class="nav-item active" role="tab" id="tab-ai" aria-selected="true"
+                    aria-controls="sectionAi" data-target="sectionAi" data-hash="ai">
+                    <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M5 12h14"></path>
+                        <path d="M13 5l7 7-7 7"></path>
                     </svg>
-                    <span class="nav-label">AI Assistant</span>
+                    <span class="nav-label" data-i18n="options_nav_ai">AI &amp; sending</span>
                 </button>
-                <button type="button" class="nav-item" data-target="sectionPresets">
-                    <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                        aria-hidden="true">
+                <button type="button" class="nav-item" role="tab" id="tab-prompts" aria-selected="false"
+                    tabindex="-1" aria-controls="sectionPresets" data-target="sectionPresets" data-hash="prompts">
+                    <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                         <polyline points="14 2 14 8 20 8"></polyline>
                         <line x1="16" y1="13" x2="8" y2="13"></line>
                         <line x1="16" y1="17" x2="8" y2="17"></line>
                     </svg>
-                    <span class="nav-label">Prompt Presets</span>
+                    <span class="nav-label" data-i18n="options_nav_prompts">Prompts</span>
                 </button>
-                <button type="button" class="nav-item" data-target="sectionScraping">
-                    <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                        aria-hidden="true">
+                <button type="button" class="nav-item" role="tab" id="tab-scraping" aria-selected="false"
+                    tabindex="-1" aria-controls="sectionScraping" data-target="sectionScraping" data-hash="scraping">
+                    <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <line x1="4" y1="21" x2="4" y2="14"></line>
                         <line x1="4" y1="10" x2="4" y2="3"></line>
                         <line x1="12" y1="21" x2="12" y2="12"></line>
@@ -70,566 +69,471 @@
                         <line x1="9" y1="8" x2="15" y2="8"></line>
                         <line x1="17" y1="16" x2="23" y2="16"></line>
                     </svg>
-                    <span class="nav-label">Scraping & Filters</span>
+                    <span class="nav-label" data-i18n="options_nav_scraping">Scraping</span>
                 </button>
-                <button type="button" class="nav-item" data-target="sectionMappings">
-                    <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                        aria-hidden="true">
-                        <polyline points="16 3 21 3 21 8"></polyline>
-                        <line x1="4" y1="20" x2="21" y2="3"></line>
-                        <polyline points="21 16 21 21 16 21"></polyline>
-                        <line x1="15" y1="15" x2="21" y2="21"></line>
-                        <line x1="4" y1="4" x2="9" y2="9"></line>
+                <button type="button" class="nav-item" role="tab" id="tab-reddit" aria-selected="false"
+                    tabindex="-1" aria-controls="sectionRedditButton" data-target="sectionRedditButton"
+                    data-hash="reddit-button">
+                    <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <rect x="3" y="7" width="18" height="10" rx="5"></rect>
+                        <path d="M9 12h6"></path>
                     </svg>
-                    <span class="nav-label">Subreddit Mappings</span>
+                    <span class="nav-label" data-i18n="options_nav_reddit">Reddit button</span>
                 </button>
-                <button type="button" class="nav-item" data-target="sectionCustom">
-                    <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                        aria-hidden="true">
-                        <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
-                        <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
-                        <line x1="6" y1="6" x2="6.01" y2="6"></line>
-                        <line x1="6" y1="18" x2="6.01" y2="18"></line>
+                <button type="button" class="nav-item" role="tab" id="tab-general" aria-selected="false"
+                    tabindex="-1" aria-controls="sectionGeneral" data-target="sectionGeneral" data-hash="general">
+                    <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path
+                            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z">
+                        </path>
                     </svg>
-                    <span class="nav-label">Custom WebUIs</span>
+                    <span class="nav-label" data-i18n="options_nav_general">General</span>
+                </button>
+                <button type="button" class="nav-item" role="tab" id="tab-history" aria-selected="false"
+                    tabindex="-1" aria-controls="sectionHistory" data-target="sectionHistory" data-hash="history">
+                    <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                    <span class="nav-label" data-i18n="options_nav_history">History</span>
+                </button>
+                <button type="button" class="nav-item nav-item-advanced" role="tab" id="tab-advanced"
+                    aria-selected="false" tabindex="-1" aria-controls="sectionAdvanced" data-target="sectionAdvanced"
+                    data-hash="advanced">
+                    <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <polyline points="16 18 22 12 16 6"></polyline>
+                        <polyline points="8 6 2 12 8 18"></polyline>
+                    </svg>
+                    <span class="nav-label" data-i18n="options_nav_advanced">Advanced</span>
                 </button>
             </nav>
 
-            <div id="sectionAi" class="settings-pane active">
-                <!-- AI Assistant Card -->
-                <div class="card">
-                    <div class="card-header">
-                        <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z" />
-                            <circle cx="12" cy="12" r="3" />
-                        </svg>
-                        <h2 class="card-title" data-i18n="options_card_ai_title">AI Assistant</h2>
-                    </div>
-                    <div class="card-content">
-                        <div class="form-group">
-                            <label class="form-label" data-i18n="options_label_select_platform">Select AI
-                                Platform</label>
-                            <div class="platform-grid">
-                                <!-- Gemini -->
-                                <label class="platform-option">
-                                    <input type="radio" name="llmProvider" value="gemini">
-                                    <div class="platform-box">
-                                        <img src="images/gemini-color.svg" alt="Gemini" class="platform-icon" width="36"
-                                            height="36">
-                                        <span class="platform-text" data-i18n="platform_gemini_title">Gemini</span>
-                                    </div>
-                                </label>
-                                <!-- ChatGPT -->
-                                <label class="platform-option">
-                                    <input type="radio" name="llmProvider" value="chatgpt">
-                                    <div class="platform-box">
-                                        <img src="images/openai.svg" alt="ChatGPT" class="platform-icon" width="36"
-                                            height="36">
-                                        <span class="platform-text" data-i18n="platform_chatgpt_title">ChatGPT</span>
-                                    </div>
-                                </label>
-                                <!-- Claude -->
-                                <label class="platform-option">
-                                    <input type="radio" name="llmProvider" value="claude">
-                                    <div class="platform-box">
-                                        <img src="images/claude-color.svg" alt="Claude" class="platform-icon" width="36"
-                                            height="36">
-                                        <span class="platform-text" data-i18n="platform_claude_title">Claude</span>
-                                    </div>
-                                </label>
-                                <!-- AI Studio -->
-                                <label class="platform-option">
-                                    <input type="radio" name="llmProvider" value="aistudio">
-                                    <div class="platform-box">
-                                        <img src="images/aistudio.svg" alt="AI Studio" class="platform-icon" width="36"
-                                            height="36">
-                                        <span class="platform-text" data-i18n="platform_aistudio_title">AI Studio</span>
-                                    </div>
-                                </label>
-                                <!-- DeepSeek -->
-                                <label class="platform-option">
-                                    <input type="radio" name="llmProvider" value="deepseek">
-                                    <div class="platform-box">
-                                        <img src="images/deepseek.svg" alt="DeepSeek" class="platform-icon" width="36"
-                                            height="36">
-                                        <span class="platform-text">DeepSeek</span>
-                                    </div>
-                                </label>
-                                <!-- Groq -->
-                                <label class="platform-option">
-                                    <input type="radio" name="llmProvider" value="groq">
-                                    <div class="platform-box">
-                                        <img src="images/groq.svg" alt="Groq" class="platform-icon" width="36"
-                                            height="36">
-                                        <span class="platform-text">Groq</span>
-                                    </div>
-                                </label>
-                                <!-- Custom -->
-                                <label class="platform-option">
-                                    <input type="radio" name="llmProvider" value="custom">
-                                    <div class="platform-box">
-                                        <img src="images/custom.svg" alt="Custom" class="platform-icon" width="36"
-                                            height="36">
-                                        <span class="platform-text">Custom UI</span>
-                                    </div>
-                                </label>
-                            </div>
-                            <p class="form-hint" data-i18n="options_hint_platform">Choose where to send scraped content.
-                                A new tab will open with content
-                                auto-pasted.</p>
-                        </div>
-                    </div>
-                </div>
+            <div class="panes">
+                <!-- ============ AI & sending ============ -->
+                <section id="sectionAi" class="settings-pane active" role="tabpanel" aria-labelledby="tab-ai">
+                    <header class="pane-header">
+                        <h1 class="pane-title" data-i18n="options_nav_ai">AI &amp; sending</h1>
+                        <p class="pane-desc" data-i18n="options_pane_ai_desc">Where your Reddit threads go, and what
+                            happens when you send one.</p>
+                    </header>
 
-                <!-- Send Flow Card -->
-                <div class="card">
-                    <div class="card-header">
-                        <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <path d="M5 12h14"></path>
-                            <path d="M13 5l7 7-7 7"></path>
-                        </svg>
-                        <h2 class="card-title">Send Flow</h2>
+                    <div class="card">
+                        <h2 class="card-title" data-i18n="options_card_ai_title">AI Assistant</h2>
+                        <p class="card-desc" data-i18n="options_hint_platform">Choose where to send scraped content.
+                            A new tab will open with content auto-pasted.</p>
+                        <div class="platform-grid" role="radiogroup" aria-labelledby="platformGroupLabel">
+                            <span id="platformGroupLabel" class="r2-sr-only"
+                                data-i18n="options_label_select_platform">Select AI Platform</span>
+                            <label class="platform-option">
+                                <input type="radio" name="llmProvider" value="gemini">
+                                <span class="platform-box">
+                                    <img src="images/gemini-color.svg" alt="" class="platform-icon" width="32"
+                                        height="32">
+                                    <span class="platform-text" data-i18n="platform_gemini_title">Gemini</span>
+                                </span>
+                            </label>
+                            <label class="platform-option">
+                                <input type="radio" name="llmProvider" value="chatgpt">
+                                <span class="platform-box">
+                                    <img src="images/openai.svg" alt="" class="platform-icon platform-icon-mono"
+                                        width="32" height="32">
+                                    <span class="platform-text" data-i18n="platform_chatgpt_title">ChatGPT</span>
+                                </span>
+                            </label>
+                            <label class="platform-option">
+                                <input type="radio" name="llmProvider" value="claude">
+                                <span class="platform-box">
+                                    <img src="images/claude-color.svg" alt="" class="platform-icon" width="32"
+                                        height="32">
+                                    <span class="platform-text" data-i18n="platform_claude_title">Claude</span>
+                                </span>
+                            </label>
+                            <label class="platform-option">
+                                <input type="radio" name="llmProvider" value="aistudio">
+                                <span class="platform-box">
+                                    <img src="images/aistudio.svg" alt="" class="platform-icon platform-icon-mono" width="32"
+                                        height="32">
+                                    <span class="platform-text" data-i18n="platform_aistudio_title">AI Studio</span>
+                                </span>
+                            </label>
+                            <label class="platform-option">
+                                <input type="radio" name="llmProvider" value="deepseek">
+                                <span class="platform-box">
+                                    <img src="images/deepseek.svg" alt="" class="platform-icon" width="32"
+                                        height="32">
+                                    <span class="platform-text">DeepSeek</span>
+                                </span>
+                            </label>
+                            <label class="platform-option">
+                                <input type="radio" name="llmProvider" value="groq">
+                                <span class="platform-box">
+                                    <img src="images/groq.svg" alt="" class="platform-icon"
+                                        width="32" height="32">
+                                    <span class="platform-text">Groq</span>
+                                </span>
+                            </label>
+                            <label class="platform-option">
+                                <input type="radio" name="llmProvider" value="custom">
+                                <span class="platform-box">
+                                    <img src="images/custom.svg" alt="" class="platform-icon"
+                                        width="32" height="32">
+                                    <span class="platform-text" data-i18n="options_platform_custom">Custom site</span>
+                                </span>
+                            </label>
+                        </div>
+                        <p class="form-hint" id="customPlatformHint" data-i18n="options_hint_custom_platform">Custom
+                            sites (like a local WebUI) are added under Advanced &rsaquo; Custom AI sites.</p>
                     </div>
-                    <div class="card-content">
+
+                    <div class="card">
+                        <h2 class="card-title" data-i18n="options_card_send_flow_title">When you send a thread</h2>
                         <label class="toggle-row">
-                            <div class="toggle-info">
-                                <span class="toggle-label">Show prompt preview before sending</span>
-                                <span class="toggle-hint">Turn off to scrape and open the AI tab immediately.</span>
-                            </div>
-                            <div class="toggle-switch">
+                            <span class="toggle-info">
+                                <span class="toggle-label" data-i18n="options_label_show_preview">Show prompt preview
+                                    before sending</span>
+                                <span class="toggle-hint" data-i18n="options_hint_show_preview">Turn off to scrape and
+                                    open the AI tab immediately.</span>
+                            </span>
+                            <span class="toggle-switch">
                                 <input type="checkbox" id="showPromptPreview" checked>
                                 <span class="toggle-slider"></span>
-                            </div>
+                            </span>
                         </label>
                         <div class="form-group">
-                            <label class="form-label" for="outputFormatSelect">Default Output Format</label>
+                            <label class="form-label" for="outputFormatSelect"
+                                data-i18n="options_label_output_format">Answer format</label>
                             <select id="outputFormatSelect" class="select-input">
-                                <option value="auto">Auto</option>
-                                <option value="bullets">Bullets</option>
-                                <option value="table">Table</option>
+                                <option value="auto" data-i18n="options_format_auto">Let the AI decide</option>
+                                <option value="bullets" data-i18n="options_format_bullets">Bullet points</option>
+                                <option value="table" data-i18n="options_format_table">Table</option>
                                 <option value="json">JSON</option>
-                                <option value="prosCons">Pros / cons</option>
-                                <option value="executive">Executive summary</option>
+                                <option value="prosCons" data-i18n="options_format_pros_cons">Pros and cons</option>
+                                <option value="executive" data-i18n="options_format_executive">Executive summary
+                                </option>
                             </select>
+                            <p class="form-hint" data-i18n="options_hint_output_format">The format the AI is asked to
+                                answer in. You can change it per thread in the preview.</p>
                         </div>
                     </div>
-                </div>
 
-                <!-- Reddit In-Page Button Card -->
-                <div class="settings-card" id="section-reddit-button">
-                    <div class="card-header">
-                        <div class="card-title-group">
-                            <span class="card-icon">✨</span>
-                            <h2 data-i18n="settings_reddit_btn_title">Reddit In-Page AI Button</h2>
-                        </div>
-                        <p class="card-desc" data-i18n="settings_reddit_btn_desc">Display quick AI action buttons directly within Reddit post action bars</p>
-                    </div>
-                    <div class="setting-item switch-item">
-                        <div class="setting-info">
-                            <label class="setting-label" for="showRedditInlineButton" data-i18n="settings_reddit_btn_master">Enable in-page AI button on Reddit</label>
-                        </div>
-                        <label class="switch">
-                            <input type="checkbox" id="showRedditInlineButton" checked>
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                    <div class="setting-subgroup" id="redditButtonSubgroup">
-                        <div class="setting-item switch-item">
-                            <div class="setting-info">
-                                <label class="setting-label" for="showRedditButtonInFeed" data-i18n="settings_reddit_btn_feed">Show on feed post cards</label>
-                            </div>
-                            <label class="switch">
-                                <input type="checkbox" id="showRedditButtonInFeed">
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                        <div class="setting-item switch-item">
-                            <div class="setting-info">
-                                <label class="setting-label" for="showRedditButtonInPost" data-i18n="settings_reddit_btn_post">Show inside post detail pages</label>
-                            </div>
-                            <label class="switch">
-                                <input type="checkbox" id="showRedditButtonInPost" checked>
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Direct API Card -->
-                <div class="card">
-                    <div class="card-header">
-                        <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <path d="M15 7h3a5 5 0 0 1 0 10h-3"></path>
-                            <path d="M9 17H6A5 5 0 0 1 6 7h3"></path>
-                            <path d="M8 12h8"></path>
-                        </svg>
+                    <div class="card">
                         <h2 class="card-title" data-i18n="options_card_direct_api_title">Direct API</h2>
-                    </div>
-                    <div class="card-content">
-                        <p class="form-hint" data-i18n="options_direct_api_intro">
-                            Add your own provider API key to get answers inside the prompt preview page,
-                            without opening an AI chat tab.
-                        </p>
-                        <p class="api-warning" data-i18n="options_direct_api_warning">
-                            Keys are stored locally on this device only — they are never synced to your
-                            Google account and never included in a settings export. Requests go directly
-                            from your browser to the provider, and you are billed by that provider.
-                        </p>
-
+                        <p class="card-desc" data-i18n="options_direct_api_intro">Add your own provider API key to
+                            get answers inside the prompt preview page, without opening an AI chat tab.</p>
+                        <p class="api-warning" data-i18n="options_direct_api_warning">Keys are stored locally on this
+                            device only — they are never synced to your Google account and never included in a
+                            settings export. Requests go directly from your browser to the provider, and you are
+                            billed by that provider.</p>
                         <div class="api-provider-list" id="apiProviderList"></div>
-                        <div class="api-key-status" id="apiKeyStatus" role="status"></div>
+                        <div class="inline-status" id="apiKeyStatus" role="status" aria-live="polite"></div>
                     </div>
-                </div>
-            </div>
+                </section>
 
-            <div id="sectionPresets" class="settings-pane">
-                <!-- Prompt Template Card -->
-                <div class="card card-large">
-                    <div class="card-header">
-                        <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                            <polyline points="14 2 14 8 20 8" />
-                            <line x1="16" y1="13" x2="8" y2="13" />
-                            <line x1="16" y1="17" x2="8" y2="17" />
-                        </svg>
-                        <h2 class="card-title" data-i18n="options_card_presets_title">Prompt Presets</h2>
-                    </div>
-                    <div class="card-content">
-                        <div class="form-group">
-                            <label class="form-label" data-i18n="options_label_analysis_type">Select Analysis
-                                Type</label>
-                            <div class="preset-selector" id="presetSelector">
-                                <!-- Preset pills rendered by JS -->
-                            </div>
+                <!-- ============ Prompts ============ -->
+                <section id="sectionPresets" class="settings-pane" role="tabpanel" aria-labelledby="tab-prompts"
+                    hidden>
+                    <header class="pane-header">
+                        <h1 class="pane-title" data-i18n="options_nav_prompts">Prompts</h1>
+                        <p class="pane-desc" data-i18n="options_pane_prompts_desc">What the AI is asked to do with
+                            each thread.</p>
+                    </header>
+
+                    <div class="card">
+                        <h2 class="card-title" data-i18n="options_label_analysis_type">Select Analysis Type</h2>
+                        <div class="preset-selector" id="presetSelector" role="radiogroup"
+                            aria-label="Analysis type" data-i18n-aria-label="options_label_analysis_type">
+                            <!-- Preset pills rendered by JS -->
                         </div>
                         <div class="form-group">
                             <div class="template-label-row">
-                                <label class="form-label" id="templateLabel"
+                                <label class="form-label" id="templateLabel" for="defaultPromptTemplate"
                                     data-i18n="options_label_template_preview">Template Preview</label>
-                                <button type="button" id="resetCustomBtn" class="btn-reset"
-                                    data-i18n="options_btn_reset">Reset to default</button>
+                                <button type="button" id="resetCustomBtn" class="btn btn-ghost btn-sm"
+                                    data-i18n="options_btn_reset" hidden>Reset to default</button>
                             </div>
-                            <textarea id="defaultPromptTemplate" class="textarea" rows="8"
+                            <textarea id="defaultPromptTemplate" class="textarea" rows="9"
                                 data-i18n-placeholder="options_placeholder_custom"></textarea>
-                            <p class="form-hint" data-i18n="options_hint_prompt">Use <code>{content}</code> as a
-                                placeholder for the scraped Reddit
-                                data. Select "Custom" to write your own template.</p>
+                            <p class="form-hint" data-i18n="options_hint_prompt_plain">Use {content} where the Reddit
+                                thread should go. Pick “Custom” to write your own.</p>
                         </div>
                     </div>
-                </div>
 
-                <!-- Saved Prompt Presets Card -->
-                <div class="card">
-                    <div class="card-header">
-                        <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-                        </svg>
-                        <h2 class="card-title">Saved Prompt Presets</h2>
-                        <span id="savedPresetCount" class="history-count">0 items</span>
-                    </div>
-                    <div class="card-content">
+                    <div class="card">
+                        <div class="card-head-row">
+                            <h2 class="card-title" data-i18n="options_card_saved_presets_title">Saved prompt presets
+                            </h2>
+                            <span id="savedPresetCount" class="count-pill">0</span>
+                        </div>
+                        <p class="card-desc" data-i18n="options_saved_presets_desc">Presets you saved from the
+                            popup or the preview page.</p>
                         <div class="saved-preset-list" id="savedPresetList">
-                            <div class="history-empty">
-                                <span>No saved prompt presets yet</span>
+                            <div class="empty-state">
+                                <span data-i18n="options_saved_presets_empty">No saved prompt presets yet</span>
                             </div>
                         </div>
-                        <div class="history-actions saved-preset-actions">
-                            <button type="button" id="exportSavedPresetsBtn" class="btn-action btn-export" disabled>Export presets</button>
-                            <button type="button" id="importSavedPresetsBtn" class="btn-action">Import presets</button>
-                            <button type="button" id="clearSavedPresetsBtn" class="btn-action btn-danger-outline" disabled>Clear presets</button>
+                        <div class="actions-row">
+                            <button type="button" id="importSavedPresetsBtn" class="btn btn-ghost"
+                                data-i18n="options_btn_import_presets">Import presets</button>
+                            <button type="button" id="exportSavedPresetsBtn" class="btn btn-ghost" disabled
+                                data-i18n="options_btn_export_presets">Export presets</button>
+                            <button type="button" id="clearSavedPresetsBtn" class="btn btn-ghost btn-danger" disabled
+                                data-i18n="options_btn_clear_presets">Delete all presets</button>
                         </div>
+                        <div class="confirm-row r2-reveal" id="clearSavedPresetsConfirm" role="group"
+                            aria-labelledby="clearSavedPresetsConfirmText" hidden>
+                            <span id="clearSavedPresetsConfirmText" class="confirm-text"
+                                data-i18n="options_confirm_clear_presets">Delete all saved prompt presets? This can't
+                                be undone.</span>
+                            <span class="confirm-actions">
+                                <button type="button" class="btn btn-ghost btn-sm" data-confirm-cancel
+                                    data-i18n="options_btn_cancel">Cancel</button>
+                                <button type="button" class="btn btn-danger-solid btn-sm" data-confirm-ok
+                                    data-i18n="options_btn_delete_all">Delete all</button>
+                            </span>
+                        </div>
+                        <div class="inline-status" id="savedPresetStatus" role="status" aria-live="polite"></div>
                         <input type="file" id="importSavedPresetsInput" accept="application/json" hidden>
                     </div>
-                </div>
-            </div>
+                </section>
 
-            <div id="sectionScraping" class="settings-pane">
-                <!-- Scraping Settings Card -->
-                <div class="card">
-                    <div class="card-header">
-                        <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <path
-                                d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83" />
-                        </svg>
-                        <h2 class="card-title" data-i18n="options_card_scraping_title">Scraping Settings</h2>
-                    </div>
-                    <div class="card-content">
-                        <div class="form-group">
-                            <label class="form-label" data-i18n="options_label_depth">Comment Depth Level</label>
-                            <div class="depth-options">
-                                <label class="depth-option">
-                                    <input type="radio" name="scrapeDepth" value="1">
-                                    <div class="depth-box">
-                                        <span class="depth-level">1</span>
-                                        <span class="depth-name" data-i18n="options_depth_quick">Quick</span>
-                                        <span class="depth-desc" data-i18n="options_depth_quick_desc">Top-level
-                                            only</span>
-                                    </div>
-                                </label>
-                                <label class="depth-option">
-                                    <input type="radio" name="scrapeDepth" value="3">
-                                    <div class="depth-box">
-                                        <span class="depth-level">3</span>
-                                        <span class="depth-name">Standard</span>
-                                        <span class="depth-desc">3 reply levels</span>
-                                    </div>
-                                </label>
-                                <label class="depth-option">
-                                    <input type="radio" name="scrapeDepth" value="5" checked>
-                                    <div class="depth-box">
-                                        <span class="depth-level">5</span>
-                                        <span class="depth-name">Deep</span>
-                                        <span class="depth-desc">5 reply levels</span>
-                                    </div>
-                                </label>
-                                <label class="depth-option">
-                                    <input type="radio" name="scrapeDepth" value="999">
-                                    <div class="depth-box">
-                                        <span class="depth-level">∞</span>
-                                        <span class="depth-name" data-i18n="options_depth_full">Full</span>
-                                        <span class="depth-desc" data-i18n="options_depth_full_desc">All nested
-                                            replies</span>
-                                    </div>
-                                </label>
-                            </div>
-                            <p class="form-hint" data-i18n="options_hint_depth">
-                                Controls how deep into reply chains the scraper goes. Higher depth = more context but
-                                larger data.
-                            </p>
-                        </div>
+                <!-- ============ Scraping ============ -->
+                <section id="sectionScraping" class="settings-pane" role="tabpanel" aria-labelledby="tab-scraping"
+                    hidden>
+                    <header class="pane-header">
+                        <h1 class="pane-title" data-i18n="options_nav_scraping">Scraping</h1>
+                        <p class="pane-desc" data-i18n="options_pane_scraping_desc">How much of a thread is
+                            collected, and which comments are kept.</p>
+                    </header>
 
-                        <div class="form-group">
-                            <label class="form-label" for="contextPresetSelect">Default Context Budget</label>
-                            <select id="contextPresetSelect" class="select-input">
-                                <option value="small">Small</option>
-                                <option value="balanced">Balanced</option>
-                                <option value="full">Full</option>
-                                <option value="maxQuality">Max Quality</option>
-                            </select>
-                            <p class="form-hint">Sets the starting AI prompt size preset in the preview screen.</p>
+                    <div class="card">
+                        <h2 class="card-title" data-i18n="options_label_depth">Comment Depth Level</h2>
+                        <p class="card-desc" data-i18n="options_hint_depth">Controls how deep into reply chains the
+                            scraper goes. Higher depth = more context but larger data.</p>
+                        <div class="depth-options" role="radiogroup" aria-label="Comment depth" data-i18n-aria-label="options_label_depth">
+                            <label class="depth-option">
+                                <input type="radio" name="scrapeDepth" value="1">
+                                <span class="depth-box">
+                                    <span class="depth-level">1</span>
+                                    <span class="depth-name" data-i18n="options_depth_quick">Quick</span>
+                                    <span class="depth-desc" data-i18n="options_depth_quick_desc">Top-level
+                                        only</span>
+                                </span>
+                            </label>
+                            <label class="depth-option">
+                                <input type="radio" name="scrapeDepth" value="3">
+                                <span class="depth-box">
+                                    <span class="depth-level">3</span>
+                                    <span class="depth-name" data-i18n="options_depth_standard">Standard</span>
+                                    <span class="depth-desc" data-i18n="options_depth_standard_desc">3 reply
+                                        levels</span>
+                                </span>
+                            </label>
+                            <label class="depth-option">
+                                <input type="radio" name="scrapeDepth" value="5" checked>
+                                <span class="depth-box">
+                                    <span class="depth-level">5</span>
+                                    <span class="depth-name" data-i18n="options_depth_deep">Deep</span>
+                                    <span class="depth-desc" data-i18n="options_depth_deep_desc">5 reply levels</span>
+                                </span>
+                            </label>
+                            <label class="depth-option">
+                                <input type="radio" name="scrapeDepth" value="999">
+                                <span class="depth-box">
+                                    <span class="depth-level">∞</span>
+                                    <span class="depth-name" data-i18n="options_depth_full">Full</span>
+                                    <span class="depth-desc" data-i18n="options_depth_full_desc">All nested
+                                        replies</span>
+                                </span>
+                            </label>
                         </div>
                     </div>
-                </div>
 
-                <!-- Content Filters Card -->
-                <div class="card">
-                    <div class="card-header">
-                        <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-                        </svg>
+                    <div class="card">
                         <h2 class="card-title" data-i18n="options_card_filters_title">Content Filters</h2>
-                    </div>
-                    <div class="card-content">
-                        <!-- Min Score -->
+
                         <div class="form-group">
-                            <label class="form-label" data-i18n="options_label_min_score">Minimum Score</label>
+                            <label class="form-label" for="filterMinScoreSlider"
+                                data-i18n="options_label_min_score">Minimum Score</label>
                             <div class="slider-row">
-                                <input type="range" id="filterMinScoreSlider" class="slider" min="0" max="100" value="0"
-                                    step="5">
-                                <input type="number" id="filterMinScoreInput" class="slider-value" min="0" max="500"
-                                    value="0">
+                                <input type="range" id="filterMinScoreSlider" class="range" min="0" max="500"
+                                    value="0" step="5">
+                                <input type="number" id="filterMinScoreInput" class="number-input" min="0" max="500"
+                                    value="0" aria-labelledby="filterMinScoreLabel">
+                                <span id="filterMinScoreLabel" class="r2-sr-only"
+                                    data-i18n="options_label_min_score">Minimum Score</span>
                             </div>
                             <p class="form-hint" data-i18n="options_hint_score">Only include comments with this many
-                                upvotes or more. Set to 0 for all
-                                comments.</p>
+                                upvotes or more. Set to 0 for all comments.</p>
                         </div>
 
-                        <!-- Top N Comments -->
                         <div class="form-group">
-                            <label class="form-label" data-i18n="options_label_limit_comments">Limit Comments</label>
+                            <label class="form-label" for="filterTopN"
+                                data-i18n="options_label_limit_comments">Limit Comments</label>
                             <div class="inline-input-row">
                                 <span class="inline-label" data-i18n="options_label_top">Top</span>
-                                <input type="number" id="filterTopN" class="number-input" min="0" max="1000" value="0">
+                                <input type="number" id="filterTopN" class="number-input" min="0" max="1000"
+                                    value="0">
                                 <span class="inline-label" data-i18n="options_label_comments_zero">comments (0 =
                                     all)</span>
                             </div>
-                            <p class="form-hint" data-i18n="options_hint_limit">Limit to top N highest-scored comments.
-                                Set to 0 for no limit.</p>
+                            <p class="form-hint" data-i18n="options_hint_limit">Limit to top N highest-scored
+                                comments. Set to 0 for no limit.</p>
                         </div>
 
-                        <div class="form-group">
-                            <label class="form-label" for="trimStrategySelect">Smart Trim Logic</label>
-                            <select id="trimStrategySelect" class="select-input">
-                                <option value="top">Top scored</option>
-                                <option value="controversial">Controversial</option>
-                                <option value="op">OP replies</option>
-                                <option value="flaired">Flaired users</option>
-                                <option value="diverse">Diverse viewpoints</option>
-                                <option value="newest">Newest</option>
-                                <option value="longest">Longest helpful comments</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label" for="redditSortModeSelect">Reddit Comment Sort</label>
-                            <select id="redditSortModeSelect" class="select-input">
-                                <option value="confidence">Best / confidence</option>
-                                <option value="top">Top</option>
-                                <option value="new">New</option>
-                                <option value="controversial">Controversial</option>
-                                <option value="old">Old</option>
-                                <option value="qa">Q&A</option>
-                                <option value="live">Live</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label" for="mediaModeSelect">Media Handling</label>
-                            <select id="mediaModeSelect" class="select-input">
-                                <option value="attach">Attach images + list media links</option>
-                                <option value="urls">List media URLs only</option>
-                                <option value="ignore">Ignore media</option>
-                            </select>
-                        </div>
-
-                        <!-- Author Filter -->
-                        <div class="form-group">
-                            <label class="form-label" data-i18n="options_label_filter_author">Filter by Author</label>
-                            <div class="author-options">
-                                <label class="author-option">
-                                    <input type="checkbox" id="filterAuthorAll" checked>
-                                    <span class="author-pill" data-i18n="options_author_all">All</span>
-                                </label>
-                                <label class="author-option">
+                        <fieldset class="form-group fieldset">
+                            <legend class="form-label" data-i18n="options_label_filter_author">Filter by Author
+                            </legend>
+                            <div class="chip-group">
+                                <label class="chip">
                                     <input type="checkbox" id="filterAuthorOp" value="op">
-                                    <span class="author-pill" data-i18n="options_author_op">OP Only</span>
+                                    <span class="chip-face">
+                                        <svg class="chip-check" width="12" height="12" viewBox="0 0 24 24"
+                                            fill="none" stroke="currentColor" stroke-width="3"
+                                            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <polyline points="20 6 9 17 4 12"></polyline>
+                                        </svg>
+                                        <span data-i18n="options_author_op_label">Original poster (OP)</span>
+                                    </span>
                                 </label>
-                                <label class="author-option">
+                                <label class="chip">
                                     <input type="checkbox" id="filterAuthorFlaired" value="flaired">
-                                    <span class="author-pill" data-i18n="options_author_flaired">Flaired</span>
+                                    <span class="chip-face">
+                                        <svg class="chip-check" width="12" height="12" viewBox="0 0 24 24"
+                                            fill="none" stroke="currentColor" stroke-width="3"
+                                            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <polyline points="20 6 9 17 4 12"></polyline>
+                                        </svg>
+                                        <span data-i18n="options_author_flaired_label">Users with flair</span>
+                                    </span>
                                 </label>
                             </div>
-                            <p class="form-hint">OP Only and Flaired can be combined. Selecting All clears author-only filters.</p>
-                        </div>
+                            <p class="form-hint" id="authorFilterSummary" aria-live="polite"
+                                data-i18n="options_author_summary_all">Including comments from everyone. Turn on one
+                                or both to keep only those authors.</p>
+                        </fieldset>
 
-                        <!-- Toggles -->
                         <div class="toggle-group">
                             <label class="toggle-row">
-                                <div class="toggle-info">
+                                <span class="toggle-info">
                                     <span class="toggle-label" data-i18n="options_label_hide_bots">Hide bot
                                         comments</span>
                                     <span class="toggle-hint" data-i18n="options_hint_bot_list">AutoModerator,
                                         RemindMeBot, etc.</span>
-                                </div>
-                                <div class="toggle-switch">
+                                </span>
+                                <span class="toggle-switch">
                                     <input type="checkbox" id="filterHideBots">
                                     <span class="toggle-slider"></span>
-                                </div>
+                                </span>
                             </label>
                             <label class="toggle-row">
-                                <div class="toggle-info">
+                                <span class="toggle-info">
                                     <span class="toggle-label" data-i18n="options_label_include_hidden">Include
                                         removed/deleted</span>
-                                    <span class="toggle-hint" data-i18n="options_hint_hidden_desc">Include [removed] and
-                                        [deleted] comments</span>
-                                </div>
-                                <div class="toggle-switch">
+                                    <span class="toggle-hint" data-i18n="options_hint_hidden_desc">Include [removed]
+                                        and [deleted] comments</span>
+                                </span>
+                                <span class="toggle-switch">
                                     <input type="checkbox" id="includeHidden">
                                     <span class="toggle-slider"></span>
-                                </div>
+                                </span>
                             </label>
                         </div>
                     </div>
-                </div>
 
-                <!-- Selector Overrides Card -->
-                <div class="card">
-                    <div class="card-header">
-                        <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                            <line x1="9" y1="3" x2="9" y2="21" />
-                            <line x1="15" y1="3" x2="15" y2="21" />
-                            <line x1="3" y1="9" x2="21" y2="9" />
-                            <line x1="3" y1="15" x2="21" y2="15" />
-                        </svg>
-                        <h2 class="card-title">Selector Overrides</h2>
-                    </div>
-                    <div class="card-content">
-                        <p class="form-hint form-hint-lead">Override the target input field CSS selectors for each AI platform if they break.</p>
-                        <div class="form-group">
-                            <label class="form-label" for="selectorGemini">Gemini Selector</label>
-                            <input type="text" id="selectorGemini" class="search-input" placeholder="e.g. div.rich-textarea [contenteditable='true']">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="selectorChatgpt">ChatGPT Selector</label>
-                            <input type="text" id="selectorChatgpt" class="search-input" placeholder="e.g. #prompt-textarea">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="selectorClaude">Claude Selector</label>
-                            <input type="text" id="selectorClaude" class="search-input" placeholder="e.g. div[contenteditable='true']">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="selectorAistudio">AI Studio Selector</label>
-                            <input type="text" id="selectorAistudio" class="search-input" placeholder="e.g. textarea">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="selectorDeepseek">DeepSeek Selector</label>
-                            <input type="text" id="selectorDeepseek" class="search-input" placeholder="e.g. textarea, div[contenteditable='true']">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="selectorGroq">Groq Selector</label>
-                            <input type="text" id="selectorGroq" class="search-input" placeholder="e.g. textarea, #chat-input, div[contenteditable='true']">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="selectorCustom">Custom Platform Selector</label>
-                            <input type="text" id="selectorCustom" class="search-input" placeholder="e.g. textarea, div[contenteditable='true']">
-                        </div>
-                    </div>
-                </div>
+                    <p class="pane-footnote">
+                        <span data-i18n="options_scraping_more_hint">Prompt size, comment sorting and media handling
+                            are under</span>
+                        <button type="button" class="link-btn" data-goto="sectionAdvanced"
+                            data-i18n="options_nav_advanced">Advanced</button>
+                    </p>
+                </section>
 
-                <!-- Notifications Card -->
-                <div class="card">
-                    <div class="card-header">
-                        <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-                        </svg>
-                        <h2 class="card-title" data-i18n="options_card_notifications_title">Notifications</h2>
-                    </div>
-                    <div class="card-content">
+                <!-- ============ Reddit button ============ -->
+                <section id="sectionRedditButton" class="settings-pane" role="tabpanel" aria-labelledby="tab-reddit"
+                    hidden>
+                    <header class="pane-header">
+                        <h1 class="pane-title" data-i18n="options_nav_reddit">Reddit button</h1>
+                        <p class="pane-desc" data-i18n="settings_reddit_btn_desc">Display quick AI action buttons
+                            directly within Reddit post action bars</p>
+                    </header>
+
+                    <div class="card" id="section-reddit-button">
+                        <h2 class="card-title" data-i18n="settings_reddit_btn_title">Reddit In-Page AI Button</h2>
                         <label class="toggle-row">
-                            <div class="toggle-info">
-                                <span class="toggle-label" data-i18n="options_label_show_notifications">Show
-                                    notifications</span>
-                                <span class="toggle-hint" data-i18n="options_hint_notifications">Display status updates
-                                    as browser notifications</span>
-                            </div>
-                            <div class="toggle-switch">
-                                <input type="checkbox" id="showNotifications">
+                            <span class="toggle-info">
+                                <span class="toggle-label" data-i18n="settings_reddit_btn_master">Enable in-page AI
+                                    button on Reddit</span>
+                            </span>
+                            <span class="toggle-switch">
+                                <input type="checkbox" id="showRedditInlineButton" checked>
                                 <span class="toggle-slider"></span>
-                            </div>
+                            </span>
                         </label>
+                        <div class="setting-subgroup" id="redditButtonSubgroup">
+                            <label class="toggle-row">
+                                <span class="toggle-info">
+                                    <span class="toggle-label" data-i18n="settings_reddit_btn_post">Show inside post
+                                        detail pages</span>
+                                </span>
+                                <span class="toggle-switch">
+                                    <input type="checkbox" id="showRedditButtonInPost" checked>
+                                    <span class="toggle-slider"></span>
+                                </span>
+                            </label>
+                            <label class="toggle-row">
+                                <span class="toggle-info">
+                                    <span class="toggle-label" data-i18n="settings_reddit_btn_feed">Show on feed post
+                                        cards</span>
+                                </span>
+                                <span class="toggle-switch">
+                                    <input type="checkbox" id="showRedditButtonInFeed">
+                                    <span class="toggle-slider"></span>
+                                </span>
+                            </label>
+                            <p class="form-hint r2-reveal" id="redditButtonDisabledHint"
+                                data-i18n="options_reddit_btn_disabled_hint" hidden>Turn on the in-page button to
+                                choose where it appears.</p>
+                        </div>
                     </div>
-                </div>
+                </section>
 
-                <!-- Language Card -->
-                <div class="card">
-                    <div class="card-header">
-                        <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <line x1="2" y1="12" x2="22" y2="12"></line>
-                            <path
-                                d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z">
-                            </path>
-                        </svg>
-                        <h2 class="card-title" data-i18n="options_card_language_title">Language</h2>
-                    </div>
-                    <div class="card-content">
+                <!-- ============ General ============ -->
+                <section id="sectionGeneral" class="settings-pane" role="tabpanel" aria-labelledby="tab-general"
+                    hidden>
+                    <header class="pane-header">
+                        <h1 class="pane-title" data-i18n="options_nav_general">General</h1>
+                        <p class="pane-desc" data-i18n="options_pane_general_desc">Appearance, language,
+                            notifications and your data.</p>
+                    </header>
+
+                    <div class="card">
+                        <h2 class="card-title" data-i18n="options_card_appearance_title">Appearance</h2>
+                        <fieldset class="form-group fieldset">
+                            <legend class="form-label" data-i18n="options_label_theme">Theme</legend>
+                            <div class="segmented" role="radiogroup" aria-label="Theme" data-i18n-aria-label="options_label_theme">
+                                <label class="segment">
+                                    <input type="radio" name="uiTheme" value="auto" checked>
+                                    <span data-i18n="options_theme_auto">Auto</span>
+                                </label>
+                                <label class="segment">
+                                    <input type="radio" name="uiTheme" value="dark">
+                                    <span data-i18n="options_theme_dark">Dark</span>
+                                </label>
+                                <label class="segment">
+                                    <input type="radio" name="uiTheme" value="light">
+                                    <span data-i18n="options_theme_light">Light</span>
+                                </label>
+                            </div>
+                            <p class="form-hint" data-i18n="options_hint_theme">Auto follows your system setting.</p>
+                        </fieldset>
                         <div class="form-group">
-                            <label class="form-label" data-i18n="options_label_select_language">Interface
-                                Language</label>
+                            <label class="form-label" for="languageSelect"
+                                data-i18n="options_label_select_language">Interface Language</label>
                             <select id="languageSelect" class="select-input">
                                 <option value="auto" data-i18n="options_language_auto">Auto (Browser Default)</option>
                                 <option value="en">English</option>
@@ -641,149 +545,188 @@
                                 <option value="zh_CN">简体中文</option>
                                 <option value="tr">Türkçe</option>
                             </select>
-                            <p class="form-hint" data-i18n="options_hint_language">Select your preferred language.
-                                Changes require reloading the extension.</p>
+                            <p class="form-hint" id="languageHint" data-i18n="options_hint_language">Select your
+                                preferred language. Changes require reloading the extension.</p>
                         </div>
                     </div>
-                </div>
 
-                <!-- Data Storage Card -->
-                <div class="card">
-                    <div class="card-header">
-                        <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <ellipse cx="12" cy="5" rx="9" ry="3" />
-                            <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
-                            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
-                        </svg>
-                        <h2 class="card-title" data-i18n="options_card_storage_title">Data Storage</h2>
+                    <div class="card">
+                        <h2 class="card-title" data-i18n="options_card_notifications_title">Notifications</h2>
+                        <label class="toggle-row">
+                            <span class="toggle-info">
+                                <span class="toggle-label" data-i18n="options_label_show_notifications">Show
+                                    notifications</span>
+                                <span class="toggle-hint" data-i18n="options_hint_notifications">Display status
+                                    updates as browser notifications</span>
+                            </span>
+                            <span class="toggle-switch">
+                                <input type="checkbox" id="showNotifications">
+                                <span class="toggle-slider"></span>
+                            </span>
+                        </label>
                     </div>
-                    <div class="card-content">
-                        <div class="radio-group">
+
+                    <div class="card">
+                        <h2 class="card-title" data-i18n="options_card_storage_title">Data Storage</h2>
+                        <p class="card-desc" data-i18n="options_storage_desc">What happens to a scraped thread after
+                            it has been sent.</p>
+                        <div class="radio-group" role="radiogroup" aria-label="Data storage" data-i18n-aria-label="options_card_storage_title">
                             <label class="radio-option">
                                 <input type="radio" id="dataStorageDontSave" name="dataStorage" value="dontSave">
-                                <div class="radio-content">
+                                <span class="radio-content">
                                     <span class="radio-label" data-i18n="options_storage_none">Don't save</span>
-                                    <span class="radio-hint" data-i18n="options_storage_none_hint">Discard content after
-                                        sending</span>
-                                </div>
+                                    <span class="radio-hint" data-i18n="options_storage_none_hint">Discard content
+                                        after sending</span>
+                                </span>
                             </label>
                             <label class="radio-option">
-                                <input type="radio" id="dataStorageSessionOnly" name="dataStorage" value="sessionOnly">
-                                <div class="radio-content">
+                                <input type="radio" id="dataStorageSessionOnly" name="dataStorage"
+                                    value="sessionOnly">
+                                <span class="radio-content">
                                     <span class="radio-label" data-i18n="options_storage_session">Session only</span>
-                                    <span class="radio-hint" data-i18n="options_storage_session_hint">Keep until browser
-                                        closes</span>
-                                </div>
+                                    <span class="radio-hint" data-i18n="options_storage_session_hint">Keep until
+                                        browser closes</span>
+                                </span>
                             </label>
                             <label class="radio-option">
                                 <input type="radio" id="dataStoragePersistent" name="dataStorage" value="persistent"
                                     checked>
-                                <div class="radio-content">
+                                <span class="radio-content">
                                     <span class="radio-label" data-i18n="options_storage_persistent">Persistent</span>
                                     <span class="radio-hint" data-i18n="options_storage_persistent_hint">Save in local
                                         storage</span>
-                                </div>
+                                </span>
                             </label>
                         </div>
-                        <div class="history-actions saved-preset-actions">
-                            <button type="button" id="exportSettingsBtn" class="btn-action btn-export">Export settings</button>
-                            <button type="button" id="importSettingsBtn" class="btn-action">Import settings</button>
+                        <div class="subsection">
+                            <h3 class="subsection-title" data-i18n="options_backup_title">Back up your settings</h3>
+                            <p class="form-hint" data-i18n="options_backup_hint">Exports your preferences as a JSON
+                                file. API keys are never included.</p>
+                            <div class="actions-row">
+                                <button type="button" id="exportSettingsBtn" class="btn btn-ghost"
+                                    data-i18n="options_btn_export_settings">Export settings</button>
+                                <button type="button" id="importSettingsBtn" class="btn btn-ghost"
+                                    data-i18n="options_btn_import_settings">Import settings</button>
+                            </div>
+                            <div class="inline-status" id="settingsTransferStatus" role="status"
+                                aria-live="polite"></div>
                         </div>
                         <input type="file" id="importSettingsInput" accept="application/json" hidden>
                     </div>
-                </div>
 
-                <!-- Anonymous Usage Stats Card -->
-                <div class="card">
-                    <div class="card-header">
-                        <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <line x1="18" y1="20" x2="18" y2="10" />
-                            <line x1="12" y1="20" x2="12" y2="4" />
-                            <line x1="6" y1="20" x2="6" y2="14" />
-                        </svg>
-                        <h2 class="card-title" data-i18n="options_card_telemetry_title">Anonymous Usage Stats</h2>
-                    </div>
-                    <div class="card-content">
+                    <div class="card" id="telemetryCard">
+                        <div class="card-head-row">
+                            <h2 class="card-title" data-i18n="options_card_telemetry_title">Anonymous Usage Stats</h2>
+                            <span class="count-pill" data-i18n="options_telemetry_default_on">On by default</span>
+                        </div>
                         <label class="toggle-row">
-                            <div class="toggle-info">
+                            <span class="toggle-info">
                                 <span class="toggle-label" data-i18n="options_label_telemetry">Send anonymous usage
                                     counts</span>
-                                <span class="toggle-hint" data-i18n="options_hint_telemetry">Counts of five actions
-                                    (installed, updated, session started, thread extracted, prompt sent) plus a random
-                                    install ID and the extension version, at most once every 30 minutes. Never any
-                                    Reddit content, URLs, subreddits, prompts or API keys. Turning this off deletes the
-                                    install ID.</span>
-                            </div>
-                            <div class="toggle-switch">
-                                <input type="checkbox" id="telemetryEnabled" checked>
+                                <span class="toggle-hint" id="telemetryUnsupportedHint"
+                                    data-i18n="options_telemetry_unsupported" hidden>Usage counts are never sent in
+                                    this browser build.</span>
+                            </span>
+                            <span class="toggle-switch">
+                                <input type="checkbox" id="telemetryEnabled" checked
+                                    aria-describedby="telemetryDetails">
                                 <span class="toggle-slider"></span>
-                            </div>
+                            </span>
                         </label>
+                        <ul class="fact-list" id="telemetryDetails">
+                            <li class="fact fact-yes">
+                                <span class="fact-key" data-i18n="options_telemetry_sent_label">Sent</span>
+                                <span data-i18n="options_telemetry_sent">How many times five things happened
+                                    (installed, updated, browser session started, thread extracted, prompt sent),
+                                    plus a random install ID and the extension version.</span>
+                            </li>
+                            <li class="fact fact-no">
+                                <span class="fact-key" data-i18n="options_telemetry_never_label">Never sent</span>
+                                <span data-i18n="options_telemetry_never">Reddit content, URLs, subreddit names,
+                                    titles, prompts, API keys, or anything you type.</span>
+                            </li>
+                            <li class="fact">
+                                <span class="fact-key" data-i18n="options_telemetry_when_label">How often</span>
+                                <span data-i18n="options_telemetry_when">At most once every 30 minutes. Turning this
+                                    off deletes the install ID and any counts not yet sent.</span>
+                            </li>
+                        </ul>
                     </div>
-                </div>
+                </section>
 
-                <!-- Scrape History Card -->
-                <div class="card" id="historyCard">
-                    <div class="card-header">
-                        <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <polyline points="12 6 12 12 16 14"></polyline>
-                        </svg>
-                        <h2 class="card-title" data-i18n="options_card_history_title">Scrape History</h2>
-                        <span id="historyCount" class="history-count">0 <span
-                                data-i18n="options_label_items">items</span></span>
-                    </div>
-                    <div class="card-content">
-                        <!-- History limit control -->
-                        <div class="form-group">
+                <!-- ============ History ============ -->
+                <section id="sectionHistory" class="settings-pane" role="tabpanel" aria-labelledby="tab-history"
+                    hidden>
+                    <header class="pane-header">
+                        <h1 class="pane-title" data-i18n="options_card_history_title">Scrape History</h1>
+                        <p class="pane-desc" data-i18n="options_pane_history_desc">Threads you scraped recently.
+                            Re-send one to a different AI, compare several, or export them.</p>
+                    </header>
+
+                    <div class="card" id="historyCard">
+                        <div class="card-head-row">
                             <div class="inline-input-row">
-                                <span class="inline-label" data-i18n="options_label_keep_last">Keep last</span>
-                                <input type="number" id="historyLimit" class="number-input" min="5" max="50" value="10">
+                                <label class="inline-label" for="historyLimit"
+                                    data-i18n="options_label_keep_last">Keep last</label>
+                                <input type="number" id="historyLimit" class="number-input" min="5" max="50"
+                                    value="10">
                                 <span class="inline-label" data-i18n="options_label_threads">threads</span>
                             </div>
+                            <span id="historyCount" class="count-pill">0 <span
+                                    data-i18n="options_label_items">items</span></span>
                         </div>
 
-                        <div class="history-filter-grid" aria-label="History filters">
-                            <input type="search" id="historySearch" class="search-input" placeholder="Search title, subreddit, flair, URL...">
-                            <select id="historyProviderFilter" class="select-input">
-                                <option value="all">All AI platforms</option>
+                        <div class="history-filter-grid" role="search" aria-label="History filters"
+                            data-i18n-aria-label="options_history_filters_aria">
+                            <input type="search" id="historySearch" class="search-input"
+                                placeholder="Search title, subreddit, flair, URL..."
+                                data-i18n-placeholder="options_history_search_placeholder"
+                                aria-label="Search history" data-i18n-aria-label="options_history_search_placeholder">
+                            <select id="historyProviderFilter" class="select-input" aria-label="AI platform" data-i18n-aria-label="options_aria_platform">
+                                <option value="all" data-i18n="options_history_all_platforms">All AI platforms
+                                </option>
                                 <option value="gemini">Gemini</option>
                                 <option value="chatgpt">ChatGPT</option>
                                 <option value="claude">Claude</option>
                                 <option value="aistudio">AI Studio</option>
+                                <option value="deepseek">DeepSeek</option>
+                                <option value="groq">Groq</option>
+                                <option value="custom" data-i18n="options_platform_custom">Custom site</option>
                             </select>
-                            <select id="historyPresetFilter" class="select-input">
-                                <option value="all">All presets</option>
-                                <option value="summarize">Summarize</option>
-                                <option value="takeaways">Key Takeaways</option>
-                                <option value="eli5">ELI5</option>
-                                <option value="sentiment">Sentiment</option>
-                                <option value="debate">Debate Analysis</option>
-                                <option value="custom">Custom</option>
+                            <select id="historyPresetFilter" class="select-input" aria-label="Prompt" data-i18n-aria-label="options_aria_prompt">
+                                <option value="all" data-i18n="options_history_all_presets">All prompts</option>
+                                <option value="summarize" data-i18n="preset_summarize_name">Summarize</option>
+                                <option value="takeaways" data-i18n="preset_takeaways_name">Key Takeaways</option>
+                                <option value="eli5" data-i18n="preset_eli5_name">ELI5</option>
+                                <option value="sentiment" data-i18n="preset_sentiment_name">Sentiment</option>
+                                <option value="debate" data-i18n="preset_debate_name">Debate Analysis</option>
+                                <option value="custom" data-i18n="preset_custom_name">Custom</option>
                             </select>
-                            <select id="historyDateFilter" class="select-input">
-                                <option value="all">Any date</option>
-                                <option value="today">Today</option>
-                                <option value="week">Last 7 days</option>
-                                <option value="month">Last 30 days</option>
+                            <select id="historyDateFilter" class="select-input" aria-label="Date" data-i18n-aria-label="options_aria_date">
+                                <option value="all" data-i18n="options_history_any_date">Any date</option>
+                                <option value="today" data-i18n="options_history_today">Today</option>
+                                <option value="week" data-i18n="options_history_week">Last 7 days</option>
+                                <option value="month" data-i18n="options_history_month">Last 30 days</option>
                             </select>
-                            <input type="number" id="historyMinComments" class="number-input history-min-comments" min="0" placeholder="Min comments">
+                            <input type="number" id="historyMinComments" class="number-input history-min-comments"
+                                min="0" placeholder="Min comments"
+                                data-i18n-placeholder="options_history_min_comments"
+                                aria-label="Minimum comments" data-i18n-aria-label="options_history_min_comments">
                         </div>
 
                         <div class="history-tools">
                             <span id="compareSelectedCount" class="history-tool-label">0 selected for compare</span>
-                            <button type="button" id="compareHistoryBtn" class="btn-action" disabled>Compare selected</button>
+                            <button type="button" id="compareHistoryBtn" class="btn btn-ghost" disabled
+                                title="Select at least two threads to compare"
+                                data-i18n-title="options_compare_hint"
+                                data-i18n="options_btn_compare">Compare selected</button>
                         </div>
                         <p id="historyStatus" class="history-status" role="status" aria-live="polite"></p>
 
-                        <!-- History list container -->
                         <div id="historyList" class="history-list">
-                            <div class="history-empty">
-                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="1.5" opacity="0.4">
+                            <div class="empty-state">
+                                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="1.5" aria-hidden="true">
                                     <circle cx="12" cy="12" r="10"></circle>
                                     <polyline points="12 6 12 12 16 14"></polyline>
                                 </svg>
@@ -791,11 +734,10 @@
                             </div>
                         </div>
 
-                        <!-- Actions row -->
-                        <div class="history-actions">
-                            <button type="button" id="clearHistoryBtn" class="btn-action btn-danger-outline" disabled>
+                        <div class="actions-row">
+                            <button type="button" id="clearHistoryBtn" class="btn btn-ghost btn-danger" disabled>
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2">
+                                    stroke-width="2" aria-hidden="true">
                                     <polyline points="3 6 5 6 21 6"></polyline>
                                     <path
                                         d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
@@ -804,97 +746,236 @@
                                 <span data-i18n="options_btn_clear_all">Clear All</span>
                             </button>
                         </div>
+                        <div class="confirm-row r2-reveal" id="clearHistoryConfirm" role="group"
+                            aria-labelledby="clearHistoryConfirmText" hidden>
+                            <span id="clearHistoryConfirmText" class="confirm-text"
+                                data-i18n="options_confirm_clear">Clear all scrape history? This cannot be
+                                undone.</span>
+                            <span class="confirm-actions">
+                                <button type="button" class="btn btn-ghost btn-sm" data-confirm-cancel
+                                    data-i18n="options_btn_cancel">Cancel</button>
+                                <button type="button" class="btn btn-danger-solid btn-sm" data-confirm-ok
+                                    data-i18n="options_btn_delete_all">Delete all</button>
+                            </span>
+                        </div>
                     </div>
-                </div>
-            </div>
+                </section>
 
-            <div id="sectionMappings" class="settings-pane">
-                <!-- Subreddit-Specific Templates Card -->
-                <div class="card">
-                    <div class="card-header">
-                        <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-                        </svg>
-                        <h2 class="card-title" data-i18n="options_card_mappings_title">Subreddit-Specific Templates</h2>
-                    </div>
-                    <div class="card-content">
-                        <p class="form-hint form-hint-lead" data-i18n="options_mappings_hint">Override the default prompt template for specific subreddits (supports wildcards like <code>investing*</code>).</p>
-                        <div class="form-group form-row">
-                            <input type="text" id="subredditPatternInput" class="search-input form-row-grow-2" data-i18n="options_mappings_placeholder" placeholder="e.g. cscareerquestions or investing*">
-                            <select id="subredditPresetSelect" class="select-input form-row-grow">
-                                <option value="summarize">Summarize</option>
-                                <option value="debate">Debate</option>
-                                <option value="sentiment">Sentiment</option>
-                                <option value="takeaways">Takeaways</option>
-                                <option value="eli5">ELI5</option>
-                            </select>
-                            <button type="button" id="addSubredditRuleBtn" class="btn primary btn-nowrap" data-i18n="options_mappings_btn_add">Add Rule</button>
-                        </div>
-                        <ul id="subredditRulesList" class="custom-origins-list"></ul>
-                    </div>
-                </div>
+                <!-- ============ Advanced ============ -->
+                <section id="sectionAdvanced" class="settings-pane" role="tabpanel" aria-labelledby="tab-advanced"
+                    hidden>
+                    <header class="pane-header">
+                        <h1 class="pane-title" data-i18n="options_nav_advanced">Advanced</h1>
+                        <p class="pane-desc" data-i18n="options_pane_advanced_desc">For power users and
+                            troubleshooting. The defaults work well for most people.</p>
+                    </header>
 
-                <!-- Subreddit Mapping Tester Card -->
-                <div class="card">
-                    <div class="card-header">
-                        <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polygon points="5 3 19 12 5 21 5 3" />
-                        </svg>
-                        <h2 class="card-title" data-i18n="options_card_route_tester_title">Subreddit Mapping Tester</h2>
-                    </div>
-                    <div class="card-content">
-                        <p class="form-hint form-hint-lead" data-i18n="options_route_tester_hint">Test your wildcard patterns against subreddit names to see which template resolves.</p>
-                        <div class="form-group form-row">
-                            <input type="text" id="routeTesterInput" class="search-input form-row-grow" data-i18n="options_placeholder_route_tester" placeholder="e.g. investing or AskReddit" data-tooltip="tooltip_route_tester_input">
+                    <details class="adv-group card">
+                        <summary class="adv-summary">
+                            <span class="adv-summary-text">
+                                <span class="card-title" data-i18n="options_adv_tuning_title">Prompt size &amp;
+                                    comment selection</span>
+                                <span class="card-desc" data-i18n="options_adv_tuning_desc">How much of the thread
+                                    goes into the prompt, and which comments are kept when it is trimmed.</span>
+                            </span>
+                            <svg class="adv-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" aria-hidden="true">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </summary>
+                        <div class="adv-body">
+                            <div class="form-group">
+                                <label class="form-label" for="contextPresetSelect"
+                                    data-i18n="options_label_context_budget">Default prompt size</label>
+                                <select id="contextPresetSelect" class="select-input">
+                                    <option value="small" data-i18n="options_context_small">Small</option>
+                                    <option value="balanced" data-i18n="options_context_balanced">Balanced</option>
+                                    <option value="full" data-i18n="options_context_full">Full</option>
+                                    <option value="maxQuality" data-i18n="options_context_max">Largest (best
+                                        quality)</option>
+                                </select>
+                                <p class="form-hint" data-i18n="options_hint_context_budget">The starting prompt size
+                                    in the preview. Bigger prompts keep more comments.</p>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="trimStrategySelect"
+                                    data-i18n="options_label_trim">When trimming, keep</label>
+                                <select id="trimStrategySelect" class="select-input">
+                                    <option value="top" data-i18n="options_trim_top">Top scored</option>
+                                    <option value="controversial" data-i18n="options_trim_controversial">
+                                        Controversial</option>
+                                    <option value="op" data-i18n="options_trim_op">OP replies</option>
+                                    <option value="flaired" data-i18n="options_trim_flaired">Flaired users</option>
+                                    <option value="diverse" data-i18n="options_trim_diverse">Diverse viewpoints
+                                    </option>
+                                    <option value="newest" data-i18n="options_trim_newest">Newest</option>
+                                    <option value="longest" data-i18n="options_trim_longest">Longest helpful comments
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="redditSortModeSelect"
+                                    data-i18n="options_label_sort">Reddit comment sort</label>
+                                <select id="redditSortModeSelect" class="select-input">
+                                    <option value="confidence" data-i18n="options_sort_best">Best</option>
+                                    <option value="top" data-i18n="options_sort_top">Top</option>
+                                    <option value="new" data-i18n="options_sort_new">New</option>
+                                    <option value="controversial" data-i18n="options_sort_controversial">
+                                        Controversial</option>
+                                    <option value="old" data-i18n="options_sort_old">Old</option>
+                                    <option value="qa" data-i18n="options_sort_qa">Q&amp;A</option>
+                                    <option value="live" data-i18n="options_sort_live">Live</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="mediaModeSelect"
+                                    data-i18n="options_label_media">Images and media</label>
+                                <select id="mediaModeSelect" class="select-input">
+                                    <option value="attach" data-i18n="options_media_attach">Attach images and list
+                                        media links</option>
+                                    <option value="urls" data-i18n="options_media_urls">List media links only
+                                    </option>
+                                    <option value="ignore" data-i18n="options_media_ignore">Ignore media</option>
+                                </select>
+                            </div>
                         </div>
-                        <div id="routeTesterResult" class="tester-result" style="display: none;">
-                            <!-- Result will be populated via JS -->
-                        </div>
-                    </div>
-                </div>
-            </div>
+                    </details>
 
-            <div id="sectionCustom" class="settings-pane">
-                <!-- Custom AI Platforms / Local WebUIs Card -->
-                <div class="card">
-                    <div class="card-header">
-                        <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
-                            <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
-                            <line x1="6" y1="6" x2="6.01" y2="6"></line>
-                            <line x1="6" y1="18" x2="6.01" y2="18"></line>
-                        </svg>
-                        <h2 class="card-title">Custom AI Platforms / Local WebUIs</h2>
-                    </div>
-                    <div class="card-content">
-                        <p class="form-hint form-hint-lead">Add custom WebUI origins (e.g. <code>http://localhost:3000</code> or <code>http://127.0.0.1:8080</code>) to dynamically request host permission and register content scripts.</p>
-                        <div class="form-group form-row">
-                            <input type="text" id="customOriginInput" class="search-input form-row-grow" placeholder="e.g. http://localhost:3000">
-                            <button type="button" id="addCustomOriginBtn" class="btn-action btn-accent-outline btn-nowrap">Add Platform & Request Permission</button>
+                    <details class="adv-group card">
+                        <summary class="adv-summary">
+                            <span class="adv-summary-text">
+                                <span class="card-title" data-i18n="options_card_mappings_title">Subreddit-Specific
+                                    Templates</span>
+                                <span class="card-desc" data-i18n="options_adv_mappings_desc">Use a different prompt
+                                    automatically for certain subreddits.</span>
+                            </span>
+                            <svg class="adv-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" aria-hidden="true">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </summary>
+                        <div class="adv-body">
+                            <p class="form-hint" data-i18n="options_mappings_hint">Override the default prompt
+                                template for specific subreddits (supports wildcards like investing*).</p>
+                            <div class="form-row">
+                                <input type="text" id="subredditPatternInput" class="search-input form-row-grow-2"
+                                    data-i18n="options_mappings_placeholder"
+                                    placeholder="e.g. cscareerquestions or investing*"
+                                    aria-label="Subreddit pattern" data-i18n-aria-label="options_aria_pattern">
+                                <select id="subredditPresetSelect" class="select-input form-row-grow"
+                                    aria-label="Prompt" data-i18n-aria-label="options_aria_prompt">
+                                    <option value="summarize" data-i18n="preset_summarize_name">Summarize</option>
+                                    <option value="debate" data-i18n="preset_debate_name">Debate</option>
+                                    <option value="sentiment" data-i18n="preset_sentiment_name">Sentiment</option>
+                                    <option value="takeaways" data-i18n="preset_takeaways_name">Takeaways</option>
+                                    <option value="eli5" data-i18n="preset_eli5_name">ELI5</option>
+                                </select>
+                                <button type="button" id="addSubredditRuleBtn" class="btn btn-ghost btn-nowrap"
+                                    data-i18n="options_mappings_btn_add">Add Rule</button>
+                            </div>
+                            <div class="inline-status" id="subredditRuleStatus" role="status" aria-live="polite">
+                            </div>
+                            <ul id="subredditRulesList" class="item-list"></ul>
+
+                            <div class="subsection">
+                                <h3 class="subsection-title" data-i18n="options_card_route_tester_title">Subreddit
+                                    Mapping Tester</h3>
+                                <p class="form-hint" data-i18n="options_route_tester_hint">Test your wildcard patterns
+                                    against subreddit names to see which template resolves.</p>
+                                <input type="text" id="routeTesterInput" class="search-input"
+                                    data-i18n="options_placeholder_route_tester"
+                                    placeholder="e.g. investing or AskReddit"
+                                    data-tooltip="tooltip_route_tester_input" aria-label="Subreddit to test" data-i18n-aria-label="options_aria_test_sub">
+                                <div id="routeTesterResult" class="tester-result r2-reveal" aria-live="polite"
+                                    hidden></div>
+                            </div>
                         </div>
-                        <ul id="customOriginsList" class="custom-origins-list"></ul>
-                    </div>
-                </div>
+                    </details>
+
+                    <details class="adv-group card">
+                        <summary class="adv-summary">
+                            <span class="adv-summary-text">
+                                <span class="card-title" data-i18n="options_adv_custom_title">Custom AI sites</span>
+                                <span class="card-desc" data-i18n="options_adv_custom_desc">Send threads to a
+                                    self-hosted or local AI web app.</span>
+                            </span>
+                            <svg class="adv-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" aria-hidden="true">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </summary>
+                        <div class="adv-body">
+                            <p class="form-hint" data-i18n="options_custom_origin_hint">Enter the address of your AI
+                                web app (for example http://localhost:3000). Chrome will ask you to allow access to
+                                that site.</p>
+                            <div class="form-row">
+                                <input type="text" id="customOriginInput" class="search-input form-row-grow"
+                                    placeholder="http://localhost:3000" aria-label="Site address" data-i18n-aria-label="options_aria_site">
+                                <button type="button" id="addCustomOriginBtn" class="btn btn-ghost btn-nowrap"
+                                    data-i18n="options_btn_add_custom_origin">Add site</button>
+                            </div>
+                            <div class="inline-status" id="customOriginStatus" role="status" aria-live="polite">
+                            </div>
+                            <ul id="customOriginsList" class="item-list"></ul>
+                        </div>
+                    </details>
+
+                    <details class="adv-group card">
+                        <summary class="adv-summary">
+                            <span class="adv-summary-text">
+                                <span class="card-title" data-i18n="options_adv_selectors_title">Input field
+                                    selectors</span>
+                                <span class="card-desc" data-i18n="options_adv_selectors_desc">If pasting into an AI
+                                    site stops working after it changes its layout, point the extension at the right
+                                    text box.</span>
+                            </span>
+                            <svg class="adv-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" aria-hidden="true">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </summary>
+                        <div class="adv-body">
+                            <p class="form-hint" data-i18n="options_selectors_hint">CSS selectors. Leave empty to use
+                                the built-in default.</p>
+                            <div class="selector-grid">
+                                <label class="form-label" for="selectorGemini">Gemini</label>
+                                <input type="text" id="selectorGemini" class="search-input mono"
+                                    placeholder="div.rich-textarea [contenteditable='true']">
+                                <label class="form-label" for="selectorChatgpt">ChatGPT</label>
+                                <input type="text" id="selectorChatgpt" class="search-input mono"
+                                    placeholder="#prompt-textarea">
+                                <label class="form-label" for="selectorClaude">Claude</label>
+                                <input type="text" id="selectorClaude" class="search-input mono"
+                                    placeholder="div[contenteditable='true']">
+                                <label class="form-label" for="selectorAistudio">AI Studio</label>
+                                <input type="text" id="selectorAistudio" class="search-input mono"
+                                    placeholder="textarea">
+                                <label class="form-label" for="selectorDeepseek">DeepSeek</label>
+                                <input type="text" id="selectorDeepseek" class="search-input mono"
+                                    placeholder="textarea, div[contenteditable='true']">
+                                <label class="form-label" for="selectorGroq">Groq</label>
+                                <input type="text" id="selectorGroq" class="search-input mono"
+                                    placeholder="textarea, #chat-input, div[contenteditable='true']">
+                                <label class="form-label" for="selectorCustom"
+                                    data-i18n="options_platform_custom">Custom site</label>
+                                <input type="text" id="selectorCustom" class="search-input mono"
+                                    placeholder="textarea, div[contenteditable='true']">
+                            </div>
+                        </div>
+                    </details>
+                </section>
             </div>
         </main>
 
-        <!-- Footer -->
         <footer class="footer">
-            <span class="footer-text" data-i18n="footer_version_text">Reddit to AI v1.3.0</span>
+            <span class="footer-text" id="appVersion">Reddit to AI</span>
             <span class="footer-text" data-i18n="options_footer_saved">Settings are saved automatically</span>
         </footer>
     </div>
-
-    <!-- Hidden elements for backwards compatibility -->
-    <select id="llmProviderSelect" style="display:none;"></select>
-    <input type="hidden" id="loadMoreAttempts" value="75">
-    <input type="hidden" id="apiKeyInput">
-    <input type="hidden" id="modelNameInput">
-    <select id="modelNameSelect" style="display:none;"></select>
-    <select id="aiModelSelect" style="display:none;"></select>
-    <button type="button" id="fetchModelsBtn" style="display:none;"></button>
-    <small id="fetchModelsStatus" style="display:none;"></small>
-    <span id="attemptsValue" style="display:none;">75</span>
 
     <script src="i18n.js"></script>
     <script src="tooltip.js"></script>

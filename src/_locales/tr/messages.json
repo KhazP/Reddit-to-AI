@@ -722,5 +722,1467 @@
     },
     "settings_reddit_btn_post": {
         "message": "Gönderi detay sayfalarında göster"
+    },
+    "panel_region_label": {
+        "message": "Reddit to AI ilerlemesi"
+    },
+    "panel_close_label": {
+        "message": "Paneli kapat"
+    },
+    "panel_progress_label": {
+        "message": "Toplama ilerlemesi"
+    },
+    "panel_phase_fetch": {
+        "message": "Getir"
+    },
+    "panel_phase_parse": {
+        "message": "Oku"
+    },
+    "panel_phase_load": {
+        "message": "Yorumlar"
+    },
+    "panel_phase_filter": {
+        "message": "Hazırla"
+    },
+    "panel_badge_batch": {
+        "message": "Grup $CURRENT$ / $TOTAL$",
+        "placeholders": {
+            "current": {
+                "content": "$1"
+            },
+            "total": {
+                "content": "$2"
+            }
+        }
+    },
+    "panel_badge_comments": {
+        "message": "$COUNT$ yorum",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            }
+        }
+    },
+    "panel_done_sent": {
+        "message": "$AI$ hizmetine gönderildi",
+        "placeholders": {
+            "ai": {
+                "content": "$1"
+            }
+        }
+    },
+    "panel_ai_generic": {
+        "message": "yapay zekânız"
+    },
+    "panel_done_sent_hint": {
+        "message": "Yapay zekâ sekmesi konuyu aldı. Yanıt için o sekmeye bakın."
+    },
+    "panel_done_preview": {
+        "message": "Önizlemede hazır"
+    },
+    "panel_done_preview_hint": {
+        "message": "Yeni sekmede istemi gözden geçirip gönderin."
+    },
+    "panel_error_title": {
+        "message": "Bir sorun oluştu"
+    },
+    "panel_error_config_title": {
+        "message": "Kurulum gerekli"
+    },
+    "panel_error_not_reddit_title": {
+        "message": "Önce bir Reddit konusu açın"
+    },
+    "panel_error_busy_title": {
+        "message": "Zaten bir konu işleniyor"
+    },
+    "panel_error_network_title": {
+        "message": "Bağlantı sorunu"
+    },
+    "panel_error_stopped_title": {
+        "message": "Toplama durduruldu"
+    },
+    "panel_error_unknown": {
+        "message": "Beklenmeyen bir hata oluştu."
+    },
+    "panel_error_unreachable": {
+        "message": "Eklentiye ulaşılamadı. Sayfayı yenileyip tekrar deneyin."
+    },
+    "panel_btn_retry": {
+        "message": "Tekrar dene"
+    },
+    "panel_btn_dismiss": {
+        "message": "Kapat"
+    },
+    "panel_btn_settings": {
+        "message": "Ayarları aç"
+    },
+    "panel_retrying": {
+        "message": "Yeniden deneniyor…"
+    },
+    "inline_btn_label": {
+        "message": "Yapay zekâyla özetle"
+    },
+    "inline_btn_working": {
+        "message": "Özetleniyor…"
+    },
+    "inline_btn_done": {
+        "message": "Tamam"
+    },
+    "inline_btn_failed": {
+        "message": "Başarısız — tekrar"
+    },
+    "inline_btn_failed_title": {
+        "message": "Başlatılamadı. Tekrar denemek için tıklayın."
+    },
+    "inline_error_no_response": {
+        "message": "Eklenti yanıt vermedi. Sayfayı yenileyip tekrar deneyin."
+    },
+    "popup_feedback_title": {
+        "message": "Geri bildirim gönder"
+    },
+    "popup_settings_title": {
+        "message": "Ayarlar"
+    },
+    "popup_tab_scrape": {
+        "message": "Topla"
+    },
+    "popup_tab_filters": {
+        "message": "Filtreler"
+    },
+    "popup_filters_active_count": {
+        "message": "$COUNT$ etkin",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            }
+        }
+    },
+    "popup_filter_reset": {
+        "message": "Sıfırla"
+    },
+    "popup_empty_title": {
+        "message": "Başlamak için bir Reddit gönderisi açın"
+    },
+    "popup_empty_hint": {
+        "message": "Bir gönderide Paylaş'ın yanındaki Reddit to AI düğmesini kullanın veya Alt+Shift+S tuşlarına basın."
+    },
+    "popup_preset_question": {
+        "message": "Ne istiyorsunuz?"
+    },
+    "popup_saved_presets_label": {
+        "message": "Ön ayarlarınız"
+    },
+    "popup_saved_presets_more": {
+        "message": "+$COUNT$ daha",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            }
+        }
+    },
+    "popup_saved_presets_more_title": {
+        "message": "Tüm ön ayarları Ayarlar'dan yönetin"
+    },
+    "popup_saved_preset_applied": {
+        "message": "\"$NAME$\" kullanılıyor.",
+        "placeholders": {
+            "name": {
+                "content": "$1"
+            }
+        }
+    },
+    "popup_saved_preset_saved": {
+        "message": "\"$NAME$\" ön ayarı kaydedildi.",
+        "placeholders": {
+            "name": {
+                "content": "$1"
+            }
+        }
+    },
+    "popup_label_mode": {
+        "message": "Mod"
+    },
+    "popup_label_format": {
+        "message": "Yanıt biçimi"
+    },
+    "popup_label_custom_prompt": {
+        "message": "Özel istem (isteğe bağlı)"
+    },
+    "popup_quick_prompt_placeholder": {
+        "message": "Ön ayarın yerine kendi talimatlarınızı yazın..."
+    },
+    "popup_save_quick_prompt": {
+        "message": "Ön ayar olarak kaydet"
+    },
+    "popup_save_quick_prompt_disabled": {
+        "message": "Önce özel bir istem yazın"
+    },
+    "popup_dont_save_label": {
+        "message": "Bu toplamayı geçmişe kaydetme"
+    },
+    "popup_summary_custom_prompt": {
+        "message": "Özel istem"
+    },
+    "popup_summary_not_saved": {
+        "message": "Kaydedilmez"
+    },
+    "popup_btn_scrape_send": {
+        "message": "Topla ve $PROVIDER$'a gönder",
+        "placeholders": {
+            "provider": {
+                "content": "$1"
+            }
+        }
+    },
+    "popup_btn_done": {
+        "message": "Tamamlandı"
+    },
+    "popup_btn_disabled_not_thread": {
+        "message": "Toplamak için bir Reddit gönderisi açın (veya Filtreler'de toplu URL ekleyin)."
+    },
+    "popup_btn_shortcut_hint": {
+        "message": "Kısayol: Ctrl+Enter (Mac'te Cmd+Enter)"
+    },
+    "popup_budget_none": {
+        "message": "Henüz tahmin edilecek gönderi yok"
+    },
+    "popup_budget_line_safe": {
+        "message": "~$TOKENS$ token · $PROVIDER$ için uygun",
+        "placeholders": {
+            "tokens": {
+                "content": "$1"
+            },
+            "provider": {
+                "content": "$2"
+            }
+        }
+    },
+    "popup_budget_line_moderate": {
+        "message": "~$TOKENS$ token · $PROVIDER$ için uzun",
+        "placeholders": {
+            "tokens": {
+                "content": "$1"
+            },
+            "provider": {
+                "content": "$2"
+            }
+        }
+    },
+    "popup_budget_line_large": {
+        "message": "~$TOKENS$ token · $PROVIDER$ sınırına yakın",
+        "placeholders": {
+            "tokens": {
+                "content": "$1"
+            },
+            "provider": {
+                "content": "$2"
+            }
+        }
+    },
+    "popup_budget_line_over": {
+        "message": "~$TOKENS$ token · $PROVIDER$ için çok uzun",
+        "placeholders": {
+            "tokens": {
+                "content": "$1"
+            },
+            "provider": {
+                "content": "$2"
+            }
+        }
+    },
+    "popup_estimate_scope": {
+        "message": "$CONTEXT$ · $DEPTH$ derinlik",
+        "placeholders": {
+            "context": {
+                "content": "$1"
+            },
+            "depth": {
+                "content": "$2"
+            }
+        }
+    },
+    "popup_context_best": {
+        "message": "En iyi kalite"
+    },
+    "popup_context_best_desc": {
+        "message": "En kapsamlı yanıt için en büyük bütçe"
+    },
+    "popup_export_label": {
+        "message": "Son toplamayı dışa aktar"
+    },
+    "popup_export_disabled_hint": {
+        "message": "Dışa aktarma, ilk toplamadan sonra açılır."
+    },
+    "popup_export_done": {
+        "message": "Kaydedildi"
+    },
+    "popup_export_failed": {
+        "message": "Dışa aktarma başarısız oldu."
+    },
+    "popup_export_nodata": {
+        "message": "Dışa aktarılacak veri yok."
+    },
+    "popup_toast_dismiss": {
+        "message": "Kapat"
+    },
+    "preview_back": {
+        "message": "Geri"
+    },
+    "preview_back_title": {
+        "message": "Reddit sekmesine dön"
+    },
+    "preview_badge": {
+        "message": "Önizleme"
+    },
+    "preview_loading_thread": {
+        "message": "Konu yükleniyor…"
+    },
+    "preview_no_thread": {
+        "message": "Yüklü konu yok"
+    },
+    "preview_tabs_label": {
+        "message": "Önizleme görünümleri"
+    },
+    "preview_tab_prompt": {
+        "message": "Prompt ve gönder"
+    },
+    "preview_tab_prune": {
+        "message": "Yorumları ayıkla"
+    },
+    "preview_export": {
+        "message": "Dışa aktar"
+    },
+    "preview_save_preset": {
+        "message": "Ön ayarı kaydet"
+    },
+    "preview_save_preset_title": {
+        "message": "Geçerli prompt'u ve ayarları yeniden kullanılabilir bir ön ayar olarak kaydet"
+    },
+    "preview_copy": {
+        "message": "Kopyala"
+    },
+    "preview_copy_title": {
+        "message": "Prompt'u panoya kopyala"
+    },
+    "preview_copied": {
+        "message": "Kopyalandı ✓"
+    },
+    "preview_copy_failed": {
+        "message": "Kopyalanamadı"
+    },
+    "preview_empty_short": {
+        "message": "Boş"
+    },
+    "preview_send_to": {
+        "message": "$PROVIDER$'e gönder",
+        "placeholders": {
+            "provider": {
+                "content": "$1",
+                "example": "Gemini"
+            }
+        }
+    },
+    "preview_send_title": {
+        "message": "Bu prompt ile yapay zekâ sohbetini aç"
+    },
+    "preview_sending": {
+        "message": "Açılıyor…"
+    },
+    "preview_sent": {
+        "message": "Gönderildi ✓"
+    },
+    "preview_send_failed": {
+        "message": "Başarısız — tekrar dene"
+    },
+    "preview_provider_fallback": {
+        "message": "Yapay zekâ"
+    },
+    "preview_needs_thread": {
+        "message": "Önce bir konu yükleyin — henüz prompt yok."
+    },
+    "preview_preset_name_label": {
+        "message": "Ön ayar adı"
+    },
+    "preview_preset_name_hint": {
+        "message": "Bu prompt'u geçerli bağlam ön ayarı, kırpma stratejisi, medya ve biçim ayarlarıyla birlikte kaydeder."
+    },
+    "preview_preset_name_default": {
+        "message": "Özel önizleme ön ayarı"
+    },
+    "preview_preset_name_sub": {
+        "message": "r/$SUBREDDIT$ ön ayarı",
+        "placeholders": {
+            "subreddit": {
+                "content": "$1",
+                "example": "AskReddit"
+            }
+        }
+    },
+    "preview_cancel": {
+        "message": "İptal"
+    },
+    "preview_save": {
+        "message": "Kaydet"
+    },
+    "preview_saved": {
+        "message": "Kaydedildi ✓"
+    },
+    "preview_save_failed": {
+        "message": "Kaydedilmedi"
+    },
+    "preview_final_prompt": {
+        "message": "Son prompt"
+    },
+    "preview_edit_hint": {
+        "message": "Bu metni göndermeden önce düzenleyebilirsiniz."
+    },
+    "preview_rebuild_notice": {
+        "message": "Ayarlar değişti. Düzenlediğiniz prompt korundu."
+    },
+    "preview_apply_rebuilt": {
+        "message": "Yeniden oluşturulan prompt'u uygula"
+    },
+    "preview_keep_edits": {
+        "message": "Düzenlemeleri koru"
+    },
+    "preview_restore_prompt": {
+        "message": "Oluşturulan prompt'u geri yükle"
+    },
+    "preview_prompt_placeholder": {
+        "message": "Oluşturulan prompt burada görünecek…"
+    },
+    "preview_shortcut_send": {
+        "message": "ile gönder"
+    },
+    "preview_shortcut_copy": {
+        "message": "ile kopyala"
+    },
+    "preview_load_error_title": {
+        "message": "Bu konu yüklenemedi"
+    },
+    "preview_load_error_hint": {
+        "message": "Tekrar deneyin. Hata sürerse bu sekmeyi kapatıp Reddit konusundan yeniden çekin."
+    },
+    "preview_load_error_none": {
+        "message": "Bu sekme için çekilmiş bir konu bulunamadı. Süresi dolmuş olabilir."
+    },
+    "preview_try_again": {
+        "message": "Tekrar dene"
+    },
+    "preview_budget_eyebrow": {
+        "message": "Yapay zekâ bağlam bütçesi"
+    },
+    "preview_budget_preparing": {
+        "message": "Bağlam bütçesi hazırlanıyor."
+    },
+    "preview_budget_unavailable": {
+        "message": "Bütçe, bir konu yüklendiğinde görünür."
+    },
+    "preview_budget_level": {
+        "message": "Boyut: $LEVEL$",
+        "placeholders": {
+            "level": {
+                "content": "$1",
+                "example": "Low"
+            }
+        }
+    },
+    "preview_unit_tokens": {
+        "message": "token"
+    },
+    "preview_unit_chars": {
+        "message": "karakter"
+    },
+    "preview_unit_comments": {
+        "message": "yorum"
+    },
+    "preview_unit_images": {
+        "message": "görsel"
+    },
+    "preview_guidance_critical": {
+        "message": "$PROVIDER$ bunu reddedebilir veya kesebilir. Göndermeden önce Balanced ya da Small seçin.",
+        "placeholders": {
+            "provider": {
+                "content": "$1",
+                "example": "Gemini"
+            }
+        }
+    },
+    "preview_guidance_high": {
+        "message": "$PROVIDER$ bunu yalnızca geniş bağlamlı modellerde işleyebilir. Yorumları kırpmayı düşünün.",
+        "placeholders": {
+            "provider": {
+                "content": "$1",
+                "example": "Gemini"
+            }
+        }
+    },
+    "preview_guidance_medium": {
+        "message": "$PROVIDER$ bunu genelde kabul eder, ancak küçük modeller yanıtı kısaltabilir.",
+        "placeholders": {
+            "provider": {
+                "content": "$1",
+                "example": "Gemini"
+            }
+        }
+    },
+    "preview_guidance_low": {
+        "message": "$PROVIDER$ bu prompt için rahatça yer bulur.",
+        "placeholders": {
+            "provider": {
+                "content": "$1",
+                "example": "Gemini"
+            }
+        }
+    },
+    "preview_params_eyebrow": {
+        "message": "Prompt ayarları"
+    },
+    "preview_field_context": {
+        "message": "Bağlam ön ayarı"
+    },
+    "preview_field_trim": {
+        "message": "Kırpma stratejisi"
+    },
+    "preview_field_format": {
+        "message": "Çıktı biçimi"
+    },
+    "preview_field_platform": {
+        "message": "Yapay zekâ platformu"
+    },
+    "preview_field_media": {
+        "message": "Medya işleme"
+    },
+    "preview_skip_label": {
+        "message": "Bir dahaki sefere bu önizlemeyi atla"
+    },
+    "preview_skip_hint": {
+        "message": "Sonraki çekimler burada durmadan doğrudan yapay zekâ sohbetine yapıştırılır. Önizlemeyi Seçenekler'den yeniden açabilirsiniz."
+    },
+    "preview_missing_title": {
+        "message": "Bazı yanıtlar yüklenemedi — konu eksik olabilir."
+    },
+    "preview_missing_text": {
+        "message": "Göndermeden önce bunları yeniden yüklemeyi deneyebilirsiniz."
+    },
+    "preview_missing_count": {
+        "message": "$COUNT$ yanıt yüklenemedi. Göndermeden önce yeniden yüklemeyi deneyin.",
+        "placeholders": {
+            "count": {
+                "content": "$1",
+                "example": "12"
+            }
+        }
+    },
+    "preview_missing_resume": {
+        "message": "Eksik yanıtları yükle"
+    },
+    "preview_missing_resuming": {
+        "message": "Yanıtlar yükleniyor…"
+    },
+    "preview_prune_title": {
+        "message": "Dahil edilecek yorumları seçin"
+    },
+    "preview_prune_description": {
+        "message": "Bir yorumun işaretini kaldırırsanız prompt'a eklenmez. Yanıtları da çıkarılır."
+    },
+    "preview_select_all": {
+        "message": "Tümünü seç"
+    },
+    "preview_clear_all": {
+        "message": "Tümünü temizle"
+    },
+    "preview_tree_empty_title": {
+        "message": "Seçilecek yorum yok"
+    },
+    "preview_tree_empty_body": {
+        "message": "Bu konuda yorum yok ya da geçerli bağlam ön ayarı prompt'ta hiç yorum bırakmadı."
+    },
+    "preview_api_error_title": {
+        "message": "İstek tamamlanamadı"
+    },
+    "preview_api_sending": {
+        "message": "Gönderiliyor…"
+    },
+    "preview_api_done": {
+        "message": "Tamam ✓"
+    },
+    "preview_api_failed_short": {
+        "message": "Başarısız"
+    },
+    "preview_api_send_disabled": {
+        "message": "Göndermek için Seçenekler'de bu sağlayıcıya bir API anahtarı ekleyin."
+    },
+    "preview_api_no_key_option": {
+        "message": "$PROVIDER$ (anahtar yok)",
+        "placeholders": {
+            "provider": {
+                "content": "$1",
+                "example": "OpenAI"
+            }
+        }
+    },
+    "preview_status_ready_short": {
+        "message": "Hazır."
+    },
+    "preview_status_ready": {
+        "message": "Hazır. Prompt'u gözden geçirin veya düzenleyin, sonra gönderin."
+    },
+    "preview_status_loading": {
+        "message": "Çekilen konu yükleniyor…"
+    },
+    "preview_status_load_failed": {
+        "message": "Konu yüklenemedi."
+    },
+    "preview_status_already_sending": {
+        "message": "Yapay zekâ sekmesi zaten açılıyor."
+    },
+    "preview_status_empty": {
+        "message": "Prompt boş — göndermeden önce metin ekleyin."
+    },
+    "preview_status_opening": {
+        "message": "$PROVIDER$ açılıyor…",
+        "placeholders": {
+            "provider": {
+                "content": "$1",
+                "example": "Gemini"
+            }
+        }
+    },
+    "preview_status_sent": {
+        "message": "$PROVIDER$ açıldı. Prompt otomatik yapıştırılmazsa o sayfadaki kopyala düğmesini kullanın.",
+        "placeholders": {
+            "provider": {
+                "content": "$1",
+                "example": "Gemini"
+            }
+        }
+    },
+    "preview_status_send_failed": {
+        "message": "Prompt gönderilemedi. Tekrar deneyin ya da kopyalayın."
+    },
+    "preview_status_copied": {
+        "message": "Prompt panoya kopyalandı."
+    },
+    "preview_status_nothing_to_copy": {
+        "message": "Prompt boş — kopyalanacak bir şey yok."
+    },
+    "preview_status_copy_failed": {
+        "message": "Kopyalanamadı. Metni seçip Ctrl+C'ye basın."
+    },
+    "preview_status_copy_failed_short": {
+        "message": "Kopyalanamadı."
+    },
+    "preview_status_export_nodata": {
+        "message": "Dışa aktarılacak veri yok."
+    },
+    "preview_status_exported": {
+        "message": "$FORMAT$ olarak dışa aktarıldı.",
+        "placeholders": {
+            "format": {
+                "content": "$1",
+                "example": "MD"
+            }
+        }
+    },
+    "preview_status_export_failed": {
+        "message": "Dışa aktarma başarısız."
+    },
+    "preview_status_preset_name_needed": {
+        "message": "Önce ön ayara bir ad verin."
+    },
+    "preview_status_preset_saved": {
+        "message": "“$NAME$” ön ayarı kaydedildi.",
+        "placeholders": {
+            "name": {
+                "content": "$1",
+                "example": "Weekly digest"
+            }
+        }
+    },
+    "preview_status_preset_failed": {
+        "message": "Ön ayar kaydedilemedi: $ERROR$",
+        "placeholders": {
+            "error": {
+                "content": "$1",
+                "example": "QUOTA_BYTES quota exceeded"
+            }
+        }
+    },
+    "preview_status_rebuilt": {
+        "message": "Yeniden oluşturulan prompt uygulandı."
+    },
+    "preview_status_kept": {
+        "message": "Düzenlenen prompt korundu."
+    },
+    "preview_status_restored": {
+        "message": "Oluşturulan prompt geri yüklendi."
+    },
+    "preview_status_skip_on": {
+        "message": "Bir dahaki sefere çekimler doğrudan yapay zekâ sohbetine gidecek."
+    },
+    "preview_status_skip_off": {
+        "message": "Bir dahaki sefere önce bu önizleme açılacak."
+    },
+    "preview_status_resuming": {
+        "message": "Eksik yanıtlar yüklenmeye çalışılıyor…"
+    },
+    "preview_status_resume_failed": {
+        "message": "Eksik yanıtlar yüklenemedi."
+    },
+    "preview_status_resumed": {
+        "message": "Tamam. $COUNT$ yanıt eklendi.",
+        "placeholders": {
+            "count": {
+                "content": "$1",
+                "example": "8"
+            }
+        }
+    },
+    "preview_status_focus_failed": {
+        "message": "Reddit sekmesi bulunamadı."
+    },
+    "preview_threads_combined": {
+        "message": "Karşılaştırma için $COUNT$ Reddit konusu birleştirildi.",
+        "placeholders": {
+            "count": {
+                "content": "$1",
+                "example": "3"
+            }
+        }
+    },
+    "options_header_settings": {
+        "message": "Ayarlar"
+    },
+    "options_nav_aria": {
+        "message": "Ayar bölümleri"
+    },
+    "options_nav_ai": {
+        "message": "Yapay zekâ ve gönderim"
+    },
+    "options_nav_prompts": {
+        "message": "İstemler"
+    },
+    "options_nav_scraping": {
+        "message": "Veri toplama"
+    },
+    "options_nav_reddit": {
+        "message": "Reddit düğmesi"
+    },
+    "options_nav_general": {
+        "message": "Genel"
+    },
+    "options_nav_history": {
+        "message": "Geçmiş"
+    },
+    "options_nav_advanced": {
+        "message": "Gelişmiş"
+    },
+    "options_pane_ai_desc": {
+        "message": "Reddit gönderilerinizin nereye gideceği ve gönderdiğinizde ne olacağı."
+    },
+    "options_pane_prompts_desc": {
+        "message": "Yapay zekâdan her gönderiyle ne yapmasının istendiği."
+    },
+    "options_pane_scraping_desc": {
+        "message": "Bir gönderinin ne kadarının toplanacağı ve hangi yorumların tutulacağı."
+    },
+    "options_pane_general_desc": {
+        "message": "Görünüm, dil, bildirimler ve verileriniz."
+    },
+    "options_pane_history_desc": {
+        "message": "Son topladığınız gönderiler. Birini başka bir yapay zekâya gönderin, birkaçını karşılaştırın ya da dışa aktarın."
+    },
+    "options_pane_advanced_desc": {
+        "message": "İleri düzey kullanıcılar ve sorun giderme için. Varsayılanlar çoğu kişi için uygundur."
+    },
+    "options_platform_custom": {
+        "message": "Özel site"
+    },
+    "options_hint_custom_platform": {
+        "message": "Özel siteler (ör. yerel bir WebUI) Gelişmiş › Özel yapay zekâ siteleri bölümünden eklenir."
+    },
+    "options_card_send_flow_title": {
+        "message": "Bir gönderiyi gönderdiğinizde"
+    },
+    "options_label_show_preview": {
+        "message": "Göndermeden önce istem önizlemesini göster"
+    },
+    "options_hint_show_preview": {
+        "message": "Kapatırsanız veriler toplanır ve yapay zekâ sekmesi hemen açılır."
+    },
+    "options_label_output_format": {
+        "message": "Yanıt biçimi"
+    },
+    "options_hint_output_format": {
+        "message": "Yapay zekânın yanıt vermesi istenen biçim. Önizlemede gönderi başına değiştirebilirsiniz."
+    },
+    "options_format_auto": {
+        "message": "Yapay zekâ karar versin"
+    },
+    "options_format_bullets": {
+        "message": "Madde işaretleri"
+    },
+    "options_format_table": {
+        "message": "Tablo"
+    },
+    "options_format_pros_cons": {
+        "message": "Artılar ve eksiler"
+    },
+    "options_format_executive": {
+        "message": "Yönetici özeti"
+    },
+    "options_hint_prompt_plain": {
+        "message": "Reddit gönderisinin gireceği yere {content} yazın. Kendiniz yazmak için “Özel”i seçin."
+    },
+    "options_card_saved_presets_title": {
+        "message": "Kayıtlı istem şablonları"
+    },
+    "options_saved_presets_desc": {
+        "message": "Açılır pencereden veya önizleme sayfasından kaydettiğiniz şablonlar."
+    },
+    "options_saved_presets_empty": {
+        "message": "Henüz kayıtlı şablon yok"
+    },
+    "options_saved_presets_none_hint": {
+        "message": "Henüz kayıtlı şablon yok"
+    },
+    "options_btn_import_presets": {
+        "message": "Şablonları içe aktar"
+    },
+    "options_btn_export_presets": {
+        "message": "Şablonları dışa aktar"
+    },
+    "options_btn_clear_presets": {
+        "message": "Tüm şablonları sil"
+    },
+    "options_confirm_clear_presets": {
+        "message": "Tüm kayıtlı şablonlar silinsin mi? Bu işlem geri alınamaz."
+    },
+    "options_btn_cancel": {
+        "message": "Vazgeç"
+    },
+    "options_btn_delete_all": {
+        "message": "Tümünü sil"
+    },
+    "options_btn_use": {
+        "message": "Kullan"
+    },
+    "options_btn_export": {
+        "message": "Dışa aktar"
+    },
+    "options_btn_remove": {
+        "message": "Kaldır"
+    },
+    "options_untitled_preset": {
+        "message": "Adsız şablon"
+    },
+    "options_unknown_date": {
+        "message": "Bilinmeyen tarih"
+    },
+    "options_preset_applied": {
+        "message": "“$NAME$” artık özel isteminiz olarak kullanılıyor.",
+        "placeholders": {
+            "name": {
+                "content": "$1"
+            }
+        }
+    },
+    "options_preset_deleted": {
+        "message": "Şablon silindi."
+    },
+    "options_preset_exported": {
+        "message": "Şablon dışa aktarıldı."
+    },
+    "options_presets_exported": {
+        "message": "Şablonlar dışa aktarıldı."
+    },
+    "options_presets_imported": {
+        "message": "$COUNT$ şablon içe aktarıldı.",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            }
+        }
+    },
+    "options_presets_cleared": {
+        "message": "Tüm kayıtlı şablonlar silindi."
+    },
+    "options_import_no_presets": {
+        "message": "Bu dosyada istem şablonu yok."
+    },
+    "options_author_op_label": {
+        "message": "Gönderi sahibi (OP)"
+    },
+    "options_author_flaired_label": {
+        "message": "Flair sahibi kullanıcılar"
+    },
+    "options_author_summary_all": {
+        "message": "Herkesin yorumları dahil. Yalnızca bu yazarları tutmak için birini veya ikisini açın."
+    },
+    "options_author_summary_op": {
+        "message": "Yalnızca gönderi sahibinin yorumları."
+    },
+    "options_author_summary_flaired": {
+        "message": "Yalnızca flair sahibi kullanıcıların yorumları."
+    },
+    "options_author_summary_both": {
+        "message": "Yalnızca gönderi sahibinin veya flair sahibi kullanıcıların yorumları."
+    },
+    "options_scraping_more_hint": {
+        "message": "İstem boyutu, yorum sıralaması ve medya ayarları şurada:"
+    },
+    "options_reddit_btn_disabled_hint": {
+        "message": "Nerede görüneceğini seçmek için sayfa içi düğmeyi açın."
+    },
+    "options_card_appearance_title": {
+        "message": "Görünüm"
+    },
+    "options_label_theme": {
+        "message": "Tema"
+    },
+    "options_theme_auto": {
+        "message": "Otomatik"
+    },
+    "options_theme_dark": {
+        "message": "Koyu"
+    },
+    "options_theme_light": {
+        "message": "Açık"
+    },
+    "options_hint_theme": {
+        "message": "Otomatik, sistem ayarınızı izler."
+    },
+    "options_language_applied": {
+        "message": "Dil uygulandı."
+    },
+    "options_storage_desc": {
+        "message": "Toplanan bir gönderinin gönderildikten sonra ne olacağı."
+    },
+    "options_backup_title": {
+        "message": "Ayarlarınızı yedekleyin"
+    },
+    "options_backup_hint": {
+        "message": "Tercihlerinizi JSON dosyası olarak dışa aktarır. API anahtarları asla dahil edilmez."
+    },
+    "options_btn_export_settings": {
+        "message": "Ayarları dışa aktar"
+    },
+    "options_btn_import_settings": {
+        "message": "Ayarları içe aktar"
+    },
+    "options_settings_exported": {
+        "message": "Ayarlar dışa aktarıldı."
+    },
+    "options_import_bad_json": {
+        "message": "Dosya JSON olarak okunamadı:"
+    },
+    "options_import_read_failed": {
+        "message": "Dosya okunamadı."
+    },
+    "options_import_no_settings": {
+        "message": "Bu dosyada ayar yok."
+    },
+    "options_import_none_recognized": {
+        "message": "Bu dosyada tanınan bir ayar yok."
+    },
+    "options_import_failed": {
+        "message": "Ayarlar içe aktarılamadı:"
+    },
+    "options_telemetry_default_on": {
+        "message": "Varsayılan olarak açık"
+    },
+    "options_telemetry_sent_label": {
+        "message": "Gönderilen"
+    },
+    "options_telemetry_sent": {
+        "message": "Beş olayın kaç kez gerçekleştiği (yüklendi, güncellendi, tarayıcı oturumu başladı, gönderi çıkarıldı, istem gönderildi), ayrıca rastgele bir kurulum kimliği ve uzantı sürümü."
+    },
+    "options_telemetry_never_label": {
+        "message": "Asla gönderilmeyen"
+    },
+    "options_telemetry_never": {
+        "message": "Reddit içeriği, URL’ler, subreddit adları, başlıklar, istemler, API anahtarları veya yazdığınız hiçbir şey."
+    },
+    "options_telemetry_when_label": {
+        "message": "Ne sıklıkla"
+    },
+    "options_telemetry_when": {
+        "message": "En fazla 30 dakikada bir. Kapatmak kurulum kimliğini ve henüz gönderilmemiş sayıları siler."
+    },
+    "options_telemetry_unsupported": {
+        "message": "Bu tarayıcı sürümünde kullanım sayıları asla gönderilmez."
+    },
+    "options_history_filters_aria": {
+        "message": "Geçmiş filtreleri"
+    },
+    "options_history_search_placeholder": {
+        "message": "Başlık, subreddit, flair, URL ara..."
+    },
+    "options_history_all_platforms": {
+        "message": "Tüm yapay zekâ platformları"
+    },
+    "options_history_all_presets": {
+        "message": "Tüm istemler"
+    },
+    "options_history_any_date": {
+        "message": "Herhangi bir tarih"
+    },
+    "options_history_today": {
+        "message": "Bugün"
+    },
+    "options_history_week": {
+        "message": "Son 7 gün"
+    },
+    "options_history_month": {
+        "message": "Son 30 gün"
+    },
+    "options_history_min_comments": {
+        "message": "En az yorum"
+    },
+    "options_aria_platform": {
+        "message": "Yapay zekâ platformu"
+    },
+    "options_aria_prompt": {
+        "message": "İstem"
+    },
+    "options_aria_date": {
+        "message": "Tarih"
+    },
+    "options_aria_pattern": {
+        "message": "Subreddit kalıbı"
+    },
+    "options_aria_test_sub": {
+        "message": "Test edilecek subreddit"
+    },
+    "options_aria_site": {
+        "message": "Site adresi"
+    },
+    "options_btn_compare": {
+        "message": "Seçilenleri karşılaştır"
+    },
+    "options_compare_hint": {
+        "message": "Karşılaştırmak için en az iki gönderi seçin"
+    },
+    "options_compare_selected": {
+        "message": "Karşılaştırma için $COUNT$ seçildi",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            }
+        }
+    },
+    "options_history_compare": {
+        "message": "Karşılaştır"
+    },
+    "options_history_comments": {
+        "message": "$COUNT$ yorum",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            }
+        }
+    },
+    "options_history_pin": {
+        "message": "Sabitle"
+    },
+    "options_history_unpin": {
+        "message": "Sabitlemeyi kaldır"
+    },
+    "options_history_favorite": {
+        "message": "Favorilere ekle"
+    },
+    "options_history_unfavorite": {
+        "message": "Favorilerden çıkar"
+    },
+    "options_history_no_match": {
+        "message": "Filtrelerinize uyan geçmiş öğesi yok"
+    },
+    "options_hist_opening_preview": {
+        "message": "Geçmiş öğesinin önizlemesi açılıyor..."
+    },
+    "options_hist_preview_opened": {
+        "message": "Önizleme açıldı."
+    },
+    "options_hist_resend_failed": {
+        "message": "Geçmiş öğesi yeniden gönderilemedi:"
+    },
+    "options_hist_deleted": {
+        "message": "Geçmiş öğesi silindi."
+    },
+    "options_hist_delete_failed": {
+        "message": "Geçmiş öğesi silinemedi:"
+    },
+    "options_hist_export_failed": {
+        "message": "Geçmiş öğesi dışa aktarılamadı:"
+    },
+    "options_hist_exported": {
+        "message": "Geçmiş öğesi dışa aktarıldı."
+    },
+    "options_hist_update_failed": {
+        "message": "Geçmiş öğesi güncellenemedi:"
+    },
+    "options_hist_pinned": {
+        "message": "Geçmiş öğesi sabitlendi."
+    },
+    "options_hist_unpinned": {
+        "message": "Sabitleme kaldırıldı."
+    },
+    "options_hist_favorited": {
+        "message": "Favorilere eklendi."
+    },
+    "options_hist_unfavorited": {
+        "message": "Favorilerden çıkarıldı."
+    },
+    "options_hist_opening_compare": {
+        "message": "Karşılaştırma önizlemesi açılıyor..."
+    },
+    "options_hist_compare_opened": {
+        "message": "Karşılaştırma önizlemesi açıldı."
+    },
+    "options_hist_compare_failed": {
+        "message": "Geçmiş öğeleri karşılaştırılamadı:"
+    },
+    "options_hist_cleared": {
+        "message": "Geçmiş temizlendi."
+    },
+    "options_hist_clear_failed": {
+        "message": "Geçmiş temizlenemedi:"
+    },
+    "options_adv_tuning_title": {
+        "message": "İstem boyutu ve yorum seçimi"
+    },
+    "options_adv_tuning_desc": {
+        "message": "Gönderinin ne kadarının isteme gireceği ve kısaltılırken hangi yorumların kalacağı."
+    },
+    "options_label_context_budget": {
+        "message": "Varsayılan istem boyutu"
+    },
+    "options_hint_context_budget": {
+        "message": "Önizlemedeki başlangıç istem boyutu. Büyük istemler daha fazla yorum tutar."
+    },
+    "options_context_small": {
+        "message": "Küçük"
+    },
+    "options_context_balanced": {
+        "message": "Dengeli"
+    },
+    "options_context_full": {
+        "message": "Tam"
+    },
+    "options_context_max": {
+        "message": "En büyük (en iyi kalite)"
+    },
+    "options_label_trim": {
+        "message": "Kısaltırken tut"
+    },
+    "options_trim_top": {
+        "message": "En yüksek puanlı"
+    },
+    "options_trim_controversial": {
+        "message": "Tartışmalı"
+    },
+    "options_trim_op": {
+        "message": "OP yanıtları"
+    },
+    "options_trim_flaired": {
+        "message": "Flair sahibi kullanıcılar"
+    },
+    "options_trim_diverse": {
+        "message": "Farklı bakış açıları"
+    },
+    "options_trim_newest": {
+        "message": "En yeni"
+    },
+    "options_trim_longest": {
+        "message": "En uzun faydalı yorumlar"
+    },
+    "options_label_sort": {
+        "message": "Reddit yorum sıralaması"
+    },
+    "options_sort_best": {
+        "message": "En iyi"
+    },
+    "options_sort_top": {
+        "message": "En çok oy alan"
+    },
+    "options_sort_new": {
+        "message": "Yeni"
+    },
+    "options_sort_controversial": {
+        "message": "Tartışmalı"
+    },
+    "options_sort_old": {
+        "message": "Eski"
+    },
+    "options_sort_qa": {
+        "message": "Soru-Cevap"
+    },
+    "options_sort_live": {
+        "message": "Canlı"
+    },
+    "options_label_media": {
+        "message": "Görseller ve medya"
+    },
+    "options_media_attach": {
+        "message": "Görselleri ekle ve medya bağlantılarını listele"
+    },
+    "options_media_urls": {
+        "message": "Yalnızca medya bağlantılarını listele"
+    },
+    "options_media_ignore": {
+        "message": "Medyayı yok say"
+    },
+    "options_adv_mappings_desc": {
+        "message": "Belirli subreddit’ler için otomatik olarak farklı bir istem kullanın."
+    },
+    "options_mappings_empty_input": {
+        "message": "Önce bir subreddit adı veya kalıbı girin."
+    },
+    "options_mappings_duplicate": {
+        "message": "Bu kalıp için zaten bir kural var."
+    },
+    "options_mappings_added": {
+        "message": "Kural eklendi."
+    },
+    "options_tester_match": {
+        "message": "Eşleşti"
+    },
+    "options_tester_nomatch": {
+        "message": "Eşleşme yok"
+    },
+    "options_tester_match_detail": {
+        "message": "r/$SUB$ “$PATTERN$” ile eşleşiyor, bu yüzden $PRESET$ istemi kullanılır.",
+        "placeholders": {
+            "sub": {
+                "content": "$1"
+            },
+            "pattern": {
+                "content": "$2"
+            },
+            "preset": {
+                "content": "$3"
+            }
+        }
+    },
+    "options_tester_nomatch_detail": {
+        "message": "r/$SUB$ hiçbir kuralla eşleşmiyor, bu yüzden varsayılan isteminiz ($PRESET$) kullanılır.",
+        "placeholders": {
+            "sub": {
+                "content": "$1"
+            },
+            "preset": {
+                "content": "$2"
+            }
+        }
+    },
+    "options_adv_custom_title": {
+        "message": "Özel yapay zekâ siteleri"
+    },
+    "options_adv_custom_desc": {
+        "message": "Gönderileri kendi barındırdığınız veya yerel bir yapay zekâ web uygulamasına gönderin."
+    },
+    "options_custom_origin_hint": {
+        "message": "Yapay zekâ web uygulamanızın adresini girin (ör. http://localhost:3000). Chrome bu siteye erişim izni isteyecek."
+    },
+    "options_btn_add_custom_origin": {
+        "message": "Site ekle"
+    },
+    "options_custom_origin_empty": {
+        "message": "Henüz özel site eklenmedi."
+    },
+    "options_custom_origin_empty_input": {
+        "message": "Önce bir site adresi girin, ör. http://localhost:3000."
+    },
+    "options_custom_origin_invalid": {
+        "message": "Bu bir web adresine benzemiyor. http://localhost:3000 gibi bir şey deneyin."
+    },
+    "options_custom_origin_requesting": {
+        "message": "Erişime izin vermeniz bekleniyor…"
+    },
+    "options_custom_origin_error": {
+        "message": "Erişim istenemedi:"
+    },
+    "options_custom_origin_denied": {
+        "message": "Erişime izin verilmediği için site eklenmedi."
+    },
+    "options_custom_origin_exists": {
+        "message": "Bu site zaten listede."
+    },
+    "options_custom_origin_added": {
+        "message": "Site eklendi."
+    },
+    "options_custom_origin_removed": {
+        "message": "Site kaldırıldı."
+    },
+    "options_custom_origin_remove_title": {
+        "message": "Siteyi kaldır ve erişimi iptal et"
+    },
+    "options_adv_selectors_title": {
+        "message": "Giriş alanı seçicileri"
+    },
+    "options_adv_selectors_desc": {
+        "message": "Bir yapay zekâ sitesi düzenini değiştirdikten sonra yapıştırma çalışmazsa, doğru metin kutusunu burada belirtin."
+    },
+    "options_selectors_hint": {
+        "message": "CSS seçicileri. Yerleşik varsayılanı kullanmak için boş bırakın."
+    },
+    "options_footer_version": {
+        "message": "Reddit to AI v$VERSION$",
+        "placeholders": {
+            "version": {
+                "content": "$1"
+            }
+        }
+    },
+    "welcome_page_title": {
+        "message": "Reddit to AI’ya hoş geldiniz"
+    },
+    "welcome_progress_aria": {
+        "message": "Kurulum ilerlemesi"
+    },
+    "welcome_dot_1": {
+        "message": "Adım 1: Yapay zekânızı seçin"
+    },
+    "welcome_dot_2": {
+        "message": "Adım 2: Başlama yolları"
+    },
+    "welcome_dot_3": {
+        "message": "Adım 3: Gizlilik"
+    },
+    "welcome_step_count": {
+        "message": "Adım $CURRENT$/$TOTAL$",
+        "placeholders": {
+            "current": {
+                "content": "$1"
+            },
+            "total": {
+                "content": "$2"
+            }
+        }
+    },
+    "welcome_eyebrow": {
+        "message": "Hoş geldiniz — hadi kuralım"
+    },
+    "welcome_step1_title": {
+        "message": "Yapay zekânızı seçin"
+    },
+    "welcome_step1_lead": {
+        "message": "Reddit gönderileriniz nereye gitsin? Gönderi, isteminiz yapıştırılmış olarak orada açılır. Bunu istediğiniz zaman değiştirebilirsiniz."
+    },
+    "welcome_step1_more": {
+        "message": "Yerel veya kendi barındırdığınız bir yapay zekâ sitesi ya da kendi API anahtarınız daha sonra Ayarlar’dan eklenebilir."
+    },
+    "welcome_provider_saved": {
+        "message": "Kaydedildi — gönderiler $NAME$ içinde açılacak.",
+        "placeholders": {
+            "name": {
+                "content": "$1"
+            }
+        }
+    },
+    "welcome_save_failed": {
+        "message": "Kaydedilemedi. Tekrar deneyin."
+    },
+    "welcome_step2_title": {
+        "message": "Başlamanın dört yolu"
+    },
+    "welcome_step2_lead": {
+        "message": "Herhangi bir Reddit gönderisini açın ve size en yakın olanı kullanın."
+    },
+    "welcome_way_inline_title": {
+        "message": "Reddit’teki düğme"
+    },
+    "welcome_way_inline_desc": {
+        "message": "Bir gönderinin işlem çubuğunda, Paylaş’ın yanında tıklayın."
+    },
+    "welcome_way_popup_title": {
+        "message": "Araç çubuğu simgesi"
+    },
+    "welcome_way_popup_desc": {
+        "message": "Açılır pencereyi açıp büyük düğmeye basın. Simgeyi her zaman görünür kılmak için yapboz parçası menüsünden sabitleyin."
+    },
+    "welcome_way_shortcut_title": {
+        "message": "Bir klavye kısayolu"
+    },
+    "welcome_way_shortcut_desc": {
+        "message": "Herhangi bir Reddit gönderisinde basın."
+    },
+    "welcome_way_shortcut_change": {
+        "message": "Kısayolu değiştir"
+    },
+    "welcome_way_shortcut_unset": {
+        "message": "Henüz kısayol ayarlanmadı. Chrome’da bir tane seçebilirsiniz."
+    },
+    "welcome_way_menu_title": {
+        "message": "Bir gönderi bağlantısına sağ tıklayın"
+    },
+    "welcome_way_menu_desc": {
+        "message": "Gönderiyi açmadan, her yerdeki gönderi bağlantılarında çalışır."
+    },
+    "welcome_mock_open_link": {
+        "message": "Bağlantıyı yeni sekmede aç"
+    },
+    "welcome_mock_copy_link": {
+        "message": "Bağlantı adresini kopyala"
+    },
+    "welcome_step3_title": {
+        "message": "Verileriniz, açıkça"
+    },
+    "welcome_step3_lead": {
+        "message": "Neyin nereye gittiği tam olarak burada."
+    },
+    "welcome_fact_ai_title": {
+        "message": "Gönderiler yalnızca seçtiğiniz yapay zekâya gider"
+    },
+    "welcome_fact_ai_desc": {
+        "message": "Gönderi tarayıcınızda okunur ve doğrudan seçtiğiniz yapay zekâya iletilir. Asla sunucularımızdan geçmez."
+    },
+    "welcome_fact_ai_desc_named": {
+        "message": "Gönderi tarayıcınızda okunur ve doğrudan $NAME$ hizmetine (veya daha sonra anahtar eklerseniz API’sine) iletilir. Asla sunucularımızdan geçmez.",
+        "placeholders": {
+            "name": {
+                "content": "$1"
+            }
+        }
+    },
+    "welcome_fact_local_title": {
+        "message": "Geçmiş ve API anahtarları bu cihazda kalır"
+    },
+    "welcome_fact_local_desc": {
+        "message": "Geçmişiniz ve API anahtarlarınız yalnızca bu tarayıcıda saklanır. Geçmişi Ayarlar’dan sınırlayabilir veya temizleyebilirsiniz."
+    },
+    "welcome_telemetry_label": {
+        "message": "Anonim kullanım sayılarını paylaş"
+    },
+    "welcome_telemetry_hint": {
+        "message": "Yalnızca beş olayın kaç kez gerçekleştiği (yüklendi, güncellendi, oturum başladı, gönderi çıkarıldı, istem gönderildi), rastgele bir kurulum kimliği ve sürüm. Asla Reddit içeriği, URL, subreddit, istem veya anahtar değil."
+    },
+    "welcome_telemetry_on": {
+        "message": "Teşekkürler — anonim sayımlar açık."
+    },
+    "welcome_telemetry_off": {
+        "message": "Kapalı. Kurulum kimliğiniz ve gönderilmemiş sayımlar silindi."
+    },
+    "welcome_settings_prefix": {
+        "message": "Diğer her şey burada:"
+    },
+    "welcome_settings_link": {
+        "message": "Ayarlar"
+    },
+    "welcome_btn_back": {
+        "message": "Geri"
+    },
+    "welcome_btn_next": {
+        "message": "İleri"
+    },
+    "welcome_btn_done": {
+        "message": "Bitti"
+    },
+    "welcome_btn_open_reddit": {
+        "message": "Reddit’i aç"
+    },
+    "welcome_keys_hint": {
+        "message": "İpucu: Adımlar arasında geçmek için ok tuşlarını veya Enter’ı kullanın."
     }
 }

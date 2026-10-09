@@ -9,6 +9,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   await initI18n();
   localizeHtmlPage();
 
+  // Saved prompt presets are shared with the preview page; keep the caps aligned.
+  const SAVED_PRESET_CAP = 30;
+  const SAVED_PRESETS_VISIBLE = 6;
+
   // ── Tabs ────────────────────────────────────────────────
   const tabTriggers = Array.from(document.querySelectorAll('.tab-trigger'));
 
@@ -22,16 +26,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       b.tabIndex = selected ? 0 : -1;
     });
 
+    // Panels carry .r2-reveal, so toggling `hidden` cross-fades them. `hidden`
+    // also keeps the inactive pane out of the tab order and accessibility tree.
     document.querySelectorAll('.tab-content').forEach(c => {
-      c.classList.add('hidden');
-      // `hidden` alongside the class keeps the pane's children out of the tab
-      // order and out of the accessibility tree.
       c.hidden = true;
     });
 
     const targetPane = document.getElementById(btn.getAttribute('data-tab'));
     if (targetPane) {
-      targetPane.classList.remove('hidden');
       targetPane.hidden = false;
     }
     if (focus) btn.focus();
@@ -92,12 +94,37 @@ document.addEventListener('DOMContentLoaded', async () => {
   const batchUrlsInput = document.getElementById('batchUrls');
   const batchUrlStatus = document.getElementById('batchUrlStatus');
   const toastContainer = document.getElementById('toastContainer');
+  const notRedditState = document.getElementById('notRedditState');
+  const settingsSummaryBtn = document.getElementById('settingsSummaryBtn');
+  const settingsSummaryText = document.getElementById('settingsSummaryText');
+  const scrapeSettings = document.getElementById('scrapeSettings');
+  const savedPresetsRow = document.getElementById('savedPresetsRow');
+  const savedPresetChips = document.getElementById('savedPresetChips');
+  const filterCountBadge = document.getElementById('filterCountBadge');
+  const filtersTab = document.getElementById('tabFilters');
+  const resetFiltersBtn = document.getElementById('resetFiltersBtn');
+  const exportHint = document.getElementById('exportHint');
+  const exportChips = document.querySelectorAll('.popup-export-container .export-chip');
   let currentBatchUrlCount = 0;
 
+  // null = still checking the active tab; true/false once known.
+  let activeTabIsThread = null;
+  let extensionUnavailable = false;
+  let successResetTimer = null;
+  let quickPromptDebounce = null;
+  let budgetEstimateDebounce = null;
+
+  const EXPORT_DISABLED_HINT = () => t('popup_export_disabled_hint') || 'Exports unlock after your first scrape.';
+
   function setExportChipsEnabled(enabled) {
-    document.querySelectorAll('.popup-export-container .export-chip').forEach(chip => {
+    exportChips.forEach(chip => {
       chip.classList.toggle('disabled', !enabled);
+      chip.setAttribute('aria-disabled', enabled ? 'false' : 'true');
+      if (!chip.dataset.enabledTooltip) chip.dataset.enabledTooltip = chip.getAttribute('data-tooltip') || '';
+      // The tooltip explains the disabled state instead of the export format.
+      chip.setAttribute('data-tooltip', enabled ? chip.dataset.enabledTooltip : 'popup_export_disabled_hint');
     });
+    if (exportHint) exportHint.hidden = enabled;
   }
 
   // ── Min Score select ────────────────────────────────────
@@ -124,13 +151,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   const activeToasts = new Map(); // id -> toast element
 
   function getToastIcon(type) {
+    if (type === 'progress') return '<span class="toast-spinner"></span>';
     const icons = {
-      info: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
-      success: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/></svg>`,
-      error: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`,
-      progress: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`
+      info: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
+      success: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="8 12 11 15 16 9"/></svg>`,
+      error: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`
     };
     return icons[type] || icons.info;
+  }
+
+  function setToastProgress(toast, progress) {
+    const fill = toast.querySelector('.r2-progress-fill');
+    if (fill) fill.style.setProperty('--p', String(Math.max(0, Math.min(100, progress)) / 100));
   }
 
   function showToast(type, message, options = {}) {
@@ -141,15 +173,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       const existing = activeToasts.get(id);
       const msgEl = existing.querySelector('.toast-message');
       if (msgEl) msgEl.textContent = message;
-      if (progress !== null) {
-        const bar = existing.querySelector('.toast-progress-bar');
-        if (bar) bar.style.width = `${progress}%`;
-      }
+      if (progress !== null) setToastProgress(existing, progress);
       return existing;
     }
 
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
+    if (type === 'error') toast.setAttribute('role', 'alert');
 
     // Icon
     const iconEl = document.createElement('div');
@@ -169,18 +199,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Dismiss button
     if (dismiss) {
       const dismissBtn = document.createElement('button');
+      dismissBtn.type = 'button';
       dismissBtn.className = 'toast-dismiss';
-      dismissBtn.innerHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+      dismissBtn.setAttribute('aria-label', t('popup_toast_dismiss') || 'Dismiss');
+      dismissBtn.innerHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
       dismissBtn.addEventListener('click', () => dismissToast(toast));
       toast.appendChild(dismissBtn);
     }
 
-    // Progress bar
+    // Progress bar (scaleX via --p, never width)
     if (progress !== null) {
-      const bar = document.createElement('div');
-      bar.className = 'toast-progress-bar';
-      bar.style.width = `${progress}%`;
-      toast.appendChild(bar);
+      const track = document.createElement('div');
+      track.className = 'toast-progress r2-progress';
+      const fill = document.createElement('div');
+      fill.className = 'r2-progress-fill';
+      track.appendChild(fill);
+      toast.appendChild(track);
+      setToastProgress(toast, progress);
     }
 
     if (id) {
@@ -208,7 +243,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (toast.dataset.toastId) {
       activeToasts.delete(toast.dataset.toastId);
     }
-    setTimeout(() => toast.remove(), 300);
+    const remove = () => toast.remove();
+    toast.addEventListener('animationend', (e) => {
+      if (e.target === toast) remove();
+    });
+    // Fallback in case animations are disabled (reduced motion) or never fire.
+    setTimeout(remove, 400);
   }
 
   function dismissAllToasts() {
@@ -283,6 +323,7 @@ Data:
   let selectedPreset = 'summarize';
   let cachedPreviewData = null;
   let cachedCustomPromptTemplate = '';
+  let savedPresets = [];
 
   function loadPreviewData(callback) {
     chrome.runtime.sendMessage({ action: 'getPreviewData' }, (response) => {
@@ -294,6 +335,40 @@ Data:
       setExportChipsEnabled(!!cachedPreviewData);
       if (callback) callback();
     });
+  }
+
+  // ── Settings disclosure ────────────────────────────────
+  function setSettingsExpanded(expanded, { persist = true } = {}) {
+    if (!scrapeSettings || !settingsSummaryBtn) return;
+    scrapeSettings.hidden = !expanded;
+    settingsSummaryBtn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+    if (persist) chrome.storage.local?.set({ popupSettingsExpanded: expanded });
+  }
+
+  settingsSummaryBtn?.addEventListener('click', () => {
+    setSettingsExpanded(settingsSummaryBtn.getAttribute('aria-expanded') !== 'true');
+  });
+
+  chrome.storage.local?.get(['popupSettingsExpanded'], (res) => {
+    if (res?.popupSettingsExpanded) setSettingsExpanded(true, { persist: false });
+  });
+
+  function selectedOptionText(select, fallback) {
+    return select?.selectedOptions?.[0]?.textContent?.trim() || fallback;
+  }
+
+  function updateSettingsSummary() {
+    if (!settingsSummaryText) return;
+    const parts = [
+      getProviderLabel(popupProviderSelect?.value || 'gemini'),
+      selectedOptionText(sendModeSelect, 'Preview first'),
+      selectedOptionText(outputFormatSelect, 'Auto format')
+    ];
+    if (quickPromptInput?.value.trim()) parts.push(t('popup_summary_custom_prompt') || 'Custom prompt');
+    if (dontSaveThisScrape?.checked) parts.push(t('popup_summary_not_saved') || 'Not saved');
+    const text = parts.join(' · ');
+    settingsSummaryText.textContent = text;
+    settingsSummaryBtn?.setAttribute('title', text);
   }
 
   // ── Load saved settings ────────────────────────────────
@@ -316,7 +391,8 @@ Data:
     'showPromptPreview',
     'selectedLlmProvider',
     'outputFormat',
-    'customPromptTemplate'
+    'customPromptTemplate',
+    'savedPromptPresets'
   ], (result) => {
     cachedCustomPromptTemplate = result.customPromptTemplate || DEFAULT_CUSTOM_TEMPLATE;
     selectedPreset = result.selectedPreset || 'summarize';
@@ -331,9 +407,7 @@ Data:
     }
 
     // Hide Bots pill
-    if (result.filterHideBots) {
-      filterHideBotsBtn?.classList.add('active');
-    }
+    setPill(filterHideBotsBtn, !!result.filterHideBots);
 
     // Author types - migrate legacy string to array if needed
     let authorTypes = result.filterAuthorTypes;
@@ -343,8 +417,8 @@ Data:
       else if (legacy === 'flaired') authorTypes = ['flaired'];
       else authorTypes = [];
     }
-    if (authorTypes.includes('op')) filterOpOnlyBtn?.classList.add('active');
-    if (authorTypes.includes('flaired')) filterFlairedBtn?.classList.add('active');
+    setPill(filterOpOnlyBtn, authorTypes.includes('op'));
+    setPill(filterFlairedBtn, authorTypes.includes('flaired'));
 
     // Top N
     if (filterTopN && result.filterTopN) {
@@ -375,7 +449,7 @@ Data:
     if (result.quickPrompt && quickPromptInput) {
       quickPromptInput.value = result.quickPrompt;
       quickPromptInput.classList.add('has-content');
-      autoExpandTextarea();
+      if (saveQuickPromptBtn) saveQuickPromptBtn.disabled = false;
       // Quick prompt overrides preset selection display
       updatePresetSelection(null);
     }
@@ -383,13 +457,19 @@ Data:
     if (includeHidden) {
       includeHidden.checked = result.includeHidden || false;
     }
-    updateScrapeModeUi();
+
+    savedPresets = Array.isArray(result.savedPromptPresets) ? result.savedPromptPresets : [];
+    renderSavedPresets();
+
     updateBatchUrlStatus();
     updateScrapeModeUi();
     updateScrapeEstimate();
+    updateScrapeAvailability();
   });
 
   // ── Preset card handlers ────────────────────────────────
+  // Cards are native <button>s, so Enter and Space select them for free; the
+  // press feedback is CSS (:active), not inline styles.
   presetCards.forEach(card => {
     card.addEventListener('click', () => {
       const presetKey = card.dataset.preset;
@@ -397,10 +477,10 @@ Data:
       updatePresetSelection(presetKey);
 
       // Clear quick prompt when a preset is selected
-      if (quickPromptInput) {
+      if (quickPromptInput && quickPromptInput.value) {
         quickPromptInput.value = '';
-        quickPromptInput.style.height = '';
         quickPromptInput.classList.remove('has-content');
+        if (saveQuickPromptBtn) saveQuickPromptBtn.disabled = true;
         chrome.storage.sync.remove('quickPrompt');
       }
 
@@ -418,155 +498,325 @@ Data:
         chrome.storage.sync.set({ defaultPromptTemplate: preset.template });
       }
 
-      card.style.transform = 'scale(0.95)';
-      setTimeout(() => card.style.transform = '', 100);
+      syncSavedPresetPressed();
+      updateSettingsSummary();
+      updateScrapeEstimate();
     });
   });
 
   function updatePresetSelection(presetKey) {
     presetCards.forEach(card => {
-      card.classList.toggle('selected', card.dataset.preset === presetKey);
+      const selected = card.dataset.preset === presetKey;
+      card.classList.toggle('selected', selected);
+      card.setAttribute('aria-pressed', selected ? 'true' : 'false');
     });
   }
 
   // ── Quick Prompt ───────────────────────────────────────
-  let quickPromptDebounce = null;
-  let budgetEstimateDebounce = null;
+  // The textarea grows with its content via CSS `field-sizing: content`
+  // (bounded by min/max-height), so typing never forces a JS reflow.
 
-  function autoExpandTextarea() {
+  function quickPromptTemplate() {
+    const val = quickPromptInput?.value.trim() || '';
+    if (!val) return '';
+    return val.includes('{content}') ? val : val + '\n\n{content}';
+  }
+
+  function handleQuickPromptChange({ immediate = false } = {}) {
     if (!quickPromptInput) return;
-    quickPromptInput.style.height = 'auto';
-    quickPromptInput.style.height = (quickPromptInput.scrollHeight) + 'px';
+    const val = quickPromptInput.value.trim();
+    if (saveQuickPromptBtn) {
+      saveQuickPromptBtn.disabled = !val;
+      saveQuickPromptBtn.title = val ? '' : (t('popup_save_quick_prompt_disabled') || 'Type a custom prompt first');
+    }
+
+    clearTimeout(quickPromptDebounce);
+    if (val) {
+      quickPromptInput.classList.add('has-content');
+      // Deselect all presets when quick prompt is active
+      updatePresetSelection(null);
+
+      const persist = () => {
+        chrome.storage.sync.set({
+          quickPrompt: val,
+          defaultPromptTemplate: quickPromptTemplate()
+        });
+      };
+      if (immediate) persist();
+      else quickPromptDebounce = setTimeout(persist, 400);
+      updateScrapeEstimate();
+    } else {
+      quickPromptInput.classList.remove('has-content');
+      // Restore saved preset
+      chrome.storage.sync.get(['selectedPreset'], (res) => {
+        const preset = res.selectedPreset || 'summarize';
+        selectedPreset = preset;
+        updatePresetSelection(preset);
+        updateScrapeEstimate();
+      });
+      chrome.storage.sync.remove('quickPrompt');
+    }
+    syncSavedPresetPressed();
+    updateSettingsSummary();
   }
 
   if (quickPromptInput) {
-    quickPromptInput.addEventListener('input', () => {
-      autoExpandTextarea();
-      const val = quickPromptInput.value.trim();
-      if (saveQuickPromptBtn) saveQuickPromptBtn.disabled = !val;
+    quickPromptInput.addEventListener('input', () => handleQuickPromptChange());
+  }
 
-      if (val) {
-        quickPromptInput.classList.add('has-content');
-        // Deselect all presets when quick prompt is active
-        updatePresetSelection(null);
+  // ── Saved ("Your presets") ─────────────────────────────
+  function savedPresetPromptText(preset) {
+    const template = String(preset?.template || '');
+    // Presets saved from a quick prompt get "\n\n{content}" appended; strip it so
+    // the textarea shows what the user typed. Templates with {content} elsewhere
+    // are shown verbatim and round-trip unchanged.
+    return /\n*\{content\}\s*$/.test(template) && template.indexOf('{content}') === template.lastIndexOf('{content}')
+      ? template.replace(/\s*\{content\}\s*$/, '')
+      : template;
+  }
 
-        clearTimeout(quickPromptDebounce);
-        quickPromptDebounce = setTimeout(() => {
-          const template = val.includes('{content}') ? val : val + '\n\n{content}';
-          chrome.storage.sync.set({
-            quickPrompt: val,
-            defaultPromptTemplate: template
-          });
-        }, 400);
-        updateScrapeEstimate();
-      } else {
-        quickPromptInput.classList.remove('has-content');
-        quickPromptInput.style.height = '';
-        // Restore saved preset
-        chrome.storage.sync.get(['selectedPreset'], (res) => {
-          const preset = res.selectedPreset || 'summarize';
-          selectedPreset = preset;
-          updatePresetSelection(preset);
-          updateScrapeEstimate();
-        });
-        chrome.storage.sync.remove('quickPrompt');
-      }
+  function syncSavedPresetPressed() {
+    if (!savedPresetChips) return;
+    const current = quickPromptTemplate();
+    savedPresetChips.querySelectorAll('.saved-preset-chip[data-preset-id]').forEach(chip => {
+      const preset = savedPresets.find(p => p.id === chip.dataset.presetId);
+      const active = Boolean(current && preset && preset.template === current);
+      chip.setAttribute('aria-pressed', active ? 'true' : 'false');
     });
   }
 
+  function setRadioValue(radios, value) {
+    let matched = false;
+    radios.forEach(r => {
+      r.checked = r.value === value;
+      if (r.checked) matched = true;
+    });
+    return matched;
+  }
+
+  function applySavedPreset(preset) {
+    if (!preset || !quickPromptInput) return;
+    quickPromptInput.value = savedPresetPromptText(preset);
+
+    const updates = {};
+    if (preset.outputFormat && outputFormatSelect?.querySelector(`option[value="${preset.outputFormat}"]`)) {
+      outputFormatSelect.value = preset.outputFormat;
+      updates.outputFormat = preset.outputFormat;
+    }
+    if (preset.contextPreset && setRadioValue(contextPresetRadios, preset.contextPreset)) {
+      updates.contextPreset = preset.contextPreset;
+    }
+    if (preset.trimStrategy && trimStrategySelect?.querySelector(`option[value="${preset.trimStrategy}"]`)) {
+      trimStrategySelect.value = preset.trimStrategy;
+      updates.trimStrategy = preset.trimStrategy;
+    }
+    if (preset.mediaMode && mediaModeSelect?.querySelector(`option[value="${preset.mediaMode}"]`)) {
+      mediaModeSelect.value = preset.mediaMode;
+      updates.mediaMode = preset.mediaMode;
+    }
+    if (Object.keys(updates).length) chrome.storage.sync.set(updates);
+
+    handleQuickPromptChange({ immediate: true });
+    const name = preset.name || (t('popup_preset_name_default') || 'Quick prompt');
+    showToast('info', t('popup_saved_preset_applied', [name]) || `Using "${name}".`, { autoDismiss: 2200 });
+  }
+
+  function renderSavedPresets() {
+    if (!savedPresetChips || !savedPresetsRow) return;
+    savedPresetChips.replaceChildren();
+    if (!savedPresets.length) {
+      savedPresetsRow.hidden = true;
+      return;
+    }
+
+    savedPresets.slice(0, SAVED_PRESETS_VISIBLE).forEach(preset => {
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'saved-preset-chip';
+      chip.dataset.presetId = preset.id || '';
+      chip.textContent = preset.name || (t('popup_preset_name_default') || 'Quick prompt');
+      chip.title = chip.textContent;
+      chip.setAttribute('aria-pressed', 'false');
+      chip.addEventListener('click', () => applySavedPreset(preset));
+      savedPresetChips.appendChild(chip);
+    });
+
+    const hiddenCount = savedPresets.length - SAVED_PRESETS_VISIBLE;
+    if (hiddenCount > 0) {
+      const more = document.createElement('button');
+      more.type = 'button';
+      more.className = 'saved-preset-chip more';
+      more.textContent = t('popup_saved_presets_more', [String(hiddenCount)]) || `+${hiddenCount} more`;
+      more.title = t('popup_saved_presets_more_title') || 'Manage all presets in Settings';
+      more.addEventListener('click', () => chrome.runtime.openOptionsPage());
+      savedPresetChips.appendChild(more);
+    }
+
+    savedPresetsRow.hidden = false;
+    syncSavedPresetPressed();
+  }
+
+  chrome.storage.onChanged?.addListener((changes, area) => {
+    if (area === 'sync' && changes.savedPromptPresets) {
+      const next = changes.savedPromptPresets.newValue;
+      savedPresets = Array.isArray(next) ? next : [];
+      renderSavedPresets();
+    }
+  });
 
   function getProviderLabel(provider) {
-    return ({ gemini: 'Gemini', chatgpt: 'ChatGPT', claude: 'Claude', aistudio: 'AI Studio', deepseek: 'DeepSeek', groq: 'Groq', custom: 'Custom' }[provider]) || 'Gemini';
+    return ({ gemini: 'Gemini', chatgpt: 'ChatGPT', claude: 'Claude', aistudio: 'AI Studio', deepseek: 'DeepSeek', groq: 'Groq', custom: 'Custom AI' }[provider]) || 'Gemini';
   }
 
   function getCheckedValue(name, fallback) {
     return document.querySelector(`input[name="${name}"]:checked`)?.value || fallback;
   }
 
+  function getCheckedLabel(name, fallback) {
+    return document.querySelector(`input[name="${name}"]:checked + span`)?.textContent?.trim() || fallback;
+  }
+
+  // ── Primary button state ───────────────────────────────
+  // data-state drives the icon (play / spinner / checkmark) in CSS.
+  function setScrapeBtnState(state) {
+    if (!scrapeBtn) return;
+    scrapeBtn.dataset.state = state;
+    const btnText = scrapeBtn.querySelector('.btn-text');
+    if (state === 'working') {
+      if (btnText) btnText.textContent = t('popup_status_starting') || 'Starting...';
+    } else if (state === 'success') {
+      if (btnText) btnText.textContent = t('popup_btn_done') || 'Done';
+    } else {
+      updateScrapeModeUi();
+    }
+  }
+
   function updateScrapeModeUi() {
     const previewEnabled = (sendModeSelect?.value || 'preview') === 'preview';
     const btnText = scrapeBtn?.querySelector('.btn-text');
-    if (!btnText) return;
+    updateSettingsSummary();
+    if (!btnText || (scrapeBtn.dataset.state && scrapeBtn.dataset.state !== 'idle')) return;
     if (currentBatchUrlCount > 0) {
       btnText.textContent = previewEnabled
         ? `Scrape ${currentBatchUrlCount} URLs & Preview`
         : `Send ${currentBatchUrlCount} URLs Once`;
       return;
     }
-    btnText.textContent = previewEnabled ? 'Scrape & Preview' : 'Scrape & Send Once';
+    const provider = getProviderLabel(popupProviderSelect?.value || 'gemini');
+    btnText.textContent = previewEnabled
+      ? (t('popup_btn_scrape') || 'Scrape & Preview')
+      : (t('popup_btn_scrape_send', [provider]) || `Scrape & Send to ${provider}`);
+  }
+
+  // Disables Scrape (and explains why) when there is nothing to scrape.
+  function updateScrapeAvailability() {
+    const notThread = activeTabIsThread === false;
+    const canScrape = !extensionUnavailable && (!notThread || currentBatchUrlCount > 0);
+    if (notRedditState) notRedditState.hidden = !notThread || currentBatchUrlCount > 0;
+    if (!scrapeBtn) return;
+    if (!scrapeBtn.dataset.state || scrapeBtn.dataset.state === 'idle') {
+      scrapeBtn.disabled = !canScrape;
+    }
+    if (!canScrape && !extensionUnavailable) {
+      scrapeBtn.title = t('popup_btn_disabled_not_thread') || 'Open a Reddit thread (or add batch URLs in Filters) to scrape.';
+    } else {
+      scrapeBtn.title = t('popup_btn_shortcut_hint') || 'Shortcut: Ctrl+Enter (Cmd+Enter on Mac)';
+    }
+  }
+
+  function setScrapeRunning(running) {
+    if (!scrapeBtn || !stopScrapeBtn) return;
+    const hadFocus = document.activeElement === scrapeBtn || document.activeElement === stopScrapeBtn;
+    scrapeBtn.hidden = running;
+    stopScrapeBtn.hidden = !running;
+    if (running) {
+      stopScrapeBtn.disabled = false;
+      if (hadFocus) stopScrapeBtn.focus();
+    } else if (hadFocus) {
+      scrapeBtn.focus();
+    }
+  }
+
+  function showScrapeSuccess() {
+    if (!scrapeBtn) return;
+    if (scrapeBtn.dataset.state === 'success') return;
+    clearTimeout(successResetTimer);
+    scrapeBtn.disabled = true;
+    setScrapeBtnState('success');
+    successResetTimer = setTimeout(() => {
+      setScrapeBtnState('idle');
+      updateScrapeAvailability();
+    }, 1600);
+  }
+
+  function resetScrapeBtn() {
+    clearTimeout(successResetTimer);
+    setScrapeBtnState('idle');
+    updateScrapeAvailability();
+  }
+
+  // ── Budget / size estimate ─────────────────────────────
+  function formatTokenCount(count) {
+    try {
+      return new Intl.NumberFormat(undefined, { notation: 'compact', maximumFractionDigits: 1 }).format(count);
+    } catch {
+      return count.toLocaleString();
+    }
   }
 
   function updateBudgetTracker(tokenCount) {
     const bar = document.getElementById('budgetValueBar');
     const label = document.getElementById('budgetLabel');
     if (!bar) return;
-    
+
     const provider = popupProviderSelect?.value || 'gemini';
-    let maxTokens = 128000;
-    let safeLimit = 32000;
-    let moderateLimit = 96000;
+    const providerLabel = getProviderLabel(provider);
+    // Limits live in promptBuilder.js so popup and preview agree.
+    const maxTokens = window.R2AIPrompt?.getContextLimit?.(provider) || 128000;
+    const safeLimit = maxTokens * 0.1;
+    const moderateLimit = maxTokens * 0.4;
 
-    if (provider === 'groq') {
-      maxTokens = 131072;
-      safeLimit = 30000;
-      moderateLimit = 90000;
-    } else if (provider === 'chatgpt') {
-      maxTokens = 272000;
-      safeLimit = 60000;
-      moderateLimit = 180000;
-    } else if (['gemini', 'aistudio', 'claude', 'deepseek'].includes(provider)) {
-      maxTokens = 1048576;
-      safeLimit = 200000;
-      moderateLimit = 700000;
-    }
+    // scaleX via --p (0..1), never width.
+    bar.style.setProperty('--p', String(Math.min(1, tokenCount / maxTokens)));
 
-    const percentage = Math.min(100, (tokenCount / maxTokens) * 100);
-    bar.style.width = `${percentage}%`;
-    
-    bar.className = 'budget-bar-fill';
-    const formattedCount = tokenCount.toLocaleString();
-    
+    let level = '';
     let budgetText = '';
+    const formatted = formatTokenCount(tokenCount);
     if (tokenCount === 0) {
-      budgetText = typeof t === 'function' ? t('popup_budget_initial') : 'Budget: 0 tokens';
+      budgetText = activeTabIsThread === false
+        ? (t('popup_budget_none') || 'No thread to estimate yet')
+        : (t('popup_budget_initial') || 'Budget: 0 tokens');
     } else if (tokenCount < safeLimit) {
-      bar.classList.add('safe');
-      budgetText = typeof t === 'function' ? t('popup_budget_safe', [formattedCount]) : `Budget: ${formattedCount} tokens (Safe)`;
+      level = 'safe';
+      budgetText = t('popup_budget_line_safe', [formatted, providerLabel]) || `~${formatted} tokens · fits ${providerLabel}`;
     } else if (tokenCount < moderateLimit) {
-      bar.classList.add('moderate');
-      budgetText = typeof t === 'function' ? t('popup_budget_moderate', [formattedCount]) : `Budget: ${formattedCount} tokens (Moderate)`;
+      level = 'moderate';
+      budgetText = t('popup_budget_line_moderate', [formatted, providerLabel]) || `~${formatted} tokens · long for ${providerLabel}`;
+    } else if (tokenCount < maxTokens) {
+      level = 'large';
+      budgetText = t('popup_budget_line_large', [formatted, providerLabel]) || `~${formatted} tokens · near ${providerLabel}'s limit`;
     } else {
-      bar.classList.add('large');
-      budgetText = typeof t === 'function' ? t('popup_budget_large', [formattedCount]) : `Budget: ${formattedCount} tokens (Large)`;
+      level = 'over';
+      budgetText = t('popup_budget_line_over', [formatted, providerLabel]) || `~${formatted} tokens · too long for ${providerLabel}`;
     }
+
+    bar.className = 'budget-bar-fill';
+    if (level) bar.classList.add(level);
 
     if (label) {
-      label.innerText = budgetText;
-    }
-
-    if (scrapeEstimate) {
-      const baseText = scrapeEstimate.textContent.split(' · Budget:')[0];
-      if (tokenCount > 0) {
-        scrapeEstimate.textContent = `${baseText} · ${budgetText}`;
-      } else {
-        scrapeEstimate.textContent = `${baseText} · Budget: 0 tokens`;
-      }
+      label.textContent = budgetText;
+      label.className = `budget-text${level ? ` ${level}` : ''}`;
     }
   }
 
   function updateScrapeEstimate() {
+    updateFilterBadge();
     if (!scrapeEstimate) return;
-    const mode = (sendModeSelect?.value || 'preview') === 'preview' ? 'Preview first' : 'Send directly once';
-    const context = getCheckedValue('contextPresetPopup', 'balanced');
-    const depth = getCheckedValue('scrapeDepthPopup', '5');
-    const provider = getProviderLabel(popupProviderSelect?.value || 'gemini');
-    const filters = [];
-    if (minScoreValue > 0) filters.push(`${minScoreValue}+ pts`);
-    if (filterHideBotsBtn?.classList.contains('active')) filters.push('hide bots');
-    if (filterOpOnlyBtn?.classList.contains('active')) filters.push('OP');
-    if (filterFlairedBtn?.classList.contains('active')) filters.push('flaired');
-    if (dontSaveThisScrape?.checked) filters.push("don't save");
-    scrapeEstimate.textContent = `${mode} · ${context} · depth ${depth} · ${provider}${filters.length ? ` · ${filters.join(', ')}` : ''}`;
+    const contextLabel = getCheckedLabel('contextPresetPopup', 'Balanced');
+    const depthLabel = getCheckedLabel('scrapeDepthPopup', 'Full');
+    const scope = t('popup_estimate_scope', [contextLabel, depthLabel]) || `${contextLabel} · ${depthLabel} depth`;
+    scrapeEstimate.textContent = scope;
+    scrapeEstimate.title = scope;
 
     clearTimeout(budgetEstimateDebounce);
     budgetEstimateDebounce = setTimeout(() => {
@@ -575,8 +825,7 @@ Data:
         const isQuickPrompt = quickPromptInput && quickPromptInput.value.trim();
         let template = '';
         if (isQuickPrompt) {
-          const val = quickPromptInput.value.trim();
-          template = val.includes('{content}') ? val : val + '\n\n{content}';
+          template = quickPromptTemplate();
         } else {
           const presetKey = selectedPreset || 'summarize';
           if (presetKey === 'custom') {
@@ -622,12 +871,16 @@ Data:
   if (outputFormatSelect) {
     outputFormatSelect.addEventListener('change', (e) => {
       chrome.storage.sync.set({ outputFormat: e.target.value });
+      updateSettingsSummary();
       updateScrapeEstimate();
     });
   }
 
   if (dontSaveThisScrape) {
-    dontSaveThisScrape.addEventListener('change', updateScrapeEstimate);
+    dontSaveThisScrape.addEventListener('change', () => {
+      updateSettingsSummary();
+      updateScrapeEstimate();
+    });
   }
 
   // ── Save quick prompt as preset ────────────────────────
@@ -672,8 +925,8 @@ Data:
     };
     chrome.storage.sync.get(['savedPromptPresets'], (result) => {
       const presets = Array.isArray(result.savedPromptPresets) ? result.savedPromptPresets : [];
-      chrome.storage.sync.set({ savedPromptPresets: [savedPreset, ...presets].slice(0, 30) }, () => {
-        showToast('success', `Saved preset "${name}".`);
+      chrome.storage.sync.set({ savedPromptPresets: [savedPreset, ...presets].slice(0, SAVED_PRESET_CAP) }, () => {
+        showToast('success', t('popup_saved_preset_saved', [name]) || `Saved preset "${name}".`);
       });
     });
     closePresetNameRow();
@@ -687,7 +940,7 @@ Data:
   presetNameCancelBtn?.addEventListener('click', closePresetNameRow);
 
   presetNameInput?.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && !(e.ctrlKey || e.metaKey)) {
       e.preventDefault();
       commitPresetName();
     } else if (e.key === 'Escape') {
@@ -697,10 +950,86 @@ Data:
   });
 
   // ── Filter handlers ────────────────────────────────────
+  function setPill(btn, active) {
+    if (!btn) return;
+    btn.classList.toggle('active', active);
+    btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+  }
+
+  function countActiveFilters() {
+    let count = 0;
+    if (minScoreValue > 0) count++;
+    if (filterHideBotsBtn?.classList.contains('active')) count++;
+    if (filterOpOnlyBtn?.classList.contains('active')) count++;
+    if (filterFlairedBtn?.classList.contains('active')) count++;
+    if ((parseInt(filterTopN?.value || '0', 10) || 0) > 0) count++;
+    if (getCheckedValue('scrapeDepthPopup', '50') !== '50') count++;
+    if (getCheckedValue('contextPresetPopup', 'balanced') !== 'balanced') count++;
+    if ((trimStrategySelect?.value || 'top') !== 'top') count++;
+    if ((redditSortModeSelect?.value || 'confidence') !== 'confidence') count++;
+    if ((mediaModeSelect?.value || 'attach') !== 'attach') count++;
+    if (includeHidden?.checked) count++;
+    if (currentBatchUrlCount > 0) count++;
+    return count;
+  }
+
+  function updateFilterBadge() {
+    const count = countActiveFilters();
+    if (filterCountBadge) {
+      filterCountBadge.textContent = String(count);
+      filterCountBadge.hidden = count === 0;
+    }
+    if (resetFiltersBtn) resetFiltersBtn.hidden = count === 0;
+    if (filtersTab) {
+      const base = t('popup_tab_filters') || 'Filters';
+      if (count > 0) {
+        filtersTab.setAttribute('aria-label', `${base}, ${t('popup_filters_active_count', [String(count)]) || `${count} active`}`);
+      } else {
+        filtersTab.removeAttribute('aria-label');
+      }
+    }
+  }
+
+  function resetFilters() {
+    setMinScore(0, { persist: false });
+    setPill(filterHideBotsBtn, false);
+    setPill(filterOpOnlyBtn, false);
+    setPill(filterFlairedBtn, false);
+    if (filterTopN) filterTopN.value = '';
+    setRadioValue(depthRadios, '50');
+    setRadioValue(contextPresetRadios, 'balanced');
+    if (trimStrategySelect) trimStrategySelect.value = 'top';
+    if (redditSortModeSelect) redditSortModeSelect.value = 'confidence';
+    if (mediaModeSelect) mediaModeSelect.value = 'attach';
+    if (includeHidden) includeHidden.checked = false;
+    if (batchUrlsInput) batchUrlsInput.value = '';
+    chrome.storage.sync.set({
+      filterMinScore: 0,
+      filterHideBots: false,
+      filterAuthorTypes: [],
+      filterAuthorType: 'all',
+      filterTopN: 0,
+      scrapeDepth: 50,
+      contextPreset: 'balanced',
+      trimStrategy: 'top',
+      redditSortMode: 'confidence',
+      mediaMode: 'attach',
+      includeHidden: false,
+      lastBatchUrls: ''
+    });
+    updateBatchUrlStatus();
+    updateScrapeModeUi();
+    updateScrapeAvailability();
+    updateScrapeEstimate();
+    filtersTab?.focus();
+  }
+
+  resetFiltersBtn?.addEventListener('click', resetFilters);
+
   if (filterHideBotsBtn) {
-      filterHideBotsBtn.addEventListener('click', () => {
-      filterHideBotsBtn.classList.toggle('active');
-      const active = filterHideBotsBtn.classList.contains('active');
+    filterHideBotsBtn.addEventListener('click', () => {
+      const active = !filterHideBotsBtn.classList.contains('active');
+      setPill(filterHideBotsBtn, active);
       chrome.storage.sync.set({ filterHideBots: active });
       updateScrapeEstimate();
     });
@@ -720,7 +1049,7 @@ Data:
 
   if (filterOpOnlyBtn) {
     filterOpOnlyBtn.addEventListener('click', () => {
-      filterOpOnlyBtn.classList.toggle('active');
+      setPill(filterOpOnlyBtn, !filterOpOnlyBtn.classList.contains('active'));
       updateAuthorFilters();
       updateScrapeEstimate();
     });
@@ -728,7 +1057,7 @@ Data:
 
   if (filterFlairedBtn) {
     filterFlairedBtn.addEventListener('click', () => {
-      filterFlairedBtn.classList.toggle('active');
+      setPill(filterFlairedBtn, !filterFlairedBtn.classList.contains('active'));
       updateAuthorFilters();
       updateScrapeEstimate();
     });
@@ -739,6 +1068,7 @@ Data:
     filterTopN.addEventListener('change', (e) => {
       const val = parseInt(e.target.value, 10) || 0;
       chrome.storage.sync.set({ filterTopN: val });
+      updateFilterBadge();
     });
   }
 
@@ -781,6 +1111,7 @@ Data:
     batchUrlsInput.addEventListener('input', () => {
       updateBatchUrlStatus();
       updateScrapeModeUi();
+      updateScrapeAvailability();
       updateScrapeEstimate();
     });
     batchUrlsInput.addEventListener('change', (e) => {
@@ -791,6 +1122,7 @@ Data:
   if (includeHidden) {
     includeHidden.addEventListener('change', (e) => {
       chrome.storage.sync.set({ includeHidden: e.target.checked });
+      updateFilterBadge();
     });
   }
 
@@ -799,9 +1131,9 @@ Data:
     if (!state) return;
 
     if (state.isActive) {
-      scrapeBtn.style.display = 'none';
-      stopScrapeBtn.style.display = 'flex';
-      stopScrapeBtn.disabled = false;
+      clearTimeout(successResetTimer);
+      setScrapeBtnState('idle');
+      setScrapeRunning(true);
       setExportChipsEnabled(false);
 
       const pct = state.percentage || 0;
@@ -811,10 +1143,7 @@ Data:
         progress: pct
       });
     } else {
-      scrapeBtn.style.display = 'flex';
-      scrapeBtn.disabled = false;
-
-      stopScrapeBtn.style.display = 'none';
+      setScrapeRunning(false);
 
       // `status`/`phase` are the structured signal. The message sniffing below is a
       // last-resort fallback for state objects that predate those fields.
@@ -826,13 +1155,17 @@ Data:
           state.message?.includes('complete'));
 
       if (state.error) {
+        resetScrapeBtn();
         dismissAllToasts();
         showToast('error', state.error, { dismiss: true });
       } else if (finished) {
         dismissAllToasts();
+        // Checkmark pop on the button itself before the preview opens.
+        showScrapeSuccess();
         showToast('success', t('popup_status_sent') || 'Content ready!');
       } else {
         // Idle - clean UI, no toast
+        resetScrapeBtn();
         dismissAllToasts();
       }
       checkExportAvailability();
@@ -886,8 +1219,10 @@ Data:
   // ── Scrape button ──────────────────────────────────────
   if (scrapeBtn) {
     scrapeBtn.addEventListener('click', () => {
+      if (scrapeBtn.disabled) return;
       dismissAllToasts();
       scrapeBtn.disabled = true;
+      setScrapeBtnState('working');
 
       showToast('progress', t('popup_status_starting') || 'Starting...', {
         id: 'scraping-progress',
@@ -900,7 +1235,7 @@ Data:
         if (!currentTab) {
           dismissAllToasts();
           showToast('error', (t('error') || 'Error') + ': Could not get current tab', { dismiss: true });
-          scrapeBtn.disabled = false;
+          resetScrapeBtn();
           return;
         }
 
@@ -926,8 +1261,7 @@ Data:
           contextPreset: document.querySelector('input[name="contextPresetPopup"]:checked')?.value || 'balanced',
           trimStrategy: trimStrategySelect?.value || 'top',
           redditSortMode: redditSortModeSelect?.value || 'confidence',
-          mediaMode: mediaModeSelect?.value || 'attach'
-          ,
+          mediaMode: mediaModeSelect?.value || 'attach',
           outputFormat: outputFormatSelect?.value || 'auto'
         };
 
@@ -958,7 +1292,7 @@ Data:
           if (chrome.runtime.lastError) {
             dismissAllToasts();
             showToast('error', chrome.runtime.lastError.message, { dismiss: true });
-            scrapeBtn.disabled = false;
+            resetScrapeBtn();
             return;
           }
           if (response?.currentState) {
@@ -966,12 +1300,19 @@ Data:
           } else if (response?.error) {
             dismissAllToasts();
             showToast('error', response.error, { dismiss: true });
-            scrapeBtn.disabled = false;
+            resetScrapeBtn();
           }
         });
       });
     });
   }
+
+  // ── Keyboard: Ctrl/Cmd+Enter starts scraping from anywhere in the popup ──
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' || !(e.ctrlKey || e.metaKey) || e.defaultPrevented) return;
+    e.preventDefault();
+    if (scrapeBtn && !scrapeBtn.hidden && !scrapeBtn.disabled) scrapeBtn.click();
+  });
 
   // ── Stop button ────────────────────────────────────────
   if (stopScrapeBtn) {
@@ -1019,61 +1360,87 @@ Data:
     }
   }
 
-  // ── Export options select & Initial Token Check ──────────
+  // ── Active tab check, export availability & initial token estimate ──
   function checkExportAvailability() {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      const activeTab = tabs[0];
+      const activeTab = tabs?.[0];
+      // Without a readable URL (non-Reddit tab outside our host permissions)
+      // there is no thread to scrape.
+      activeTabIsThread = Boolean(activeTab?.url && isRedditPostUrl(activeTab.url));
+      updateScrapeAvailability();
+
       if (activeTab && activeTab.url) {
         const activeUrl = activeTab.url;
         loadPreviewData(() => {
           // Check if cachedPreviewData belongs to the current tab
-          const hasMatchingCache = cachedPreviewData && (
-            cachedPreviewData.post?.permalink === new URL(activeUrl).pathname ||
-            activeUrl.includes(cachedPreviewData.post?.permalink)
+          let activePath = '';
+          try { activePath = new URL(activeUrl).pathname; } catch { /* ignore */ }
+          const permalink = cachedPreviewData?.post?.permalink;
+          const hasMatchingCache = Boolean(permalink) && (
+            permalink === activePath || activeUrl.includes(permalink)
           );
 
           if (hasMatchingCache) {
             updateScrapeEstimate();
-          } else {
-            // No matching cache for this tab, check if it's a Reddit post
-            if (isRedditPostUrl(activeUrl)) {
-              // Show estimating message
-              const label = document.getElementById('budgetLabel');
-              if (label) label.innerText = t('popup_budget_estimating') || 'Estimating budget...';
-
-              chrome.runtime.sendMessage({
-                action: 'getQuickTokenEstimate',
-                tabId: activeTab.id,
-                url: activeUrl
-              }, (response) => {
-                if (response && response.estimatedData) {
-                  cachedPreviewData = response.estimatedData;
-                  updateScrapeEstimate();
-                } else {
-                  updateBudgetTracker(0);
-                }
-              });
-            } else {
-              updateBudgetTracker(0);
+          } else if (activeTabIsThread) {
+            // No matching cache for this tab: ask for a quick estimate.
+            const label = document.getElementById('budgetLabel');
+            if (label) {
+              label.textContent = t('popup_budget_estimating') || 'Estimating budget...';
+              label.className = 'budget-text';
             }
+
+            chrome.runtime.sendMessage({
+              action: 'getQuickTokenEstimate',
+              tabId: activeTab.id,
+              url: activeUrl
+            }, (response) => {
+              if (chrome.runtime.lastError) {
+                updateBudgetTracker(0);
+                return;
+              }
+              if (response && response.estimatedData) {
+                cachedPreviewData = response.estimatedData;
+                updateScrapeEstimate();
+              } else {
+                updateBudgetTracker(0);
+              }
+            });
+          } else {
+            updateBudgetTracker(0);
           }
         });
       } else {
-        loadPreviewData(() => updateScrapeEstimate());
+        loadPreviewData(() => updateBudgetTracker(0));
       }
     });
   }
 
-  document.querySelectorAll('.popup-export-container .export-chip').forEach(chip => {
+  function flashChipDone(chip) {
+    if (chip.dataset.flashing) return;
+    chip.dataset.flashing = '1';
+    const original = chip.innerHTML;
+    chip.innerHTML = `<span class="chip-icon" aria-hidden="true">✓</span> ${t('popup_export_done') || 'Saved'}`;
+    setTimeout(() => {
+      chip.innerHTML = original;
+      delete chip.dataset.flashing;
+    }, 1500);
+  }
+
+  exportChips.forEach(chip => {
     chip.addEventListener('click', () => {
-      if (chip.classList.contains('disabled')) return;
+      if (chip.classList.contains('disabled')) {
+        // Explain instead of silently ignoring the click.
+        showToast('info', EXPORT_DISABLED_HINT(), { id: 'export-disabled', autoDismiss: 2500 });
+        return;
+      }
       const format = chip.getAttribute('data-format');
       if (!format) return;
 
       chrome.runtime.sendMessage({ action: 'getPreviewData' }, (response) => {
         if (chrome.runtime.lastError || !response || !response.data) {
           dismissAllToasts();
-          showToast('error', 'No data available to export.', { dismiss: true });
+          showToast('error', t('popup_export_nodata') || 'No data available to export.', { dismiss: true });
           return;
         }
 
@@ -1102,27 +1469,30 @@ Data:
           const blob = new Blob([content], { type: mimeType });
           const url = URL.createObjectURL(blob);
           const anchor = document.createElement('a');
-          const subreddit = (data.post?.subreddit || 'multi-thread').replace(/[\/\\?%*:|"<>\s]/g, '_');
+          const subreddit = (data.post?.subreddit || 'multi-thread').replace(/[/\\?%*:|"<>\s]/g, '_');
           anchor.href = url;
           anchor.download = `reddit-to-ai-export-${subreddit}-${Date.now()}.${ext}`;
           document.body.appendChild(anchor);
           anchor.click();
           document.body.removeChild(anchor);
           URL.revokeObjectURL(url);
-          showToast('success', `Exported as ${format.toUpperCase()}!`);
+          flashChipDone(chip);
         } catch (err) {
           console.error('Export failed:', err);
-          showToast('error', 'Export failed.', { dismiss: true });
+          showToast('error', t('popup_export_failed') || 'Export failed.', { dismiss: true });
         }
       });
     });
   });
 
+  setExportChipsEnabled(false);
+  updateSettingsSummary();
   checkExportAvailability();
 
   // ── Get initial state ──────────────────────────────────
   chrome.runtime.sendMessage({ action: 'getScrapingState' }, (stateResponse) => {
     if (chrome.runtime.lastError) {
+      extensionUnavailable = true;
       showToast('error', t('popup_error_extension') || 'Extension error', { dismiss: true });
       scrapeBtn.disabled = true;
       return;

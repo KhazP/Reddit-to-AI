@@ -1,74 +1,138 @@
-/* Reddit to AI — Floating Progress Panel ("Ember" design system)
-   Injected into reddit.com — everything stays scoped to #redditSummarizerPanel / .rs- */
+/* Reddit to AI — Floating Progress Panel ("Ember 2")
+   Injected into reddit.com inside a closed shadow root. tokens.css cannot be linked
+   from a content script, so the values it needs are copied here and scoped to
+   #redditSummarizerPanel (nothing leaks onto the host page). */
 
 #redditSummarizerPanel {
-    /* Ember tokens, scoped to the panel (no :root pollution on host page) */
-    --rs-surface: rgba(14, 14, 16, 0.96);
-    --rs-surface-2: #1a1a1e;
-    --rs-surface-3: #232329;
-    --rs-border: rgba(255, 255, 255, 0.07);
-    --rs-border-strong: rgba(255, 255, 255, 0.14);
-    --rs-text: #f4f4f5;
-    --rs-text-2: #a1a1aa;
-    --rs-text-3: #71717a;
+    /* Dark (default) */
+    --rs-surface: rgba(20, 20, 23, 0.97);
+    --rs-surface-2: #1b1b1f;
+    --rs-surface-3: #25252b;
+    --rs-border: rgba(255, 255, 255, 0.08);
+    --rs-border-strong: rgba(255, 255, 255, 0.15);
+    --rs-text: #f5f5f6;
+    --rs-text-2: #a8a8b0;
+    --rs-text-3: #787882;
     --rs-accent: #ff4500;
-    --rs-accent-bright: #ff6a2b;
+    --rs-accent-text: #ff7a45;
+    --rs-on-accent: #ffffff;
     --rs-accent-grad: linear-gradient(135deg, #ff4500 0%, #ff6a2b 100%);
     --rs-accent-soft: rgba(255, 69, 0, 0.12);
-    --rs-accent-border: rgba(255, 69, 0, 0.35);
-    --rs-accent-glow: rgba(255, 69, 0, 0.25);
+    --rs-accent-border: rgba(255, 69, 0, 0.38);
+    --rs-accent-glow: rgba(255, 69, 0, 0.28);
     --rs-success: #34d399;
-    --rs-warning: #fbbf24;
+    --rs-success-soft: rgba(52, 211, 153, 0.14);
     --rs-danger: #f87171;
-    --rs-info: #60a5fa;
+    --rs-danger-soft: rgba(248, 113, 113, 0.12);
+    --rs-hover: rgba(255, 255, 255, 0.06);
+    --rs-shadow: 0 18px 48px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(0, 0, 0, 0.35);
+    --rs-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    --rs-ring: 0 0 0 3px rgba(255, 69, 0, 0.32);
+    --rs-font: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --rs-mono: ui-monospace, 'SF Mono', 'Cascadia Code', Consolas, monospace;
     --rs-ease: cubic-bezier(0.4, 0, 0.2, 1);
+    --rs-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --rs-ease-in: cubic-bezier(0.4, 0, 1, 1);
+    --rs-ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
 
+    color-scheme: dark;
     position: fixed;
     top: 20px;
     right: 20px;
-    width: 340px;
+    width: 320px;
+    max-width: calc(100vw - 32px);
+    box-sizing: border-box;
     background: var(--rs-surface);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     color: var(--rs-text);
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-family: var(--rs-font);
     font-size: 13px;
+    line-height: 1.45;
     border-radius: 16px;
-    border: 1px solid var(--rs-border-strong);
-    box-shadow:
-        0 16px 48px rgba(0, 0, 0, 0.55),
-        0 2px 12px rgba(0, 0, 0, 0.4),
-        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--rs-border);
+    box-shadow: var(--rs-shadow), var(--rs-highlight);
     z-index: 99999;
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    animation: rsPanelIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    animation: rsPanelIn 0.4s var(--rs-ease-out) both;
+}
+
+@media (prefers-color-scheme: light) {
+    #redditSummarizerPanel {
+        --rs-surface: rgba(255, 255, 255, 0.98);
+        --rs-surface-2: #f1efec;
+        --rs-surface-3: #e6e3df;
+        --rs-border: rgba(28, 22, 16, 0.1);
+        --rs-border-strong: rgba(28, 22, 16, 0.18);
+        --rs-text: #18181b;
+        --rs-text-2: #55555e;
+        --rs-text-3: #7a7a84;
+        --rs-accent-text: #c93a00;
+        --rs-accent-soft: rgba(255, 69, 0, 0.09);
+        --rs-accent-border: rgba(255, 69, 0, 0.32);
+        --rs-accent-glow: rgba(255, 69, 0, 0.2);
+        --rs-success: #059669;
+        --rs-success-soft: rgba(5, 150, 105, 0.12);
+        --rs-danger: #dc2626;
+        --rs-danger-soft: rgba(220, 38, 38, 0.08);
+        --rs-hover: rgba(28, 22, 16, 0.06);
+        --rs-shadow: 0 18px 48px rgba(28, 22, 16, 0.14), 0 2px 8px rgba(28, 22, 16, 0.08);
+        --rs-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+        --rs-ring: 0 0 0 3px rgba(255, 69, 0, 0.24);
+        color-scheme: light;
+    }
+}
+
+#redditSummarizerPanel[hidden] {
+    display: none;
+}
+
+#redditSummarizerPanel.rs-leaving {
+    animation: rsPanelOut 0.24s var(--rs-ease-in) both;
+    pointer-events: none;
+}
+
+#redditSummarizerPanel.rs-dragging {
+    user-select: none;
 }
 
 @keyframes rsPanelIn {
-    from {
-        opacity: 0;
-        transform: translateX(16px) scale(0.96);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0) scale(1);
-    }
+    from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+    to { opacity: 1; transform: none; }
+}
+
+@keyframes rsPanelOut {
+    from { opacity: 1; transform: none; }
+    to { opacity: 0; transform: translateY(-8px) scale(0.98); }
+}
+
+#redditSummarizerPanel *,
+#redditSummarizerPanel *::before,
+#redditSummarizerPanel *::after {
+    box-sizing: border-box;
+}
+
+#redditSummarizerPanel p {
+    margin: 0;
 }
 
 /* ── Header ───────────────────────────────────────────────── */
 
 .rs-header {
-    padding: 12px 14px;
-    background: rgba(255, 255, 255, 0.02);
-    border-bottom: 1px solid var(--rs-border);
-    cursor: move;
+    padding: 10px 10px 10px 14px;
+    cursor: grab;
+    touch-action: none;
     display: flex;
     justify-content: space-between;
     align-items: center;
     user-select: none;
     flex-shrink: 0;
+}
+
+.rs-dragging .rs-header {
+    cursor: grabbing;
 }
 
 .rs-title-group {
@@ -77,84 +141,106 @@
     gap: 8px;
 }
 
-/* Pulsing live indicator dot */
+/* Live indicator: the pulse is a pseudo-element animated with transform/opacity,
+   and only runs while a scrape is active. */
 .rs-live-dot {
+    position: relative;
     width: 7px;
     height: 7px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.15);
+    background: var(--rs-border-strong);
     flex-shrink: 0;
-    transition: background 0.3s var(--rs-ease), box-shadow 0.3s var(--rs-ease);
+    transition: background-color 0.24s var(--rs-ease);
 }
 
-.rs-live-dot.active {
+.rs-live-dot::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
     background: var(--rs-accent);
-    box-shadow: 0 0 0 0 rgba(255, 69, 0, 0.55);
-    animation: rsLivePulse 1.4s ease-out infinite;
+    opacity: 0;
+    pointer-events: none;
 }
 
-.rs-live-dot.error {
-    background: var(--rs-danger);
-    animation: none;
-}
+.rs-live-dot.active { background: var(--rs-accent); }
+.rs-live-dot.active::after { animation: rsLivePulse 1.4s var(--rs-ease-out) infinite; }
+.rs-live-dot.done { background: var(--rs-success); }
+.rs-live-dot.error { background: var(--rs-danger); }
 
 @keyframes rsLivePulse {
-    0% { box-shadow: 0 0 0 0 rgba(255, 69, 0, 0.55); }
-    70% { box-shadow: 0 0 0 7px rgba(255, 69, 0, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(255, 69, 0, 0); }
+    0% { transform: scale(1); opacity: 0.55; }
+    100% { transform: scale(2.6); opacity: 0; }
 }
 
 .rs-title {
     font-weight: 650;
     font-size: 13px;
     color: var(--rs-text);
-    letter-spacing: -0.2px;
+    letter-spacing: -0.01em;
 }
 
-.rs-close-btn,
-.rs-local-summary-btn {
-    background: var(--rs-surface-2);
-    border: 1px solid var(--rs-border);
-    width: 26px;
-    height: 26px;
+.rs-close-btn {
+    background: transparent;
+    border: 0;
+    width: 28px;
+    height: 28px;
     border-radius: 8px;
     cursor: pointer;
     color: var(--rs-text-3);
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: color 0.15s var(--rs-ease), background 0.15s var(--rs-ease), border-color 0.15s var(--rs-ease);
+    transition: color 0.15s var(--rs-ease), background-color 0.15s var(--rs-ease), transform 0.15s var(--rs-ease);
     flex-shrink: 0;
 }
 
 .rs-close-btn:hover {
-    background: rgba(248, 113, 113, 0.12);
-    border-color: rgba(248, 113, 113, 0.35);
-    color: var(--rs-danger);
+    background: var(--rs-hover);
+    color: var(--rs-text);
 }
 
-.rs-local-summary-btn { margin-right: 6px; }
-
-.rs-local-summary-btn:hover:not(:disabled) {
-    background: rgba(96, 165, 250, 0.12);
-    border-color: rgba(96, 165, 250, 0.35);
-    color: var(--rs-info);
+.rs-close-btn:active,
+.rs-btn:active {
+    transform: scale(0.97);
 }
 
-.rs-local-summary-btn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
+#redditSummarizerPanel button:focus-visible {
+    outline: none;
+    box-shadow: var(--rs-ring);
 }
 
 /* ── Content ──────────────────────────────────────────────── */
 
 .rs-content {
-    padding: 16px;
+    padding: 4px 16px 16px;
     overflow-y: auto;
     flex-grow: 1;
     display: flex;
     flex-direction: column;
+    gap: 12px;
+}
+
+/* One view at a time, driven by data-view on the panel. */
+.rs-view {
+    display: none;
+}
+
+[data-view="running"] .rs-running-view,
+[data-view="success"] .rs-success-view,
+[data-view="error"] .rs-error-view {
+    display: flex;
+    animation: rsViewIn 0.24s var(--rs-ease-out) both;
+}
+
+.rs-running-view {
+    flex-direction: column;
     gap: 14px;
+}
+
+@keyframes rsViewIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: none; }
 }
 
 /* ── Phase Track ──────────────────────────────────────────── */
@@ -162,7 +248,7 @@
 .rs-phase-track {
     display: flex;
     align-items: flex-start;
-    padding: 0 2px;
+    padding: 4px 0 0;
 }
 
 .rs-phase {
@@ -171,29 +257,28 @@
     align-items: center;
     gap: 6px;
     flex-shrink: 0;
-    width: 52px;
+    width: 56px;
 }
 
 .rs-phase-node {
     width: 10px;
     height: 10px;
     border-radius: 50%;
-    background: var(--rs-surface-3);
+    background: var(--rs-surface-2);
     border: 1.5px solid var(--rs-border-strong);
     position: relative;
-    transition: background 0.25s var(--rs-ease), border-color 0.25s var(--rs-ease), box-shadow 0.25s var(--rs-ease);
+    transition: background-color 0.24s var(--rs-ease), border-color 0.24s var(--rs-ease);
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-/* Inner dot for completed phases */
 .rs-phase.completed .rs-phase-node::after {
     content: '';
     width: 4px;
     height: 4px;
     border-radius: 50%;
-    background: #fff;
+    background: var(--rs-on-accent);
 }
 
 .rs-phase-pulse {
@@ -201,12 +286,16 @@
     position: absolute;
     inset: -5px;
     border-radius: 50%;
-    border: 1.5px solid rgba(255, 106, 43, 0.5);
-    animation: rsNodePulse 1.3s ease-out infinite;
+    border: 1.5px solid var(--rs-accent-border);
+}
+
+.rs-phase.active .rs-phase-pulse {
+    display: block;
+    animation: rsNodePulse 1.3s var(--rs-ease-out) infinite;
 }
 
 @keyframes rsNodePulse {
-    0% { transform: scale(0.8); opacity: 0.8; }
+    0% { transform: scale(0.8); opacity: 0.9; }
     100% { transform: scale(1.6); opacity: 0; }
 }
 
@@ -216,69 +305,55 @@
 }
 
 .rs-phase.active .rs-phase-node {
-    background: #fff;
-    border-color: #fff;
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.45), 0 0 20px var(--rs-accent-glow);
+    background: var(--rs-surface);
+    border-color: var(--rs-accent);
 }
-
-.rs-phase.active .rs-phase-pulse { display: block; }
 
 .rs-phase.completed .rs-phase-node {
     background: var(--rs-accent);
     border-color: var(--rs-accent);
-    box-shadow: 0 0 8px var(--rs-accent-glow);
 }
 
 .rs-phase-label {
-    font-size: 9px;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    font-size: 11px;
+    font-weight: 500;
     color: var(--rs-text-3);
-    opacity: 0.6;
-    transition: color 0.25s var(--rs-ease), opacity 0.25s var(--rs-ease);
+    transition: color 0.24s var(--rs-ease);
     white-space: nowrap;
 }
 
 .rs-phase.active .rs-phase-label {
     color: var(--rs-text);
-    opacity: 1;
+    font-weight: 600;
 }
 
 .rs-phase.completed .rs-phase-label {
-    color: var(--rs-accent-bright);
-    opacity: 0.85;
+    color: var(--rs-text-2);
 }
 
-/* Connector line between phase nodes */
+/* Connector line between phase nodes: the fill is a scaled pseudo-element. */
 .rs-connector {
     flex: 1;
-    height: 1.5px;
+    height: 2px;
     background: var(--rs-border);
-    margin-top: 4.25px;
-    margin-bottom: 15px;
+    margin-top: 4px;
     border-radius: 1px;
-    transition: background 0.3s var(--rs-ease);
     position: relative;
     overflow: hidden;
 }
 
-.rs-connector.filled {
-    background: var(--rs-accent-border);
-}
-
-/* Sweep animation when a connector becomes filled */
-.rs-connector.filled::after {
+.rs-connector::after {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-    animation: rsConnFill 0.5s ease forwards;
+    background: var(--rs-accent);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 0.4s var(--rs-ease-out);
 }
 
-@keyframes rsConnFill {
-    from { transform: translateX(-100%); }
-    to   { transform: translateX(100%); }
+.rs-connector.filled::after {
+    transform: scaleX(1);
 }
 
 /* ── Progress Area ────────────────────────────────────────── */
@@ -286,7 +361,7 @@
 .rs-progress-area {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
 }
 
 .rs-progress-top {
@@ -296,258 +371,240 @@
     gap: 10px;
 }
 
-/* Large percentage counter */
 .rs-pct {
-    font-size: 30px;
-    font-weight: 700;
+    font-size: 24px;
+    font-weight: 650;
     font-variant-numeric: tabular-nums;
-    letter-spacing: -1.5px;
+    letter-spacing: -0.03em;
     line-height: 1;
     color: var(--rs-text);
-    font-family: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace;
+    font-family: var(--rs-mono);
 }
 
-/* Context badge: "BATCH 6 / 11" or "312 COMMENTS" */
 .rs-context-badge {
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.07em;
-    text-transform: uppercase;
+    font-size: 11px;
+    font-weight: 600;
     font-variant-numeric: tabular-nums;
-    color: var(--rs-accent-bright);
+    color: var(--rs-accent-text);
     background: var(--rs-accent-soft);
-    border: 1px solid var(--rs-accent-border);
     border-radius: 999px;
     padding: 3px 10px;
     white-space: nowrap;
 }
 
-/* Progress bar */
+.rs-context-badge[hidden] {
+    display: none;
+}
+
 .rs-progress-track {
     width: 100%;
     height: 6px;
     background: var(--rs-surface-3);
     border-radius: 999px;
-    overflow: visible;
-    position: relative;
-}
-
-.rs-progress-fill {
-    height: 100%;
-    width: 0%;
-    background: var(--rs-accent-grad);
-    border-radius: 999px;
-    transition: width 0.4s var(--rs-ease);
-    position: relative;
     overflow: hidden;
-    box-shadow: 0 0 10px var(--rs-accent-glow);
+    position: relative;
 }
 
-/* Subtle sheen sweeping across the fill while loading */
-.rs-progress-fill::before {
-    content: '';
+/* Driven by --p (0..1) from JS: transform only, never width. */
+.rs-progress-fill {
     position: absolute;
     inset: 0;
-    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.22) 50%, transparent 100%);
-    transform: translateX(-100%);
-    animation: rsSheen 1.8s var(--rs-ease) infinite;
+    background: var(--rs-accent-grad);
+    border-radius: inherit;
+    transform-origin: left center;
+    transform: scaleX(var(--p, 0));
+    transition: transform 0.4s var(--rs-ease-out), opacity 0.24s var(--rs-ease);
 }
 
-@keyframes rsSheen {
-    0% { transform: translateX(-100%); }
-    60%, 100% { transform: translateX(100%); }
+.rs-progress-track[data-state="done"] .rs-progress-fill {
+    background: var(--rs-success);
 }
 
-/* Glowing leading-edge cursor on the bar */
-.rs-progress-fill::after {
-    content: '';
-    position: absolute;
-    right: -1px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 3px;
-    height: 10px;
-    background: #fff;
-    border-radius: 2px;
-    box-shadow:
-        0 0 6px 2px rgba(255, 255, 255, 0.6),
-        0 0 14px 4px var(--rs-accent-glow);
+.rs-progress-track[data-state="error"] .rs-progress-fill {
+    opacity: 0;
 }
 
-/* Hide cursor when bar is at 0 or 100 */
-.rs-progress-fill[style*="width: 0"]::after,
-.rs-progress-fill[style*="width: 100"]::after {
-    display: none;
-}
-
-.rs-progress-fill[style*="width: 100"]::before {
-    animation: none;
-}
-
-/* ── Status Message ───────────────────────────────────────── */
+/* ── Status + guidance ────────────────────────────────────── */
 
 .rs-status-msg {
     font-size: 12px;
     color: var(--rs-text-2);
-    margin: 0;
     line-height: 1.5;
     min-height: 18px;
 }
 
-/* ── Guidance ─────────────────────────────────────────────── */
+/* Outside the running view the status line stays in the accessibility tree
+   (so changes are announced) but is visually hidden. */
+[data-view="success"] .rs-status-msg,
+[data-view="error"] .rs-status-msg {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    min-height: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+}
 
 .rs-guidance {
     font-size: 11px;
-    color: rgba(251, 191, 36, 0.9);
-    margin: 0;
-    padding: 9px 12px;
-    background: rgba(251, 191, 36, 0.07);
-    border: 1px solid rgba(251, 191, 36, 0.18);
-    border-left: 3px solid var(--rs-warning);
-    border-radius: 8px;
+    color: var(--rs-text-3);
     line-height: 1.5;
 }
 
-/* ── Summary Area ─────────────────────────────────────────── */
-
-.rs-summary-area {
+.rs-guidance[hidden] {
     display: none;
+}
+
+/* ── Result views (success / error) ───────────────────────── */
+
+.rs-success-view,
+.rs-error-body {
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.rs-error-view {
     flex-direction: column;
-    gap: 10px;
+    gap: 14px;
 }
 
-.rs-summary-header {
+.rs-error-body {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
 }
 
-.rs-summary-actions {
-    display: flex;
-    gap: 4px;
-}
-
-.rs-action-btn {
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    color: var(--rs-text-3);
+.rs-result-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 22px;
-    height: 22px;
-    border-radius: 6px;
-    transition: color 0.15s var(--rs-ease), background 0.15s var(--rs-ease);
-    padding: 0;
+    flex-shrink: 0;
 }
 
-.rs-action-btn:hover {
-    background: rgba(255, 255, 255, 0.08);
-    color: var(--rs-text);
+.rs-success-icon {
+    color: var(--rs-success);
+    background: var(--rs-success-soft);
 }
 
-.rs-summary-area h4 {
-    margin: 0;
-    font-size: 10px;
+[data-view="success"] .rs-success-icon {
+    animation: rsPop 0.45s var(--rs-ease-spring) both;
+}
+
+.rs-error-icon {
+    color: var(--rs-danger);
+    background: var(--rs-danger-soft);
+}
+
+@keyframes rsPop {
+    0% { opacity: 0; transform: scale(0.6); }
+    60% { opacity: 1; transform: scale(1.08); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+.rs-result-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    padding-top: 5px;
+}
+
+.rs-result-title {
+    font-size: 14px;
     font-weight: 600;
-    color: var(--rs-text-3);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-}
-
-.rs-summary-area #rsSummaryText {
-    padding: 14px;
-    max-height: 280px;
-    overflow-y: auto;
-    font-size: 13px;
-    line-height: 1.65;
     color: var(--rs-text);
-    background: var(--rs-surface-2);
-    border: 1px solid var(--rs-border);
-    border-radius: 12px;
-    word-wrap: break-word;
 }
 
-/* Markdown inside summary */
-.rs-summary-area #rsSummaryText p { margin: 0 0 0.75em 0; }
-.rs-summary-area #rsSummaryText p:last-child { margin-bottom: 0; }
-.rs-summary-area #rsSummaryText ul,
-.rs-summary-area #rsSummaryText ol { margin: 0 0 0.75em 0; padding-left: 20px; }
-.rs-summary-area #rsSummaryText li { margin-bottom: 0.35em; }
-
-.rs-summary-area #rsSummaryText code {
-    background: var(--rs-accent-soft);
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-family: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace;
-    font-size: 0.9em;
-    color: var(--rs-accent-bright);
+.rs-result-detail {
+    font-size: 12px;
+    color: var(--rs-text-2);
+    overflow-wrap: anywhere;
 }
 
-.rs-summary-area #rsSummaryText pre {
-    background: rgba(255, 255, 255, 0.04);
-    padding: 12px;
+.rs-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.rs-btn {
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    height: 30px;
+    padding: 0 14px;
     border-radius: 8px;
-    overflow-x: auto;
-    margin: 0 0 0.75em 0;
+    cursor: pointer;
+    transition: background-color 0.15s var(--rs-ease), color 0.15s var(--rs-ease), transform 0.15s var(--rs-ease), opacity 0.15s var(--rs-ease);
 }
 
-.rs-summary-area #rsSummaryText pre code {
+.rs-btn[hidden],
+.rs-link-btn[hidden] {
+    display: none;
+}
+
+.rs-btn:disabled {
+    opacity: 0.6;
+    cursor: progress;
+}
+
+.rs-btn-primary {
+    background: var(--rs-accent);
+    color: var(--rs-on-accent);
+    border: 1px solid transparent;
+}
+
+.rs-btn-primary:hover:not(:disabled) {
+    box-shadow: 0 4px 14px var(--rs-accent-glow);
+}
+
+.rs-btn-ghost {
     background: transparent;
-    padding: 0;
     color: var(--rs-text-2);
+    border: 1px solid var(--rs-border-strong);
 }
 
-.rs-summary-area #rsSummaryText blockquote {
-    margin: 0 0 0.75em 0;
-    padding: 10px 14px;
-    border-left: 3px solid var(--rs-accent);
-    color: var(--rs-text-2);
-    background: var(--rs-accent-soft);
-    border-radius: 0 8px 8px 0;
-    font-style: italic;
-}
-
-.rs-summary-area #rsSummaryText a { color: var(--rs-accent-bright); text-decoration: none; }
-.rs-summary-area #rsSummaryText a:hover { text-decoration: underline; }
-
-.rs-summary-area #rsSummaryText h1,
-.rs-summary-area #rsSummaryText h2,
-.rs-summary-area #rsSummaryText h3,
-.rs-summary-area #rsSummaryText h4 {
-    margin: 1em 0 0.5em 0;
-    font-weight: 600;
+.rs-btn-ghost:hover {
+    background: var(--rs-hover);
     color: var(--rs-text);
-    line-height: 1.3;
 }
 
-.rs-summary-area #rsSummaryText h1 { font-size: 1.3em; }
-.rs-summary-area #rsSummaryText h2 { font-size: 1.15em; }
-.rs-summary-area #rsSummaryText h3,
-.rs-summary-area #rsSummaryText h4 { font-size: 1em; }
+.rs-link-btn {
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    margin-left: auto;
+    padding: 4px 2px;
+    background: none;
+    border: 0;
+    border-radius: 4px;
+    color: var(--rs-accent-text);
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.rs-link-btn:hover {
+    text-decoration-thickness: 2px;
+}
 
 /* ── Scrollbar ────────────────────────────────────────────── */
 
-.rs-content::-webkit-scrollbar,
-.rs-summary-area #rsSummaryText::-webkit-scrollbar {
+.rs-content::-webkit-scrollbar {
     width: 6px;
 }
 
-.rs-content::-webkit-scrollbar-track,
-.rs-summary-area #rsSummaryText::-webkit-scrollbar-track {
+.rs-content::-webkit-scrollbar-track {
     background: transparent;
 }
 
-.rs-content::-webkit-scrollbar-thumb,
-.rs-summary-area #rsSummaryText::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.12);
+.rs-content::-webkit-scrollbar-thumb {
+    background: var(--rs-border-strong);
     border-radius: 3px;
-}
-
-.rs-content::-webkit-scrollbar-thumb:hover,
-.rs-summary-area #rsSummaryText::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.22);
 }
 
 /* ── Reduced Motion ───────────────────────────────────────── */

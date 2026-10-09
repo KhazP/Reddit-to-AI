@@ -1,19 +1,20 @@
-/* Reddit to AI — Tooltip ("Ember" design system)
-   Injected into pages — colors hard-coded, no :root vars. */
+/* Reddit to AI — Tooltip ("Ember 2" design system)
+   Uses tokens.css values on extension pages; the fallbacks keep it styled
+   where tokens.css is not loaded. */
 
 .tooltip-bubble {
   position: absolute;
   z-index: 9999;
-  background: #232329;
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: var(--surface-raised, #1d1d22);
+  border: 1px solid var(--border-strong, rgba(255, 255, 255, 0.15));
   border-radius: 8px;
   padding: 6px 10px;
-  color: #f4f4f5;
+  color: var(--text, #f5f5f6);
   font-size: 11px;
   line-height: 1.4;
   max-width: 220px;
   pointer-events: none;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  box-shadow: var(--shadow-md, 0 8px 24px rgba(0, 0, 0, 0.45));
   opacity: 0;
   transform: translateY(4px) scale(0.97);
   transition: opacity 150ms cubic-bezier(0.4, 0, 0.2, 1), transform 150ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -28,9 +29,9 @@
   position: absolute;
   width: 6px;
   height: 6px;
-  background: #232329;
-  border-right: 1px solid rgba(255, 255, 255, 0.14);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+  background: var(--surface-raised, #1d1d22);
+  border-right: 1px solid var(--border-strong, rgba(255, 255, 255, 0.15));
+  border-bottom: 1px solid var(--border-strong, rgba(255, 255, 255, 0.15));
   transform: rotate(45deg);
 }
 

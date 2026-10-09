@@ -2,10 +2,13 @@
 <html>
 
 <head>
-  <title>Reddit to AI - Prompt Preview</title>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reddit to AI - Prompt Preview</title>
+  <link rel="stylesheet" type="text/css" href="tokens.css">
   <link rel="stylesheet" type="text/css" href="preview.css">
   <link rel="stylesheet" type="text/css" href="tooltip.css">
+  <script src="theme.js"></script>
 </head>
 
 <body>
@@ -13,268 +16,332 @@
     <!-- Unified Top Header Bar -->
     <header class="preview-header">
       <div class="header-left">
-        <button id="backBtnTop" class="btn ghost back-btn" title="Back to Reddit tab">
-          <svg class="icon" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <button id="backBtnTop" class="btn ghost back-btn" type="button" title="Back to Reddit tab" data-i18n-title="preview_back_title">
+          <svg class="icon" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <line x1="19" y1="12" x2="5" y2="12"></line>
             <polyline points="12 19 5 12 12 5"></polyline>
           </svg>
-          <span>Back</span>
+          <span data-i18n="preview_back">Back</span>
         </button>
         <div class="header-brand">
           <img src="images/icon32.png" width="28" height="28" class="logo-icon" alt="Reddit to AI">
           <div class="header-title-wrap">
             <div class="header-title-row">
               <span class="logo-title"><span class="logo-reddit">Reddit</span><span class="logo-to">to</span><span class="logo-ai">AI</span></span>
-              <span class="logo-badge">Preview</span>
+              <span class="logo-badge" data-i18n="preview_badge">Preview</span>
             </div>
-            <p id="threadMeta" class="thread-meta">Loading thread…</p>
+            <p id="threadMeta" class="thread-meta" data-i18n="preview_loading_thread">Loading thread…</p>
           </div>
         </div>
       </div>
 
-      <!-- Segmented Tab Navigation -->
-      <nav class="tab-nav" id="tabNav" aria-label="Preview Views">
-        <button type="button" class="tab-btn active" data-tab="prompt" id="tabBtnPrompt">
-          <span>Prompt &amp; Send</span>
+      <!-- Segmented Tab Navigation (roving tabindex: arrow keys / Home / End) -->
+      <nav class="tab-nav" id="tabNav" role="tablist" aria-label="Preview views">
+        <button type="button" role="tab" class="tab-btn active" data-tab="prompt" id="tabBtnPrompt" aria-selected="true" aria-controls="tabPanelPrompt" tabindex="0">
+          <span data-i18n="preview_tab_prompt">Prompt &amp; Send</span>
         </button>
-        <button type="button" class="tab-btn" data-tab="prune" id="tabBtnPrune">
-          <span>Prune Comments</span>
+        <button type="button" role="tab" class="tab-btn" data-tab="prune" id="tabBtnPrune" aria-selected="false" aria-controls="tabPanelPrune" tabindex="-1">
+          <span data-i18n="preview_tab_prune">Prune Comments</span>
           <span id="pruneBadge" class="tab-badge">0</span>
         </button>
-        <button type="button" class="tab-btn" data-tab="api" id="tabBtnApi" data-i18n="preview_api_eyebrow">
-          <span>Direct API</span>
+        <button type="button" role="tab" class="tab-btn" data-tab="api" id="tabBtnApi" aria-selected="false" aria-controls="tabPanelApi" tabindex="-1">
+          <span data-i18n="preview_api_eyebrow">Direct API</span>
         </button>
       </nav>
 
-      <!-- Action Cluster -->
+      <!-- Action Cluster: one primary (Send), quiet secondaries, status right beneath -->
       <div class="header-actions">
-        <!-- Export Dropdown -->
-        <div class="dropdown" id="exportDropdown">
-          <button type="button" class="btn secondary dropdown-toggle" id="exportDropdownBtn" aria-haspopup="true" aria-expanded="false">
-            <span>Export</span>
-            <svg class="icon-caret" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none">
-              <polyline points="6 9 12 15 18 9"></polyline>
+        <div class="action-buttons">
+          <!-- Export Dropdown -->
+          <div class="dropdown" id="exportDropdown">
+            <button type="button" class="btn ghost dropdown-toggle" id="exportDropdownBtn" aria-haspopup="menu" aria-expanded="false" aria-controls="exportDropdownMenu">
+              <span data-i18n="preview_export">Export</span>
+              <svg class="icon-caret" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" aria-hidden="true">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+            <div class="dropdown-menu" id="exportDropdownMenu" role="menu" aria-labelledby="exportDropdownBtn" hidden>
+              <button type="button" role="menuitem" tabindex="-1" class="export-chip dropdown-item" data-format="markdown" data-tooltip="tooltip_export_md" id="previewExportMd">
+                <span class="chip-icon" aria-hidden="true">MD</span> <span>Markdown (.md)</span>
+              </button>
+              <button type="button" role="menuitem" tabindex="-1" class="export-chip dropdown-item" data-format="json" data-tooltip="tooltip_export_json" id="previewExportJson">
+                <span class="chip-icon" aria-hidden="true">JSON</span> <span>JSON (.json)</span>
+              </button>
+              <button type="button" role="menuitem" tabindex="-1" class="export-chip dropdown-item" data-format="csv" data-tooltip="tooltip_export_csv" id="previewExportCsv">
+                <span class="chip-icon" aria-hidden="true">CSV</span> <span>CSV (.csv)</span>
+              </button>
+            </div>
+          </div>
+
+          <button id="savePresetBtn" class="btn ghost" type="button" aria-expanded="false" aria-controls="presetNameRow" title="Save the current prompt and settings as a reusable preset" data-i18n-title="preview_save_preset_title">
+            <span class="btn-label" data-i18n="preview_save_preset">Save preset</span>
+          </button>
+          <button id="copyBtn" class="btn secondary" type="button" title="Copy prompt to clipboard">
+            <span class="btn-label" data-i18n="preview_copy">Copy</span>
+          </button>
+          <button id="sendBtn" class="btn primary send-btn" type="button" title="Open the AI chat with this prompt">
+            <span class="btn-spinner" aria-hidden="true"></span>
+            <span class="btn-label" id="sendBtnLabel">Send to AI</span>
+            <svg class="btn-icon" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
             </svg>
           </button>
-          <div class="dropdown-menu" id="exportDropdownMenu">
-            <button type="button" class="export-chip dropdown-item" data-format="markdown" data-tooltip="tooltip_export_md" id="previewExportMd">
-              <span class="chip-icon">MD</span> Markdown (.md)
-            </button>
-            <button type="button" class="export-chip" data-format="json" data-tooltip="tooltip_export_json" id="previewExportJson">
-              <span class="chip-icon">JS</span> JSON (.json)
-            </button>
-            <button type="button" class="export-chip" data-format="csv" data-tooltip="tooltip_export_csv" id="previewExportCsv">
-              <span class="chip-icon">CS</span> CSV (.csv)
-            </button>
-          </div>
         </div>
-
-        <button id="savePresetBtn" class="btn secondary" title="Save current settings as default">Save preset</button>
-        <button id="copyBtn" class="btn secondary" title="Copy prompt to clipboard">Copy</button>
-        <button id="sendBtn" class="btn primary send-btn" title="Open AI tab with prompt">Send to AI</button>
-
-        <!-- Hidden/auxiliary action hooks preserved for backward compatibility -->
-        <button id="skipNextBtn" class="btn tertiary" style="display: none;">Send and skip preview next time</button>
-        <button id="backBtn" class="btn ghost" style="display: none;">Back to Reddit tab</button>
-        <button id="copyBtnBottom" class="btn secondary" style="display: none;">Copy</button>
-        <button id="sendBtnBottom" class="btn primary" style="display: none;">Send</button>
+        <p id="statusText" class="action-status" role="status" aria-live="polite" data-tone="info">
+          <span class="status-dot" aria-hidden="true"></span><span id="statusMessage" data-i18n="preview_status_ready_short">Ready.</span>
+        </p>
       </div>
+
+      <!-- Inline "name this preset" row (replaces window.prompt) -->
+      <form id="presetNameRow" class="preset-name-row r2-reveal" hidden novalidate>
+        <label for="presetNameInput" data-i18n="preview_preset_name_label">Preset name</label>
+        <input id="presetNameInput" type="text" maxlength="60" autocomplete="off" spellcheck="false">
+        <span class="preset-name-hint" data-i18n="preview_preset_name_hint">Saves this prompt with the current preset, trim strategy, media and format settings.</span>
+        <div class="preset-name-actions">
+          <button type="button" id="presetNameCancelBtn" class="btn ghost" data-i18n="preview_cancel">Cancel</button>
+          <button type="submit" id="presetNameSaveBtn" class="btn secondary" data-i18n="preview_save">Save</button>
+        </div>
+      </form>
     </header>
 
-    <!-- TAB 1: PROMPT & SEND (Main View) -->
-    <div id="tabPanelPrompt" class="tab-panel active">
-      <div class="preview-container-layout">
-        <!-- Main Content Workspace (Left Column) -->
-        <div class="preview-main-content">
-          <section class="editor-card" id="editorCard">
-            <div class="editor-toolbar">
-              <div class="editor-title-wrap">
-                <strong>Final Prompt</strong>
-                <span id="editHint" class="edit-hint">You can edit this text before sending.</span>
+    <div class="tab-panels">
+      <!-- TAB 1: PROMPT & SEND (Main View) -->
+      <section id="tabPanelPrompt" class="tab-panel active" role="tabpanel" aria-labelledby="tabBtnPrompt">
+        <div class="preview-container-layout">
+          <!-- Main Content Workspace (Left Column) -->
+          <div class="preview-main-content">
+            <section class="editor-card" id="editorCard">
+              <div class="editor-toolbar">
+                <div class="editor-title-wrap">
+                  <strong data-i18n="preview_final_prompt">Final prompt</strong>
+                  <span id="editHint" class="edit-hint" data-i18n="preview_edit_hint">You can edit this text before sending.</span>
+                </div>
+                <div class="editor-tools">
+                  <span id="rebuildNotice" class="rebuild-notice" hidden data-i18n="preview_rebuild_notice">Settings changed. Your edited prompt was kept.</span>
+                  <button id="applyRebuiltPromptBtn" class="link-btn" type="button" hidden data-i18n="preview_apply_rebuilt">Apply rebuilt prompt</button>
+                  <button id="keepEditsBtn" class="link-btn" type="button" hidden data-i18n="preview_keep_edits">Keep edits</button>
+                  <button id="restorePromptBtn" class="link-btn" type="button" disabled title="Only available after you edit the prompt" data-i18n="preview_restore_prompt">Restore generated prompt</button>
+                </div>
               </div>
-              <div class="editor-tools">
-                <span id="rebuildNotice" class="rebuild-notice" hidden>Settings changed. Your edited prompt was kept.</span>
-                <button id="applyRebuiltPromptBtn" class="link-btn" type="button" hidden>Apply rebuilt prompt</button>
-                <button id="keepEditsBtn" class="link-btn" type="button" hidden>Keep edits</button>
-                <button id="restorePromptBtn" class="link-btn" type="button" disabled>Restore generated prompt</button>
+
+              <div id="loadErrorPanel" class="load-error r2-reveal" role="alert" hidden>
+                <svg class="load-error-icon" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <div class="load-error-body">
+                  <strong data-i18n="preview_load_error_title">Couldn't load this thread</strong>
+                  <p id="loadErrorMessage"></p>
+                  <p class="load-error-hint" data-i18n="preview_load_error_hint">Try again. If it keeps failing, close this tab and run the scrape again from the Reddit thread.</p>
+                </div>
+                <button id="loadRetryBtn" class="btn secondary" type="button" data-i18n="preview_try_again">Try again</button>
               </div>
-            </div>
-            <textarea id="promptTextarea" spellcheck="true" placeholder="Generated prompt will appear here…"></textarea>
-            <div class="editor-footer-status">
-              <span id="statusText">Ready.</span>
-            </div>
-          </section>
+
+              <textarea id="promptTextarea" spellcheck="true" placeholder="Generated prompt will appear here…" data-i18n-placeholder="preview_prompt_placeholder" aria-label="Final prompt"></textarea>
+              <div class="editor-footer">
+                <span class="shortcut-hint">
+                  <kbd class="kbd-mod">Ctrl</kbd><kbd>Enter</kbd> <span data-i18n="preview_shortcut_send">to send</span>
+                </span>
+                <span class="shortcut-hint">
+                  <kbd class="kbd-mod">Ctrl</kbd><kbd>Shift</kbd><kbd>C</kbd> <span data-i18n="preview_shortcut_copy">to copy</span>
+                </span>
+              </div>
+            </section>
+          </div>
+
+          <!-- Sidebar Controls & Stats (Right Column) -->
+          <aside class="preview-sidebar">
+            <!-- Token & Capacity Meter Card -->
+            <section class="budget-card is-computing" id="budgetCard" aria-busy="true">
+              <div class="budget-card-header">
+                <div>
+                  <span class="eyebrow" data-i18n="preview_budget_eyebrow">AI context budget</span>
+                  <strong id="warningLabel" class="warning-label skeleton-text">Calculating…</strong>
+                </div>
+                <div class="budget-token-badge">
+                  <span id="tokenCount" class="skeleton-text">0</span>
+                  <span class="unit" data-i18n="preview_unit_tokens">tokens</span>
+                </div>
+              </div>
+
+              <div id="meterTrack" class="meter-track r2-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Share of a 128k-token context window">
+                <div id="meterFill" class="meter-fill r2-progress-fill"></div>
+              </div>
+
+              <p id="warningMessage" class="warning-message" data-i18n="preview_budget_preparing">Preparing context budget.</p>
+
+              <div class="budget-stats-compact">
+                <div class="stat-pill"><span class="stat-num" id="charCount">0</span> <span class="stat-lbl" data-i18n="preview_unit_chars">chars</span></div>
+                <div class="stat-pill"><span class="stat-num" id="commentCount">0</span> <span class="stat-lbl" data-i18n="preview_unit_comments">comments</span></div>
+                <div class="stat-pill"><span class="stat-num" id="imageCount">0</span> <span class="stat-lbl" data-i18n="preview_unit_images">images</span></div>
+              </div>
+            </section>
+
+            <!-- Tuning Controls Panel -->
+            <section class="controls-panel">
+              <div class="panel-header">
+                <span class="eyebrow" data-i18n="preview_params_eyebrow">Prompt settings</span>
+              </div>
+
+              <div class="controls-grid">
+                <label class="field">
+                  <span data-i18n="preview_field_context">Context preset</span>
+                  <select id="contextPresetSelect">
+                    <option value="small">Small</option>
+                    <option value="balanced">Balanced</option>
+                    <option value="full">Full</option>
+                    <option value="maxQuality">Max Quality</option>
+                  </select>
+                </label>
+                <label class="field">
+                  <span data-i18n="preview_field_trim">Trim strategy</span>
+                  <select id="trimStrategySelect">
+                    <option value="top">Top scored</option>
+                    <option value="controversial">Controversial</option>
+                    <option value="op">OP replies</option>
+                    <option value="flaired">Flaired users</option>
+                    <option value="diverse">Diverse viewpoints</option>
+                    <option value="newest">Newest</option>
+                    <option value="longest">Longest helpful</option>
+                  </select>
+                </label>
+                <label class="field">
+                  <span data-i18n="preview_field_format">Output format</span>
+                  <select id="outputFormatSelect">
+                    <option value="auto">Auto</option>
+                    <option value="bullets">Bullets</option>
+                    <option value="table">Table</option>
+                    <option value="json">JSON</option>
+                    <option value="prosCons">Pros / cons</option>
+                    <option value="executive">Executive summary</option>
+                  </select>
+                </label>
+                <label class="field">
+                  <span data-i18n="preview_field_platform">AI platform</span>
+                  <select id="providerSelect">
+                    <option value="gemini">Gemini</option>
+                    <option value="chatgpt">ChatGPT</option>
+                    <option value="claude">Claude</option>
+                    <option value="aistudio">AI Studio</option>
+                    <option value="deepseek">DeepSeek</option>
+                    <option value="groq">Groq</option>
+                    <option value="custom">Custom</option>
+                  </select>
+                </label>
+                <label class="field">
+                  <span data-i18n="preview_field_media">Media handling</span>
+                  <select id="mediaModeSelect">
+                    <option value="attach">Attach images + list URLs</option>
+                    <option value="urls">List URLs only</option>
+                    <option value="ignore">Ignore media</option>
+                  </select>
+                </label>
+              </div>
+            </section>
+
+            <!-- Quick Preferences -->
+            <section class="preferences-panel">
+              <label class="inline-toggle">
+                <input type="checkbox" id="skipPreviewToggle" aria-describedby="skipPreviewHint">
+                <span data-i18n="preview_skip_label">Skip this preview next time</span>
+              </label>
+              <p id="skipPreviewHint" class="field-hint" data-i18n="preview_skip_hint">Future scrapes will paste straight into the AI chat without stopping here. You can turn the preview back on in Options.</p>
+              <div id="settingsSummary" class="summary-pills" hidden></div>
+            </section>
+          </aside>
         </div>
-
-        <!-- Sidebar Controls & Stats (Right Column) -->
-        <aside class="preview-sidebar">
-          <!-- Token & Capacity Meter Card -->
-          <section class="budget-card" id="budgetCard">
-            <div class="budget-card-header">
-              <div>
-                <span class="eyebrow">AI Context Budget</span>
-                <strong id="warningLabel" class="warning-label">Calculating…</strong>
-              </div>
-              <div class="budget-token-badge">
-                <span id="tokenCount">0</span>
-                <span class="unit">tokens</span>
-              </div>
-            </div>
-
-            <div class="meter-track">
-              <div id="meterFill" class="meter-fill"></div>
-            </div>
-
-            <p id="warningMessage" class="warning-message">Preparing context budget.</p>
-
-            <div class="budget-stats-compact">
-              <div class="stat-pill"><span class="stat-num" id="charCount">0</span> <span class="stat-lbl">chars</span></div>
-              <div class="stat-pill"><span class="stat-num" id="commentCount">0</span> <span class="stat-lbl">comments</span></div>
-              <div class="stat-pill"><span class="stat-num" id="imageCount">0</span> <span class="stat-lbl">images</span></div>
-            </div>
-          </section>
-
-          <!-- Tuning Controls Panel -->
-          <section class="controls-panel">
-            <div class="panel-header">
-              <span class="eyebrow">Prompt Parameters</span>
-            </div>
-
-            <div class="controls-grid">
-              <label class="field">
-                <span>Context preset</span>
-                <select id="contextPresetSelect">
-                  <option value="small">Small</option>
-                  <option value="balanced">Balanced</option>
-                  <option value="full">Full</option>
-                  <option value="maxQuality">Max Quality</option>
-                </select>
-              </label>
-              <label class="field">
-                <span>Trim strategy</span>
-                <select id="trimStrategySelect">
-                  <option value="top">Top scored</option>
-                  <option value="controversial">Controversial</option>
-                  <option value="op">OP replies</option>
-                  <option value="flaired">Flaired users</option>
-                  <option value="diverse">Diverse viewpoints</option>
-                  <option value="newest">Newest</option>
-                  <option value="longest">Longest helpful</option>
-                </select>
-              </label>
-              <label class="field">
-                <span>Output format</span>
-                <select id="outputFormatSelect">
-                  <option value="auto">Auto</option>
-                  <option value="bullets">Bullets</option>
-                  <option value="table">Table</option>
-                  <option value="json">JSON</option>
-                  <option value="prosCons">Pros / cons</option>
-                  <option value="executive">Executive summary</option>
-                </select>
-              </label>
-              <label class="field">
-                <span>AI platform</span>
-                <select id="providerSelect">
-                  <option value="gemini">Gemini</option>
-                  <option value="chatgpt">ChatGPT</option>
-                  <option value="claude">Claude</option>
-                  <option value="aistudio">AI Studio</option>
-                  <option value="deepseek">DeepSeek</option>
-                  <option value="groq">Groq</option>
-                  <option value="custom">Custom</option>
-                </select>
-              </label>
-              <label class="field">
-                <span>Media handling</span>
-                <select id="mediaModeSelect">
-                  <option value="attach">Attach images + list URLs</option>
-                  <option value="urls">List URLs only</option>
-                  <option value="ignore">Ignore media</option>
-                </select>
-              </label>
-            </div>
-          </section>
-
-          <!-- Quick Preferences -->
-          <section class="preferences-panel">
-            <label class="inline-toggle">
-              <input type="checkbox" id="skipPreviewToggle">
-              <span>Always send directly (skip preview)</span>
-            </label>
-            <div id="settingsSummary" class="summary-pills" style="display: none;"></div>
-          </section>
-        </aside>
-      </div>
-    </div>
-
-    <!-- TAB 2: PRUNE COMMENTS -->
-    <div id="tabPanelPrune" class="tab-panel">
-      <section id="missingCommentsCard" class="notice-card" hidden>
-        <div>
-          <strong>Some morechildren batches failed.</strong>
-          <p id="missingCommentsText">You can try to resume the missing comments before sending.</p>
-        </div>
-        <button id="resumeBtn" class="btn secondary">Resume missing comments</button>
       </section>
 
-      <section class="comments-tree-card" id="commentsTreeCard">
-        <div class="comments-tree-header">
+      <!-- TAB 2: PRUNE COMMENTS -->
+      <section id="tabPanelPrune" class="tab-panel" role="tabpanel" aria-labelledby="tabBtnPrune" hidden>
+        <section id="missingCommentsCard" class="notice-card r2-reveal" hidden>
           <div>
-            <span class="eyebrow">Interactive Tree</span>
-            <h2>Comment Pruning</h2>
-            <p>Uncheck comments to exclude them from the AI prompt. Unchecking a comment automatically excludes all of its replies.</p>
+            <strong data-i18n="preview_missing_title">Some replies couldn't be loaded — the thread may be incomplete.</strong>
+            <p id="missingCommentsText" data-i18n="preview_missing_text">You can try loading them again before sending.</p>
           </div>
-          <div class="comments-tree-actions">
-            <button id="selectAllCommentsBtn" class="btn secondary">Select All</button>
-            <button id="clearAllCommentsBtn" class="btn secondary">Clear All</button>
+          <button id="resumeBtn" class="btn secondary" type="button">
+            <span class="btn-spinner" aria-hidden="true"></span>
+            <span class="btn-label" data-i18n="preview_missing_resume">Load missing replies</span>
+          </button>
+        </section>
+
+        <section class="comments-tree-card" id="commentsTreeCard">
+          <div class="comments-tree-header">
+            <div>
+              <h2 data-i18n="preview_prune_title">Choose which comments to include</h2>
+              <p data-i18n="preview_prune_description">Uncheck a comment to leave it out of the prompt. Its replies are left out too.</p>
+            </div>
+            <div class="comments-tree-actions">
+              <button id="selectAllCommentsBtn" class="btn ghost" type="button" data-i18n="preview_select_all">Select all</button>
+              <button id="clearAllCommentsBtn" class="btn ghost" type="button" data-i18n="preview_clear_all">Clear all</button>
+            </div>
           </div>
-        </div>
-        <div id="commentsTreeContainer" class="tree-container"></div>
+          <div id="commentsTreeContainer" class="tree-container"></div>
+        </section>
       </section>
-    </div>
 
-    <!-- TAB 3: DIRECT API -->
-    <div id="tabPanelApi" class="tab-panel">
-      <section class="api-card" id="apiCard">
-        <div class="api-header">
-          <div>
-            <span class="eyebrow" data-i18n="preview_api_eyebrow">Direct API</span>
-            <h2 data-i18n="preview_api_title">Send with your own API key</h2>
-            <p data-i18n="preview_api_description">Send the prompt straight to a provider and read the answer here, without opening an AI chat tab.</p>
+      <!-- TAB 3: DIRECT API -->
+      <section id="tabPanelApi" class="tab-panel" role="tabpanel" aria-labelledby="tabBtnApi" hidden>
+        <section class="api-card" id="apiCard">
+          <div class="api-header">
+            <div>
+              <span class="eyebrow" data-i18n="preview_api_eyebrow">Direct API</span>
+              <h2 data-i18n="preview_api_title">Send with your own API key</h2>
+              <p data-i18n="preview_api_description">Send the prompt straight to a provider and read the answer here, without opening an AI chat tab.</p>
+            </div>
+            <div class="api-controls">
+              <label class="field">
+                <span data-i18n="preview_api_provider_label">API provider</span>
+                <select id="apiProviderSelect"></select>
+              </label>
+              <button id="sendApiBtn" class="btn primary" type="button">
+                <span class="btn-spinner" aria-hidden="true"></span>
+                <span class="btn-label" data-i18n="preview_api_send">Send via API</span>
+              </button>
+            </div>
           </div>
-          <div class="api-controls">
-            <label class="field">
-              <span data-i18n="preview_api_provider_label">API provider</span>
-              <select id="apiProviderSelect"></select>
-            </label>
-            <button id="sendApiBtn" class="btn primary" type="button" data-i18n="preview_api_send">Send via API</button>
+
+          <p id="apiNotConfigured" class="api-hint r2-reveal" hidden>
+            <span id="apiNotConfiguredText" data-i18n="preview_api_no_key">No API key is configured for this provider.</span>
+            <button id="apiOpenOptionsBtn" class="link-btn" type="button" data-i18n="preview_api_open_options">Add a key in options</button>
+          </p>
+
+          <div id="apiLoading" class="api-loading r2-reveal" role="status" aria-live="polite" hidden>
+            <span class="api-spinner" aria-hidden="true"></span>
+            <span data-i18n="preview_api_loading">Waiting for the AI response…</span>
+            <strong id="apiElapsed">0s</strong>
           </div>
-        </div>
 
-        <p id="apiNotConfigured" class="api-hint" hidden>
-          <span id="apiNotConfiguredText" data-i18n="preview_api_no_key">No API key is configured for this provider.</span>
-          <button id="apiOpenOptionsBtn" class="link-btn" type="button" data-i18n="preview_api_open_options">Add a key in options</button>
-        </p>
-
-        <div id="apiLoading" class="api-loading" hidden>
-          <span class="api-spinner" aria-hidden="true"></span>
-          <span data-i18n="preview_api_loading">Waiting for the AI response…</span>
-          <strong id="apiElapsed">0s</strong>
-        </div>
-
-        <div id="apiError" class="api-error" role="alert" hidden>
-          <p id="apiErrorMessage"></p>
-          <button id="apiRetryBtn" class="btn secondary" type="button" data-i18n="preview_api_retry">Retry</button>
-        </div>
-
-        <div id="apiResult" class="api-result" hidden>
-          <div class="api-result-toolbar">
-            <strong id="apiResultMeta"></strong>
-            <button id="apiCopyBtn" class="btn secondary" type="button" data-i18n="preview_api_copy">Copy response</button>
+          <div id="apiError" class="api-error r2-reveal" role="alert" hidden>
+            <svg class="api-error-icon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <div class="api-error-body">
+              <strong data-i18n="preview_api_error_title">The request didn't go through</strong>
+              <p id="apiErrorMessage"></p>
+            </div>
+            <button id="apiRetryBtn" class="btn secondary" type="button" data-i18n="preview_api_retry">Retry</button>
           </div>
-          <div id="apiResponseText" class="api-response-text" tabindex="0"></div>
-        </div>
+
+          <div id="apiResult" class="api-result r2-reveal" hidden>
+            <div class="api-result-toolbar">
+              <span class="api-result-title">
+                <svg class="api-success-icon" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <strong id="apiResultMeta"></strong>
+              </span>
+              <button id="apiCopyBtn" class="btn secondary" type="button">
+                <span class="btn-label" data-i18n="preview_api_copy">Copy response</span>
+              </button>
+            </div>
+            <div id="apiResponseText" class="api-response-text" tabindex="0"></div>
+          </div>
+        </section>
       </section>
     </div>
   </main>

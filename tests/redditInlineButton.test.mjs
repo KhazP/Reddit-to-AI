@@ -514,7 +514,7 @@ test('redditInlineButton.js injects button into feed post card and handles click
   // Verify button content
   const label = button.querySelector('.r2ai-btn-text');
   assert.ok(label, 'Button must contain .r2ai-btn-text');
-  assert.equal(label.textContent, 'Reddit-to-AI');
+  assert.equal(label.textContent, 'Summarize with AI');
 
   const spinner = button.querySelector('.r2ai-btn-spinner');
   assert.ok(spinner, 'Button must contain .r2ai-btn-spinner');
@@ -634,7 +634,7 @@ test('redditInlineButton.js respects master toggle and sub-toggles', async () =>
   assert.equal(row1.querySelector('.r2ai-inline-btn'), null, 'All buttons must be removed when master toggle is disabled');
 });
 
-test('redditInlineButton.js places button immediately next to Share button with Reddit-to-AI label', async () => {
+test('redditInlineButton.js places button immediately next to Share button with Summarize with AI label', async () => {
   const env = createMockEnvironment({
     pathname: '/r/chrome_extensions/comments/abc123/test_post/',
     storageData: {
@@ -662,7 +662,7 @@ test('redditInlineButton.js places button immediately next to Share button with 
 
   const button = actionRow.querySelector('.r2ai-inline-btn');
   assert.ok(button, 'Button must be injected');
-  assert.equal(button.querySelector('.r2ai-btn-text')?.textContent, 'Reddit-to-AI', 'Button text must be Reddit-to-AI');
+  assert.equal(button.querySelector('.r2ai-btn-text')?.textContent, 'Summarize with AI', 'Button text must say what it does');
 
   // Verify position: button must be immediately after shareBtn in actionRow.children
   const shareIdx = actionRow.children.indexOf(shareBtn);

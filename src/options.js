@@ -124,20 +124,81 @@ Data:
 document.addEventListener('DOMContentLoaded', () => {
     // initializeOptions is now async and handles localization
     initializeOptions();
+    setupSettingsNav();
+});
 
-    // Wire click event listeners to the .nav-item buttons
-    document.querySelectorAll('.nav-item').forEach(item => {
-        item.addEventListener('click', () => {
-            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-            document.querySelectorAll('.settings-pane').forEach(p => p.classList.remove('active'));
-            
-            item.classList.add('active');
-            const targetId = item.getAttribute('data-target');
-            const targetPane = document.getElementById(targetId);
-            if (targetPane) targetPane.classList.add('active');
+// Sidebar navigation: a vertical tablist with roving tabindex, arrow-key
+// support, an animated active indicator and a #hash per section.
+function setupSettingsNav() {
+    const nav = document.getElementById('settingsNav');
+    if (!nav) return;
+    const tabs = [...nav.querySelectorAll('.nav-item')];
+    const indicator = nav.querySelector('.nav-indicator');
+
+    function moveIndicator(tab) {
+        if (!indicator || !tab) return;
+        indicator.style.setProperty('--nav-y', `${tab.offsetTop}px`);
+    }
+
+    function activate(tab, { focus = false, updateHash = true } = {}) {
+        if (!tab) return;
+        tabs.forEach((item) => {
+            const selected = item === tab;
+            item.classList.toggle('active', selected);
+            item.setAttribute('aria-selected', String(selected));
+            item.tabIndex = selected ? 0 : -1;
+            const pane = document.getElementById(item.dataset.target);
+            if (pane) {
+                pane.hidden = !selected;
+                pane.classList.toggle('active', selected);
+            }
+        });
+        moveIndicator(tab);
+        // Narrow screens turn the nav into a horizontal strip: keep the active tab visible.
+        if (nav.scrollWidth > nav.clientWidth) {
+            nav.scrollTo({ left: Math.max(0, tab.offsetLeft - 16), behavior: 'auto' });
+        }
+        if (focus) tab.focus();
+        if (updateHash && tab.dataset.hash) {
+            try { history.replaceState(null, '', `#${tab.dataset.hash}`); } catch { /* ignore */ }
+        }
+        if (window.scrollY > 0 && updateHash) {
+            window.scrollTo({ top: 0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+        }
+    }
+
+    tabs.forEach((tab) => {
+        tab.addEventListener('click', () => activate(tab));
+        tab.addEventListener('keydown', (e) => {
+            const index = tabs.indexOf(tab);
+            let next = null;
+            if (e.key === 'ArrowDown' || e.key === 'ArrowRight') next = tabs[(index + 1) % tabs.length];
+            else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') next = tabs[(index - 1 + tabs.length) % tabs.length];
+            else if (e.key === 'Home') next = tabs[0];
+            else if (e.key === 'End') next = tabs[tabs.length - 1];
+            if (!next) return;
+            e.preventDefault();
+            activate(next, { focus: true });
         });
     });
-});
+
+    // In-page links such as "see Advanced".
+    document.querySelectorAll('[data-goto]').forEach((link) => {
+        link.addEventListener('click', () => {
+            const tab = tabs.find(item => item.dataset.target === link.dataset.goto);
+            activate(tab, { focus: true });
+        });
+    });
+
+    const fromHash = tabs.find(item => `#${item.dataset.hash}` === location.hash);
+    activate(fromHash || tabs.find(item => item.classList.contains('active')) || tabs[0], { updateHash: false });
+    requestAnimationFrame(() => nav.classList.add('is-ready'));
+    window.addEventListener('resize', () => moveIndicator(tabs.find(item => item.classList.contains('active'))));
+    window.addEventListener('hashchange', () => {
+        const tab = tabs.find(item => `#${item.dataset.hash}` === location.hash);
+        if (tab) activate(tab, { updateHash: false });
+    });
+}
 
 async function initializeOptions() {
     console.log("Options: Initializing...");
@@ -174,12 +235,18 @@ async function initializeOptions() {
     const trimStrategySelect = document.getElementById('trimStrategySelect');
     const redditSortModeSelect = document.getElementById('redditSortModeSelect');
     const mediaModeSelect = document.getElementById('mediaModeSelect');
-    const filterAuthorAll = document.getElementById('filterAuthorAll');
     const filterAuthorOp = document.getElementById('filterAuthorOp');
     const filterAuthorFlaired = document.getElementById('filterAuthorFlaired');
-
-    // Legacy element references
-    const llmProviderSelect = document.getElementById('llmProviderSelect');
+    const authorFilterSummary = document.getElementById('authorFilterSummary');
+    const themeRadios = document.querySelectorAll('input[name="uiTheme"]');
+    const redditButtonDisabledHint = document.getElementById('redditButtonDisabledHint');
+    const telemetryUnsupportedHint = document.getElementById('telemetryUnsupportedHint');
+    const savedPresetStatus = document.getElementById('savedPresetStatus');
+    const settingsTransferStatus = document.getElementById('settingsTransferStatus');
+    const customOriginStatus = document.getElementById('customOriginStatus');
+    const subredditRuleStatus = document.getElementById('subredditRuleStatus');
+    const clearHistoryConfirm = document.getElementById('clearHistoryConfirm');
+    const clearSavedPresetsConfirm = document.getElementById('clearSavedPresetsConfirm');
 
     // History element references
     const historyList = document.getElementById('historyList');
@@ -226,20 +293,110 @@ async function initializeOptions() {
     let savedPromptPresets = [];
     const compareSelections = new Set();
 
-    // Show save toast
+    // Show save toast (role=status, aria-live=polite). Re-triggering while it is
+    // visible just extends it instead of flickering.
+    let saveToastTimer = null;
     function showSaveToast() {
-        if (saveStatusDisplay) {
-            saveStatusDisplay.textContent = '✓ Saved';
-            saveStatusDisplay.classList.add('visible');
-            setTimeout(() => {
-                saveStatusDisplay.classList.remove('visible');
-            }, 2000);
+        if (!saveStatusDisplay) return;
+        saveStatusDisplay.textContent = t('options_toast_saved') || '✓ Saved';
+        saveStatusDisplay.classList.add('visible');
+        clearTimeout(saveToastTimer);
+        saveToastTimer = setTimeout(() => {
+            saveStatusDisplay.classList.remove('visible');
+        }, 1800);
+    }
+
+    // Inline status line under a control (replaces alert()). Errors are
+    // announced assertively; everything else politely.
+    const inlineStatusTimers = new WeakMap();
+    function setInlineStatus(element, message, type = '') {
+        if (!element) return;
+        clearTimeout(inlineStatusTimers.get(element));
+        element.textContent = message || '';
+        element.classList.toggle('error', type === 'error');
+        element.classList.toggle('success', type === 'success');
+        element.setAttribute('role', type === 'error' ? 'alert' : 'status');
+        if (message && type === 'success') {
+            inlineStatusTimers.set(element, setTimeout(() => {
+                element.textContent = '';
+            }, 4000));
         }
+    }
+
+    // Inline confirm row ("Delete all? [Cancel] [Delete all]") instead of confirm().
+    function bindInlineConfirm(trigger, row, onConfirm) {
+        if (!trigger || !row) return;
+        const cancelBtn = row.querySelector('[data-confirm-cancel]');
+        const okBtn = row.querySelector('[data-confirm-ok]');
+        const close = (restoreFocus) => {
+            row.hidden = true;
+            trigger.setAttribute('aria-expanded', 'false');
+            if (restoreFocus) trigger.focus();
+        };
+        trigger.setAttribute('aria-expanded', 'false');
+        trigger.setAttribute('aria-controls', row.id);
+        trigger.addEventListener('click', () => {
+            if (!row.hidden) {
+                close(false);
+                return;
+            }
+            row.hidden = false;
+            trigger.setAttribute('aria-expanded', 'true');
+            cancelBtn?.focus();
+        });
+        cancelBtn?.addEventListener('click', () => close(true));
+        okBtn?.addEventListener('click', () => {
+            close(false);
+            onConfirm();
+        });
+        row.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                close(true);
+            }
+        });
+    }
+
+    function localizeAriaLabels() {
+        document.querySelectorAll('[data-i18n-aria-label]').forEach((el) => {
+            const message = t(el.getAttribute('data-i18n-aria-label'));
+            if (message) el.setAttribute('aria-label', message);
+        });
+    }
+
+    function renderAppVersion() {
+        const versionEl = document.getElementById('appVersion');
+        if (!versionEl) return;
+        let version = '';
+        try {
+            version = chrome.runtime.getManifest?.().version || '';
+        } catch {
+            version = '';
+        }
+        if (!version) {
+            versionEl.textContent = 'Reddit to AI';
+            return;
+        }
+        versionEl.textContent = t('options_footer_version', [version]) || `Reddit to AI v${version}`;
+    }
+
+    function setTemplateMode(isCustom) {
+        if (defaultPromptTemplateTextarea) {
+            defaultPromptTemplateTextarea.readOnly = !isCustom;
+            defaultPromptTemplateTextarea.classList.toggle('readonly', !isCustom);
+        }
+        if (templateLabel) {
+            templateLabel.textContent = isCustom ?
+                (t('options_label_custom_template') || 'Custom Template') :
+                (t('options_label_template_preview') || 'Template Preview');
+        }
+        if (resetCustomBtn) resetCustomBtn.hidden = !isCustom;
     }
 
     function setHistoryStatus(message, type = '') {
         if (!historyStatus) return;
         historyStatus.textContent = message;
+        historyStatus.setAttribute('role', type === 'error' ? 'alert' : 'status');
         historyStatus.classList.toggle('error', type === 'error');
         historyStatus.classList.toggle('success', type === 'success');
     }
@@ -259,10 +416,12 @@ async function initializeOptions() {
             pill.type = 'button';
             pill.className = `preset-pill${key === currentPreset ? ' selected' : ''}`;
             pill.dataset.preset = key;
+            pill.setAttribute('role', 'radio');
+            pill.setAttribute('aria-checked', String(key === currentPreset));
             pill.innerHTML = `
-                <span class="preset-pill-icon">${preset.icon}</span>
-                <span class="preset-pill-name">${preset.name}</span>
-                <span class="preset-pill-desc">· ${preset.description}</span>
+                <span class="preset-pill-icon" aria-hidden="true">${preset.icon}</span>
+                <span class="preset-pill-name">${escapeHtml(preset.name)}</span>
+                <span class="preset-pill-desc">${escapeHtml(preset.description)}</span>
             `;
             pill.addEventListener('click', () => selectPreset(key));
             presetSelector.appendChild(pill);
@@ -275,11 +434,9 @@ async function initializeOptions() {
 
         // Update pill selection
         document.querySelectorAll('.preset-pill').forEach(pill => {
-            pill.classList.toggle('selected', pill.dataset.preset === presetKey);
-        });
-
-        document.querySelectorAll('.preset-pill').forEach(pill => {
-            pill.classList.toggle('selected', pill.dataset.preset === presetKey);
+            const selected = pill.dataset.preset === presetKey;
+            pill.classList.toggle('selected', selected);
+            pill.setAttribute('aria-checked', String(selected));
         });
 
         const presets = getPromptPresets();
@@ -293,24 +450,13 @@ async function initializeOptions() {
                 chrome.storage.sync.get(['customPromptTemplate'], (result) => {
                     defaultPromptTemplateTextarea.value = result.customPromptTemplate || DEFAULT_CUSTOM_TEMPLATE;
                 });
-                defaultPromptTemplateTextarea.readOnly = false;
-                defaultPromptTemplateTextarea.classList.remove('readonly');
             } else {
                 defaultPromptTemplateTextarea.value = preset.template;
-                defaultPromptTemplateTextarea.readOnly = true;
-                defaultPromptTemplateTextarea.classList.add('readonly');
             }
         }
 
         // Update label and reset button
-        if (templateLabel) {
-            templateLabel.textContent = isCustom ?
-                (t('options_label_custom_template') || 'Custom Template') :
-                (t('options_label_template_preview') || 'Template Preview');
-        }
-        if (resetCustomBtn) {
-            resetCustomBtn.style.display = isCustom ? 'inline' : 'none';
-        }
+        setTemplateMode(isCustom);
 
         // Save selected preset
         chrome.storage.sync.set({ selectedPreset: presetKey }, showSaveToast);
@@ -350,7 +496,8 @@ async function initializeOptions() {
         'showRedditButtonInPost',
         'selectedLanguage',
         'customSelectors',
-        'subredditPromptMappings'
+        'subredditPromptMappings',
+        'uiTheme'
     ], async (result) => {
         console.log("Options: Loaded settings:", result);
 
@@ -360,6 +507,12 @@ async function initializeOptions() {
 
         // Now localize page with loaded language
         localizeHtmlPage();
+        localizeAriaLabels();
+        renderAppVersion();
+
+        // Theme
+        const savedTheme = ['auto', 'dark', 'light'].includes(result.uiTheme) ? result.uiTheme : 'auto';
+        themeRadios.forEach(radio => { radio.checked = radio.value === savedTheme; });
 
         // Scrape depth
         const savedDepth = result.scrapeDepth || DEFAULT_DEPTH;
@@ -391,25 +544,11 @@ async function initializeOptions() {
         const isCustom = currentPreset === 'custom';
 
         if (defaultPromptTemplateTextarea) {
-            if (isCustom) {
-                defaultPromptTemplateTextarea.value = result.customPromptTemplate || DEFAULT_CUSTOM_TEMPLATE;
-                defaultPromptTemplateTextarea.readOnly = false;
-                defaultPromptTemplateTextarea.classList.remove('readonly');
-            } else {
-                defaultPromptTemplateTextarea.value = preset.template;
-                defaultPromptTemplateTextarea.readOnly = true;
-                defaultPromptTemplateTextarea.classList.add('readonly');
-            }
+            defaultPromptTemplateTextarea.value = isCustom
+                ? (result.customPromptTemplate || DEFAULT_CUSTOM_TEMPLATE)
+                : (preset?.template || '');
         }
-
-        if (templateLabel) {
-            templateLabel.textContent = isCustom ?
-                (t('options_label_custom_template') || 'Custom Template') :
-                (t('options_label_template_preview') || 'Template Preview');
-        }
-        if (resetCustomBtn) {
-            resetCustomBtn.style.display = isCustom ? 'inline' : 'none';
-        }
+        setTemplateMode(isCustom);
 
         // Data storage option
         const storageOption = result.dataStorageOption || DEFAULT_DATA_STORAGE_OPTION;
@@ -432,9 +571,6 @@ async function initializeOptions() {
                 radio.checked = true;
             }
         });
-        if (llmProviderSelect) {
-            llmProviderSelect.value = selectedProvider;
-        }
         if (!result.selectedLlmProvider) {
             chrome.storage.sync.set({ selectedLlmProvider: DEFAULT_LLM_PROVIDER });
         }
@@ -462,9 +598,7 @@ async function initializeOptions() {
         if (showRedditButtonInFeedCheckbox) showRedditButtonInFeedCheckbox.checked = showRedditFeed;
         if (showRedditButtonInPostCheckbox) showRedditButtonInPostCheckbox.checked = showRedditPost;
 
-        if (redditButtonSubgroup) {
-            redditButtonSubgroup.classList.toggle('disabled', !showRedditInline);
-        }
+        setRedditSubgroupEnabled(showRedditInline);
 
         if (result.showRedditInlineButton === undefined) {
             chrome.storage.sync.set({ showRedditInlineButton: true });
@@ -558,14 +692,18 @@ async function initializeOptions() {
     function renderCustomOrigins(origins) {
         if (!customOriginsList) return;
         customOriginsList.innerHTML = '';
+        if (origins.length === 0) {
+            customOriginsList.innerHTML = `<li class="list-item is-empty"><span class="list-item-text">${escapeHtml(t('options_custom_origin_empty') || 'No custom sites added yet.')}</span></li>`;
+            return;
+        }
+        const removeLabel = t('options_btn_remove') || 'Remove';
+        const removeTitle = t('options_custom_origin_remove_title') || 'Remove site and revoke access';
         origins.forEach(origin => {
             const li = document.createElement('li');
-            li.className = 'custom-origin-item';
+            li.className = 'list-item';
             li.innerHTML = `
-                <span class="custom-origin-text">${escapeHtml(origin)}</span>
-                <button type="button" class="btn-action btn-danger-outline remove-custom-origin" data-origin="${escapeHtml(origin)}" title="Remove platform and revoke permission" style="padding: 4px 8px; font-size: 11px;">
-                    Remove
-                </button>
+                <span class="list-item-text mono">${escapeHtml(origin)}</span>
+                <button type="button" class="btn-action btn-danger-outline remove-custom-origin" data-origin="${escapeHtml(origin)}" title="${escapeHtml(removeTitle)}">${escapeHtml(removeLabel)}</button>
             `;
             customOriginsList.appendChild(li);
         });
@@ -581,8 +719,12 @@ async function initializeOptions() {
     if (addCustomOriginBtn && customOriginInput) {
         addCustomOriginBtn.addEventListener('click', () => {
             const val = customOriginInput.value.trim();
-            if (!val) return;
-            
+            if (!val) {
+                setInlineStatus(customOriginStatus, t('options_custom_origin_empty_input') || 'Enter a site address first, for example http://localhost:3000.', 'error');
+                customOriginInput.focus();
+                return;
+            }
+
             let originUrl;
             try {
                 originUrl = new URL(val);
@@ -591,35 +733,49 @@ async function initializeOptions() {
                 try {
                     originUrl = new URL('http://' + val);
                 } catch {
-                    alert('Invalid URL or Origin');
-                    return;
+                    originUrl = null;
                 }
             }
-            
+            if (!originUrl || !/^https?:$/.test(originUrl.protocol)) {
+                setInlineStatus(customOriginStatus, t('options_custom_origin_invalid') || 'That doesn\'t look like a web address. Try something like http://localhost:3000.', 'error');
+                customOriginInput.focus();
+                return;
+            }
+
             const originMatch = `${originUrl.protocol}//${originUrl.host}/*`;
-            
+            addCustomOriginBtn.disabled = true;
+            setInlineStatus(customOriginStatus, t('options_custom_origin_requesting') || 'Waiting for you to allow access…');
+
             chrome.permissions.request({ origins: [originMatch] }, (granted) => {
+                addCustomOriginBtn.disabled = false;
                 if (chrome.runtime.lastError) {
-                    alert('Error requesting permission: ' + chrome.runtime.lastError.message);
+                    setInlineStatus(customOriginStatus, `${t('options_custom_origin_error') || 'Could not request access:'} ${chrome.runtime.lastError.message}`, 'error');
                     return;
                 }
-                if (granted) {
-                    chrome.storage.sync.get(['customOrigins'], (res) => {
-                        const origins = res.customOrigins || [];
-                        if (!origins.includes(originMatch)) {
-                            origins.push(originMatch);
-                            chrome.storage.sync.set({ customOrigins: origins }, () => {
-                                renderCustomOrigins(origins);
-                                customOriginInput.value = '';
-                                showSaveToast();
-                                chrome.runtime.sendMessage({ action: 'registerCustomOrigin', origin: originMatch });
-                            });
-                        }
-                    });
-                } else {
-                    alert('Permission not granted. Custom platform cannot be added without permission.');
+                if (!granted) {
+                    setInlineStatus(customOriginStatus, t('options_custom_origin_denied') || 'Access was not allowed, so the site was not added.', 'error');
+                    return;
                 }
+                chrome.storage.sync.get(['customOrigins'], (res) => {
+                    const origins = res.customOrigins || [];
+                    if (origins.includes(originMatch)) {
+                        setInlineStatus(customOriginStatus, t('options_custom_origin_exists') || 'That site is already in the list.');
+                        customOriginInput.value = '';
+                        return;
+                    }
+                    origins.push(originMatch);
+                    chrome.storage.sync.set({ customOrigins: origins }, () => {
+                        renderCustomOrigins(origins);
+                        customOriginInput.value = '';
+                        showSaveToast();
+                        setInlineStatus(customOriginStatus, t('options_custom_origin_added') || 'Site added.', 'success');
+                        chrome.runtime.sendMessage({ action: 'registerCustomOrigin', origin: originMatch });
+                    });
+                });
             });
+        });
+        customOriginInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') addCustomOriginBtn.click();
         });
     }
 
@@ -637,6 +793,7 @@ async function initializeOptions() {
                     chrome.storage.sync.set({ customOrigins: updated }, () => {
                         renderCustomOrigins(updated);
                         showSaveToast();
+                        setInlineStatus(customOriginStatus, t('options_custom_origin_removed') || 'Site removed.', 'success');
                         chrome.runtime.sendMessage({ action: 'unregisterCustomOrigin', origin });
                     });
                 });
@@ -658,17 +815,16 @@ async function initializeOptions() {
         if (!subredditRulesList) return;
         subredditRulesList.innerHTML = '';
         if (rules.length === 0) {
-            subredditRulesList.innerHTML = `<li class="custom-origin-item"><span class="custom-origin-text">${t('options_mappings_no_rules') || 'No subreddit-specific rules defined yet.'}</span></li>`;
+            subredditRulesList.innerHTML = `<li class="list-item is-empty"><span class="list-item-text">${escapeHtml(t('options_mappings_no_rules') || 'No subreddit-specific rules defined yet.')}</span></li>`;
             return;
         }
+        const removeLabel = t('options_btn_remove') || 'Remove';
         rules.forEach((rule, index) => {
             const li = document.createElement('li');
-            li.className = 'custom-origin-item';
+            li.className = 'list-item';
             li.innerHTML = `
-                <span class="custom-origin-text"><strong>${escapeHtml(rule.pattern)}</strong> &rarr; ${escapeHtml(presetName(rule.preset))}</span>
-                <button type="button" class="btn-action btn-danger-outline remove-subreddit-rule" data-index="${index}" title="Remove rule" style="padding: 4px 8px; font-size: 11px;">
-                    Remove
-                </button>
+                <span class="list-item-text"><strong>r/${escapeHtml(rule.pattern)}</strong> &rarr; ${escapeHtml(presetName(rule.preset))}</span>
+                <button type="button" class="btn-action btn-danger-outline remove-subreddit-rule" data-index="${index}" aria-label="${escapeHtml(`${removeLabel}: ${rule.pattern}`)}">${escapeHtml(removeLabel)}</button>
             `;
             subredditRulesList.appendChild(li);
         });
@@ -695,10 +851,9 @@ async function initializeOptions() {
 
     function updateRouteTester() {
         if (!routeTesterInput || !routeTesterResult) return;
-        const sub = routeTesterInput.value.trim();
+        const sub = routeTesterInput.value.trim().replace(/^\/?r\//i, '');
         if (!sub) {
-            routeTesterResult.style.display = 'none';
-            routeTesterResult.innerHTML = '';
+            routeTesterResult.hidden = true;
             return;
         }
 
@@ -710,44 +865,49 @@ async function initializeOptions() {
             }
         }
 
-        routeTesterResult.style.display = 'block';
         if (matchedRule) {
-            routeTesterResult.innerHTML = `
-                <span style="color: var(--success); font-weight: 600;">Match:</span> 
-                Subreddit <code>${escapeHtml(sub)}</code> matches pattern <code>${escapeHtml(matchedRule.pattern)}</code> &rarr; 
-                resolves to preset <strong>${escapeHtml(presetName(matchedRule.preset))}</strong>
-            `;
+            const detail = t('options_tester_match_detail', [sub, matchedRule.pattern, presetName(matchedRule.preset)]) ||
+                `r/${sub} matches “${matchedRule.pattern}”, so it uses the ${presetName(matchedRule.preset)} prompt.`;
+            routeTesterResult.innerHTML = `<span class="tester-match">${escapeHtml(t('options_tester_match') || 'Match')}</span> · ${escapeHtml(detail)}`;
         } else {
-            routeTesterResult.innerHTML = `
-                <span style="color: var(--text-secondary); font-weight: 600;">No Match:</span> 
-                Subreddit <code>${escapeHtml(sub)}</code> does not match any rule. 
-                Fallback to default preset <strong>${escapeHtml(presetName(currentPreset || 'summarize'))}</strong>
-            `;
+            const detail = t('options_tester_nomatch_detail', [sub, presetName(currentPreset || 'summarize')]) ||
+                `r/${sub} matches no rule, so it uses your default prompt (${presetName(currentPreset || 'summarize')}).`;
+            routeTesterResult.innerHTML = `<span class="tester-nomatch">${escapeHtml(t('options_tester_nomatch') || 'No match')}</span> · ${escapeHtml(detail)}`;
         }
+        routeTesterResult.hidden = false;
     }
 
     // Add subreddit-specific template rule
     if (addSubredditRuleBtn && subredditPatternInput && subredditPresetSelect) {
         addSubredditRuleBtn.addEventListener('click', () => {
-            const pattern = subredditPatternInput.value.trim().toLowerCase();
-            if (!pattern) return;
-            
+            const pattern = subredditPatternInput.value.trim().toLowerCase().replace(/^\/?r\//, '');
+            if (!pattern) {
+                setInlineStatus(subredditRuleStatus, t('options_mappings_empty_input') || 'Enter a subreddit name or pattern first.', 'error');
+                subredditPatternInput.focus();
+                return;
+            }
+
             // Check for duplicate patterns before saving
             const duplicate = subredditRules.some(r => r.pattern === pattern);
             if (duplicate) {
-                alert('Rule with this pattern already exists.');
+                setInlineStatus(subredditRuleStatus, t('options_mappings_duplicate') || 'A rule for this pattern already exists.', 'error');
+                subredditPatternInput.focus();
                 return;
             }
-            
+
             const preset = subredditPresetSelect.value;
             subredditRules.push({ pattern, preset });
-            
+
             chrome.storage.sync.set({ subredditPromptMappings: subredditRules }, () => {
                 renderSubredditRules(subredditRules);
                 subredditPatternInput.value = '';
                 showSaveToast();
+                setInlineStatus(subredditRuleStatus, t('options_mappings_added') || 'Rule added.', 'success');
                 updateRouteTester();
             });
+        });
+        subredditPatternInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') addSubredditRuleBtn.click();
         });
     }
 
@@ -795,8 +955,16 @@ async function initializeOptions() {
     // settings export: the install ID must not follow the user to another profile.
     if (telemetryEnabledCheckbox && globalThis.R2AITelemetry) {
         globalThis.R2AITelemetry.isEnabled()
-            .then(enabled => { telemetryEnabledCheckbox.checked = enabled; })
+            .then(enabled => { telemetryEnabledCheckbox.checked = enabled && !telemetryEnabledCheckbox.disabled; })
             .catch(() => { });
+        // Builds that never send (e.g. Firefox) say so instead of showing a live toggle.
+        let telemetrySupported = true;
+        try { telemetrySupported = globalThis.R2AITelemetry.isSupported(); } catch { telemetrySupported = false; }
+        if (!telemetrySupported) {
+            telemetryEnabledCheckbox.disabled = true;
+            telemetryEnabledCheckbox.checked = false;
+            if (telemetryUnsupportedHint) telemetryUnsupportedHint.hidden = false;
+        }
         telemetryEnabledCheckbox.addEventListener('change', (e) => {
             globalThis.R2AITelemetry.setEnabled(e.target.checked).then(showSaveToast).catch(() => { });
         });
@@ -809,15 +977,32 @@ async function initializeOptions() {
     }
 
     // Reddit in-page AI button toggles
+    function setRedditSubgroupEnabled(enabled) {
+        if (redditButtonSubgroup) {
+            redditButtonSubgroup.classList.toggle('disabled', !enabled);
+            redditButtonSubgroup.setAttribute('aria-disabled', String(!enabled));
+        }
+        [showRedditButtonInFeedCheckbox, showRedditButtonInPostCheckbox].forEach((checkbox) => {
+            if (checkbox) checkbox.disabled = !enabled;
+        });
+        if (redditButtonDisabledHint) redditButtonDisabledHint.hidden = enabled;
+    }
+
     if (showRedditInlineButtonCheckbox) {
         showRedditInlineButtonCheckbox.addEventListener('change', (e) => {
             const enabled = e.target.checked;
             chrome.storage.sync.set({ showRedditInlineButton: enabled }, showSaveToast);
-            if (redditButtonSubgroup) {
-                redditButtonSubgroup.classList.toggle('disabled', !enabled);
-            }
+            setRedditSubgroupEnabled(enabled);
         });
     }
+
+    // Theme (auto / dark / light). theme.js applies it live on every open page.
+    themeRadios.forEach((radio) => {
+        radio.addEventListener('change', (e) => {
+            if (!e.target.checked) return;
+            chrome.storage.sync.set({ uiTheme: e.target.value }, showSaveToast);
+        });
+    });
 
     if (showRedditButtonInFeedCheckbox) {
         showRedditButtonInFeedCheckbox.addEventListener('change', (e) => {
@@ -844,23 +1029,25 @@ async function initializeOptions() {
 
             // 3. Update all UI components
             localizeHtmlPage();
+            localizeAriaLabels();
+            renderAppVersion();
             renderPresetSelector(); // Update preset names/descriptions
             selectPreset(currentPreset); // Update template labels
+            updateAuthorSummary();
+            renderSubredditRules(subredditRules);
+            renderSavedPromptPresets();
+            updateCompareUi();
             loadHistory(); // Update history relative times and labels
 
             showSaveToast();
 
-            // 4. Show reload hint only if we can't fully hot-swap something (e.g. if we missed something)
-            // But we try to do it all. Still good to remind if deep integration issues exist.
-            const hint = languageSelect.parentElement?.querySelector('.form-hint');
+            // 4. Confirm on the hint itself, then restore it.
+            const hint = document.getElementById('languageHint');
             if (hint) {
-                // We updated instant reload, so we can change the message or keep the localized one
-                // hinting that "Some changes might require reload".
-                // For now, let's keep the user feedback simple.
-                hint.style.color = '#10b981'; // Green for success
-                hint.textContent = t('options_toast_saved') || 'Saved and applied!';
+                hint.classList.add('is-success');
+                hint.textContent = t('options_language_applied') || 'Language applied.';
                 setTimeout(() => {
-                    hint.style.color = '';
+                    hint.classList.remove('is-success');
                     hint.textContent = t('options_hint_language') || 'Select your preferred language.';
                 }, 3000);
             }
@@ -913,9 +1100,6 @@ async function initializeOptions() {
         radio.addEventListener('change', (e) => {
             if (e.target.checked) {
                 chrome.storage.sync.set({ selectedLlmProvider: e.target.value }, showSaveToast);
-                if (llmProviderSelect) {
-                    llmProviderSelect.value = e.target.value;
-                }
             }
         });
     });
@@ -933,7 +1117,7 @@ async function initializeOptions() {
         filterMinScoreInput.addEventListener('change', (e) => {
             const val = Math.min(500, Math.max(0, parseInt(e.target.value, 10) || 0));
             filterMinScoreInput.value = val;
-            filterMinScoreSlider.value = Math.min(100, val);
+            filterMinScoreSlider.value = val;
             chrome.storage.sync.set({ filterMinScore: val }, showSaveToast);
         });
     }
@@ -969,9 +1153,29 @@ async function initializeOptions() {
 
     function setAuthorFilterControls(authorTypes) {
         const types = Array.isArray(authorTypes) ? authorTypes : [];
-        if (filterAuthorAll) filterAuthorAll.checked = types.length === 0;
         if (filterAuthorOp) filterAuthorOp.checked = types.includes('op');
         if (filterAuthorFlaired) filterAuthorFlaired.checked = types.includes('flaired');
+        updateAuthorSummary();
+    }
+
+    // Plain-language summary of the author filter: no checkboxes = everyone.
+    function updateAuthorSummary() {
+        if (!authorFilterSummary) return;
+        const op = Boolean(filterAuthorOp?.checked);
+        const flaired = Boolean(filterAuthorFlaired?.checked);
+        let key = 'options_author_summary_all';
+        let fallback = 'Including comments from everyone. Turn on one or both to keep only those authors.';
+        if (op && flaired) {
+            key = 'options_author_summary_both';
+            fallback = 'Only comments by the original poster or by users with flair.';
+        } else if (op) {
+            key = 'options_author_summary_op';
+            fallback = 'Only comments by the original poster.';
+        } else if (flaired) {
+            key = 'options_author_summary_flaired';
+            fallback = 'Only comments by users with flair.';
+        }
+        authorFilterSummary.textContent = t(key) || fallback;
     }
 
     function saveAuthorFilters(authorTypes) {
@@ -982,16 +1186,6 @@ async function initializeOptions() {
             filterAuthorTypes: types,
             filterAuthorType: legacyType
         }, showSaveToast);
-    }
-
-    if (filterAuthorAll) {
-        filterAuthorAll.addEventListener('change', () => {
-            if (filterAuthorAll.checked) {
-                saveAuthorFilters([]);
-            } else if (!filterAuthorOp?.checked && !filterAuthorFlaired?.checked) {
-                filterAuthorAll.checked = true;
-            }
-        });
     }
 
     [filterAuthorOp, filterAuthorFlaired].forEach((checkbox) => {
@@ -1067,8 +1261,19 @@ async function initializeOptions() {
         }[char]));
     }
 
+    // Every chat provider the extension can hand a thread to (see the platform grid).
+    const CHAT_PROVIDERS = ['gemini', 'chatgpt', 'claude', 'aistudio', 'deepseek', 'groq', 'custom'];
+
     function platformName(provider) {
-        return ({ gemini: 'Gemini', chatgpt: 'ChatGPT', claude: 'Claude', aistudio: 'AI Studio' }[provider]) || provider || 'AI';
+        if (provider === 'custom') return t('options_platform_custom') || 'Custom site';
+        return ({
+            gemini: 'Gemini',
+            chatgpt: 'ChatGPT',
+            claude: 'Claude',
+            aistudio: 'AI Studio',
+            deepseek: 'DeepSeek',
+            groq: 'Groq'
+        }[provider]) || provider || 'AI';
     }
 
     function presetName(preset) {
@@ -1079,15 +1284,18 @@ async function initializeOptions() {
     function updateCompareUi() {
         const count = compareSelections.size;
         if (compareSelectedCount) {
-            compareSelectedCount.textContent = `${count} selected for compare`;
+            compareSelectedCount.textContent = t('options_compare_selected', [String(count)]) || `${count} selected for compare`;
         }
         if (compareHistoryBtn) {
             compareHistoryBtn.disabled = count < 2;
+            compareHistoryBtn.title = count < 2
+                ? (t('options_compare_hint') || 'Select at least two threads to compare')
+                : '';
         }
     }
 
     function formatPresetDate(timestamp) {
-        if (!timestamp) return 'Unknown date';
+        if (!timestamp) return t('options_unknown_date') || 'Unknown date';
         return new Date(timestamp).toLocaleDateString(undefined, {
             year: 'numeric',
             month: 'short',
@@ -1097,22 +1305,35 @@ async function initializeOptions() {
 
     function renderSavedPromptPresets() {
         if (savedPresetCount) {
-            const label = savedPromptPresets.length === 1 ? 'item' : 'items';
+            const label = savedPromptPresets.length === 1 ?
+                (t('options_label_item') || 'item') :
+                (t('options_label_items') || 'items');
             savedPresetCount.textContent = `${savedPromptPresets.length} ${label}`;
         }
-        if (exportSavedPresetsBtn) exportSavedPresetsBtn.disabled = savedPromptPresets.length === 0;
-        if (clearSavedPresetsBtn) clearSavedPresetsBtn.disabled = savedPromptPresets.length === 0;
+        const noPresetsHint = t('options_saved_presets_none_hint') || 'No saved presets yet';
+        if (exportSavedPresetsBtn) {
+            exportSavedPresetsBtn.disabled = savedPromptPresets.length === 0;
+            exportSavedPresetsBtn.title = savedPromptPresets.length === 0 ? noPresetsHint : '';
+        }
+        if (clearSavedPresetsBtn) {
+            clearSavedPresetsBtn.disabled = savedPromptPresets.length === 0;
+            clearSavedPresetsBtn.title = savedPromptPresets.length === 0 ? noPresetsHint : '';
+            if (savedPromptPresets.length === 0 && clearSavedPresetsConfirm) clearSavedPresetsConfirm.hidden = true;
+        }
         if (!savedPresetList) return;
 
         if (savedPromptPresets.length === 0) {
             savedPresetList.innerHTML = `
-                <div class="history-empty">
-                    <span>No saved prompt presets yet</span>
+                <div class="empty-state">
+                    <span>${escapeHtml(t('options_saved_presets_empty') || 'No saved prompt presets yet')}</span>
                 </div>
             `;
             return;
         }
 
+        const useLabel = t('options_btn_use') || 'Use';
+        const exportLabel = t('options_btn_export') || 'Export';
+        const deleteLabel = t('options_title_delete') || 'Delete';
         savedPresetList.innerHTML = '';
         savedPromptPresets.forEach((preset) => {
             const item = document.createElement('div');
@@ -1120,13 +1341,13 @@ async function initializeOptions() {
             item.dataset.presetId = preset.id;
             item.innerHTML = `
                 <div class="saved-preset-main">
-                    <strong>${escapeHtml(preset.name || 'Untitled preset')}</strong>
+                    <strong>${escapeHtml(preset.name || t('options_untitled_preset') || 'Untitled preset')}</strong>
                     <span>${escapeHtml(formatPresetDate(preset.createdAt))} · ${escapeHtml(preset.contextPreset || 'balanced')} · ${escapeHtml(preset.trimStrategy || 'top')}</span>
                 </div>
                 <div class="saved-preset-controls">
-                    <button type="button" class="btn-action" data-action="apply">Use</button>
-                    <button type="button" class="btn-action btn-export" data-action="export">Export</button>
-                    <button type="button" class="btn-action btn-danger-outline" data-action="delete">Delete</button>
+                    <button type="button" class="btn-action" data-action="apply">${escapeHtml(useLabel)}</button>
+                    <button type="button" class="btn-action" data-action="export">${escapeHtml(exportLabel)}</button>
+                    <button type="button" class="btn-action btn-danger-outline" data-action="delete">${escapeHtml(deleteLabel)}</button>
                 </div>
             `;
             savedPresetList.appendChild(item);
@@ -1158,15 +1379,21 @@ async function initializeOptions() {
         URL.revokeObjectURL(url);
     }
 
-    function readJsonFile(file, callback) {
+    function readJsonFile(file, callback, statusElement) {
         if (!file) return;
         const reader = new FileReader();
         reader.onload = () => {
+            let parsed;
             try {
-                callback(JSON.parse(String(reader.result || 'null')));
+                parsed = JSON.parse(String(reader.result || 'null'));
             } catch (error) {
-                alert(`Could not import JSON: ${error.message}`);
+                setInlineStatus(statusElement, `${t('options_import_bad_json') || 'Could not read that file as JSON:'} ${error.message}`, 'error');
+                return;
             }
+            callback(parsed);
+        };
+        reader.onerror = () => {
+            setInlineStatus(statusElement, t('options_import_read_failed') || 'Could not read that file.', 'error');
         };
         reader.readAsText(file);
     }
@@ -1198,6 +1425,7 @@ async function initializeOptions() {
         mediaMode: 'string',
         outputFormat: 'string',
         selectedLanguage: 'string',
+        uiTheme: 'string',
         savedPromptPresets: 'array',
         customSelectors: 'object'
     };
@@ -1218,13 +1446,14 @@ async function initializeOptions() {
                 exportedAt: new Date().toISOString(),
                 settings
             });
+            setInlineStatus(settingsTransferStatus, t('options_settings_exported') || 'Settings exported.', 'success');
         });
     }
 
     function importSettings(payload) {
         const settings = payload?.settings && typeof payload.settings === 'object' ? payload.settings : payload;
         if (!settings || typeof settings !== 'object' || Array.isArray(settings)) {
-            alert('Imported file does not contain settings.');
+            setInlineStatus(settingsTransferStatus, t('options_import_no_settings') || 'That file does not contain settings.', 'error');
             return;
         }
         const accepted = {};
@@ -1243,13 +1472,13 @@ async function initializeOptions() {
         }
 
         if (importedCount === 0) {
-            alert('Imported file does not contain any recognized settings.');
+            setInlineStatus(settingsTransferStatus, t('options_import_none_recognized') || 'That file does not contain any recognized settings.', 'error');
             return;
         }
 
         chrome.storage.sync.set(accepted, () => {
             if (chrome.runtime.lastError) {
-                alert(`Could not import settings: ${chrome.runtime.lastError.message}`);
+                setInlineStatus(settingsTransferStatus, `${t('options_import_failed') || 'Could not import settings:'} ${chrome.runtime.lastError.message}`, 'error');
                 return;
             }
             // Re-running the initializer here would re-attach every listener on top
@@ -1272,7 +1501,7 @@ async function initializeOptions() {
             const status = result?.[IMPORT_STATUS_KEY];
             if (!status) return;
             chrome.storage.local.remove([IMPORT_STATUS_KEY], () => void chrome.runtime.lastError);
-            setHistoryStatus(status, 'success');
+            setInlineStatus(settingsTransferStatus, status, 'success');
             showSaveToast();
         });
     }
@@ -1282,11 +1511,8 @@ async function initializeOptions() {
         currentPreset = 'custom';
         if (defaultPromptTemplateTextarea) {
             defaultPromptTemplateTextarea.value = preset.template;
-            defaultPromptTemplateTextarea.readOnly = false;
-            defaultPromptTemplateTextarea.classList.remove('readonly');
         }
-        if (templateLabel) templateLabel.textContent = t('options_label_custom_template') || 'Custom Template';
-        if (resetCustomBtn) resetCustomBtn.style.display = 'inline';
+        setTemplateMode(true);
         renderPresetSelector();
         chrome.storage.sync.set({
             selectedPreset: 'custom',
@@ -1300,6 +1526,7 @@ async function initializeOptions() {
             if (trimStrategySelect) trimStrategySelect.value = preset.trimStrategy || DEFAULT_TRIM_STRATEGY;
             if (mediaModeSelect) mediaModeSelect.value = preset.mediaMode || DEFAULT_MEDIA_MODE;
             showSaveToast();
+            setInlineStatus(savedPresetStatus, t('options_preset_applied', [preset.name || '']) || `Now using “${preset.name || 'preset'}” as your custom prompt.`, 'success');
         });
     }
 
@@ -1363,10 +1590,19 @@ async function initializeOptions() {
         const pinnedClass = item.pinned ? 'active' : '';
         const favoriteClass = item.favorite ? 'active' : '';
 
+        const commentsLabel = t('options_history_comments', [String(Number(commentCount))]) || `${Number(commentCount)} comments`;
+        const resendOptions = CHAT_PROVIDERS
+            .map(provider => `<option value="${provider}">${escapeHtml(platformName(provider))}</option>`)
+            .join('');
+        const pinTitle = item.pinned ? (t('options_history_unpin') || 'Unpin') : (t('options_history_pin') || 'Pin');
+        const favoriteTitle = item.favorite ? (t('options_history_unfavorite') || 'Remove from favorites') : (t('options_history_favorite') || 'Add to favorites');
+        const exportTitle = t('options_title_export') || 'Export JSON';
+        const deleteTitle = t('options_title_delete') || 'Delete';
+
         div.innerHTML = `
             <div class="history-item-header">
                 <div class="history-item-title-row">
-                    <span class="history-item-title">${escapeHtml(truncateText(title, 90))}</span>
+                    <span class="history-item-title" title="${escapeHtml(title)}">${escapeHtml(truncateText(title, 90))}</span>
                 </div>
                 <div class="history-badges">
                     <span class="history-badge">${escapeHtml(platformName(item.metadata?.aiProvider))}</span>
@@ -1375,36 +1611,40 @@ async function initializeOptions() {
             </div>
             <div class="history-item-meta">
                 <span class="history-item-subreddit">r/${escapeHtml(subreddit)}</span>
-                <span class="history-item-dot">•</span>
+                <span class="history-item-dot" aria-hidden="true">·</span>
                 <span>${escapeHtml(timeAgo)}</span>
-                <span class="history-item-dot">•</span>
-                <span>${Number(commentCount)} comments</span>
-                <span class="history-item-dot">•</span>
-                <span>${escapeHtml(item.metadata?.contextPreset || 'balanced')}</span>
+                <span class="history-item-dot" aria-hidden="true">·</span>
+                <span>${escapeHtml(commentsLabel)}</span>
             </div>
             <div class="history-item-actions">
                 <label class="history-compare-label">
                     <input type="checkbox" data-action="compare" ${selected}>
-                    Compare
+                    ${escapeHtml(t('options_history_compare') || 'Compare')}
                 </label>
-                <select class="ai-dropdown" data-action="resend">
-                    <option value="" disabled selected>${t('options_label_resend') || 'Re-send to...'}</option>
-                    <option value="gemini">Gemini</option>
-                    <option value="chatgpt">ChatGPT</option>
-                    <option value="claude">Claude</option>
-                    <option value="aistudio">AI Studio</option>
+                <select class="ai-dropdown" data-action="resend" aria-label="${escapeHtml(t('options_label_resend') || 'Re-send to...')}">
+                    <option value="" disabled selected>${escapeHtml(t('options_label_resend') || 'Re-send to...')}</option>
+                    ${resendOptions}
                 </select>
-                <button type="button" class="btn-action history-icon-btn ${pinnedClass}" data-action="pin" title="Pin/unpin">📌</button>
-                <button type="button" class="btn-action history-icon-btn ${favoriteClass}" data-action="favorite" title="Favorite/unfavorite">★</button>
-                <button type="button" class="btn-action btn-export btn-icon-only" data-action="export" title="Export JSON">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <button type="button" class="btn-action history-icon-btn ${pinnedClass}" data-action="pin" title="${escapeHtml(pinTitle)}" aria-label="${escapeHtml(pinTitle)}" aria-pressed="${item.pinned ? 'true' : 'false'}">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="${item.pinned ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M12 17v5"></path>
+                        <path d="M9 10.76V4h6v6.76l3 3.24v2H6v-2z"></path>
+                    </svg>
+                </button>
+                <button type="button" class="btn-action history-icon-btn ${favoriteClass}" data-action="favorite" title="${escapeHtml(favoriteTitle)}" aria-label="${escapeHtml(favoriteTitle)}" aria-pressed="${item.favorite ? 'true' : 'false'}">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="${item.favorite ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                    </svg>
+                </button>
+                <button type="button" class="btn-action btn-icon-only" data-action="export" title="${escapeHtml(exportTitle)}" aria-label="${escapeHtml(exportTitle)}">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                         <polyline points="7 10 12 15 17 10"></polyline>
                         <line x1="12" y1="15" x2="12" y2="3"></line>
                     </svg>
                 </button>
-                <button type="button" class="btn-action btn-danger-outline btn-icon-only" data-action="delete" title="Delete">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <button type="button" class="btn-action btn-danger-outline btn-icon-only" data-action="delete" title="${escapeHtml(deleteTitle)}" aria-label="${escapeHtml(deleteTitle)}">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                         <polyline points="3 6 5 6 21 6"></polyline>
                         <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                     </svg>
@@ -1415,6 +1655,11 @@ async function initializeOptions() {
         return div;
     }
 
+    // The list only animates the first time it is shown; filtering and typing
+    // re-render instantly. Stagger is capped at 8 items.
+    let historyHasAnimated = false;
+    const HISTORY_STAGGER_CAP = 8;
+
     function renderHistoryList() {
         const filtered = filterHistoryItems(fullHistory);
 
@@ -1423,32 +1668,41 @@ async function initializeOptions() {
                 (t('options_label_item') || 'item') :
                 (t('options_label_items') || 'items');
             const suffix = filtered.length === fullHistory.length ? '' : ` / ${fullHistory.length}`;
-            historyCount.innerHTML = `${filtered.length}${suffix} <span data-i18n="options_label_items">${label}</span>`;
+            historyCount.textContent = `${filtered.length}${suffix} ${label}`;
         }
 
         if (clearHistoryBtn) {
             clearHistoryBtn.disabled = fullHistory.length === 0;
+            clearHistoryBtn.title = fullHistory.length === 0 ? (t('options_history_empty') || 'No scraped threads yet') : '';
+            if (fullHistory.length === 0 && clearHistoryConfirm) clearHistoryConfirm.hidden = true;
         }
 
         if (!historyList) return;
         if (filtered.length === 0) {
+            const emptyText = fullHistory.length === 0
+                ? (t('options_history_empty') || 'No scraped threads yet')
+                : (t('options_history_no_match') || 'No history items match your filters');
             historyList.innerHTML = `
-                <div class="history-empty">
-                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.4">
+                <div class="empty-state">
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
                         <circle cx="12" cy="12" r="10"></circle>
                         <polyline points="12 6 12 12 16 14"></polyline>
                     </svg>
-                    <span>${fullHistory.length === 0 ? (t('options_history_empty') || 'No scraped threads yet') : 'No history items match your filters'}</span>
+                    <span>${escapeHtml(emptyText)}</span>
                 </div>
             `;
             return;
         }
 
+        const animate = !historyHasAnimated;
+        historyHasAnimated = true;
         historyList.innerHTML = '';
         filtered.forEach((item, index) => {
             const el = renderHistoryItem(item);
-            el.classList.add('entering');
-            el.style.animationDelay = `${index * 0.03}s`;
+            if (animate && index <= HISTORY_STAGGER_CAP) {
+                el.classList.add('entering');
+                el.style.setProperty('--i', String(index));
+            }
             historyList.appendChild(el);
         });
     }
@@ -1496,7 +1750,7 @@ async function initializeOptions() {
 
                 if (historyId && aiProvider) {
                     dropdown.disabled = true;
-                    setHistoryStatus('Opening preview for history item...');
+                    setHistoryStatus(t('options_hist_opening_preview') || 'Opening preview for history item...');
                     chrome.runtime.sendMessage({
                         action: 'resendHistoryItem',
                         historyId,
@@ -1504,9 +1758,9 @@ async function initializeOptions() {
                     }, (response) => {
                         dropdown.disabled = false;
                         if (chrome.runtime.lastError || response?.error) {
-                            setHistoryStatus(`Could not resend history item: ${getRuntimeErrorMessage(response, 'Unknown error')}`, 'error');
+                            setHistoryStatus(`${t('options_hist_resend_failed') || 'Could not resend history item:'} ${getRuntimeErrorMessage(response, 'Unknown error')}`, 'error');
                         } else {
-                            setHistoryStatus('Preview opened for history item.', 'success');
+                            setHistoryStatus(t('options_hist_preview_opened') || 'Preview opened for history item.', 'success');
                         }
                         dropdown.selectedIndex = 0;
                     });
@@ -1528,12 +1782,12 @@ async function initializeOptions() {
                 chrome.runtime.sendMessage({ action: 'deleteHistoryItem', historyId }, () => {
                     button.disabled = false;
                     if (chrome.runtime.lastError) {
-                        setHistoryStatus(`Could not delete history item: ${chrome.runtime.lastError.message}`, 'error');
+                        setHistoryStatus(`${t('options_hist_delete_failed') || 'Could not delete history item:'} ${chrome.runtime.lastError.message}`, 'error');
                         return;
                     }
                     compareSelections.delete(historyId);
                     loadHistory();
-                    setHistoryStatus('History item deleted.', 'success');
+                    setHistoryStatus(t('options_hist_deleted') || 'History item deleted.', 'success');
                     showSaveToast();
                 });
             } else if (action === 'export') {
@@ -1541,7 +1795,7 @@ async function initializeOptions() {
                 chrome.runtime.sendMessage({ action: 'getHistoryItem', historyId }, (response) => {
                     button.disabled = false;
                     if (chrome.runtime.lastError || response?.error) {
-                        setHistoryStatus(`Could not export history item: ${getRuntimeErrorMessage(response, 'Unknown error')}`, 'error');
+                        setHistoryStatus(`${t('options_hist_export_failed') || 'Could not export history item:'} ${getRuntimeErrorMessage(response, 'Unknown error')}`, 'error');
                         return;
                     }
                     if (response?.item) {
@@ -1554,7 +1808,7 @@ async function initializeOptions() {
                         a.download = filename;
                         a.click();
                         URL.revokeObjectURL(url);
-                        setHistoryStatus('History item exported.', 'success');
+                        setHistoryStatus(t('options_hist_exported') || 'History item exported.', 'success');
                     }
                 });
             } else if (action === 'pin' || action === 'favorite') {
@@ -1570,15 +1824,15 @@ async function initializeOptions() {
                 }, (response) => {
                     button.disabled = false;
                     if (chrome.runtime.lastError || response?.error) {
-                        setHistoryStatus(`Could not update history item: ${getRuntimeErrorMessage(response, 'Unknown error')}`, 'error');
+                        setHistoryStatus(`${t('options_hist_update_failed') || 'Could not update history item:'} ${getRuntimeErrorMessage(response, 'Unknown error')}`, 'error');
                         return;
                     }
                     if (response?.history) fullHistory = response.history;
                     renderHistoryList();
                     if (action === 'pin') {
-                        setHistoryStatus(nextValue ? 'History item pinned.' : 'History item unpinned.', 'success');
+                        setHistoryStatus(nextValue ? (t('options_hist_pinned') || 'History item pinned.') : (t('options_hist_unpinned') || 'History item unpinned.'), 'success');
                     } else {
-                        setHistoryStatus(nextValue ? 'History item favorited.' : 'History item unfavorited.', 'success');
+                        setHistoryStatus(nextValue ? (t('options_hist_favorited') || 'History item favorited.') : (t('options_hist_unfavorited') || 'History item unfavorited.'), 'success');
                     }
                     showSaveToast();
                 });
@@ -1591,15 +1845,15 @@ async function initializeOptions() {
             const historyIds = [...compareSelections];
             if (historyIds.length < 2) return;
             compareHistoryBtn.disabled = true;
-            setHistoryStatus('Opening comparison preview...');
+            setHistoryStatus(t('options_hist_opening_compare') || 'Opening comparison preview...');
             chrome.runtime.sendMessage({ action: 'compareHistoryItems', historyIds }, (response) => {
                 compareHistoryBtn.disabled = false;
                 updateCompareUi();
                 if (chrome.runtime.lastError || response?.error) {
-                    setHistoryStatus(`Could not compare history items: ${getRuntimeErrorMessage(response, 'Unknown error')}`, 'error');
+                    setHistoryStatus(`${t('options_hist_compare_failed') || 'Could not compare history items:'} ${getRuntimeErrorMessage(response, 'Unknown error')}`, 'error');
                     return;
                 }
-                setHistoryStatus('Comparison preview opened.', 'success');
+                setHistoryStatus(t('options_hist_compare_opened') || 'Comparison preview opened.', 'success');
                 showSaveToast();
             });
         });
@@ -1618,8 +1872,10 @@ async function initializeOptions() {
                 applySavedPromptPreset(preset);
             } else if (button.dataset.action === 'export') {
                 downloadJson(`reddit-to-ai-preset-${preset.name || 'preset'}-${Date.now()}.json`, preset);
+                setInlineStatus(savedPresetStatus, t('options_preset_exported') || 'Preset exported.', 'success');
             } else if (button.dataset.action === 'delete') {
                 persistSavedPromptPresets(savedPromptPresets.filter(saved => saved.id !== presetId));
+                setInlineStatus(savedPresetStatus, t('options_preset_deleted') || 'Preset deleted.', 'success');
             }
         });
     }
@@ -1627,6 +1883,7 @@ async function initializeOptions() {
     if (exportSavedPresetsBtn) {
         exportSavedPresetsBtn.addEventListener('click', () => {
             downloadJson(`reddit-to-ai-prompt-presets-${Date.now()}.json`, savedPromptPresets);
+            setInlineStatus(savedPresetStatus, t('options_presets_exported') || 'Presets exported.', 'success');
         });
     }
 
@@ -1636,14 +1893,19 @@ async function initializeOptions() {
             readJsonFile(e.target.files?.[0], (payload) => {
                 const incoming = Array.isArray(payload) ? payload : payload?.presets;
                 if (!Array.isArray(incoming)) {
-                    alert('Imported file does not contain prompt presets.');
+                    setInlineStatus(savedPresetStatus, t('options_import_no_presets') || 'That file does not contain prompt presets.', 'error');
                     return;
                 }
                 const normalized = incoming
                     .filter(item => item && typeof item.template === 'string')
                     .map(item => ({ ...item, id: item.id || `${Date.now()}-${Math.random().toString(36).slice(2, 8)}` }));
+                if (normalized.length === 0) {
+                    setInlineStatus(savedPresetStatus, t('options_import_no_presets') || 'That file does not contain prompt presets.', 'error');
+                    return;
+                }
                 persistSavedPromptPresets([...normalized, ...savedPromptPresets].slice(0, 50));
-            });
+                setInlineStatus(savedPresetStatus, t('options_presets_imported', [String(normalized.length)]) || `Imported ${normalized.length} preset(s).`, 'success');
+            }, savedPresetStatus);
             e.target.value = '';
         });
     }
@@ -1655,40 +1917,34 @@ async function initializeOptions() {
     if (importSettingsBtn && importSettingsInput) {
         importSettingsBtn.addEventListener('click', () => importSettingsInput.click());
         importSettingsInput.addEventListener('change', (e) => {
-            readJsonFile(e.target.files?.[0], importSettings);
+            readJsonFile(e.target.files?.[0], importSettings, settingsTransferStatus);
             e.target.value = '';
         });
     }
 
     showPendingImportStatus();
 
-    if (clearSavedPresetsBtn) {
-        clearSavedPresetsBtn.addEventListener('click', () => {
-            if (confirm('Clear all saved prompt presets? This cannot be undone.')) {
-                persistSavedPromptPresets([]);
-            }
-        });
-    }
+    bindInlineConfirm(clearSavedPresetsBtn, clearSavedPresetsConfirm, () => {
+        persistSavedPromptPresets([]);
+        setInlineStatus(savedPresetStatus, t('options_presets_cleared') || 'All saved presets deleted.', 'success');
+        clearSavedPresetsBtn?.focus();
+    });
 
-    if (clearHistoryBtn) {
-        clearHistoryBtn.addEventListener('click', () => {
-            if (confirm(t('options_confirm_clear') || 'Clear all scrape history? This cannot be undone.')) {
-                clearHistoryBtn.disabled = true;
-                chrome.runtime.sendMessage({ action: 'clearHistory' }, () => {
-                    clearHistoryBtn.disabled = false;
-                    if (chrome.runtime.lastError) {
-                        setHistoryStatus(`Could not clear scrape history: ${chrome.runtime.lastError.message}`, 'error');
-                        return;
-                    }
-                    compareSelections.clear();
-                    loadHistory();
-                    updateCompareUi();
-                    setHistoryStatus('Scrape history cleared.', 'success');
-                    showSaveToast();
-                });
+    bindInlineConfirm(clearHistoryBtn, clearHistoryConfirm, () => {
+        clearHistoryBtn.disabled = true;
+        chrome.runtime.sendMessage({ action: 'clearHistory' }, () => {
+            clearHistoryBtn.disabled = false;
+            if (chrome.runtime.lastError) {
+                setHistoryStatus(`${t('options_hist_clear_failed') || 'Could not clear scrape history:'} ${chrome.runtime.lastError.message}`, 'error');
+                return;
             }
+            compareSelections.clear();
+            loadHistory();
+            updateCompareUi();
+            setHistoryStatus(t('options_hist_cleared') || 'Scrape history cleared.', 'success');
+            showSaveToast();
         });
-    }
+    });
 
     // =====================
     // Direct API keys

@@ -4,199 +4,262 @@
 <head>
   <title data-i18n="extName">Reddit to AI</title>
   <meta charset="UTF-8">
+  <link rel="stylesheet" type="text/css" href="tokens.css">
   <link rel="stylesheet" type="text/css" href="popup.css">
   <link rel="stylesheet" type="text/css" href="tooltip.css">
+  <script src="theme.js"></script>
 </head>
 
 <body>
   <div class="popup-container">
     <!-- Toast Container (absolutely positioned overlay) -->
-    <div id="toastContainer" class="toast-container"></div>
+    <div id="toastContainer" class="toast-container" role="status" aria-live="polite"></div>
 
     <!-- Header -->
     <header class="header">
       <div class="logo">
-        <img src="images/icon32.png" width="28" height="28" class="logo-icon" alt="Reddit to AI">
+        <img src="images/icon32.png" width="22" height="22" class="logo-icon" alt="">
         <span class="logo-text">
           <span class="logo-reddit">Reddit</span><span class="logo-to">to</span><span class="logo-ai">AI</span>
         </span>
       </div>
       <div class="header-actions">
-        <button id="feedbackBtn" class="settings-btn" title="Send feedback">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
+        <button id="feedbackBtn" class="settings-btn" type="button" title="Send feedback" aria-label="Send feedback"
+          data-i18n-title="popup_feedback_title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
           </svg>
         </button>
-        <button id="optionsBtn" class="settings-btn" title="Settings">
-        <!-- Feather Icons gear cog -->
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-          stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="3"></circle>
-          <path
-            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z">
-          </path>
-        </svg>
+        <button id="optionsBtn" class="settings-btn" type="button" title="Settings" aria-label="Settings"
+          data-i18n-title="popup_settings_title">
+          <!-- Feather Icons gear cog -->
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z">
+            </path>
+          </svg>
         </button>
       </div>
     </header>
 
     <div class="tabs-list" role="tablist">
-      <button id="tabScrape" class="tab-trigger active" role="tab" aria-selected="true" data-tab="tabPaneScrape">Scrape</button>
-      <button id="tabFilters" class="tab-trigger" role="tab" aria-selected="false" data-tab="tabPaneFilters">Filters</button>
+      <button id="tabScrape" class="tab-trigger active" role="tab" aria-selected="true" aria-controls="tabPaneScrape"
+        data-tab="tabPaneScrape"><span data-i18n="popup_tab_scrape">Scrape</span></button>
+      <button id="tabFilters" class="tab-trigger" role="tab" aria-selected="false" aria-controls="tabPaneFilters"
+        data-tab="tabPaneFilters"><span data-i18n="popup_tab_filters">Filters</span><span id="filterCountBadge"
+          class="tab-badge" hidden></span></button>
     </div>
 
-    <div id="tabPaneScrape" class="tab-content" role="tabpanel" aria-labelledby="tabScrape">
-      <!-- Prompt Preset Select -->
+    <div class="tab-panels">
+    <div id="tabPaneScrape" class="tab-content r2-reveal" role="tabpanel" aria-labelledby="tabScrape">
+      <!-- Shown when the active tab is not a Reddit thread -->
+      <div id="notRedditState" class="empty-state r2-reveal" hidden>
+        <svg class="empty-state-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          <line x1="8" y1="9" x2="16" y2="9"></line>
+          <line x1="8" y1="13" x2="13" y2="13"></line>
+        </svg>
+        <div class="empty-state-body">
+          <p class="empty-state-title" data-i18n="popup_empty_title">Open a Reddit thread to get started</p>
+          <p class="empty-state-hint" data-i18n="popup_empty_hint">On a thread, use the Reddit to AI button next to Share, or press Alt+Shift+S.</p>
+        </div>
+      </div>
+
+      <!-- What do you want? -->
       <div class="preset-section">
-        <label class="section-label" data-i18n="popup_header_preset">Prompt Preset</label>
-        <div class="preset-cards" id="presetCards">
-          <!-- Summarize -->
-          <button class="preset-card" data-preset="summarize" data-i18n-title="preset_summarize_desc"
-            title="TL;DR of the thread">
-            <img src="images/summarizelogo.svg" alt="Summarize" class="preset-icon" width="20" height="20">
+        <span class="section-label" id="presetSectionLabel" data-i18n="popup_preset_question">What do you want?</span>
+        <div class="preset-cards" id="presetCards" role="group" aria-labelledby="presetSectionLabel">
+          <button type="button" class="preset-card" data-preset="summarize" data-i18n-title="preset_summarize_desc"
+            title="TL;DR of the thread" aria-pressed="false">
+            <img src="images/summarizelogo.svg" alt="" class="preset-icon" width="20" height="20">
             <span class="preset-name" data-i18n="preset_summarize_name">Summary</span>
           </button>
-          <!-- Key Takeaways -->
-          <button class="preset-card" data-preset="takeaways" data-i18n-title="preset_takeaways_desc"
-            title="Key insights">
-            <img src="images/keytakeawayslogo.svg" alt="Takeways" class="preset-icon" width="20" height="20">
+          <button type="button" class="preset-card" data-preset="takeaways" data-i18n-title="preset_takeaways_desc"
+            title="Key insights" aria-pressed="false">
+            <img src="images/keytakeawayslogo.svg" alt="" class="preset-icon" width="20" height="20">
             <span class="preset-name" data-i18n="preset_takeaways_name">Takeaways</span>
           </button>
-          <!-- ELI5 -->
-          <button class="preset-card" data-preset="eli5" data-i18n-title="preset_eli5_desc"
-            title="Explain like I'm 5">
-            <img src="images/eli5logo.svg" alt="ELI5" class="preset-icon" width="20" height="20">
+          <button type="button" class="preset-card" data-preset="eli5" data-i18n-title="preset_eli5_desc"
+            title="Explain like I'm 5" aria-pressed="false">
+            <img src="images/eli5logo.svg" alt="" class="preset-icon" width="20" height="20">
             <span class="preset-name" data-i18n="preset_eli5_name">ELI5</span>
           </button>
-          <!-- Sentiment -->
-          <button class="preset-card" data-preset="sentiment" data-i18n-title="preset_sentiment_desc"
-            title="Sentiment Analysis">
-            <img src="images/sentimentlogo.svg" alt="Sentiment" class="preset-icon" width="20" height="20">
+          <button type="button" class="preset-card" data-preset="sentiment" data-i18n-title="preset_sentiment_desc"
+            title="Sentiment Analysis" aria-pressed="false">
+            <img src="images/sentimentlogo.svg" alt="" class="preset-icon" width="20" height="20">
             <span class="preset-name" data-i18n="preset_sentiment_name">Sentiment</span>
           </button>
-          <!-- Debate -->
-          <button class="preset-card" data-preset="debate" data-i18n-title="preset_debate_desc"
-            title="Debate Analysis">
-            <img src="images/debatelogo.svg" alt="Debate" class="preset-icon" width="20" height="20">
+          <button type="button" class="preset-card" data-preset="debate" data-i18n-title="preset_debate_desc"
+            title="Debate Analysis" aria-pressed="false">
+            <img src="images/debatelogo.svg" alt="" class="preset-icon" width="20" height="20">
             <span class="preset-name" data-i18n="preset_debate_name">Debate</span>
           </button>
-          <!-- Custom -->
-          <button class="preset-card" data-preset="custom" data-i18n-title="preset_custom_desc"
-            title="Custom Template">
-            <img src="images/customlogo.svg" alt="Custom" class="preset-icon" width="20" height="20">
+          <button type="button" class="preset-card" data-preset="custom" data-i18n-title="preset_custom_desc"
+            title="Custom Template" aria-pressed="false">
+            <img src="images/customlogo.svg" alt="" class="preset-icon" width="20" height="20">
             <span class="preset-name" data-i18n="preset_custom_name">Custom</span>
           </button>
+        </div>
+
+        <!-- The user's own saved presets (rendered by popup.js) -->
+        <div id="savedPresetsRow" class="saved-presets r2-reveal" hidden>
+          <span class="section-label" id="savedPresetsLabel" data-i18n="popup_saved_presets_label">Your presets</span>
+          <div id="savedPresetChips" class="saved-preset-chips" role="group" aria-labelledby="savedPresetsLabel"></div>
         </div>
       </div>
 
       <!-- Quick Prompt -->
       <div class="quick-prompt-section">
+        <label class="mode-field" for="quickPrompt">
+          <span data-i18n="popup_label_custom_prompt">Custom prompt (optional)</span>
+        </label>
         <textarea id="quickPrompt" class="quick-prompt-input"
-          placeholder="Type a quick prompt to override preset..." rows="1"></textarea>
+          placeholder="Type your own instructions to replace the preset..."
+          data-i18n-placeholder="popup_quick_prompt_placeholder" rows="1"></textarea>
         <div class="quick-prompt-actions">
-          <select id="outputFormat" class="compact-select" title="Output format">
-            <option value="auto">Auto format</option>
-            <option value="bullets">Bullets</option>
-            <option value="table">Table</option>
-            <option value="json">JSON</option>
-            <option value="prosCons">Pros / cons</option>
-            <option value="executive">Executive summary</option>
-          </select>
-          <button id="saveQuickPromptBtn" class="text-action-btn" type="button" disabled>Save quick prompt</button>
+          <button id="saveQuickPromptBtn" class="text-action-btn" type="button" disabled
+            title="Type a custom prompt first" data-i18n="popup_save_quick_prompt">Save as preset</button>
         </div>
         <!-- Inline replacement for window.prompt(), which modern Chrome blocks in
              action popups. Shown in place when saving a preset. -->
-        <div id="presetNameRow" class="preset-name-row" hidden>
+        <div id="presetNameRow" class="preset-name-row r2-reveal" hidden>
           <label class="preset-name-label" for="presetNameInput"
             data-i18n="popup_preset_name_label">Preset name</label>
           <input type="text" id="presetNameInput" class="preset-name-input" maxlength="60"
             data-i18n-placeholder="popup_preset_name_placeholder" placeholder="Preset name">
           <div class="preset-name-actions">
-            <button id="presetNameConfirmBtn" class="text-action-btn primary" type="button"
-              data-i18n="popup_preset_name_confirm">Save</button>
             <button id="presetNameCancelBtn" class="text-action-btn" type="button"
               data-i18n="popup_preset_name_cancel">Cancel</button>
+            <button id="presetNameConfirmBtn" class="text-action-btn primary" type="button"
+              data-i18n="popup_preset_name_confirm">Save</button>
           </div>
         </div>
       </div>
 
-      <div class="send-mode-section">
-        <div class="mode-row">
-          <label class="mode-field" for="sendModeSelect">
-            <span>Mode</span>
-            <select id="sendModeSelect" class="compact-select">
-              <option value="preview">Preview first</option>
-              <option value="directOnce">Send directly once</option>
+      <!-- Primary action. Scrape and Stop share one grid cell and cross-fade. -->
+      <div class="cta-stack">
+        <button id="scrapeBtn" class="btn btn-primary r2-reveal" type="button" data-state="idle"
+          aria-keyshortcuts="Control+Enter Meta+Enter">
+          <span class="btn-icon-wrap" aria-hidden="true">
+            <svg class="btn-icon icon-play" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="6 4 20 12 6 20 6 4"></polygon>
+            </svg>
+            <span class="btn-spinner"></span>
+            <svg class="btn-icon icon-check" width="18" height="18" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </span>
+          <span class="btn-text" data-i18n="popup_btn_scrape">Scrape & Preview</span>
+        </button>
+
+        <button id="stopScrapeBtn" class="btn btn-stop r2-reveal" type="button" hidden>
+          <svg class="btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <rect x="6" y="6" width="12" height="12" rx="2"></rect>
+          </svg>
+          <span class="btn-text" data-i18n="popup_btn_stop">Stop</span>
+        </button>
+      </div>
+
+      <!-- Collapsible settings summary -->
+      <div class="settings-disclosure">
+        <button id="settingsSummaryBtn" class="settings-summary" type="button" aria-expanded="false"
+          aria-controls="scrapeSettings">
+          <span id="settingsSummaryText" class="settings-summary-text">Gemini · Preview first · Auto format</span>
+          <svg class="settings-summary-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="9 6 15 12 9 18"></polyline>
+          </svg>
+        </button>
+
+        <div id="scrapeSettings" class="scrape-settings r2-reveal" hidden>
+          <div class="mode-row">
+            <label class="mode-field" for="popupProviderSelect">
+              <span data-i18n="popup_header_sendTo">Send to</span>
+              <select id="popupProviderSelect" class="compact-select">
+                <option value="gemini">Gemini</option>
+                <option value="chatgpt">ChatGPT</option>
+                <option value="claude">Claude</option>
+                <option value="aistudio">AI Studio</option>
+                <option value="deepseek">DeepSeek</option>
+                <option value="groq">Groq</option>
+                <option value="custom">Custom</option>
+              </select>
+            </label>
+            <label class="mode-field" for="sendModeSelect">
+              <span data-i18n="popup_label_mode">Mode</span>
+              <select id="sendModeSelect" class="compact-select">
+                <option value="preview">Preview first</option>
+                <option value="directOnce">Send directly once</option>
+              </select>
+            </label>
+          </div>
+
+          <label class="mode-field" for="outputFormat">
+            <span data-i18n="popup_label_format">Answer format</span>
+            <select id="outputFormat" class="compact-select">
+              <option value="auto">Auto format</option>
+              <option value="bullets">Bullets</option>
+              <option value="table">Table</option>
+              <option value="json">JSON</option>
+              <option value="prosCons">Pros / cons</option>
+              <option value="executive">Executive summary</option>
             </select>
           </label>
-          <label class="mode-field" for="popupProviderSelect">
-            <span>AI</span>
-            <select id="popupProviderSelect" class="compact-select">
-              <option value="gemini">Gemini</option>
-              <option value="chatgpt">ChatGPT</option>
-              <option value="claude">Claude</option>
-              <option value="aistudio">AI Studio</option>
-              <option value="deepseek">DeepSeek</option>
-              <option value="groq">Groq</option>
-              <option value="custom">Custom</option>
-            </select>
+
+          <label class="toggle-row privacy-toggle">
+            <span class="toggle-label" data-i18n="popup_dont_save_label">Don't save this scrape to history</span>
+            <span class="toggle-switch small">
+              <input type="checkbox" id="dontSaveThisScrape">
+              <span class="toggle-slider"></span>
+            </span>
           </label>
-        </div>
-        <label class="toggle-row compact privacy-toggle">
-          <span class="toggle-label">Don't save this scrape</span>
-          <div class="toggle-switch small">
-            <input type="checkbox" id="dontSaveThisScrape">
-            <span class="toggle-slider"></span>
-          </div>
-        </label>
-        <p id="scrapeEstimate" class="scrape-estimate">Preview first · Balanced · Full depth · Gemini</p>
-        <div class="budget-bar-container">
-          <div class="budget-bar-track">
-            <div id="budgetValueBar" class="budget-bar-fill" style="width: 0%;"></div>
-          </div>
-          <span id="budgetLabel" class="budget-text">Budget: 0 tokens</span>
         </div>
       </div>
 
-      <!-- Action Button -->
-      <button id="scrapeBtn" class="btn btn-primary">
-        <svg class="btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-          stroke-width="2">
-          <polygon points="5 3 19 12 5 21 5 3"></polygon>
-        </svg>
-        <span class="btn-text" data-i18n="popup_btn_scrape">Scrape & Preview</span>
-      </button>
+      <!-- Size estimate -->
+      <div class="budget-bar-container">
+        <div class="budget-bar-track" aria-hidden="true">
+          <div id="budgetValueBar" class="budget-bar-fill"></div>
+        </div>
+        <div class="budget-meta">
+          <span id="budgetLabel" class="budget-text" data-i18n="popup_budget_estimating">Estimating budget...</span>
+          <span id="scrapeEstimate" class="scrape-estimate">Balanced · Full depth</span>
+        </div>
+      </div>
 
-      <button id="stopScrapeBtn" class="btn btn-danger" style="display: none;">
-        <svg class="btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-          stroke-width="2">
-          <rect x="6" y="6" width="12" height="12"></rect>
-        </svg>
-        <span class="btn-text" data-i18n="popup_btn_stop">Stop</span>
-      </button>
-
-      <!-- Export Select Dropdown -->
+      <!-- Export last scrape -->
       <div class="popup-export-container">
-        <div class="export-chips-row">
-          <button type="button" class="export-chip disabled" data-format="markdown" data-tooltip="tooltip_export_md" id="popupExportMd">
-            <span class="chip-icon">MD</span> Markdown
+        <span class="section-label" id="exportLabel" data-i18n="popup_export_label">Export last scrape</span>
+        <div class="export-chips-row" role="group" aria-labelledby="exportLabel">
+          <button type="button" class="export-chip disabled" data-format="markdown" data-tooltip="tooltip_export_md"
+            id="popupExportMd" aria-disabled="true">
+            <span class="chip-icon" aria-hidden="true">MD</span> Markdown
           </button>
-          <button type="button" class="export-chip disabled" data-format="json" data-tooltip="tooltip_export_json" id="popupExportJson">
-            <span class="chip-icon">JS</span> JSON
+          <button type="button" class="export-chip disabled" data-format="json" data-tooltip="tooltip_export_json"
+            id="popupExportJson" aria-disabled="true">
+            <span class="chip-icon" aria-hidden="true">{ }</span> JSON
           </button>
-          <button type="button" class="export-chip disabled" data-format="csv" data-tooltip="tooltip_export_csv" id="popupExportCsv">
-            <span class="chip-icon">CS</span> CSV
+          <button type="button" class="export-chip disabled" data-format="csv" data-tooltip="tooltip_export_csv"
+            id="popupExportCsv" aria-disabled="true">
+            <span class="chip-icon" aria-hidden="true">,,</span> CSV
           </button>
         </div>
+        <p id="exportHint" class="field-hint" data-i18n="popup_export_disabled_hint">Exports unlock after your first scrape.</p>
       </div>
     </div>
 
-    <div id="tabPaneFilters" class="tab-content hidden" role="tabpanel" aria-labelledby="tabFilters" hidden>
+    <div id="tabPaneFilters" class="tab-content r2-reveal" role="tabpanel" aria-labelledby="tabFilters" hidden>
       <!-- Quick Filters -->
       <div class="filters-section">
         <div class="filters-header">
           <span class="filters-title" data-i18n="popup_filter_title">Quick Filters</span>
+          <button id="resetFiltersBtn" class="text-link-btn" type="button" hidden
+            data-i18n="popup_filter_reset">Reset</button>
         </div>
 
         <!-- Main pills row -->
@@ -213,16 +276,16 @@
             <option value="50">50+ pts</option>
             <option value="100">100+ pts</option>
           </select>
-          <button id="filterHideBotsBtn" class="pill-toggle" data-key="hideBots">
+          <button id="filterHideBotsBtn" class="pill-toggle" type="button" data-key="hideBots" aria-pressed="false">
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-              stroke-linecap="round" stroke-linejoin="round">
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <circle cx="12" cy="8" r="4" />
               <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
             </svg>
             Hide Bots
           </button>
-          <button id="filterOpOnlyBtn" class="pill-toggle" data-key="op">OP Only</button>
-          <button id="filterFlairedBtn" class="pill-toggle" data-key="flaired">Flaired</button>
+          <button id="filterOpOnlyBtn" class="pill-toggle" type="button" data-key="op" aria-pressed="false">OP Only</button>
+          <button id="filterFlairedBtn" class="pill-toggle" type="button" data-key="flaired" aria-pressed="false">Flaired</button>
         </div>
 
         <!-- Advanced filters -->
@@ -236,8 +299,8 @@
 
             <!-- Scrape Depth -->
             <div class="adv-row adv-row--stacked">
-              <label class="adv-label">Scrape Depth</label>
-              <div class="depth-cards-row">
+              <span class="adv-label">Scrape Depth</span>
+              <div class="depth-cards-row" role="radiogroup">
                 <label class="depth-card-mini">
                   <input type="radio" name="scrapeDepthPopup" value="2">
                   <span>Quick</span>
@@ -259,8 +322,8 @@
 
             <!-- Context Budget -->
             <div class="adv-row adv-row--stacked">
-              <label class="adv-label">Context Budget</label>
-              <div class="depth-cards-row">
+              <span class="adv-label">Context Budget</span>
+              <div class="depth-cards-row" role="radiogroup">
                 <label class="depth-card-mini">
                   <input type="radio" name="contextPresetPopup" value="small">
                   <span>Small</span>
@@ -273,16 +336,17 @@
                   <input type="radio" name="contextPresetPopup" value="full">
                   <span>Full</span>
                 </label>
-                <label class="depth-card-mini">
+                <label class="depth-card-mini" title="Largest budget for the most thorough answer"
+                  data-i18n-title="popup_context_best_desc">
                   <input type="radio" name="contextPresetPopup" value="maxQuality">
-                  <span>Max Q</span>
+                  <span data-i18n="popup_context_best">Best quality</span>
                 </label>
               </div>
             </div>
 
-            <!-- Smart Trim Logic -->
+            <!-- Trim strategy -->
             <div class="adv-row">
-              <label class="adv-label" for="trimStrategy">Trim logic</label>
+              <label class="adv-label" for="trimStrategy" data-i18n="preview_field_trim">Trim strategy</label>
               <select id="trimStrategy" class="adv-select">
                 <option value="top">Top scored</option>
                 <option value="controversial">Controversial</option>
@@ -328,14 +392,15 @@
             <!-- Include removed/deleted -->
             <label class="toggle-row compact">
               <span class="toggle-label" data-i18n="popup_filter_includeHidden">Include removed/deleted</span>
-              <div class="toggle-switch small">
+              <span class="toggle-switch small">
                 <input type="checkbox" id="includeHidden">
                 <span class="toggle-slider"></span>
-              </div>
+              </span>
             </label>
           </div>
         </div>
       </div>
+    </div>
     </div>
   </div>
   <script src="i18n.js"></script>

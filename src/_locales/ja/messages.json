@@ -722,5 +722,1467 @@
     },
     "settings_reddit_btn_post": {
         "message": "投稿詳細ページ内に表示"
+    },
+    "panel_region_label": {
+        "message": "Reddit to AI の進行状況"
+    },
+    "panel_close_label": {
+        "message": "パネルを閉じる"
+    },
+    "panel_progress_label": {
+        "message": "取得の進行状況"
+    },
+    "panel_phase_fetch": {
+        "message": "取得"
+    },
+    "panel_phase_parse": {
+        "message": "読み取り"
+    },
+    "panel_phase_load": {
+        "message": "コメント"
+    },
+    "panel_phase_filter": {
+        "message": "準備"
+    },
+    "panel_badge_batch": {
+        "message": "バッチ $CURRENT$ / $TOTAL$",
+        "placeholders": {
+            "current": {
+                "content": "$1"
+            },
+            "total": {
+                "content": "$2"
+            }
+        }
+    },
+    "panel_badge_comments": {
+        "message": "コメント $COUNT$ 件",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            }
+        }
+    },
+    "panel_done_sent": {
+        "message": "$AI$ に送信しました",
+        "placeholders": {
+            "ai": {
+                "content": "$1"
+            }
+        }
+    },
+    "panel_ai_generic": {
+        "message": "AI"
+    },
+    "panel_done_sent_hint": {
+        "message": "AI のタブにスレッドを送りました。回答はそちらで確認できます。"
+    },
+    "panel_done_preview": {
+        "message": "プレビューの準備ができました"
+    },
+    "panel_done_preview_hint": {
+        "message": "新しいタブでプロンプトを確認してから送信してください。"
+    },
+    "panel_error_title": {
+        "message": "問題が発生しました"
+    },
+    "panel_error_config_title": {
+        "message": "設定が必要です"
+    },
+    "panel_error_not_reddit_title": {
+        "message": "先に Reddit のスレッドを開いてください"
+    },
+    "panel_error_busy_title": {
+        "message": "別のスレッドを処理中です"
+    },
+    "panel_error_network_title": {
+        "message": "接続の問題"
+    },
+    "panel_error_stopped_title": {
+        "message": "取得を停止しました"
+    },
+    "panel_error_unknown": {
+        "message": "予期しないエラーが発生しました。"
+    },
+    "panel_error_unreachable": {
+        "message": "拡張機能に接続できませんでした。ページを再読み込みしてもう一度お試しください。"
+    },
+    "panel_btn_retry": {
+        "message": "再試行"
+    },
+    "panel_btn_dismiss": {
+        "message": "閉じる"
+    },
+    "panel_btn_settings": {
+        "message": "設定を開く"
+    },
+    "panel_retrying": {
+        "message": "再試行中…"
+    },
+    "inline_btn_label": {
+        "message": "AI で要約"
+    },
+    "inline_btn_working": {
+        "message": "要約中…"
+    },
+    "inline_btn_done": {
+        "message": "完了"
+    },
+    "inline_btn_failed": {
+        "message": "失敗 — 再試行"
+    },
+    "inline_btn_failed_title": {
+        "message": "開始できませんでした。クリックして再試行してください。"
+    },
+    "inline_error_no_response": {
+        "message": "拡張機能が応答しませんでした。ページを再読み込みしてもう一度お試しください。"
+    },
+    "popup_feedback_title": {
+        "message": "フィードバックを送信"
+    },
+    "popup_settings_title": {
+        "message": "設定"
+    },
+    "popup_tab_scrape": {
+        "message": "取得"
+    },
+    "popup_tab_filters": {
+        "message": "フィルター"
+    },
+    "popup_filters_active_count": {
+        "message": "$COUNT$ 件有効",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            }
+        }
+    },
+    "popup_filter_reset": {
+        "message": "リセット"
+    },
+    "popup_empty_title": {
+        "message": "Reddit のスレッドを開いて始めましょう"
+    },
+    "popup_empty_hint": {
+        "message": "スレッドで「共有」の横にある Reddit to AI ボタンを使うか、Alt+Shift+S を押してください。"
+    },
+    "popup_preset_question": {
+        "message": "何をしますか？"
+    },
+    "popup_saved_presets_label": {
+        "message": "保存したプリセット"
+    },
+    "popup_saved_presets_more": {
+        "message": "他 $COUNT$ 件",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            }
+        }
+    },
+    "popup_saved_presets_more_title": {
+        "message": "すべてのプリセットは設定で管理できます"
+    },
+    "popup_saved_preset_applied": {
+        "message": "「$NAME$」を使用中。",
+        "placeholders": {
+            "name": {
+                "content": "$1"
+            }
+        }
+    },
+    "popup_saved_preset_saved": {
+        "message": "プリセット「$NAME$」を保存しました。",
+        "placeholders": {
+            "name": {
+                "content": "$1"
+            }
+        }
+    },
+    "popup_label_mode": {
+        "message": "モード"
+    },
+    "popup_label_format": {
+        "message": "回答の形式"
+    },
+    "popup_label_custom_prompt": {
+        "message": "カスタムプロンプト（任意）"
+    },
+    "popup_quick_prompt_placeholder": {
+        "message": "プリセットの代わりに使う指示を入力…"
+    },
+    "popup_save_quick_prompt": {
+        "message": "プリセットとして保存"
+    },
+    "popup_save_quick_prompt_disabled": {
+        "message": "先にカスタムプロンプトを入力してください"
+    },
+    "popup_dont_save_label": {
+        "message": "この取得を履歴に保存しない"
+    },
+    "popup_summary_custom_prompt": {
+        "message": "カスタムプロンプト"
+    },
+    "popup_summary_not_saved": {
+        "message": "保存しない"
+    },
+    "popup_btn_scrape_send": {
+        "message": "取得して $PROVIDER$ に送信",
+        "placeholders": {
+            "provider": {
+                "content": "$1"
+            }
+        }
+    },
+    "popup_btn_done": {
+        "message": "完了"
+    },
+    "popup_btn_disabled_not_thread": {
+        "message": "取得するには Reddit のスレッドを開くか、フィルターで一括 URL を追加してください。"
+    },
+    "popup_btn_shortcut_hint": {
+        "message": "ショートカット：Ctrl+Enter（Mac は Cmd+Enter）"
+    },
+    "popup_budget_none": {
+        "message": "見積もるスレッドがまだありません"
+    },
+    "popup_budget_line_safe": {
+        "message": "約 $TOKENS$ トークン · $PROVIDER$ に収まります",
+        "placeholders": {
+            "tokens": {
+                "content": "$1"
+            },
+            "provider": {
+                "content": "$2"
+            }
+        }
+    },
+    "popup_budget_line_moderate": {
+        "message": "約 $TOKENS$ トークン · $PROVIDER$ には長め",
+        "placeholders": {
+            "tokens": {
+                "content": "$1"
+            },
+            "provider": {
+                "content": "$2"
+            }
+        }
+    },
+    "popup_budget_line_large": {
+        "message": "約 $TOKENS$ トークン · $PROVIDER$ の上限に近い",
+        "placeholders": {
+            "tokens": {
+                "content": "$1"
+            },
+            "provider": {
+                "content": "$2"
+            }
+        }
+    },
+    "popup_budget_line_over": {
+        "message": "約 $TOKENS$ トークン · $PROVIDER$ には長すぎます",
+        "placeholders": {
+            "tokens": {
+                "content": "$1"
+            },
+            "provider": {
+                "content": "$2"
+            }
+        }
+    },
+    "popup_estimate_scope": {
+        "message": "$CONTEXT$ · 深さ $DEPTH$",
+        "placeholders": {
+            "context": {
+                "content": "$1"
+            },
+            "depth": {
+                "content": "$2"
+            }
+        }
+    },
+    "popup_context_best": {
+        "message": "最高品質"
+    },
+    "popup_context_best_desc": {
+        "message": "最も詳しい回答のための最大の予算"
+    },
+    "popup_export_label": {
+        "message": "前回の取得をエクスポート"
+    },
+    "popup_export_disabled_hint": {
+        "message": "最初の取得後にエクスポートできるようになります。"
+    },
+    "popup_export_done": {
+        "message": "保存済み"
+    },
+    "popup_export_failed": {
+        "message": "エクスポートに失敗しました。"
+    },
+    "popup_export_nodata": {
+        "message": "エクスポートできるデータがありません。"
+    },
+    "popup_toast_dismiss": {
+        "message": "閉じる"
+    },
+    "preview_back": {
+        "message": "戻る"
+    },
+    "preview_back_title": {
+        "message": "Reddit のタブに戻る"
+    },
+    "preview_badge": {
+        "message": "プレビュー"
+    },
+    "preview_loading_thread": {
+        "message": "スレッドを読み込み中…"
+    },
+    "preview_no_thread": {
+        "message": "スレッドが読み込まれていません"
+    },
+    "preview_tabs_label": {
+        "message": "プレビューの表示"
+    },
+    "preview_tab_prompt": {
+        "message": "プロンプトと送信"
+    },
+    "preview_tab_prune": {
+        "message": "コメントを選別"
+    },
+    "preview_export": {
+        "message": "エクスポート"
+    },
+    "preview_save_preset": {
+        "message": "プリセットを保存"
+    },
+    "preview_save_preset_title": {
+        "message": "現在のプロンプトと設定を再利用できるプリセットとして保存"
+    },
+    "preview_copy": {
+        "message": "コピー"
+    },
+    "preview_copy_title": {
+        "message": "プロンプトをクリップボードにコピー"
+    },
+    "preview_copied": {
+        "message": "コピーしました ✓"
+    },
+    "preview_copy_failed": {
+        "message": "コピー失敗"
+    },
+    "preview_empty_short": {
+        "message": "空です"
+    },
+    "preview_send_to": {
+        "message": "$PROVIDER$ に送信",
+        "placeholders": {
+            "provider": {
+                "content": "$1",
+                "example": "Gemini"
+            }
+        }
+    },
+    "preview_send_title": {
+        "message": "このプロンプトで AI チャットを開く"
+    },
+    "preview_sending": {
+        "message": "開いています…"
+    },
+    "preview_sent": {
+        "message": "送信しました ✓"
+    },
+    "preview_send_failed": {
+        "message": "失敗 — もう一度"
+    },
+    "preview_provider_fallback": {
+        "message": "AI"
+    },
+    "preview_needs_thread": {
+        "message": "先にスレッドを読み込んでください。まだプロンプトがありません。"
+    },
+    "preview_preset_name_label": {
+        "message": "プリセット名"
+    },
+    "preview_preset_name_hint": {
+        "message": "このプロンプトを、現在のコンテキストプリセット、削減方法、メディアと形式の設定とともに保存します。"
+    },
+    "preview_preset_name_default": {
+        "message": "カスタムプレビュープリセット"
+    },
+    "preview_preset_name_sub": {
+        "message": "r/$SUBREDDIT$ プリセット",
+        "placeholders": {
+            "subreddit": {
+                "content": "$1",
+                "example": "AskReddit"
+            }
+        }
+    },
+    "preview_cancel": {
+        "message": "キャンセル"
+    },
+    "preview_save": {
+        "message": "保存"
+    },
+    "preview_saved": {
+        "message": "保存しました ✓"
+    },
+    "preview_save_failed": {
+        "message": "保存できませんでした"
+    },
+    "preview_final_prompt": {
+        "message": "最終プロンプト"
+    },
+    "preview_edit_hint": {
+        "message": "送信前にこのテキストを編集できます。"
+    },
+    "preview_rebuild_notice": {
+        "message": "設定が変更されました。編集したプロンプトはそのまま残しています。"
+    },
+    "preview_apply_rebuilt": {
+        "message": "再生成したプロンプトを適用"
+    },
+    "preview_keep_edits": {
+        "message": "編集を保持"
+    },
+    "preview_restore_prompt": {
+        "message": "生成されたプロンプトに戻す"
+    },
+    "preview_prompt_placeholder": {
+        "message": "生成されたプロンプトがここに表示されます…"
+    },
+    "preview_shortcut_send": {
+        "message": "で送信"
+    },
+    "preview_shortcut_copy": {
+        "message": "でコピー"
+    },
+    "preview_load_error_title": {
+        "message": "このスレッドを読み込めませんでした"
+    },
+    "preview_load_error_hint": {
+        "message": "もう一度お試しください。失敗が続く場合は、このタブを閉じて Reddit のスレッドから再度取得してください。"
+    },
+    "preview_load_error_none": {
+        "message": "このタブ用に取得されたスレッドが見つかりません。期限切れの可能性があります。"
+    },
+    "preview_try_again": {
+        "message": "再試行"
+    },
+    "preview_budget_eyebrow": {
+        "message": "AI コンテキスト予算"
+    },
+    "preview_budget_preparing": {
+        "message": "コンテキスト予算を準備しています。"
+    },
+    "preview_budget_unavailable": {
+        "message": "スレッドを読み込むと予算が表示されます。"
+    },
+    "preview_budget_level": {
+        "message": "サイズ: $LEVEL$",
+        "placeholders": {
+            "level": {
+                "content": "$1",
+                "example": "Low"
+            }
+        }
+    },
+    "preview_unit_tokens": {
+        "message": "トークン"
+    },
+    "preview_unit_chars": {
+        "message": "文字"
+    },
+    "preview_unit_comments": {
+        "message": "コメント"
+    },
+    "preview_unit_images": {
+        "message": "画像"
+    },
+    "preview_guidance_critical": {
+        "message": "$PROVIDER$ では拒否または切り捨てられる可能性があります。送信前に Balanced か Small を選んでください。",
+        "placeholders": {
+            "provider": {
+                "content": "$1",
+                "example": "Gemini"
+            }
+        }
+    },
+    "preview_guidance_high": {
+        "message": "$PROVIDER$ では大きなコンテキストのモデルでのみ処理できます。コメントの削減を検討してください。",
+        "placeholders": {
+            "provider": {
+                "content": "$1",
+                "example": "Gemini"
+            }
+        }
+    },
+    "preview_guidance_medium": {
+        "message": "$PROVIDER$ では通常受け付けられますが、小さなモデルでは回答が短くなる場合があります。",
+        "placeholders": {
+            "provider": {
+                "content": "$1",
+                "example": "Gemini"
+            }
+        }
+    },
+    "preview_guidance_low": {
+        "message": "$PROVIDER$ にはこのプロンプトに十分な余裕があります。",
+        "placeholders": {
+            "provider": {
+                "content": "$1",
+                "example": "Gemini"
+            }
+        }
+    },
+    "preview_params_eyebrow": {
+        "message": "プロンプト設定"
+    },
+    "preview_field_context": {
+        "message": "コンテキストプリセット"
+    },
+    "preview_field_trim": {
+        "message": "削減方法"
+    },
+    "preview_field_format": {
+        "message": "出力形式"
+    },
+    "preview_field_platform": {
+        "message": "AI プラットフォーム"
+    },
+    "preview_field_media": {
+        "message": "メディアの扱い"
+    },
+    "preview_skip_label": {
+        "message": "次回からこのプレビューを省略"
+    },
+    "preview_skip_hint": {
+        "message": "今後の取得はここで止まらず、そのまま AI チャットに貼り付けられます。プレビューはオプションで再度有効にできます。"
+    },
+    "preview_missing_title": {
+        "message": "一部の返信を読み込めませんでした。スレッドが不完全な可能性があります。"
+    },
+    "preview_missing_text": {
+        "message": "送信前にもう一度読み込みを試せます。"
+    },
+    "preview_missing_count": {
+        "message": "$COUNT$ 件の返信を読み込めませんでした。送信前にもう一度読み込んでみてください。",
+        "placeholders": {
+            "count": {
+                "content": "$1",
+                "example": "12"
+            }
+        }
+    },
+    "preview_missing_resume": {
+        "message": "不足している返信を読み込む"
+    },
+    "preview_missing_resuming": {
+        "message": "返信を読み込み中…"
+    },
+    "preview_prune_title": {
+        "message": "含めるコメントを選択"
+    },
+    "preview_prune_description": {
+        "message": "チェックを外したコメントはプロンプトから除外されます。その返信も除外されます。"
+    },
+    "preview_select_all": {
+        "message": "すべて選択"
+    },
+    "preview_clear_all": {
+        "message": "すべて解除"
+    },
+    "preview_tree_empty_title": {
+        "message": "選択できるコメントがありません"
+    },
+    "preview_tree_empty_body": {
+        "message": "このスレッドにはコメントがないか、現在のコンテキストプリセットでプロンプトに残ったコメントがありません。"
+    },
+    "preview_api_error_title": {
+        "message": "リクエストが完了しませんでした"
+    },
+    "preview_api_sending": {
+        "message": "送信中…"
+    },
+    "preview_api_done": {
+        "message": "完了 ✓"
+    },
+    "preview_api_failed_short": {
+        "message": "失敗"
+    },
+    "preview_api_send_disabled": {
+        "message": "送信するには、オプションでこのプロバイダーの API キーを追加してください。"
+    },
+    "preview_api_no_key_option": {
+        "message": "$PROVIDER$（キーなし）",
+        "placeholders": {
+            "provider": {
+                "content": "$1",
+                "example": "OpenAI"
+            }
+        }
+    },
+    "preview_status_ready_short": {
+        "message": "準備完了。"
+    },
+    "preview_status_ready": {
+        "message": "準備完了。プロンプトを確認・編集してから送信してください。"
+    },
+    "preview_status_loading": {
+        "message": "取得したスレッドを読み込み中…"
+    },
+    "preview_status_load_failed": {
+        "message": "スレッドを読み込めませんでした。"
+    },
+    "preview_status_already_sending": {
+        "message": "AI タブを開いています。"
+    },
+    "preview_status_empty": {
+        "message": "プロンプトが空です。送信前にテキストを入力してください。"
+    },
+    "preview_status_opening": {
+        "message": "$PROVIDER$ を開いています…",
+        "placeholders": {
+            "provider": {
+                "content": "$1",
+                "example": "Gemini"
+            }
+        }
+    },
+    "preview_status_sent": {
+        "message": "$PROVIDER$ を開きました。プロンプトが自動で貼り付けられない場合は、そのページのコピーボタンを使ってください。",
+        "placeholders": {
+            "provider": {
+                "content": "$1",
+                "example": "Gemini"
+            }
+        }
+    },
+    "preview_status_send_failed": {
+        "message": "プロンプトを送信できませんでした。もう一度試すか、コピーしてください。"
+    },
+    "preview_status_copied": {
+        "message": "プロンプトをクリップボードにコピーしました。"
+    },
+    "preview_status_nothing_to_copy": {
+        "message": "プロンプトが空のため、コピーするものがありません。"
+    },
+    "preview_status_copy_failed": {
+        "message": "コピーできませんでした。テキストを選択して Ctrl+C を押してください。"
+    },
+    "preview_status_copy_failed_short": {
+        "message": "コピーに失敗しました。"
+    },
+    "preview_status_export_nodata": {
+        "message": "エクスポートできるデータがありません。"
+    },
+    "preview_status_exported": {
+        "message": "$FORMAT$ としてエクスポートしました。",
+        "placeholders": {
+            "format": {
+                "content": "$1",
+                "example": "MD"
+            }
+        }
+    },
+    "preview_status_export_failed": {
+        "message": "エクスポートに失敗しました。"
+    },
+    "preview_status_preset_name_needed": {
+        "message": "先にプリセット名を入力してください。"
+    },
+    "preview_status_preset_saved": {
+        "message": "プリセット「$NAME$」を保存しました。",
+        "placeholders": {
+            "name": {
+                "content": "$1",
+                "example": "Weekly digest"
+            }
+        }
+    },
+    "preview_status_preset_failed": {
+        "message": "プリセットを保存できませんでした: $ERROR$",
+        "placeholders": {
+            "error": {
+                "content": "$1",
+                "example": "QUOTA_BYTES quota exceeded"
+            }
+        }
+    },
+    "preview_status_rebuilt": {
+        "message": "再生成したプロンプトを適用しました。"
+    },
+    "preview_status_kept": {
+        "message": "編集したプロンプトを保持しました。"
+    },
+    "preview_status_restored": {
+        "message": "生成されたプロンプトに戻しました。"
+    },
+    "preview_status_skip_on": {
+        "message": "次回から、取得内容は直接 AI チャットに送られます。"
+    },
+    "preview_status_skip_off": {
+        "message": "次回から、まずこのプレビューが開きます。"
+    },
+    "preview_status_resuming": {
+        "message": "不足している返信を読み込んでいます…"
+    },
+    "preview_status_resume_failed": {
+        "message": "不足している返信を読み込めませんでした。"
+    },
+    "preview_status_resumed": {
+        "message": "完了しました。$COUNT$ 件の返信を追加しました。",
+        "placeholders": {
+            "count": {
+                "content": "$1",
+                "example": "8"
+            }
+        }
+    },
+    "preview_status_focus_failed": {
+        "message": "Reddit のタブが見つかりませんでした。"
+    },
+    "preview_threads_combined": {
+        "message": "比較のために $COUNT$ 件の Reddit スレッドを結合しました。",
+        "placeholders": {
+            "count": {
+                "content": "$1",
+                "example": "3"
+            }
+        }
+    },
+    "options_header_settings": {
+        "message": "設定"
+    },
+    "options_nav_aria": {
+        "message": "設定のセクション"
+    },
+    "options_nav_ai": {
+        "message": "AIと送信"
+    },
+    "options_nav_prompts": {
+        "message": "プロンプト"
+    },
+    "options_nav_scraping": {
+        "message": "取得"
+    },
+    "options_nav_reddit": {
+        "message": "Redditボタン"
+    },
+    "options_nav_general": {
+        "message": "一般"
+    },
+    "options_nav_history": {
+        "message": "履歴"
+    },
+    "options_nav_advanced": {
+        "message": "詳細設定"
+    },
+    "options_pane_ai_desc": {
+        "message": "Redditのスレッドの送信先と、送信時の動作を設定します。"
+    },
+    "options_pane_prompts_desc": {
+        "message": "各スレッドでAIに何をしてもらうかを設定します。"
+    },
+    "options_pane_scraping_desc": {
+        "message": "スレッドをどこまで取得し、どのコメントを残すかを設定します。"
+    },
+    "options_pane_general_desc": {
+        "message": "外観、言語、通知、データの扱い。"
+    },
+    "options_pane_history_desc": {
+        "message": "最近取得したスレッドです。別のAIに再送信したり、比較やエクスポートができます。"
+    },
+    "options_pane_advanced_desc": {
+        "message": "上級者向け・トラブルシューティング用です。通常は既定値のままで問題ありません。"
+    },
+    "options_platform_custom": {
+        "message": "カスタムサイト"
+    },
+    "options_hint_custom_platform": {
+        "message": "カスタムサイト（ローカルのWebUIなど）は「詳細設定 › カスタムAIサイト」で追加します。"
+    },
+    "options_card_send_flow_title": {
+        "message": "スレッド送信時"
+    },
+    "options_label_show_preview": {
+        "message": "送信前にプロンプトのプレビューを表示"
+    },
+    "options_hint_show_preview": {
+        "message": "オフにすると、取得後すぐにAIのタブを開きます。"
+    },
+    "options_label_output_format": {
+        "message": "回答の形式"
+    },
+    "options_hint_output_format": {
+        "message": "AIに求める回答の形式です。プレビューでスレッドごとに変更できます。"
+    },
+    "options_format_auto": {
+        "message": "AIに任せる"
+    },
+    "options_format_bullets": {
+        "message": "箇条書き"
+    },
+    "options_format_table": {
+        "message": "表"
+    },
+    "options_format_pros_cons": {
+        "message": "長所と短所"
+    },
+    "options_format_executive": {
+        "message": "エグゼクティブサマリー"
+    },
+    "options_hint_prompt_plain": {
+        "message": "Redditのスレッドを入れる位置に {content} を書きます。自分で書くには「カスタム」を選びます。"
+    },
+    "options_card_saved_presets_title": {
+        "message": "保存したプロンプトプリセット"
+    },
+    "options_saved_presets_desc": {
+        "message": "ポップアップやプレビュー画面から保存したプリセットです。"
+    },
+    "options_saved_presets_empty": {
+        "message": "保存したプリセットはまだありません"
+    },
+    "options_saved_presets_none_hint": {
+        "message": "保存したプリセットはありません"
+    },
+    "options_btn_import_presets": {
+        "message": "プリセットを読み込む"
+    },
+    "options_btn_export_presets": {
+        "message": "プリセットを書き出す"
+    },
+    "options_btn_clear_presets": {
+        "message": "すべてのプリセットを削除"
+    },
+    "options_confirm_clear_presets": {
+        "message": "保存したプリセットをすべて削除しますか？元に戻せません。"
+    },
+    "options_btn_cancel": {
+        "message": "キャンセル"
+    },
+    "options_btn_delete_all": {
+        "message": "すべて削除"
+    },
+    "options_btn_use": {
+        "message": "使う"
+    },
+    "options_btn_export": {
+        "message": "書き出す"
+    },
+    "options_btn_remove": {
+        "message": "削除"
+    },
+    "options_untitled_preset": {
+        "message": "無題のプリセット"
+    },
+    "options_unknown_date": {
+        "message": "日付不明"
+    },
+    "options_preset_applied": {
+        "message": "「$NAME$」をカスタムプロンプトとして使用中です。",
+        "placeholders": {
+            "name": {
+                "content": "$1"
+            }
+        }
+    },
+    "options_preset_deleted": {
+        "message": "プリセットを削除しました。"
+    },
+    "options_preset_exported": {
+        "message": "プリセットを書き出しました。"
+    },
+    "options_presets_exported": {
+        "message": "プリセットを書き出しました。"
+    },
+    "options_presets_imported": {
+        "message": "$COUNT$ 件のプリセットを読み込みました。",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            }
+        }
+    },
+    "options_presets_cleared": {
+        "message": "保存したプリセットをすべて削除しました。"
+    },
+    "options_import_no_presets": {
+        "message": "このファイルにはプロンプトプリセットが含まれていません。"
+    },
+    "options_author_op_label": {
+        "message": "投稿者（OP）"
+    },
+    "options_author_flaired_label": {
+        "message": "フレア付きユーザー"
+    },
+    "options_author_summary_all": {
+        "message": "すべての人のコメントを含めます。片方または両方をオンにすると、その投稿者だけに絞ります。"
+    },
+    "options_author_summary_op": {
+        "message": "投稿者のコメントのみ。"
+    },
+    "options_author_summary_flaired": {
+        "message": "フレア付きユーザーのコメントのみ。"
+    },
+    "options_author_summary_both": {
+        "message": "投稿者またはフレア付きユーザーのコメントのみ。"
+    },
+    "options_scraping_more_hint": {
+        "message": "プロンプトのサイズ、コメントの並び順、メディアの扱いはこちら："
+    },
+    "options_reddit_btn_disabled_hint": {
+        "message": "ページ内ボタンをオンにすると、表示場所を選べます。"
+    },
+    "options_card_appearance_title": {
+        "message": "外観"
+    },
+    "options_label_theme": {
+        "message": "テーマ"
+    },
+    "options_theme_auto": {
+        "message": "自動"
+    },
+    "options_theme_dark": {
+        "message": "ダーク"
+    },
+    "options_theme_light": {
+        "message": "ライト"
+    },
+    "options_hint_theme": {
+        "message": "自動はシステムの設定に従います。"
+    },
+    "options_language_applied": {
+        "message": "言語を適用しました。"
+    },
+    "options_storage_desc": {
+        "message": "送信後に取得したスレッドをどう扱うかを設定します。"
+    },
+    "options_backup_title": {
+        "message": "設定のバックアップ"
+    },
+    "options_backup_hint": {
+        "message": "設定をJSONファイルとして書き出します。APIキーは含まれません。"
+    },
+    "options_btn_export_settings": {
+        "message": "設定を書き出す"
+    },
+    "options_btn_import_settings": {
+        "message": "設定を読み込む"
+    },
+    "options_settings_exported": {
+        "message": "設定を書き出しました。"
+    },
+    "options_import_bad_json": {
+        "message": "このファイルをJSONとして読み込めませんでした:"
+    },
+    "options_import_read_failed": {
+        "message": "ファイルを読み込めませんでした。"
+    },
+    "options_import_no_settings": {
+        "message": "このファイルには設定が含まれていません。"
+    },
+    "options_import_none_recognized": {
+        "message": "このファイルには認識できる設定がありません。"
+    },
+    "options_import_failed": {
+        "message": "設定を読み込めませんでした:"
+    },
+    "options_telemetry_default_on": {
+        "message": "既定でオン"
+    },
+    "options_telemetry_sent_label": {
+        "message": "送信するもの"
+    },
+    "options_telemetry_sent": {
+        "message": "5つの出来事（インストール、更新、ブラウザセッション開始、スレッド取得、プロンプト送信）の回数と、ランダムなインストールID、拡張機能のバージョン。"
+    },
+    "options_telemetry_never_label": {
+        "message": "送信しないもの"
+    },
+    "options_telemetry_never": {
+        "message": "Redditの内容、URL、サブレディット名、タイトル、プロンプト、APIキー、入力した内容は一切送信しません。"
+    },
+    "options_telemetry_when_label": {
+        "message": "頻度"
+    },
+    "options_telemetry_when": {
+        "message": "最大で30分に1回。オフにすると、インストールIDと未送信のカウントは削除されます。"
+    },
+    "options_telemetry_unsupported": {
+        "message": "このブラウザ版では利用回数は送信されません。"
+    },
+    "options_history_filters_aria": {
+        "message": "履歴のフィルター"
+    },
+    "options_history_search_placeholder": {
+        "message": "タイトル、サブレディット、フレア、URLで検索..."
+    },
+    "options_history_all_platforms": {
+        "message": "すべてのAIプラットフォーム"
+    },
+    "options_history_all_presets": {
+        "message": "すべてのプロンプト"
+    },
+    "options_history_any_date": {
+        "message": "すべての期間"
+    },
+    "options_history_today": {
+        "message": "今日"
+    },
+    "options_history_week": {
+        "message": "過去7日間"
+    },
+    "options_history_month": {
+        "message": "過去30日間"
+    },
+    "options_history_min_comments": {
+        "message": "最小コメント数"
+    },
+    "options_aria_platform": {
+        "message": "AIプラットフォーム"
+    },
+    "options_aria_prompt": {
+        "message": "プロンプト"
+    },
+    "options_aria_date": {
+        "message": "日付"
+    },
+    "options_aria_pattern": {
+        "message": "サブレディットのパターン"
+    },
+    "options_aria_test_sub": {
+        "message": "テストするサブレディット"
+    },
+    "options_aria_site": {
+        "message": "サイトのアドレス"
+    },
+    "options_btn_compare": {
+        "message": "選択したものを比較"
+    },
+    "options_compare_hint": {
+        "message": "比較するには2件以上選択してください"
+    },
+    "options_compare_selected": {
+        "message": "比較用に $COUNT$ 件選択",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            }
+        }
+    },
+    "options_history_compare": {
+        "message": "比較"
+    },
+    "options_history_comments": {
+        "message": "コメント $COUNT$ 件",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            }
+        }
+    },
+    "options_history_pin": {
+        "message": "ピン留め"
+    },
+    "options_history_unpin": {
+        "message": "ピン留めを解除"
+    },
+    "options_history_favorite": {
+        "message": "お気に入りに追加"
+    },
+    "options_history_unfavorite": {
+        "message": "お気に入りから削除"
+    },
+    "options_history_no_match": {
+        "message": "フィルターに一致する履歴はありません"
+    },
+    "options_hist_opening_preview": {
+        "message": "履歴のプレビューを開いています..."
+    },
+    "options_hist_preview_opened": {
+        "message": "履歴のプレビューを開きました。"
+    },
+    "options_hist_resend_failed": {
+        "message": "履歴を再送信できませんでした:"
+    },
+    "options_hist_deleted": {
+        "message": "履歴を削除しました。"
+    },
+    "options_hist_delete_failed": {
+        "message": "履歴を削除できませんでした:"
+    },
+    "options_hist_export_failed": {
+        "message": "履歴を書き出せませんでした:"
+    },
+    "options_hist_exported": {
+        "message": "履歴を書き出しました。"
+    },
+    "options_hist_update_failed": {
+        "message": "履歴を更新できませんでした:"
+    },
+    "options_hist_pinned": {
+        "message": "履歴をピン留めしました。"
+    },
+    "options_hist_unpinned": {
+        "message": "ピン留めを解除しました。"
+    },
+    "options_hist_favorited": {
+        "message": "お気に入りに追加しました。"
+    },
+    "options_hist_unfavorited": {
+        "message": "お気に入りから削除しました。"
+    },
+    "options_hist_opening_compare": {
+        "message": "比較プレビューを開いています..."
+    },
+    "options_hist_compare_opened": {
+        "message": "比較プレビューを開きました。"
+    },
+    "options_hist_compare_failed": {
+        "message": "履歴を比較できませんでした:"
+    },
+    "options_hist_cleared": {
+        "message": "履歴を消去しました。"
+    },
+    "options_hist_clear_failed": {
+        "message": "履歴を消去できませんでした:"
+    },
+    "options_adv_tuning_title": {
+        "message": "プロンプトのサイズとコメントの選択"
+    },
+    "options_adv_tuning_desc": {
+        "message": "スレッドをどれだけプロンプトに入れるか、短縮時にどのコメントを残すか。"
+    },
+    "options_label_context_budget": {
+        "message": "既定のプロンプトサイズ"
+    },
+    "options_hint_context_budget": {
+        "message": "プレビューでの初期プロンプトサイズです。大きいほど多くのコメントを残します。"
+    },
+    "options_context_small": {
+        "message": "小"
+    },
+    "options_context_balanced": {
+        "message": "バランス"
+    },
+    "options_context_full": {
+        "message": "フル"
+    },
+    "options_context_max": {
+        "message": "最大（最高品質）"
+    },
+    "options_label_trim": {
+        "message": "短縮時に残すもの"
+    },
+    "options_trim_top": {
+        "message": "高スコア"
+    },
+    "options_trim_controversial": {
+        "message": "賛否両論"
+    },
+    "options_trim_op": {
+        "message": "投稿者の返信"
+    },
+    "options_trim_flaired": {
+        "message": "フレア付きユーザー"
+    },
+    "options_trim_diverse": {
+        "message": "多様な意見"
+    },
+    "options_trim_newest": {
+        "message": "新しい順"
+    },
+    "options_trim_longest": {
+        "message": "長くて有用なコメント"
+    },
+    "options_label_sort": {
+        "message": "Redditのコメントの並び順"
+    },
+    "options_sort_best": {
+        "message": "ベスト"
+    },
+    "options_sort_top": {
+        "message": "トップ"
+    },
+    "options_sort_new": {
+        "message": "新着"
+    },
+    "options_sort_controversial": {
+        "message": "賛否両論"
+    },
+    "options_sort_old": {
+        "message": "古い順"
+    },
+    "options_sort_qa": {
+        "message": "Q&A"
+    },
+    "options_sort_live": {
+        "message": "ライブ"
+    },
+    "options_label_media": {
+        "message": "画像とメディア"
+    },
+    "options_media_attach": {
+        "message": "画像を添付し、メディアのリンクを列挙"
+    },
+    "options_media_urls": {
+        "message": "メディアのリンクのみ列挙"
+    },
+    "options_media_ignore": {
+        "message": "メディアを無視"
+    },
+    "options_adv_mappings_desc": {
+        "message": "特定のサブレディットで自動的に別のプロンプトを使います。"
+    },
+    "options_mappings_empty_input": {
+        "message": "先にサブレディット名かパターンを入力してください。"
+    },
+    "options_mappings_duplicate": {
+        "message": "このパターンのルールは既にあります。"
+    },
+    "options_mappings_added": {
+        "message": "ルールを追加しました。"
+    },
+    "options_tester_match": {
+        "message": "一致"
+    },
+    "options_tester_nomatch": {
+        "message": "一致なし"
+    },
+    "options_tester_match_detail": {
+        "message": "r/$SUB$ は「$PATTERN$」に一致するため、$PRESET$ のプロンプトを使います。",
+        "placeholders": {
+            "sub": {
+                "content": "$1"
+            },
+            "pattern": {
+                "content": "$2"
+            },
+            "preset": {
+                "content": "$3"
+            }
+        }
+    },
+    "options_tester_nomatch_detail": {
+        "message": "r/$SUB$ はどのルールにも一致しないため、既定のプロンプト（$PRESET$）を使います。",
+        "placeholders": {
+            "sub": {
+                "content": "$1"
+            },
+            "preset": {
+                "content": "$2"
+            }
+        }
+    },
+    "options_adv_custom_title": {
+        "message": "カスタムAIサイト"
+    },
+    "options_adv_custom_desc": {
+        "message": "セルフホストやローカルのAI Webアプリにスレッドを送ります。"
+    },
+    "options_custom_origin_hint": {
+        "message": "AI Webアプリのアドレスを入力します（例: http://localhost:3000）。Chromeがそのサイトへのアクセス許可を求めます。"
+    },
+    "options_btn_add_custom_origin": {
+        "message": "サイトを追加"
+    },
+    "options_custom_origin_empty": {
+        "message": "カスタムサイトはまだありません。"
+    },
+    "options_custom_origin_empty_input": {
+        "message": "先にアドレスを入力してください（例: http://localhost:3000）。"
+    },
+    "options_custom_origin_invalid": {
+        "message": "Webアドレスの形式ではないようです。http://localhost:3000 のように入力してください。"
+    },
+    "options_custom_origin_requesting": {
+        "message": "アクセスの許可を待っています…"
+    },
+    "options_custom_origin_error": {
+        "message": "アクセスを要求できませんでした:"
+    },
+    "options_custom_origin_denied": {
+        "message": "アクセスが許可されなかったため、サイトは追加されませんでした。"
+    },
+    "options_custom_origin_exists": {
+        "message": "そのサイトは既にリストにあります。"
+    },
+    "options_custom_origin_added": {
+        "message": "サイトを追加しました。"
+    },
+    "options_custom_origin_removed": {
+        "message": "サイトを削除しました。"
+    },
+    "options_custom_origin_remove_title": {
+        "message": "サイトを削除してアクセスを取り消す"
+    },
+    "options_adv_selectors_title": {
+        "message": "入力欄のセレクター"
+    },
+    "options_adv_selectors_desc": {
+        "message": "AIサイトのレイアウト変更で貼り付けが動かなくなったら、正しい入力欄を指定します。"
+    },
+    "options_selectors_hint": {
+        "message": "CSSセレクターです。空欄なら組み込みの既定値を使います。"
+    },
+    "options_footer_version": {
+        "message": "Reddit to AI v$VERSION$",
+        "placeholders": {
+            "version": {
+                "content": "$1"
+            }
+        }
+    },
+    "welcome_page_title": {
+        "message": "Reddit to AI へようこそ"
+    },
+    "welcome_progress_aria": {
+        "message": "セットアップの進行状況"
+    },
+    "welcome_dot_1": {
+        "message": "ステップ1: AIを選ぶ"
+    },
+    "welcome_dot_2": {
+        "message": "ステップ2: 始め方"
+    },
+    "welcome_dot_3": {
+        "message": "ステップ3: プライバシー"
+    },
+    "welcome_step_count": {
+        "message": "ステップ $CURRENT$/$TOTAL$",
+        "placeholders": {
+            "current": {
+                "content": "$1"
+            },
+            "total": {
+                "content": "$2"
+            }
+        }
+    },
+    "welcome_eyebrow": {
+        "message": "ようこそ — セットアップしましょう"
+    },
+    "welcome_step1_title": {
+        "message": "AIを選ぶ"
+    },
+    "welcome_step1_lead": {
+        "message": "Redditのスレッドをどこに送りますか？プロンプトが貼り付けられた状態で開きます。いつでも変更できます。"
+    },
+    "welcome_step1_more": {
+        "message": "ローカルやセルフホストのAIサイト、独自のAPIキーは後から設定で追加できます。"
+    },
+    "welcome_provider_saved": {
+        "message": "保存しました — スレッドは $NAME$ で開きます。",
+        "placeholders": {
+            "name": {
+                "content": "$1"
+            }
+        }
+    },
+    "welcome_save_failed": {
+        "message": "保存できませんでした。もう一度お試しください。"
+    },
+    "welcome_step2_title": {
+        "message": "4つの始め方"
+    },
+    "welcome_step2_lead": {
+        "message": "Redditのスレッドを開いて、使いやすい方法で始めましょう。"
+    },
+    "welcome_way_inline_title": {
+        "message": "Reddit上のボタン"
+    },
+    "welcome_way_inline_desc": {
+        "message": "投稿のアクションバー（共有の横）にあります。"
+    },
+    "welcome_way_popup_title": {
+        "message": "ツールバーのアイコン"
+    },
+    "welcome_way_popup_desc": {
+        "message": "ポップアップを開いて大きなボタンを押します。パズルのピースのメニューからアイコンを固定すると便利です。"
+    },
+    "welcome_way_shortcut_title": {
+        "message": "キーボードショートカット"
+    },
+    "welcome_way_shortcut_desc": {
+        "message": "Redditのスレッドで押します。"
+    },
+    "welcome_way_shortcut_change": {
+        "message": "ショートカットを変更"
+    },
+    "welcome_way_shortcut_unset": {
+        "message": "ショートカットは未設定です。Chromeで設定できます。"
+    },
+    "welcome_way_menu_title": {
+        "message": "スレッドのリンクを右クリック"
+    },
+    "welcome_way_menu_desc": {
+        "message": "どこにあるスレッドのリンクでも、開かずに使えます。"
+    },
+    "welcome_mock_open_link": {
+        "message": "リンクを新しいタブで開く"
+    },
+    "welcome_mock_copy_link": {
+        "message": "リンクのアドレスをコピー"
+    },
+    "welcome_step3_title": {
+        "message": "データの扱いをはっきりと"
+    },
+    "welcome_step3_lead": {
+        "message": "何がどこへ送られるかを正確に説明します。"
+    },
+    "welcome_fact_ai_title": {
+        "message": "スレッドは選んだAIにだけ送られます"
+    },
+    "welcome_fact_ai_desc": {
+        "message": "スレッドはブラウザ内で読み取られ、選んだAIに直接渡されます。当社のサーバーを経由することはありません。"
+    },
+    "welcome_fact_ai_desc_named": {
+        "message": "スレッドはブラウザ内で読み取られ、$NAME$（後でキーを追加した場合はそのAPI）に直接渡されます。当社のサーバーを経由することはありません。",
+        "placeholders": {
+            "name": {
+                "content": "$1"
+            }
+        }
+    },
+    "welcome_fact_local_title": {
+        "message": "履歴とAPIキーはこの端末にとどまります"
+    },
+    "welcome_fact_local_desc": {
+        "message": "取得履歴とAPIキーはこのブラウザにのみ保存されます。履歴は設定で制限・消去できます。"
+    },
+    "welcome_telemetry_label": {
+        "message": "匿名の利用回数を共有"
+    },
+    "welcome_telemetry_hint": {
+        "message": "5つの出来事（インストール、更新、セッション開始、スレッド取得、プロンプト送信）の回数、ランダムなインストールID、バージョンのみ。Redditの内容、URL、サブレディット、プロンプト、キーは一切送りません。"
+    },
+    "welcome_telemetry_on": {
+        "message": "ありがとうございます — 匿名カウントはオンです。"
+    },
+    "welcome_telemetry_off": {
+        "message": "オフにしました。インストールIDと未送信のカウントは削除されました。"
+    },
+    "welcome_settings_prefix": {
+        "message": "その他の設定はこちら："
+    },
+    "welcome_settings_link": {
+        "message": "設定"
+    },
+    "welcome_btn_back": {
+        "message": "戻る"
+    },
+    "welcome_btn_next": {
+        "message": "次へ"
+    },
+    "welcome_btn_done": {
+        "message": "完了"
+    },
+    "welcome_btn_open_reddit": {
+        "message": "Redditを開く"
+    },
+    "welcome_keys_hint": {
+        "message": "ヒント: 矢印キーまたはEnterでステップを移動できます。"
     }
 }
